@@ -59,12 +59,14 @@
       min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
       box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
     }
-    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
-    .brand-mark { width: 2.8rem; height: 2.8rem; }
-    .brand-mark svg { width: 100%; fill: none; stroke: currentColor; stroke-width: 2.4; }
-    .brand-copy { display: grid; line-height: 1.05; }
-    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
-    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    
+    /* ESTILOS DE LOS LOGOS Y TEXTO DEL ENCABEZADO */
+    .brand { display: inline-flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
+    .brand-logos { display: flex; align-items: center; gap: 0.8rem; }
+    .logo-img { height: 2.8rem; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.1; }
+    .brand-copy strong { font-size: 1rem; letter-spacing: 0.03em; font-weight: 700; }
+    .brand-copy small { margin-top: 0.2rem; font-size: 0.75rem; letter-spacing: 0.04em; }
     
     .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
     .main-nav a {
@@ -321,19 +323,18 @@
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header" data-header>
-    <a class="brand" href="#inicio" aria-label="UGI, volver al inicio">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 54 54" role="img">
-          <path d="M27 3 50 16v22L27 51 4 38V16L27 3Z" />
-          <path d="M17 20v9c0 7 4 10 10 10s10-3 10-10v-9" />
-          <path d="M27 15v19" />
-        </svg>
+    <!-- AQUÍ ESTÁN LAS MODIFICACIONES DE LOS LOGOS Y EL TEXTO -->
+    <a class="brand" href="#inicio" aria-label="Unidad de Gestión Integral, volver al inicio">
+      <span class="brand-logos" aria-hidden="true">
+        <img src="img/logo-ugi.png" alt="Logo UGI" class="logo-img">
+        <img src="img/logo-ccba.png" alt="Logo CCBA" class="logo-img">
       </span>
       <span class="brand-copy">
-        <strong>UGI</strong>
+        <strong>Unidad de Gestión Integral</strong>
         <small>Club Ciudad de Buenos Aires</small>
       </span>
     </a>
+    
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
       <span class="sr-only">Abrir menú</span>
       <span></span><span></span>
