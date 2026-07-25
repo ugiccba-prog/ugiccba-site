@@ -59,16 +59,20 @@
       min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
       box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
     }
-    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
     
-    /* REGLA ESTRICTA PARA EL LOGO */
+    /* MARCA Y LOGO */
+    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
     .brand img {
       max-height: 55px;
-      max-width: 240px; /* Evita que el logo sea tan ancho que empuje el menú */
+      max-width: 240px;
       width: auto;
       object-fit: contain;
     }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
     
+    /* NAVEGACIÓN */
     .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
     .main-nav a {
       position: relative; font-size: 0.78rem; font-weight: 600;
@@ -259,7 +263,8 @@
 
     /* FOOTER */
     .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; }
-    .footer-mark { font-family: var(--display); font-size: 2.5rem; }
+    .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
+    .footer-mark img { max-height: 40px; width: auto; }
     .site-footer p { margin: 0; }
     .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
     .copyright { color: rgba(255, 253, 248, 0.5); }
@@ -283,7 +288,7 @@
         transform: translateY(-1rem); transition: opacity 220ms ease, transform 220ms ease, visibility 220ms;
       }
       .main-nav.open { opacity: 1; visibility: visible; transform: translateY(0); }
-      .main-nav a { font-family: var(--display); font-size: 2rem; font-weight: 400; }
+      .main-nav a { font-family: var(--display); font-size: 2rem; font-weight: 400; color: var(--paper); }
       .nav-cta { font-family: var(--sans) !important; font-size: 0.8rem !important; }
       .menu-toggle[aria-expanded="true"] { color: var(--paper); }
       .hero { grid-template-columns: 1fr; gap: 5rem; padding-top: 9rem; }
@@ -335,6 +340,10 @@
   <header class="site-header" data-header>
     <a class="brand" href="#inicio" aria-label="UGI, volver al inicio">
       <img src="logo-header.png" alt="Logo CCBA y UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
     </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
       <span class="sr-only">Abrir menú</span>
@@ -529,7 +538,7 @@
       <div class="approach-copy reveal">
         <p class="eyebrow">Una cultura compartida</p>
         <h2>El resultado importa.<br /><em>La forma también.</em></h2>
-        <p>Trabajamos con todos los actores del club para que cada gesto, decisión y conversation sea parte de una misma formación.</p>
+        <p>Trabajamos con todos los actores del club para que cada gesto, decisión y conversación sea parte de una misma formación.</p>
         <a class="button button-light" href="mailto:ugiccba@gmail.com">Conversemos</a>
       </div>
       <div class="roles" aria-label="Personas que integran la comunidad UGI">
@@ -544,6 +553,9 @@
   <footer class="site-footer">
     <div class="footer-mark">
       <img src="logo-header.png" alt="Logo UGI" style="max-height: 50px;">
+      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
+        <strong style="display: block;">UGI</strong>
+      </span>
     </div>
     <div>
       <p>Unidad de Gestión Integral</p>
