@@ -48,49 +48,31 @@
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
 
-    /* HEADER Y NAVEGACIÓN CORREGIDOS */
+    /* HEADER Y NAVEGACIÓN (RESTAURADO CON FONDO TRANSPARENTE) */
     .site-header {
-      position: fixed;
-      inset: 0 0 auto;
-      z-index: 50;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: center;
-      justify-content: space-between;
-      height: 4.5rem;
-      padding: 0 clamp(1.2rem, 4vw, 4.5rem);
-      background: rgba(255, 253, 248, 0.98);
-      box-shadow: 0 1px 0 var(--line);
-      backdrop-filter: blur(14px);
+      position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
+      align-items: center; justify-content: space-between; min-height: 5.5rem;
+      padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy);
+      transition: background 250ms ease, box-shadow 250ms ease, min-height 250ms ease;
     }
+    .site-header.scrolled {
+      min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
+      box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
+    }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
     
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-    }
+    /* REGLA ESTRICTA PARA EL LOGO */
     .brand img {
-      height: 42px;
+      max-height: 55px;
+      max-width: 240px; /* Evita que el logo sea tan ancho que empuje el menú */
       width: auto;
       object-fit: contain;
-      display: block;
     }
     
-    .main-nav {
-      display: flex;
-      align-items: center;
-      gap: clamp(0.8rem, 1.8vw, 1.8rem);
-      flex-wrap: nowrap;
-    }
+    .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
     .main-nav a {
-      position: relative;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-decoration: none;
-      color: var(--navy);
-      white-space: nowrap;
+      position: relative; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.03em; text-decoration: none; color: inherit;
     }
     .main-nav a:not(.nav-cta)::after {
       content: ""; position: absolute; inset: auto 0 -0.35rem; height: 1px;
@@ -98,9 +80,7 @@
     }
     .main-nav a:hover::after { transform: scaleX(1); transform-origin: left; }
     .nav-cta {
-      padding: 0.5rem 1.1rem;
-      border: 1px solid currentColor;
-      border-radius: 999px;
+      padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px;
       transition: background 180ms ease, color 180ms ease;
     }
     .nav-cta:hover { color: white; background: var(--navy); }
@@ -303,7 +283,7 @@
         transform: translateY(-1rem); transition: opacity 220ms ease, transform 220ms ease, visibility 220ms;
       }
       .main-nav.open { opacity: 1; visibility: visible; transform: translateY(0); }
-      .main-nav a { font-family: var(--display); font-size: 2rem; font-weight: 400; color: var(--paper); }
+      .main-nav a { font-family: var(--display); font-size: 2rem; font-weight: 400; }
       .nav-cta { font-family: var(--sans) !important; font-size: 0.8rem !important; }
       .menu-toggle[aria-expanded="true"] { color: var(--paper); }
       .hero { grid-template-columns: 1fr; gap: 5rem; padding-top: 9rem; }
@@ -351,6 +331,7 @@
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  
   <header class="site-header" data-header>
     <a class="brand" href="#inicio" aria-label="UGI, volver al inicio">
       <img src="logo-header.png" alt="Logo CCBA y UGI">
@@ -548,7 +529,7 @@
       <div class="approach-copy reveal">
         <p class="eyebrow">Una cultura compartida</p>
         <h2>El resultado importa.<br /><em>La forma también.</em></h2>
-        <p>Trabajamos con todos los actores del club para que cada gesto, decisión y conversación sea parte de una misma formación.</p>
+        <p>Trabajamos con todos los actores del club para que cada gesto, decisión y conversation sea parte de una misma formación.</p>
         <a class="button button-light" href="mailto:ugiccba@gmail.com">Conversemos</a>
       </div>
       <div class="roles" aria-label="Personas que integran la comunidad UGI">
@@ -562,7 +543,7 @@
 
   <footer class="site-footer">
     <div class="footer-mark">
-      <img src="logo-header.png" alt="Logo UGI" style="max-height: 40px; width: auto;">
+      <img src="logo-header.png" alt="Logo UGI" style="max-height: 50px;">
     </div>
     <div>
       <p>Unidad de Gestión Integral</p>
