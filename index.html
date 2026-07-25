@@ -59,14 +59,12 @@
       min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
       box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
     }
-    
-    /* ESTILOS DE LOS LOGOS Y TEXTO DEL ENCABEZADO */
-    .brand { display: inline-flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
-    .brand-logos { display: flex; align-items: center; gap: 0.8rem; }
-    .logo-img { height: 2.8rem; width: auto; object-fit: contain; }
-    .brand-copy { display: grid; line-height: 1.1; }
-    .brand-copy strong { font-size: 1rem; letter-spacing: 0.03em; font-weight: 700; }
-    .brand-copy small { margin-top: 0.2rem; font-size: 0.75rem; letter-spacing: 0.04em; }
+    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    .brand-mark { width: 2.8rem; height: 2.8rem; }
+    .brand-mark svg { width: 100%; fill: none; stroke: currentColor; stroke-width: 2.4; }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
     
     .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
     .main-nav a {
@@ -231,11 +229,20 @@
     }
 
     .embed-container {
-      width: 100%; height: 400px; margin-top: 1.5rem; border-radius: 0.8rem;
+      width: 100%; height: 500px; margin-top: 1.5rem; border-radius: 0.8rem;
       overflow: hidden; background: var(--cream); border: 2px dashed rgba(8, 43, 73, 0.18);
     }
-    .mapa-container { height: 600px; }
+    .mapa-container { height: 600px; border: none; background: transparent; }
     .embed-container iframe { width: 100%; height: 100%; border: none; }
+    
+    /* ESTILOS DE CANVA */
+    .canva-wrapper {
+      position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+      padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+      border-radius: 8px; will-change: transform;
+    }
+    .canva-link { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .canva-link:hover { text-decoration: underline; }
 
     /* ENFOQUE */
     .approach { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(22rem, 0.9fr); gap: clamp(4rem, 10vw, 10rem); padding: clamp(6rem, 12vw, 12rem) clamp(1.2rem, 7vw, 8rem); color: var(--navy); background: var(--sky); }
@@ -323,18 +330,19 @@
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header" data-header>
-    <!-- AQUÍ ESTÁN LAS MODIFICACIONES DE LOS LOGOS Y EL TEXTO -->
-    <a class="brand" href="#inicio" aria-label="Unidad de Gestión Integral, volver al inicio">
-      <span class="brand-logos" aria-hidden="true">
-        <img src="img/logo-ugi.png" alt="Logo UGI" class="logo-img">
-        <img src="img/logo-ccba.png" alt="Logo CCBA" class="logo-img">
+    <a class="brand" href="#inicio" aria-label="UGI, volver al inicio">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 54 54" role="img">
+          <path d="M27 3 50 16v22L27 51 4 38V16L27 3Z" />
+          <path d="M17 20v9c0 7 4 10 10 10s10-3 10-10v-9" />
+          <path d="M27 15v19" />
+        </svg>
       </span>
       <span class="brand-copy">
-        <strong>Unidad de Gestión Integral</strong>
+        <strong>UGI</strong>
         <small>Club Ciudad de Buenos Aires</small>
       </span>
     </a>
-    
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
       <span class="sr-only">Abrir menú</span>
       <span></span><span></span>
@@ -462,8 +470,6 @@
           <h3>Profesores y Entrenadores</h3>
           <p>Formación continua y registro de asistencia.</p>
           <span class="proximamente-badge">Próximamente</span>
-          <!-- Cuando quieras activarlo, borrá el cartel de arriba y usá este código de abajo: -->
-          <!-- <div class="embed-container"><iframe src="TU_LINK_DE_GOOGLE_FORMS_AQUI"></iframe></div> -->
         </article>
         
         <article class="tarjeta reveal">
@@ -480,7 +486,7 @@
       </div>
     </section>
 
-    <!-- SECCIÓN: MATERIAL DE LECTURA (DRIVE Y CANVA) -->
+    <!-- SECCIÓN: MATERIAL DE LECTURA (CANVA) -->
     <section class="section" id="material" style="background: var(--sky-light);">
       <div class="section-heading reveal">
         <div>
@@ -489,30 +495,25 @@
         </div>
       </div>
       <div class="tarjetas-grid">
-        <article class="tarjeta reveal">
-          <h3>Mapa Emocional (PDF)</h3>
-          <div class="embed-container mapa-container">
-            <!-- Link de Google Drive -->
-            <iframe src="<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
- padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
- border-radius: 8px; will-change: transform;">
-  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-    src="https://www.canva.com/design/DAHOs1XwqE4/vHRvJptWorh1qiyNTNGyYQ/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-  </iframe>
+        
+        <!-- DISEÑO CANVA INTEGRADO CORRECTAMENTE -->
+        <article class="tarjeta reveal" style="grid-column: 1 / -1; max-width: 800px; margin: 0 auto; width: 100%;">
+          <h3>Mapa Emocional</h3>
+          <div class="mapa-container">
+            <div class="canva-wrapper">
+              <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                src="https://www.canva.com/design/DAHOs1XwqE4/vHRvJptWorh1qiyNTNGyYQ/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+              </iframe>
+            </div>
+            <a class="canva-link" href="https://www.canva.com/design/DAHOs1XwqE4/vHRvJptWorh1qiyNTNGyYQ/view?utm_content=DAHOs1XwqE4&utm_campaign=designshare&utm_medium=embeds&utm_source=link" target="_blank" rel="noopener">Emociones (Presentación)</a> de Juan Ignacio Machado
           </div>
         </article>
+        <!-- FIN DISEÑO CANVA -->
 
-        <article class="tarjeta reveal">
-          <h3>Presentación Institucional (Canva)</h3>
-          <div class="embed-container mapa-container">
-            <!-- Link de Canva -->
-            <iframe src="TU_LINK_DE_CANVA_AQUI" allowfullscreen></iframe>
-          </div>
-        </article>
       </div>
     </section>
 
-    <!-- SECCIÓN: JUEGOS -->
+    <!-- SECCIÓN: JUEGOS (EDUCAPLAY) -->
     <section class="section" id="juegos" style="background: var(--paper);">
       <div class="section-heading reveal">
         <div>
@@ -521,21 +522,23 @@
         </div>
       </div>
       <div class="tarjetas-grid">
+        
+        <!-- EDUCAPLAY JUEGO 1 -->
         <article class="tarjeta reveal">
           <h3>Memotest Emociones</h3>
           <div class="embed-container">
-            <!-- Link de Wordwall Memotest -->
-            <iframe src="TU_LINK_DE_WORDWALL_MEMOTEST_AQUI"></iframe>
+            <iframe src="https://es.educaplay.com/juego/6784522-emociones.html" allowfullscreen="allowfullscreen" allow="autoplay; fullscreen"></iframe>
           </div>
         </article>
         
+        <!-- EDUCAPLAY JUEGO 2 -->
         <article class="tarjeta reveal">
           <h3>Conducta: Sí o No</h3>
           <div class="embed-container">
-            <!-- Link de Wordwall Sí o No -->
-            <iframe src="TU_LINK_DE_WORDWALL_SIONO_AQUI"></iframe>
+            <iframe src="https://es.educaplay.com/juego/29012992-conducta.html" allowfullscreen="allowfullscreen" allow="autoplay; fullscreen"></iframe>
           </div>
         </article>
+
       </div>
     </section>
 
