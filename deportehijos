@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El deporte de mis hijos | UGI</title>
+  
+  <!-- Copiamos los mismos estilos exactos de tu index.html -->
+  <style>
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --cream: #f5f1e8; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
+      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
+    
+    /* HEADER (Igual al principal) */
+    .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; max-width: 240px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; margin-left: 0.75rem; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid var(--navy); border-radius: 999px; text-decoration: none; color: var(--navy); font-size: 0.78rem; font-weight: 600; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+    
+    /* DISEÑO DE ESTA SUBPÁGINA */
+    .subpage-content { padding: 10rem clamp(1.2rem, 7vw, 8rem) 5rem; min-height: 70vh; }
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(3rem, 5vw, 4.5rem); color: var(--navy); margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+    
+    /* FOOTER (Igual al principal) */
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; }
+    .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
+    .footer-mark img { max-height: 40px; width: auto; }
+    .site-footer p { margin: 0; }
+    .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
+    .copyright { color: rgba(255, 253, 248, 0.5); }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img src="logo-header.png" alt="Logo CCBA y UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
+    </a>
+    <!-- En la subpágina dejamos solo un botón de volver -->
+    <a class="nav-cta" href="index.html">Volver al inicio</a>
+  </header>
+
+  <!-- ACÁ VA EL CONTENIDO DE TU SUBPÁGINA -->
+  <main class="subpage-content">
+    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
+    
+    <h1>El deporte de mis hijos</h1>
+    <p>El Rol de la Familia en el Deporte Formativo del CCBA Les presentamos nuestra guía para acompañar a los chicos y chicas en su etapa deportiva. Nuestra misión principal es formar y desarrollar integralmente a niños, niñas y jóvenes a través de la actividad física y el deporte. Aspiramos a que nuestro modelo institucional sea la referencia nacional en la formación de deportistas que sean técnicamente competentes, emocionalmente inteligentes y socialmente inclusivos.  ¿Cómo viven el deporte los chicos y chicas?Para los niños, el deporte debe ser un espacio de aprendizaje seguro y estructurado. El cerebro infantil, especialmente entre los 6 y 10 años, experimenta emociones muy intensas pero posee un control inhibitorio que aún es inmaduro. Por este motivo, los chicos necesitan un entorno predecible que los ayude a regular sus emociones, no un ambiente de presión extrema. Nuestro objetivo fundamental es generar en ellos el hábito de la actividad física y desarrollar personas que sean ágiles tanto física como mentalmente.  Valores y Respeto en la TribunaEl proceso de socialización en el deporte nos exige transmitir valores innegociables como el respeto, la solidaridad, el esfuerzo, la humildad y el trabajo en equipo. Los adultos somos los principales modelos de conducta en este proceso. Una interacción negativa o una crítica tiene un peso emocional mucho mayor en la mente del niño que un elogio, por lo que el ambiente debe construirse siempre sobre la base del refuerzo positivo.  Acompañando la información de la imagen "quesiquenop.jpg", detallamos las conductas esperadas para hacer equipo entre el club y las familias:Qué SÍ hacerBrindar sostén emocional mediante un abrazo sincero, sin importar cuál haya sido el resultado del partido.Alentar a todo el equipo aplaudiendo el esfuerzo general, para fomentar activamente la solidaridad y el trabajo en equipo.  Fomentar la autonomía permitiendo que los chicos preparen sus cosas, lo cual ayuda a desarrollar su individualidad.  Respetar su espacio personal, comprendiendo que el entrenamiento y el partido son sus momentos de juego y aprendizaje.Qué NO hacerDar indicaciones técnicas desde la tribuna, ya que la única voz directiva en la cancha debe ser la del entrenador.Presionar por el resultado preguntando por qué perdieron, en lugar de priorizar la pregunta sobre si se divirtieron.Criticar a los árbitros y profesores, dado que las protestas dañan el ambiente y atentan contra los valores institucionales de respeto y justicia.  Saturar o exigir de más a los deportistas, quitándoles la alegría y la motivación fundamental de jugar. <strong>&lt;img src="foto.jpg"&gt;</strong> o incluso pegar otros diseños de Canva como hiciste en la página principal.</p>
+    
+ <!-- ACÁ VA EL CONTENIDO DE TU SUBPÁGINA -->
+  <main class="subpage-content">
+    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
+    
+    <h1>El deporte de mis hijos</h1>
+    <p>Este es un espacio pensado para ofrecer sostén emocional, disfrutar el proceso formativo y acompañar de la mejor manera el desarrollo deportivo.</p>
+    
+    <!-- ACÁ AGREGAMOS LA IMAGEN -->
+    <img src="quesiquenop.png" alt="Que si y que no" style="max-width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1);">
+    
+    <p>Acá podés seguir escribiendo más detalles, reglas de convivencia, fechas de talleres o cualquier otra información útil para las familias.</p>
+    
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="site-footer">
+    <div class="footer-mark">
+      <img src="logo-header.png" alt="Logo UGI">
+      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
+        <strong style="display: block;">UGI</strong>
+      </span>
+    </div>
+    <div>
+      <p>Unidad de Gestión Integral</p>
+      <p>Club Ciudad de Buenos Aires</p>
+    </div>
+    <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
+    <p class="copyright"> 2026 C.C.B.A.</p>
+  </footer>
+
+</body>
+</html>
