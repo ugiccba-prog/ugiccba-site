@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>El deporte de mis hijos | UGI</title>
   
-  <!-- Copiamos los mismos estilos exactos de tu index.html -->
   <style>
     :root {
       --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
@@ -17,7 +16,7 @@
     *, *::before, *::after { box-sizing: border-box; }
     body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
     
-    /* HEADER (Igual al principal) */
+    /* HEADER */
     .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
     .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
     .brand img { max-height: 55px; max-width: 240px; width: auto; object-fit: contain; }
@@ -27,19 +26,44 @@
     .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid var(--navy); border-radius: 999px; text-decoration: none; color: var(--navy); font-size: 0.78rem; font-weight: 600; }
     .nav-cta:hover { color: white; background: var(--navy); }
     
-    /* DISEÑO DE ESTA SUBPÁGINA */
-    .subpage-content { padding: 10rem clamp(1.2rem, 7vw, 8rem) 5rem; min-height: 70vh; }
-    .subpage-content h1 { font-family: var(--display); font-size: clamp(3rem, 5vw, 4.5rem); color: var(--navy); margin-bottom: 1rem; }
+    /* DISEÑO DE SUBPÁGINA Y TEXTOS */
+    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; }
     .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
     .back-link:hover { text-decoration: underline; }
     
-    /* FOOTER (Igual al principal) */
-    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; }
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; }
+    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3rem; margin-bottom: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+    .subpage-content h3 { font-family: var(--sans); font-size: 1.2rem; color: var(--navy); margin-top: 2rem; margin-bottom: 1rem; }
+    
+    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); }
+    .subpage-content strong { color: var(--navy); }
+    
+    /* ESTILOS PARA LAS LISTAS (QUÉ SÍ Y QUÉ NO) */
+    .dos-and-donts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    .list-box { background: var(--cream); padding: 2rem; border-radius: 12px; border: 1px solid var(--line); }
+    .list-box h3 { margin-top: 0; }
+    .list-box.yes h3 { color: #2e7d32; } /* Verde para lo positivo */
+    .list-box.no h3 { color: #c62828; }  /* Rojo para lo negativo */
+    
+    .list-box ul { padding-left: 1.2rem; margin: 0; }
+    .list-box li { margin-bottom: 1rem; font-size: 0.95rem; }
+    .list-box li:last-child { margin-bottom: 0; }
+    
+    /* IMÁGENES */
+    .content-image { width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1); border: 1px solid var(--line); }
+
+    /* FOOTER */
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; margin-top: 4rem; }
     .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
     .footer-mark img { max-height: 40px; width: auto; }
     .site-footer p { margin: 0; }
     .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
     .copyright { color: rgba(255, 253, 248, 0.5); }
+    
+    @media (max-width: 720px) {
+      .site-footer { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .brand-copy small { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -53,28 +77,53 @@
         <small>Club Ciudad de Buenos Aires</small>
       </span>
     </a>
-    <!-- En la subpágina dejamos solo un botón de volver -->
     <a class="nav-cta" href="index.html">Volver al inicio</a>
   </header>
 
-  <!-- ACÁ VA EL CONTENIDO DE TU SUBPÁGINA -->
+  <!-- CONTENIDO DE LA PÁGINA -->
   <main class="subpage-content">
     <a href="index.html#programas" class="back-link">← Volver a Programas</a>
     
     <h1>El deporte de mis hijos</h1>
-    <p>El Rol de la Familia en el Deporte Formativo del CCBA Les presentamos nuestra guía para acompañar a los chicos y chicas en su etapa deportiva. Nuestra misión principal es formar y desarrollar integralmente a niños, niñas y jóvenes a través de la actividad física y el deporte. Aspiramos a que nuestro modelo institucional sea la referencia nacional en la formación de deportistas que sean técnicamente competentes, emocionalmente inteligentes y socialmente inclusivos.  ¿Cómo viven el deporte los chicos y chicas?Para los niños, el deporte debe ser un espacio de aprendizaje seguro y estructurado. El cerebro infantil, especialmente entre los 6 y 10 años, experimenta emociones muy intensas pero posee un control inhibitorio que aún es inmaduro. Por este motivo, los chicos necesitan un entorno predecible que los ayude a regular sus emociones, no un ambiente de presión extrema. Nuestro objetivo fundamental es generar en ellos el hábito de la actividad física y desarrollar personas que sean ágiles tanto física como mentalmente.  Valores y Respeto en la TribunaEl proceso de socialización en el deporte nos exige transmitir valores innegociables como el respeto, la solidaridad, el esfuerzo, la humildad y el trabajo en equipo. Los adultos somos los principales modelos de conducta en este proceso. Una interacción negativa o una crítica tiene un peso emocional mucho mayor en la mente del niño que un elogio, por lo que el ambiente debe construirse siempre sobre la base del refuerzo positivo.  Acompañando la información de la imagen "quesiquenop.jpg", detallamos las conductas esperadas para hacer equipo entre el club y las familias:Qué SÍ hacerBrindar sostén emocional mediante un abrazo sincero, sin importar cuál haya sido el resultado del partido.Alentar a todo el equipo aplaudiendo el esfuerzo general, para fomentar activamente la solidaridad y el trabajo en equipo.  Fomentar la autonomía permitiendo que los chicos preparen sus cosas, lo cual ayuda a desarrollar su individualidad.  Respetar su espacio personal, comprendiendo que el entrenamiento y el partido son sus momentos de juego y aprendizaje.Qué NO hacerDar indicaciones técnicas desde la tribuna, ya que la única voz directiva en la cancha debe ser la del entrenador.Presionar por el resultado preguntando por qué perdieron, en lugar de priorizar la pregunta sobre si se divirtieron.Criticar a los árbitros y profesores, dado que las protestas dañan el ambiente y atentan contra los valores institucionales de respeto y justicia.  Saturar o exigir de más a los deportistas, quitándoles la alegría y la motivación fundamental de jugar. <strong>&lt;img src="foto.jpg"&gt;</strong> o incluso pegar otros diseños de Canva como hiciste en la página principal.</p>
+    <p><strong>El Rol de la Familia en el Deporte Formativo del CCBA</strong></p>
     
- <!-- ACÁ VA EL CONTENIDO DE TU SUBPÁGINA -->
-  <main class="subpage-content">
-    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
-    
-    <h1>El deporte de mis hijos</h1>
-    <p>Este es un espacio pensado para ofrecer sostén emocional, disfrutar el proceso formativo y acompañar de la mejor manera el desarrollo deportivo.</p>
-    
-    <!-- ACÁ AGREGAMOS LA IMAGEN -->
-    <img src="quesiquenop.png" alt="Que si y que no" style="max-width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1);">
-    
-    <p>Acá podés seguir escribiendo más detalles, reglas de convivencia, fechas de talleres o cualquier otra información útil para las familias.</p>
+    <p>Les presentamos nuestra guía para acompañar a los chicos y chicas en su etapa deportiva. Nuestra misión principal es formar y desarrollar integralmente a niños, niñas y jóvenes a través de la actividad física y el deporte. Aspiramos a que nuestro modelo institucional sea la referencia nacional en la formación de deportistas que sean técnicamente competentes, emocionalmente inteligentes y socialmente inclusivos.</p>
+
+    <h2>¿Cómo viven el deporte los chicos y chicas?</h2>
+    <p>Para los niños, el deporte debe ser un espacio de aprendizaje seguro y estructurado. El cerebro infantil, especialmente entre los 6 y 10 años, experimenta emociones muy intensas pero posee un control inhibitorio que aún es inmaduro.</p>
+    <p>Por este motivo, los chicos necesitan un entorno predecible que los ayude a regular sus emociones, no un ambiente de presión extrema. Nuestro objetivo fundamental es generar en ellos el hábito de la actividad física y desarrollar personas que sean ágiles tanto física como mentalmente.</p>
+
+    <h2>Valores y Respeto en la Tribuna</h2>
+    <p>El proceso de socialización en el deporte nos exige transmitir valores innegociables como el respeto, la solidaridad, el esfuerzo, la humildad y el trabajo en equipo. Los adultos somos los principales modelos de conducta en este proceso.</p>
+    <p>Una interacción negativa o una crítica tiene un peso emocional mucho mayor en la mente del niño que un elogio, por lo que el ambiente debe construirse siempre sobre la base del refuerzo positivo.</p>
+
+    <!-- ACÁ REEMPLAZÁ 'quesiquenop.jpg' POR EL NOMBRE DE TU IMAGEN -->
+    <img src="quesiquenop.png" alt="Reglas de conducta en la tribuna" class="content-image">
+
+    <p>Acompañando la información de la imagen, detallamos las conductas esperadas para hacer equipo entre el club y las familias:</p>
+
+    <!-- CAJAS DE QUÉ SÍ Y QUÉ NO HACER -->
+    <div class="dos-and-donts">
+      <div class="list-box yes">
+        <h3>Qué SÍ hacer</h3>
+        <ul>
+          <li><strong>Brindar sostén emocional</strong> mediante un abrazo sincero, sin importar cuál haya sido el resultado del partido.</li>
+          <li><strong>Alentar a todo el equipo</strong> aplaudiendo el esfuerzo general, para fomentar activamente la solidaridad y el trabajo en equipo.</li>
+          <li><strong>Fomentar la autonomía</strong> permitiendo que los chicos preparen sus cosas, lo cual ayuda a desarrollar su individualidad.</li>
+          <li><strong>Respetar su espacio personal</strong>, comprendiendo que el entrenamiento y el partido son sus momentos de juego y aprendizaje.</li>
+        </ul>
+      </div>
+
+      <div class="list-box no">
+        <h3>Qué NO hacer</h3>
+        <ul>
+          <li><strong>Dar indicaciones técnicas</strong> desde la tribuna, ya que la única voz directiva en la cancha debe ser la del entrenador.</li>
+          <li><strong>Presionar por el resultado</strong> preguntando por qué perdieron, en lugar de priorizar la pregunta sobre si se divirtieron.</li>
+          <li><strong>Criticar a los árbitros y profesores</strong>, dado que las protestas dañan el ambiente y atentan contra los valores institucionales de respeto y justicia.</li>
+          <li><strong>Saturar o exigir de más</strong> a los deportistas, quitándoles la alegría y la motivación fundamental de jugar.</li>
+        </ul>
+      </div>
+    </div>
     
   </main>
 
