@@ -302,29 +302,31 @@
       .program-card { grid-template-columns: 3.5rem minmax(15rem, 0.8fr) 1.2fr; }
     }
     
+    /* ACÁ ESTÁ EL CAMBIO PARA CELULARES */
     @media (max-width: 720px) {
       .brand-copy small { display: none; }
       .hero { padding-bottom: 4rem; }
-      .hero h1 { font-size: clamp(3.8rem, 18vw, 5.4rem); }
+      .hero h1 { font-size: clamp(2.5rem, 11vw, 3.5rem); line-height: 1.1; overflow-wrap: break-word; hyphens: auto; }
       .hero-actions { align-items: flex-start; flex-direction: column; gap: 1.2rem; }
-      .hero-visual { height: 29rem; }
-      .court-card { width: 80%; box-shadow: 0.8rem 0.8rem 0 rgba(255, 253, 248, 0.34); }
-      .pillar { min-width: 6.5rem; padding: 0.6rem 0.8rem; }
-      .pillar strong { font-size: 1.15rem; }
-      .pillar-one { left: -2rem; }
-      .pillar-two { right: -2rem; }
+      .hero-visual { height: auto; min-height: 26rem; margin-top: 2rem; }
+      .court-card { width: 65%; max-width: 250px; box-shadow: 0.5rem 0.5rem 0 rgba(255, 253, 248, 0.34); margin: 0 auto; }
+      .pillar { min-width: 5.5rem; padding: 0.4rem 0.6rem; }
+      .pillar strong { font-size: 1rem; }
+      .pillar-one { left: -1.5rem; top: 15%; }
+      .pillar-two { right: -1.5rem; top: 45%; }
+      .pillar-three { left: 1rem; bottom: 5%; }
       .hand-note { display: none; }
       .principles { grid-template-columns: 1fr; margin-top: 4rem; }
       .principle, .principle + .principle { padding: 1.4rem 0; border-right: 0; border-bottom: 1px solid var(--line); }
       .section-heading { gap: 1.5rem; margin-bottom: 3rem; }
-      .program-card { grid-template-columns: 2.8rem 1fr; }
-      .program-index { grid-row: 1 / 3; }
-      .program-art { min-height: 17rem; }
-      .program-copy { padding: 2rem 1.4rem 2.5rem; }
-      .program-copy h3 { font-size: 2.6rem; }
+      .program-card { grid-template-columns: 2.2rem 1fr; max-width: 100%; overflow: hidden; }
+      .program-index { grid-row: 1 / 3; font-size: 0.65rem; }
+      .program-art { min-height: 14rem; }
+      .program-copy { padding: 1.5rem 1.2rem 2rem; }
+      .program-copy h3 { font-size: 2rem; overflow-wrap: break-word; line-height: 1.1; }
       .approach { grid-template-columns: 1fr; }
       .roles { margin-top: 1rem; }
-      .site-footer { grid-template-columns: auto 1fr; gap: 1rem; }
+      .site-footer { grid-template-columns: 1fr; text-align: center; gap: 1.5rem; justify-items: center; }
       .site-footer a, .copyright { grid-column: 1 / -1; }
     }
     
