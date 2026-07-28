@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrenamiento Mental | UGI</title>
+  
+  <style>
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --cream: #f5f1e8; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
+      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
+    
+    /* HEADER */
+    .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; max-width: 240px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; margin-left: 0.75rem; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid var(--navy); border-radius: 999px; text-decoration: none; color: var(--navy); font-size: 0.78rem; font-weight: 600; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+    
+    /* DISEÑO DE SUBPÁGINA Y TEXTOS */
+    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+    
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; }
+    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+    
+    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); }
+    
+    /* LISTAS PERSONALIZADAS */
+    .feature-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .feature-list li { position: relative; padding-left: 2rem; margin-bottom: 1.5rem; font-size: 1.05rem; }
+    .feature-list li::before { content: "→"; position: absolute; left: 0; color: var(--sky-dark); font-weight: bold; }
+    .feature-list strong { color: var(--navy); font-size: 1.1rem; display: block; margin-bottom: 0.2rem; }
+
+    /* IMÁGENES */
+    .content-image { width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1); border: 1px solid var(--line); }
+    
+    /* CAJA DE CIERRE */
+    .closing-box { background: var(--cream); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--sky-dark); margin-top: 4rem; }
+    .closing-box p { margin: 0; font-weight: 600; color: var(--navy); }
+
+    /* FOOTER */
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; margin-top: 4rem; }
+    .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
+    .footer-mark img { max-height: 40px; width: auto; }
+    .site-footer p { margin: 0; }
+    .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
+    .copyright { color: rgba(255, 253, 248, 0.5); }
+    
+    @media (max-width: 720px) {
+      .site-footer { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .brand-copy small { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img src="logo-header.png" alt="Logo CCBA y UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
+    </a>
+    <a class="nav-cta" href="index.html">Volver al inicio</a>
+  </header>
+
+  <!-- CONTENIDO DE LA PÁGINA -->
+  <main class="subpage-content">
+    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
+    
+    <h1>Entrenamiento Mental</h1>
+    <p>Desde la Unidad de Gestión Integral (UGI) del Club Ciudad de Buenos Aires, impulsamos el programa de Entrenamiento Mental con un propósito institucional claro: <strong>profesionalizar el "entrenamiento invisible" de nuestros deportistas.</strong></p>
+    
+    <p>Como un órgano técnico transversal, nuestra misión es liderar la transformación cultural del club mediante tres pilares fundamentales:</p>
+
+    <ul class="feature-list">
+      <li>
+        <strong>Capacitar a nuestros profesores:</strong> 
+        Buscamos que los entrenadores evolucionen de ser instructores técnicos a convertirse en facilitadores proactivos del desarrollo neurocognitivo y social, utilizando para ello herramientas comprobadas de ingeniería conductual.
+      </li>
+      <li>
+        <strong>Crear estrategias de integración:</strong> 
+        Nos basamos en el Diseño Universal para el Aprendizaje (DUA) para garantizar que la inclusión sea una práctica real y operativa en el día a día, implementando apoyos visuales y protocolos de adaptación progresiva.
+      </li>
+      <li>
+        <strong>Liderar ideas sobre el manejo de emociones y valores:</strong> 
+        Aplicamos la Psicología Cognitivo-Conductual para enseñar habilidades socioemocionales, tales como tolerar la frustración y regular el enojo, con la misma rigurosidad técnica con la que se enseña la táctica deportiva.
+      </li>
+    </ul>
+
+    <p>A continuación, presentamos los lineamientos que fundamentan nuestras herramientas visuales de campo:</p>
+
+    <!-- SECCIÓN CAPITANES -->
+    <h2>ADN Ciudad: Liderazgo UGI</h2>
+    
+    <img src="capitanesugi.png" alt="Liderazgo UGI y rol del capitán" class="content-image">
+    
+    <p>Ser capitán en nuestras disciplinas es un servicio y una gran responsabilidad que trasciende el hecho de llevar una cinta deportiva. A través de nuestro programa, formamos líderes capaces de gestionar el estrés del equipo para que sean los máximos representantes del "Modelo Ciudad".</p>
+    
+    <ul class="feature-list">
+      <li>
+        <strong>El Termostato del Equipo:</strong> 
+        Enseñamos a nuestros capitanes a ser reguladores activos del clima grupal. El líder debe ser un termostato que transforma positivamente su entorno, y no un termómetro que simplemente reacciona a los problemas.
+      </li>
+      <li>
+        <strong>Gestión Emocional y Neurociencia:</strong> 
+        Brindamos herramientas científicas para evitar el "secuestro amigdalino", un fenómeno neurobiológico donde la ira apaga el razonamiento lógico del jugador. Mediante la técnica de las "3 R de la Regulación" (Reconocer, Regular la fisiología y Refocalizar), el capitán ayuda a que el equipo mantenga la calma bajo máxima presión.
+      </li>
+      <li>
+        <strong>Comunicación Profesional:</strong> 
+        Establecemos reglas claras donde el vínculo con el árbitro debe mantenerse estrictamente en el diálogo técnico. Se exige una competitividad máxima pero íntegra frente al rival, junto con una comunicación asertiva hacia el propio equipo.
+      </li>
+      <li>
+        <strong>Medición y Escuela de Capitanes:</strong> 
+        El desempeño del liderazgo se evalúa mediante Indicadores Clave de Desempeño (KPIs), buscando reducir las sanciones innecesarias y promover la cohesión del vestuario. Todas estas temáticas formarán parte de nuestra "Escuela de Capitanes", un espacio de capacitación focalizado en la toma de decisiones y la resolución de conflictos.
+      </li>
+    </ul>
+
+    <!-- SECCIÓN JUGADORES -->
+    <h2>La Cultura del Jugador: Qué Sí y Qué No</h2>
+    
+    <img src="quesiquenoj.png" alt="Qué sí y qué no en la cultura del jugador" class="content-image">
+    
+    <p>Nuestra actitud en la cancha es lo que verdaderamente marca la diferencia. Desde la UGI entendemos que el comportamiento es una respuesta que se entrena constantemente. Por ello, fijamos expectativas claras donde el equipo siempre debe estar por encima de las individualidades.</p>
+
+    <ul class="feature-list">
+      <li>
+        <strong>Compañerismo Innegociable:</strong> 
+        El mandato principal es respaldar al compañero en el error y celebrar el esfuerzo colectivo. Quedan absolutamente fuera de nuestra cultura los reproches, las burlas o las actitudes que expongan y rompan la confianza del grupo.
+      </li>
+      <li>
+        <strong>Respeto al Cuerpo Técnico:</strong> 
+        Exigimos escucha activa de parte de los jugadores. Cuestionar con mala actitud, murmurar o ignorar indicaciones frena el desarrollo del deportista y contagia negatividad.
+      </li>
+      <li>
+        <strong>Grandeza ante Rivales y Árbitros:</strong> 
+        Exigimos competir al 100% pero siempre cuidando la integridad física del otro. Las agresiones físicas o verbales no son parte de nuestro juego. Asimismo, las decisiones arbitrales se deben aceptar con madurez, sabiendo que reclamar de manera impulsiva es un desgaste de energía que perjudica a todo el plantel.
+      </li>
+      <li>
+        <strong>Foco y Sentido de Pertenencia:</strong> 
+        El jugador debe mantener su atención plena en la cancha, sin engancharse con los gritos o reacciones de la tribuna. Además, cuidar las instalaciones de nuestra institución exige llegar a horario, usar la indumentaria correspondiente y jamás descargar la frustración dañando los materiales del club.
+      </li>
+    </ul>
+
+    <!-- CIERRE -->
+    <div class="closing-box">
+      <p>Desde la UGI, trabajamos día a día para que el Club Ciudad de Buenos Aires se consolide como la principal referencia nacional en formación deportiva e inclusión. Estamos convencidos de que potenciar la calidad humana es el camino definitivo hacia la excelencia deportiva.</p>
+    </div>
+    
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="site-footer">
+    <div class="footer-mark">
+      <img src="logo-header.png" alt="Logo UGI">
+      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
+        <strong style="display: block;">UGI</strong>
+      </span>
+    </div>
+    <div>
+      <p>Unidad de Gestión Integral</p>
+      <p>Club Ciudad de Buenos Aires</p>
+    </div>
+    <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
+    <p class="copyright"> 2026 C.C.B.A.</p>
+  </footer>
+
+</body>
+</html>
