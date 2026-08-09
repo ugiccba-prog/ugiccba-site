@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semáforo Conductual | UGI</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  
+  <style>
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --cream: #f5f1e8; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
+      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
+    
+    /* HEADER */
+    .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; max-width: 240px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; margin-left: 0.75rem; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid var(--navy); border-radius: 999px; text-decoration: none; color: var(--navy); font-size: 0.78rem; font-weight: 600; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+    
+    /* DISEÑO DE SUBPÁGINA Y TEXTOS */
+    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+    
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; }
+    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); }
+    
+    /* CAJAS DEL SEMÁFORO */
+    .semaforo-grid { display: grid; gap: 1.5rem; margin-top: 2.5rem; margin-bottom: 3rem; }
+    .semaforo-box { padding: 2.5rem; border-radius: 12px; border-left: 8px solid; background: var(--cream); box-shadow: 0 4px 12px rgba(8, 43, 73, 0.05); }
+    .semaforo-box h3 { margin-top: 0; font-family: var(--display); font-size: 1.8rem; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+    .semaforo-box h3::before { content: ""; display: inline-block; width: 1.5rem; height: 1.5rem; border-radius: 50%; }
+    
+    .semaforo-box ul { list-style: none; padding: 0; margin: 0; }
+    .semaforo-box li { margin-bottom: 1rem; font-size: 1.05rem; }
+    .semaforo-box li:last-child { margin-bottom: 0; }
+    .semaforo-box strong { color: var(--navy); font-weight: 700; }
+    .semaforo-box em { color: var(--muted); font-style: italic; }
+    
+    /* Colores específicos del semáforo */
+    .box-green { border-left-color: #78aa85; }
+    .box-green h3 { color: #2e7d32; }
+    .box-green h3::before { background-color: #78aa85; box-shadow: 0 0 10px rgba(120, 170, 133, 0.5); }
+
+    .box-yellow { border-left-color: #e8c46e; }
+    .box-yellow h3 { color: #b8860b; }
+    .box-yellow h3::before { background-color: #e8c46e; box-shadow: 0 0 10px rgba(232, 196, 110, 0.5); }
+
+    .box-red { border-left-color: #e17c6b; }
+    .box-red h3 { color: #c62828; }
+    .box-red h3::before { background-color: #e17c6b; box-shadow: 0 0 10px rgba(225, 124, 107, 0.5); }
+    
+    /* IMÁGENES */
+    .content-image { width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1); border: 1px solid var(--line); }
+
+    /* FOOTER */
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; margin-top: 4rem; }
+    .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
+    .footer-mark img { max-height: 40px; width: auto; }
+    .site-footer p { margin: 0; }
+    .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
+    .copyright { color: rgba(255, 253, 248, 0.5); }
+    
+    @media (max-width: 720px) {
+      .site-footer { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .brand-copy small { display: none; }
+      .semaforo-box { padding: 1.5rem; }
+      .semaforo-box h3 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img src="logo-header.png" alt="Logo CCBA y UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
+    </a>
+    <a class="nav-cta" href="index.html">Volver al inicio</a>
+  </header>
+
+  <!-- CONTENIDO DE LA PÁGINA -->
+  <main class="subpage-content">
+    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
+    
+    <h1>El Semáforo Conductual</h1>
+    <p><strong>Gestión de grupo sin recurrir a los gritos.</strong></p>
+    
+    <p>El "Semáforo de Valores" o "Semáforo Conductual" es nuestra herramienta principal de gestión de grupo e inmediata modificación de la conducta en los espacios formativos.</p>
+    <p>Se basa en brindar un feedback visual y constante para fomentar la autorregulación de los deportistas, permitiendo a los profesores gestionar la disciplina con criterios claros, objetivos y cuidando siempre el clima del entrenamiento.</p>
+
+    <h2>Las tres zonas de actuación</h2>
+    <p>Este sistema se divide en tres zonas de intervención directa, diseñadas para que el formador actúe con asertividad y previsibilidad:</p>
+
+    <div class="semaforo-grid">
+      
+      <!-- VERDE -->
+      <div class="semaforo-box box-green">
+        <h3>Zona Verde: Estado Base y Refuerzo</h3>
+        <p>Representa el comportamiento esperado, el esfuerzo, el compañerismo, la puntualidad y un estado de entrenamiento fluido.</p>
+        <ul>
+          <li><strong>Acción del Entrenador:</strong> Se destaca, refuerza y premia públicamente la conducta pro-social.</li>
+          <li><strong>Ejemplo de Aplicación:</strong> <em>"Muy bien por ayudar a juntar el material".</em></li>
+          <li><strong>Tarjeta Verde (Fair Play):</strong> Como complemento, utilizamos la "Tarjeta Verde" para visibilizar y premiar acciones excepcionales, como asistir a un rival caído o reconocer una infracción propia.</li>
+        </ul>
+      </div>
+
+      <!-- AMARILLO -->
+      <div class="semaforo-box box-yellow">
+        <h3>Zona Amarilla: Alerta y Corrección</h3>
+        <p>Funciona como una señal de alerta temprana o "Time Out" ante faltas leves, dispersión, desgano o uso del teléfono celular.</p>
+        <ul>
+          <li><strong>Acción del Entrenador:</strong> Se aplica la técnica de "Corrección Proximal", donde el profesor se acerca al jugador y baja el tono de voz para marcar el límite. Esto corrige la actitud sin detener la fluidez de la clase y evitando la exposición o vergüenza pública del deportista.</li>
+          <li><strong>Ejemplo de Aplicación:</strong> El entrenador realiza contacto visual y una seña gestual de "foco", o indica de forma privada: <em>"Esto es amarillo, necesito tus ojos acá ahora".</em></li>
+        </ul>
+      </div>
+
+      <!-- ROJO -->
+      <div class="semaforo-box box-red">
+        <h3>Zona Roja: Límite y Consecuencia</h3>
+        <p>Se determina de manera estricta ante conductas inaceptables, tales como agresiones verbales o físicas, burlas y situaciones de riesgo físico.</p>
+        <ul>
+          <li><strong>Acción del Entrenador:</strong> Se aplica el protocolo de "Tiempo Fuera" (o Coste de Respuesta) de manera inmediata y emocionalmente neutra. Se suspende temporalmente la actividad lúdica del jugador afectado sin recurrir a sermones ni levantar la voz.</li>
+          <li><strong>Ejemplo de Aplicación:</strong> <em>"Esa conducta es roja, 5 minutos afuera para calmarse".</em> Al momento de reincorporarse, el profesor simplemente pregunta si el jugador está listo para acatar las reglas, reafirmando la confianza en él y evitando recriminar el error ya sancionado.</li>
+        </ul>
+      </div>
+
+    </div>
+    
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="site-footer">
+    <div class="footer-mark">
+      <img src="logo-header.png" alt="Logo UGI">
+      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
+        <strong style="display: block;">UGI</strong>
+      </span>
+    </div>
+    <div>
+      <p>Unidad de Gestión Integral</p>
+      <p>Club Ciudad de Buenos Aires</p>
+    </div>
+    <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
+    <p class="copyright"> 2026 C.C.B.A.</p>
+  </footer>
+
+</body>
+</html>
