@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ciudad Integrado | UGI</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  
+  <style>
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --cream: #f5f1e8; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
+      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
+    
+    /* HEADER */
+    .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; max-width: 240px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; margin-left: 0.75rem; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid var(--navy); border-radius: 999px; text-decoration: none; color: var(--navy); font-size: 0.78rem; font-weight: 600; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+    
+    /* DISEÑO DE SUBPÁGINA Y TEXTOS */
+    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+    
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; }
+    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+    
+    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); }
+    
+    /* LISTAS PERSONALIZADAS PARA LOS PILARES */
+    .feature-list { list-style: none; padding: 0; margin: 2.5rem 0; }
+    .feature-list li { position: relative; padding-left: 2rem; margin-bottom: 1.8rem; font-size: 1.05rem; }
+    .feature-list li::before { content: "→"; position: absolute; left: 0; color: var(--sky-dark); font-weight: bold; font-size: 1.2rem; }
+    .feature-list strong { color: var(--navy); font-size: 1.15rem; display: block; margin-bottom: 0.3rem; }
+
+    /* CAJA DE CIERRE */
+    .closing-box { background: #d4e8d2; padding: 2.5rem; border-radius: 12px; border-left: 4px solid #78aa85; margin-top: 4rem; }
+    .closing-box p { margin: 0; font-weight: 600; color: var(--navy); font-size: 1.1rem; }
+
+    /* FOOTER */
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; margin-top: 4rem; }
+    .footer-mark { display: flex; align-items: center; gap: 0.5rem; }
+    .footer-mark img { max-height: 40px; width: auto; }
+    .site-footer p { margin: 0; }
+    .site-footer a { text-underline-offset: 0.3rem; color: inherit; }
+    .copyright { color: rgba(255, 253, 248, 0.5); }
+    
+    @media (max-width: 720px) {
+      .site-footer { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .brand-copy small { display: none; }
+      .closing-box { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img src="logo-header.png" alt="Logo CCBA y UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
+    </a>
+    <a class="nav-cta" href="index.html">Volver al inicio</a>
+  </header>
+
+  <!-- CONTENIDO DE LA PÁGINA -->
+  <main class="subpage-content">
+    <a href="index.html#programas" class="back-link">← Volver a Programas</a>
+    
+    <h1>Ciudad Integrado</h1>
+    <p><strong>Desarrollo Deportivo, Inclusión y Sentido de Pertenencia</strong></p>
+    
+    <p>"Ciudad Integrado" es un espacio de encuentro social inclusivo, de recreación y deportivo, diseñado para que chicas y chicos con discapacidad puedan experimentar diversas actividades físicas e ir rotando por diferentes deportes.</p>
+    
+    <p>Esta dinámica les permite descubrir sus afinidades motrices con el objetivo final de conformar equipos para competir, acompañando en el alto rendimiento a quienes deseen hacerlo. Sin embargo, más allá de la competencia, la finalidad principal e innegociable de este programa es brindar a los chicos <strong>un auténtico lugar de pertenencia en el club</strong>, fomentando la integración y mejorando su calidad de vida.</p>
+
+    <h2>Nuestros 3 pilares operativos</h2>
+    <p>Para que esta experiencia sea segura, formativa y de excelencia, estructuramos nuestro trabajo en tres fundamentos:</p>
+
+    <ul class="feature-list">
+      <li>
+        <strong>1. Capacitar a Profesores:</strong> 
+        Formamos continuamente a nuestro staff docente para abandonar el voluntarismo y aplicar metodologías profesionales y estandarizadas. Nos apoyamos en el Modelo Social de la Discapacidad y el Diseño Universal para el Aprendizaje (DUA), capacitando a los entrenadores para flexibilizar el entorno y asegurar que la metodología se adapte al niño, y no al revés.
+      </li>
+      <li>
+        <strong>2. Crear Estrategias de Integración:</strong> 
+        Desarrollamos e implementamos circuitos profesionales de acceso, como el protocolo de ingreso gradual por fases, para reducir la incertidumbre y la ansiedad del deportista. Asimismo, proveemos a los profesores de sistemas de comunicación aumentativa (pictogramas) y aplicamos el sistema de tutoría con un "compañero sombra" rotativo para facilitar la interacción social y la progresiva autonomía en el juego.
+      </li>
+      <li>
+        <strong>3. Liderar Ideas sobre Manejo de Emociones y Valores:</strong> 
+        Entrenamos a nuestros docentes y referentes deportivos para que actúen como facilitadores de la regulación emocional en la cancha. A través de herramientas de neurociencia aplicada y sistemas como el "Semáforo Conductual", enseñamos a los chicos a gestionar su propia conducta y consolidamos los valores que guían al club: respeto, solidaridad, esfuerzo, autonomía y justicia.
+      </li>
+    </ul>
+
+    <!-- CIERRE -->
+    <div class="closing-box">
+      <p>A través de "Ciudad Integrado", cumplimos con nuestra misión de desarrollar integralmente a las personas a través de la educación física, haciendo del deporte un verdadero puente hacia la pertenencia.</p>
+    </div>
+    
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="site-footer">
+    <div class="footer-mark">
+      <img src="logo-header.png" alt="Logo UGI">
+      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
+        <strong style="display: block;">UGI</strong>
+      </span>
+    </div>
+    <div>
+      <p>Unidad de Gestión Integral</p>
+      <p>Club Ciudad de Buenos Aires</p>
+    </div>
+    <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
+    <p class="copyright"> 2026 C.C.B.A.</p>
+  </footer>
+
+</body>
+</html>
