@@ -4,76 +4,125 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UGI Mobile Pro</title>
+    <!-- Librerías de MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
-        :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: -apple-system, sans-serif; overflow: hidden; }
-        #container { position: relative; width: 100%; height: 100%; }
-        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; --oscuro: #0a0a0a; }
         
-        /* UI Superior Dinámica */
-        #ui { position: absolute; top: 0; width: 100%; display: flex; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); padding: 15px 0; z-index: 10; justify-content: space-around; }
-        .stat { font-size: 1rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: white; font-family: -apple-system, system-ui, sans-serif; 
+            overflow: hidden; touch-action: none;
+        }
+
+        #container { position: relative; width: 100%; height: 100%; }
+        
+        video, canvas { 
+            position: absolute; inset: 0; width: 100%; height: 100%; 
+            object-fit: cover; transform: scaleX(-1); 
+        }
+
+        /* UI Superior: Marcadores */
+        #ui { 
+            position: absolute; top: 0; width: 100%; 
+            display: flex; justify-content: space-around; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            padding: 15px 0; z-index: 10; pointer-events: none;
+        }
+        .stat { font-size: 1.1rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .stat span { color: var(--azul); }
 
-        /* Modal de Inicio */
-        .modal { position: absolute; inset: 0; background: #0a0a0a; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
-        .form-container { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
-        
-        input { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 20px; background: var(--azul); color: white; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 10px 20px rgba(0,123,255,0.3); }
-        
-        .instrucciones { font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        
-        /* Efecto de Error */
-        .flash-error { animation: flash 0.3s; }
-        @keyframes flash { 0% { background: rgba(255,0,0,0); } 50% { background: rgba(255,62,62,0.5); } 100% { background: rgba(255,0,0,0); } }
+        /* Pantallas Modales (Inicio y Fin) */
+        .modal { 
+            position: absolute; inset: 0; background: var(--oscuro); 
+            z-index: 2000; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; padding: 25px; 
+            text-align: center; box-sizing: border-box;
+        }
 
-        /* Loading Spinner */
-        #loading-ai { position: fixed; bottom: 20px; font-size: 0.7rem; color: var(--azul); letter-spacing: 1px; }
+        .form-container { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 15px; }
+        
+        h2 { font-size: 1.8rem; margin: 0 0 5px; letter-spacing: -1px; }
+        p { font-size: 0.9rem; margin-bottom: 20px; opacity: 0.8; }
+
+        input { 
+            width: 100%; padding: 16px; border-radius: 12px; 
+            border: 2px solid #333; background: #1a1a1a; color: white; 
+            font-size: 16px; box-sizing: border-box; outline: none;
+        }
+        input:focus { border-color: var(--azul); }
+
+        button { 
+            width: 100%; padding: 18px; background: var(--azul); color: white; 
+            border: none; border-radius: 50px; font-size: 1.2rem; 
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        button:active { transform: scale(0.96); }
+
+        .instrucciones { 
+            font-size: 0.8rem; background: rgba(255,255,255,0.05); 
+            padding: 15px; border-radius: 15px; text-align: left;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Efecto de parpadeo al errar */
+        .flash-error { animation: flash 0.3s; }
+        @keyframes flash { 
+            0% { background: rgba(255,0,0,0); } 
+            50% { background: rgba(255,62,62,0.4); } 
+            100% { background: rgba(255,0,0,0); } 
+        }
+
+        #btn-back { margin-top: 15px; color: #666; text-decoration: none; font-size: 0.8rem; }
     </style>
 </head>
 <body>
+
     <div id="container">
+        <!-- Elementos de Fondo -->
         <video id="webcam" autoplay playsinline style="display:none;"></video>
         <canvas id="output_canvas"></canvas>
         
+        <!-- Marcadores -->
         <div id="ui">
-            <div class="stat">PTS: <span id="score">0</span></div>
+            <div class="stat">PUNTOS: <span id="score">0</span></div>
             <div class="stat">TIEMPO: <span id="timer">45</span>s</div>
         </div>
 
+        <!-- Pantalla de Inicio -->
         <div id="start-screen" class="modal">
-            <h2 style="margin-bottom: 5px; font-size: 1.8rem;">NEURO TRAINING</h2>
-            <p style="color: var(--azul); font-size: 0.8rem; margin-bottom: 25px;">Versión Móvil Optimizada</p>
+            <h2>NEURO TRAINING</h2>
+            <p>Módulo de Reacción Móvil v1.5</p>
             
             <div class="form-container">
-                <input type="text" id="nombre" placeholder="Nombre completo">
-                <input type="text" id="deporte" placeholder="Deporte / Puesto">
+                <input type="text" id="nombre" placeholder="Nombre completo" autocomplete="off">
+                <input type="text" id="deporte" placeholder="Deporte / Puesto" autocomplete="off">
                 
                 <div class="instrucciones">
-                    <p style="margin:0; color:var(--rojo)"><b>TOCA ROJO:</b> +10 PTS</p>
-                    <p style="margin:10px 0 0; color:var(--verde)"><b>IGNORA VERDE:</b> Espera 2s</p>
-                    <p style="margin:15px 0 0; font-size: 0.75rem; line-height: 1.4; opacity: 0.8;">Apoya el celu en una silla/mesa y aléjate hasta que se vean tus manos.</p>
+                    <b style="color:var(--rojo)">● ROJO:</b> Tocar para sumar (+10)<br>
+                    <b style="color:var(--verde)">○ VERDE:</b> Ignorar (-10 si tocas)<br><br>
+                    <small>Apoya el teléfono y aléjate 2 metros hasta que se vean tus manos.</small>
                 </div>
                 
-                <button id="btn-start">COMENZAR EVALUACIÓN</button>
-                <div id="loading-ai">CARGANDO INTELIGENCIA ARTIFICIAL...</div>
+                <button id="btn-start">INICIAR SESIÓN</button>
+                <a href="../jugadores.html" id="btn-back">Volver al portal</a>
             </div>
         </div>
 
+        <!-- Pantalla de Resultados -->
         <div id="end-screen" class="modal" style="display: none;">
-            <h1 style="color: var(--azul);">SESIÓN COMPLETA</h1>
-            <div id="final-res" style="font-size: 1.4rem; margin: 20px 0; line-height: 1.6;"></div>
-            <button onclick="location.reload()" style="background: #333;">REPETIR PRUEBA</button>
-            <a href="../jugadores.html" style="margin-top: 25px; color: white; text-decoration: none; font-size: 0.9rem; opacity: 0.6;">Salir al Portal</a>
+            <h1 style="color: var(--azul); margin-bottom: 0;">FINALIZADO</h1>
+            <div id="final-res" style="font-size: 1.3rem; margin: 25px 0; line-height: 1.5;"></div>
+            <button onclick="location.reload()" style="background: #333;">REINTENTAR</button>
+            <a href="../jugadores.html" style="margin-top: 20px; color: white; opacity: 0.6; text-decoration: none; font-size: 0.9rem;">Salir</a>
         </div>
     </div>
 
     <script>
-        const DATABASE_URL = "TU_URL_DE_GOOGLE_SHEETS_AQUI"; 
+        // --- CONFIGURACIÓN ---
+        const DATABASE_URL = "TU_URL_AQUÍ"; // Reemplaza por tu URL de Google Apps Script
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
@@ -82,66 +131,99 @@
         const timerEl = document.getElementById('timer');
         
         let score = 0, timeLeft = 45, gameActive = false, targetTimer;
-        // CIRCULOS MAS CHICOS Y PRO: Radio 48
-        let target = { x: 0, y: 0, radius: 48, type: 'good' };
+        
+        // CIRCULOS MÁS PEQUEÑOS: Radio 42 (Requiere más puntería)
+        let target = { x: 0, y: 0, radius: 42, type: 'good' };
         let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
 
-        // CONFIGURACION DE IA: 2 manos activadas
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        // --- IA: DETECCIÓN DE MANOS ---
+        const hands = new Hands({ 
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` 
+        });
+
+        // Configuración para 2 manos y máxima velocidad
         hands.setOptions({ 
             maxNumHands: 2, 
-            modelComplexity: 0, // Velocidad máxima para celulares
-            minDetectionConfidence: 0.5,
+            modelComplexity: 0, 
+            minDetectionConfidence: 0.5, 
             minTrackingConfidence: 0.5 
         });
 
         hands.onResults((results) => {
             if (!gameActive) return;
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+            // Ajustar resolución del canvas
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Dibujar círculo deportivo
-            ctx.beginPath(); ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+            // 1. Dibujar el Objetivo (Círculo)
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
             ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
-            ctx.fill(); 
-            ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.stroke();
-            // Efecto de brillo
-            ctx.shadowBlur = 15; ctx.shadowColor = ctx.fillStyle;
+            ctx.fill();
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 4;
+            ctx.stroke();
 
+            // 2. Procesar Manos Detectadas
             if (results.multiHandLandmarks) {
                 for (const landmarks of results.multiHandLandmarks) {
+                    // Punto 8 es la punta del dedo índice
                     const x = landmarks[8].x * canvas.width;
                     const y = landmarks[8].y * canvas.height;
                     
-                    // Punteros de los dedos (índices)
-                    ctx.shadowBlur = 0; // Reset sombra para el dedo
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-                    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = "var(--azul)"; ctx.lineWidth = 2; ctx.stroke();
-                    
-                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 20) processHit();
+                    // Dibujar puntero visual en el dedo
+                    ctx.fillStyle = "white";
+                    ctx.beginPath();
+                    ctx.arc(x, y, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = "#007bff"; // Color azul para el borde del puntero
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Lógica de colisión (¿Dedo toca círculo?)
+                    const dist = Math.hypot(x - target.x, y - target.y);
+                    if (dist < target.radius + 20) {
+                        processHit();
+                    }
                 }
             }
         });
 
+        // --- LÓGICA DEL JUEGO ---
         function moveTarget() {
             if (targetTimer) clearTimeout(targetTimer);
+            
+            // Si el anterior era verde y no se tocó, cuenta como ignorado (punto positivo mental)
             if (gameActive && target.type === 'bad') stats.ignorados++;
             
-            // Posicionamiento inteligente (evita los bordes extremos del celu)
+            // Nuevas coordenadas (evitando los bordes de la pantalla)
             target.x = Math.random() * (canvas.width - 120) + 60;
-            target.y = Math.random() * (canvas.height - 180) + 120;
+            target.y = Math.random() * (canvas.height - 200) + 100;
+            
+            // Tipo de objetivo: Rojo (bueno) o Verde (malo)
             target.type = Math.random() > 0.4 ? 'good' : 'bad';
+            
             stats.inicioTarget = Date.now();
-            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 1800); // 1.8 segundos (un poco más rápido)
+
+            // Desaparece solo en 1.8 segundos si no lo tocas
+            targetTimer = setTimeout(() => {
+                if (gameActive) moveTarget();
+            }, 1800);
         }
 
         function processHit() {
-            let reac = (Date.now() - stats.inicioTarget) / 1000;
+            let tiempoReaccion = (Date.now() - stats.inicioTarget) / 1000;
+            
             if (target.type === 'good') { 
-                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
+                score += 10; 
+                stats.aciertos++; 
+                stats.tiemposReaccion.push(tiempoReaccion); 
             } else { 
-                score -= 10; stats.errores++; 
+                score -= 10; 
+                stats.errores++; 
+                // Feedback visual de error
                 document.getElementById('container').classList.add('flash-error');
                 setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
             }
@@ -149,21 +231,25 @@
             moveTarget();
         }
 
-        const camera = new Camera(video, { 
-            onFrame: async () => { await hands.send({image: video}); }, 
-            width: 640, height: 480 
+        const camera = new Camera(video, {
+            onFrame: async () => {
+                await hands.send({image: video});
+            },
+            width: 640,
+            height: 480
         });
 
-        // Quitar mensaje de carga cuando la cámara esté lista
-        camera.start().then(() => {
-            document.getElementById('loading-ai').innerText = "IA LISTA ✓";
-        });
-
+        // --- CONTROLADORES DE EVENTOS ---
         document.getElementById('btn-start').onclick = () => {
-            stats.nombre = document.getElementById('nombre').value;
-            stats.deporte = document.getElementById('deporte').value;
-            if(!stats.nombre || !stats.deporte) return alert("Ingresa tus datos");
+            stats.nombre = document.getElementById('nombre').value.trim();
+            stats.deporte = document.getElementById('deporte').value.trim();
+            
+            if(!stats.nombre || !stats.deporte) {
+                alert("Completa tus datos para empezar");
+                return;
+            }
 
+            // Intentar poner en pantalla completa para mejor experiencia
             const docEl = document.documentElement;
             if (docEl.requestFullscreen) docEl.requestFullscreen();
             else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
@@ -172,27 +258,54 @@
             video.style.display = 'block';
             gameActive = true;
             moveTarget();
+            camera.start();
             
-            let cd = setInterval(() => {
-                timeLeft--; timerEl.innerText = timeLeft;
-                if (timeLeft <= 0) { clearInterval(cd); endGame(); }
+            // Iniciar cuenta regresiva
+            let countdown = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    endGame();
+                }
             }, 1000);
         };
 
         async function endGame() {
             gameActive = false;
             clearTimeout(targetTimer);
-            let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b)/stats.tiemposReaccion.length).toFixed(3) : 0;
             
+            // Calcular promedio de reacción
+            let promedio = stats.tiemposReaccion.length > 0 
+                ? (stats.tiemposReaccion.reduce((a,b) => a+b, 0) / stats.tiemposReaccion.length).toFixed(3) 
+                : 0;
+
+            // Mostrar resultados finales
             document.getElementById('final-res').innerHTML = `
-                <span style="font-size:1rem; opacity:0.7">${stats.nombre}</span><br>
-                <b style="font-size:2.5rem">${score}</b> <small>PTS</small><br>
-                <span style="color:var(--azul)">Reacción: ${prom}s</span>
+                <span style="opacity:0.6">${stats.nombre}</span><br>
+                <b style="font-size:3rem">${score}</b> <small>PTS</small><br>
+                <div style="margin-top:10px; color:#007bff">Reacción: ${promedio}s</div>
             `;
-            document.getElementById('end-screen').style.display = 'flex';
             
-            if(DATABASE_URL !== "TU_URL_DE_GOOGLE_SHEETS_AQUI") {
-                fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
+            document.getElementById('end-screen').style.display = 'flex';
+
+            // Enviar a la base de datos (Google Sheets)
+            if(DATABASE_URL !== "TU_URLhttps://script.google.com/macros/s/AKfycbw8KkNDB1xpp4czW3ZVU84KWOsSrSPocMX62HmUtVBk-Lvk1yDL63mGpWhCjMVJNWNk/exec_AQUÍ") {
+                const data = {
+                    nombre: stats.nombre,
+                    deporte: stats.deporte,
+                    puntos: score,
+                    reaccion: promedio,
+                    aciertos: stats.aciertos,
+                    errores: stats.errores,
+                    ignorados: stats.ignorados
+                };
+
+                fetch(DATABASE_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(data) 
+                });
             }
         }
     </script>
