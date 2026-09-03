@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Evaluación Neuro-Deportiva UGICCBA</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; --oscuro: #121212; }
+        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        #container { position: relative; width: 100vw; height: 100vh; }
+        video, canvas { position: absolute; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        /* UI */
+        #ui { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; z-index: 10; font-size: 1.2rem; pointer-events: none; }
+        .stat { background: rgba(0,0,0,0.8); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--azul); }
+
+        /* Pantallas */
+        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; width: 100%; max-width: 300px; }
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: none; margin-top: 5px; }
+        
+        .regla { font-size: 0.9rem; margin: 5px 0; }
+        button { padding: 15px 35px; background: var(--azul); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1.1rem; font-weight: bold; margin-top: 20px; }
+        
+        .tabla-res { width: 100%; max-width: 300px; margin: 15px 0; border-collapse: collapse; }
+        .tabla-res td { padding: 5px; border-bottom: 1px solid #333; }
+        .val { text-align: right; color: var(--azul); font-weight: bold; }
+        
+        .flash-error { animation: flash 0.3s; }
+        @keyframes flash { 0% { background: rgba(255,0,0,0); } 50% { background: rgba(255,0,0,0.4); } 100% { background: rgba(255,0,0,0); } }
+        
+        #loading-msg { font-size: 0.8rem; color: #888; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <video id="webcam" autoplay playsinline style="display:none;"></video>
+        <canvas id="output_canvas"></canvas>
+        
+        <div id="ui">
+            <div class="stat">PTS: <span id="score">0</span></div>
+            <div class="stat">⌛ <span id="timer">45</span>s</div>
+        </div>
+
+        <!-- Pantalla de Registro e Inicio -->
+        <div id="start-screen" class="modal">
+            <h2>EVALUACIÓN COGNITIVA</h2>
+            
+            <div class="form-group">
+                <label>Nombre del Atleta:</label>
+                <input type="text" id="nombre" placeholder="Ej: Juan Perez">
+            </div>
+            <div class="form-group">
+                <label>Deporte:</label>
+                <select id="deporte">
+                    <option value="Futbol">Fútbol</option>
+                    <option value="Basquet">Básquet</option>
+                    <option value="Voley">Vóley</option>
+                    <option value="Rugby">Rugby</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                <p class="regla" style="color:var(--rojo)">● Toca los Rojos (+10)</p>
+                <p class="regla" style="color:var(--verde)">○ Ignora los Verdes (Esperar 2s)</p>
+            </div>
+
+            <button id="btn-start">INICIAR EVALUACIÓN</button>
+        </div>
+
+        <!-- Pantalla de Reporte -->
+        <div id="end-screen" class="modal" style="display: none;">
+            <h1>RESULTADOS</h1>
+            <table class="tabla-res">
+                <tr><td>Atleta</td><td id="res-nombre" class="val">-</td></tr>
+                <tr><td>Puntos</td><td id="res-puntos" class="val">0</td></tr>
+                <tr><td>Reacción Prom.</td><td id="res-reaccion" class="val">0s</td></tr>
+                <tr><td>Aciertos</td><td id="res-aciertos" class="val">0</td></tr>
+            </table>
+            <p id="loading-msg">Enviando datos a la base de datos de UGICCBA...</p>
+            <button onclick="location.reload()">FINALIZAR</button>
+        </div>
+    </div>
+
+    <script>
+        // PEGA AQUÍ LA URL DE TU GOOGLE WEB APP
+        const DATABASE_URL = "https://script.google.com/macros/s/AKfycbw8KkNDB1xpp4czW3ZVU84KWOsSrSPocMX62HmUtVBk-Lvk1yDL63mGpWhCjMVJNWNk/exec";
+
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+
+        let score = 0, timeLeft = 45, gameActive = false, targetTimer;
+        let target = { x: 0, y: 0, radius: 50, type: 'good' };
+        
+        let stats = {
+            nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0,
+            tiemposReaccion: [], inicioTarget: 0
+        };
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5 });
+        
+        hands.onResults((results) => {
+            if (!gameActive) return;
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+            ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
+            ctx.fill();
+            ctx.strokeStyle = "white"; ctx.lineWidth = 5; ctx.stroke();
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const x = landmarks[8].x * canvas.width;
+                    const y = landmarks[8].y * canvas.height;
+                    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fill();
+                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 10) processHit();
+                }
+            }
+        });
+
+        function moveTarget() {
+            if (targetTimer) clearTimeout(targetTimer);
+            if (gameActive && target.type === 'bad') stats.ignorados++;
+            
+            target.x = Math.random() * (canvas.width - 150) + 75;
+            target.y = Math.random() * (canvas.height - 150) + 75;
+            target.type = Math.random() > 0.4 ? 'good' : 'bad';
+            stats.inicioTarget = Date.now();
+
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 2000); 
+        }
+
+        function processHit() {
+            let reac = (Date.now() - stats.inicioTarget) / 1000;
+            if (target.type === 'good') {
+                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac);
+            } else {
+                score -= 10; stats.errores++;
+                document.getElementById('container').classList.add('flash-error');
+                setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
+            }
+            scoreEl.innerText = score;
+            moveTarget();
+        }
+
+        const camera = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 1280, height: 720 });
+
+        document.getElementById('btn-start').onclick = () => {
+            stats.nombre = document.getElementById('nombre').value || "Anónimo";
+            stats.deporte = document.getElementById('deporte').value;
+            if(stats.nombre === "Anónimo") { alert("Por favor ingresa tu nombre"); return; }
+            
+            document.getElementById('start-screen').style.display = 'none';
+            video.style.display = 'block';
+            gameActive = true;
+            moveTarget();
+            camera.start();
+            
+            let cd = setInterval(() => {
+                timeLeft--; timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) { clearInterval(cd); endGame(); }
+            }, 1000);
+        };
+
+        async function endGame() {
+            gameActive = false;
+            clearTimeout(targetTimer);
+            let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b)/stats.tiemposReaccion.length).toFixed(3) : 0;
+            
+            document.getElementById('res-nombre').innerText = stats.nombre;
+            document.getElementById('res-puntos').innerText = score;
+            document.getElementById('res-reaccion').innerText = prom + "s";
+            document.getElementById('res-aciertos').innerText = stats.aciertos;
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('loading-msg').style.display = 'block';
+
+            // ENVIAR A GOOGLE SHEETS
+            const data = {
+                nombre: stats.nombre, deporte: stats.deporte, puntos: score,
+                reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados
+            };
+
+            try {
+                await fetch(DATABASE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para Google Apps Script
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                document.getElementById('loading-msg').innerText = "✓ Datos guardados correctamente";
+            } catch (e) {
+                document.getElementById('loading-msg').innerText = "Error al guardar datos";
+            }
+        }
+    </script>
+</body>
+</html>
