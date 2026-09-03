@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jugadores y Jugadoras | UGI CCBA</title>
+  <title>Portal de Jugadores | UGI CCBA</title>
+  
   <style>
-    /* VARIABLES Y ESTILOS BASE (Igual que tu index.html) */
+    /* VARIABLES Y BASE (Identico a tu index.html) */
     :root {
       --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
       --navy: #082b49; --navy-soft: #143d5b; --paper: #fffdf8;
@@ -13,10 +14,12 @@
       --radius: 1.5rem;
       --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", Avenir, sans-serif;
     }
+    
     *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
 
-    /* HEADER IDENTICO A INDEX.HTML */
+    /* HEADER Y NAVEGACIÓN (Copiado de tu index.html) */
     .site-header {
       position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
       align-items: center; justify-content: space-between; min-height: 5.5rem;
@@ -45,45 +48,55 @@
       .main-nav { position: fixed; inset: 0; flex-direction: column; justify-content: center; background: var(--navy); opacity: 0; visibility: hidden; transition: 0.3s; }
       .main-nav.open { opacity: 1; visibility: visible; }
       .main-nav a { color: white; font-size: 2rem; font-family: var(--display); padding: 1rem; }
-      .menu-toggle[aria-expanded="true"] { color: white; }
     }
 
-    /* CONTENIDO JUGADORES */
-    .hero-jugadores { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
-    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; line-height: 1; }
+    /* CONTENIDO PORTAL */
+    .hero-portal { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
+    .hero-portal h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; line-height: 1; }
     
-    .container { max-width: 900px; margin: 0 auto; padding: 5rem 20px; text-align: center; }
-    .instrucciones-box { background: white; border: 1px solid var(--line); padding: 2.5rem; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    
-    /* BOTONES */
-    .btn-group { display: flex; flex-direction: column; gap: 1rem; align-items: center; margin-top: 2rem; }
-    .btn-action { 
-        padding: 1.2rem 2.5rem; border-radius: 999px; text-decoration: none; 
-        font-weight: bold; border: none; cursor: pointer; transition: 0.3s; 
-        width: 100%; max-width: 350px; font-size: 1rem;
-    }
-    .btn-pc { background: var(--navy); color: white; }
-    .btn-mobile { background: #ffc107; color: #000; }
-    .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .container { max-width: 1000px; margin: 0 auto; padding: 5rem 20px; }
 
-    /* SIMULADOR INCORPORADO (PC) */
+    /* TARJETAS DE MÓDULOS */
+    .app-card {
+      background: white; border-radius: var(--radius); border: 1px solid var(--line);
+      display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; margin-bottom: 4rem;
+      box-shadow: 0 10px 30px rgba(8,43,73,0.05);
+    }
+    .app-info { padding: clamp(2rem, 5vw, 4rem); }
+    .app-info h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 3.5rem); margin: 0.5rem 0; line-height: 1.1; }
+    .app-visual { background: #f0f4f8; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    
+    /* BOTONES ACCIÓN */
+    .btn-group { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+    .btn-main { 
+        padding: 1.2rem 2rem; border-radius: 999px; text-decoration: none; 
+        font-weight: bold; text-align: center; transition: 0.3s; font-size: 0.9rem;
+    }
+    .btn-navy { background: var(--navy); color: white; }
+    .btn-yellow { background: #ffc107; color: #000; }
+    .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+    /* CONTENEDOR JUEGO PC */
     .game-window { 
-        background: #000; border-radius: var(--radius); overflow: hidden; 
-        position: relative; width: 100%; padding-top: 56.25%; margin-top: 4rem;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15); display: none; /* Se oculta por defecto */
+        display: none; background: #000; border-radius: var(--radius); 
+        overflow: hidden; position: relative; width: 100%; padding-top: 56.25%; 
+        margin-top: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
     }
     .game-window.active { display: block; }
     .game-window iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-    
-    .footer-simple { background: var(--navy); color: white; padding: 3rem; text-align: center; margin-top: 5rem; }
+
+    @media (max-width: 850px) {
+        .app-card { grid-template-columns: 1fr; }
+        .app-visual { order: -1; min-height: 200px; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- HEADER (Unificado con index.html) -->
   <header class="site-header" data-header>
     <a class="brand" href="index.html#inicio">
-      <img src="logo-header.png" alt="Logo">
+      <img src="logo-header.png" alt="Logo UGI">
       <span class="brand-copy">
         <strong>UGI</strong>
         <small>Club Ciudad de Buenos Aires</small>
@@ -92,7 +105,6 @@
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
       <span></span><span></span>
     </button>
-    
     <nav class="main-nav" id="main-nav">
       <a href="index.html#inicio">Inicio</a>
       <a href="index.html#proposito">Qué hacemos</a>
@@ -105,65 +117,83 @@
   </header>
 
   <main>
-    <section class="hero-jugadores">
-        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold; color: var(--navy);">Área de Entrenamiento Mental</p>
-        <h1>Portal de Jugadores</h1>
+    <section class="hero-portal">
+        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold; color: var(--navy); margin-bottom: 1rem;">Área de Alto Rendimiento</p>
+        <h1>Gimnasio Mental</h1>
     </section>
 
     <div class="container">
-        <div class="instrucciones-box">
-            <h2 style="font-family: var(--display); font-size: 2.5rem; margin-bottom: 1rem;">Módulo de Reacción</h2>
-            <p>Entrena tu velocidad de procesamiento y toma de decisiones.</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0;">
-                <div style="background: #fff0f0; color: #ff3e3e; padding: 1.5rem; border-radius: 1rem; border: 1px solid;">
-                    <b>TOCA EL ROJO</b><br><small>Suma +10 puntos</small>
-                </div>
-                <div style="background: #f0fff0; color: #008f4c; padding: 1.5rem; border-radius: 1rem; border: 1px solid;">
-                    <b>IGNORA EL VERDE</b><br><small>Espera 2 segundos</small>
+        
+        <!-- MODULO 01: REACCIÓN (CÁMARA) -->
+        <article class="app-card">
+            <div class="app-info">
+                <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 01</p>
+                <h2>Toma de Decisiones</h2>
+                <p>Usa tu cámara para entrenar la velocidad de reacción física y coordinación ojo-mano.</p>
+                
+                <div class="btn-group">
+                    <a href="./training-app/mobile.html" class="btn-main btn-yellow">🚀 ABRIR EN CELULAR (Full Screen)</a>
+                    <button onclick="activarPC()" class="btn-main btn-navy">🖥️ USAR EN ESTA PÁGINA (PC)</button>
                 </div>
             </div>
+            <div class="app-visual">
+                <div style="text-align:center;">
+                    <span style="font-size: 4rem;">📷</span>
+                    <p style="font-size: 0.7rem; font-weight: bold; color: var(--muted); margin-top: 1rem;">REQUIERE CÁMARA</p>
+                </div>
+            </div>
+        </article>
 
-            <div class="btn-group">
-                <!-- BOTÓN AMARILLO PARA MÓVILES -->
-                <a href="./training-app/mobile.html" class="btn-action btn-mobile">
-                    🚀 ABRIR VERSIÓN MÓVIL (Recomendado)
-                </a>
-                
-                <!-- BOTÓN PARA PC -->
-                <button onclick="mostrarSimuladorPC()" class="btn-action btn-pc">
-                    🖥️ USAR SIMULADOR EN ESTA PÁGINA
-                </button>
-                
-                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 10px;">
-                    * Requiere acceso a la cámara para detectar tus movimientos.
-                </p>
-            </div>
+        <!-- Simulador PC Módulo 01 (Oculto hasta clic) -->
+        <div id="simulador-pc" class="game-window">
+            <div style="background: var(--navy); color: white; padding: 10px 20px; font-size: 0.7rem; font-weight: bold;">SIMULADOR PC ACTIVADO</div>
+            <iframe src="./training-app/index.html" allow="camera"></iframe>
         </div>
 
-        <!-- El Simulador de PC que se activa al clickear -->
-        <div id="entrenamiento-pc" class="game-window">
-            <div style="background: var(--navy); color: white; padding: 10px; font-size: 0.8rem; font-weight: bold;">
-                MODO PC ACTIVADO
+
+        <!-- MODULO 02: STROOP PRO (BARRAS) -->
+        <article class="app-card" style="margin-top: 4rem;">
+            <div class="app-info">
+                <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 02</p>
+                <h2>Reto Stroop Pro</h2>
+                <p>Lee la palabra e ignora el color de la tinta. Toca la barra de color que corresponde al texto lo más rápido posible.</p>
+                
+                <div class="btn-group">
+                    <a href="./training-app/stroop.html" class="btn-main btn-navy">EMPEZAR RETO STROOP</a>
+                </div>
             </div>
-            <iframe id="iframe-juego" src="./training-app/index.html" allow="camera; fullscreen"></iframe>
+            <div class="app-visual" style="background: #0a0a0a;">
+                <div style="display: grid; grid-template-columns: repeat(2, 40px); gap: 10px;">
+                    <div style="width:40px; height:40px; background:#ff3e3e; border-radius:5px;"></div>
+                    <div style="width:40px; height:40px; background:#00ff88; border-radius:5px;"></div>
+                    <div style="width:40px; height:40px; background:#007bff; border-radius:5px;"></div>
+                    <div style="width:40px; height:40px; background:#ffcc00; border-radius:5px;"></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- PRÓXIMAMENTE -->
+        <div style="text-align: center; margin-top: 6rem; opacity: 0.4;">
+            <h3 style="font-family: var(--display); font-size: 2rem;">Próximos lanzamientos</h3>
+            <p>Memoria Táctica • Visión Periférica • Gestión de Ansiedad</p>
         </div>
+
     </div>
   </main>
 
-  <footer class="footer-simple">
-    <img src="logo-header.png" alt="UGI" style="max-height: 40px; margin-bottom: 1rem;">
-    <p>© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+  <footer style="background: var(--navy); color: var(--paper); padding: 4rem 7vw; text-align: center;">
+    <img src="logo-header.png" alt="UGI" style="max-height: 50px; margin-bottom: 1.5rem;">
+    <p style="font-size: 0.8rem; opacity: 0.6;">© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
   </footer>
 
   <script>
-    // Script para el Header Scrolled
+    // HEADER SCROLL
     const header = document.querySelector("[data-header]");
     window.addEventListener("scroll", () => {
       header.classList.toggle("scrolled", window.scrollY > 24);
     });
 
-    // Script para el Menú Mobile
+    // MENU MOBILE
     const menuButton = document.querySelector(".menu-toggle");
     const navigation = document.querySelector(".main-nav");
     menuButton.addEventListener("click", () => {
@@ -172,12 +202,11 @@
       navigation.classList.toggle("open", !isOpen);
     });
 
-    // Función para mostrar el simulador de PC
-    function mostrarSimuladorPC() {
-        const gameWin = document.getElementById('entrenamiento-pc');
-        gameWin.classList.add('active');
-        // Scroll suave hasta el juego
-        gameWin.scrollIntoView({ behavior: 'smooth' });
+    // ACTIVAR SIMULADOR PC
+    function activarPC() {
+        const sim = document.getElementById('simulador-pc');
+        sim.classList.add('active');
+        sim.scrollIntoView({ behavior: 'smooth' });
     }
   </script>
 </body>

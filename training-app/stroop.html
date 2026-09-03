@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stroop Pro - Barras de Color</title>
+    <style>
+        :root { --azul: #007bff; --oscuro: #050505; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--oscuro); color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
+        
+        #ui { padding: 15px; display: flex; justify-content: space-around; background: #111; border-bottom: 2px solid #222; }
+        .stat { font-size: 1rem; }
+        .stat span { color: var(--azul); font-weight: bold; }
+
+        #game-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
+
+        /* Estímulo: La palabra que confunde */
+        #stimulus { 
+            font-size: clamp(3.5rem, 12vw, 6rem); 
+            text-transform: uppercase; 
+            margin-bottom: 30px; 
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            letter-spacing: -2px;
+        }
+
+        /* Contenedor de barras de colores */
+        #color-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            width: 100%; 
+            max-width: 500px; 
+        }
+        
+        .color-bar { 
+            height: 70px; 
+            border-radius: 12px; 
+            border: 3px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .color-bar:active { transform: scale(0.92); }
+
+        /* Modales */
+        .modal { position: absolute; inset: 0; background: var(--oscuro); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
+        input { width: 100%; max-width: 300px; padding: 15px; border-radius: 10px; border: 2px solid var(--azul); background: #111; color: white; margin-bottom: 15px; font-size: 1rem; outline: none; }
+        button#start-btn { background: var(--azul); color: white; border: none; padding: 18px 50px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; }
+        
+        .flash-error { animation: error-blink 0.3s; }
+        @keyframes error-blink { 0% { background: #440000; } 100% { background: var(--oscuro); } }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div class="stat">RONDA: <span id="round">0</span>/15</div>
+        <div class="stat">PUNTOS: <span id="score">0</span></div>
+    </div>
+
+    <div id="game-area">
+        <div id="stimulus">LISTO?</div>
+        <div id="color-grid"></div>
+    </div>
+
+    <!-- Pantalla de Inicio -->
+    <div id="start-screen" class="modal">
+        <h1 style="color:var(--azul); margin-bottom:10px;">STROOP PRO</h1>
+        <p style="max-width:300px; margin-bottom:30px; line-height:1.4;">
+            <b>REGLA:</b> Lee la palabra y toca la <b>BARRA DEL COLOR</b> que dice el texto. Ignora la tinta.
+        </p>
+        <input type="text" id="nombre" placeholder="Nombre completo">
+        <input type="text" id="deporte" placeholder="Deporte / Puesto">
+        <button id="start-btn">INICIAR ENTRENAMIENTO</button>
+    </div>
+
+    <!-- Pantalla de Fin -->
+    <div id="end-screen" class="modal" style="display: none;">
+        <h1 style="color:var(--azul)">RESULTADOS</h1>
+        <div id="final-res" style="font-size: 1.5rem; margin-bottom: 30px;"></div>
+        <button onclick="location.reload()" id="start-btn">REPETIR</button>
+        <a href="../jugadores.html" style="margin-top:20px; color:white; opacity:0.4; text-decoration:none;">Salir</a>
+    </div>
+
+    <script>
+        const DATABASE_URL = "TU_URL_AQUÍ"; // Reemplaza con tu URL de Google Sheets
+
+        // Paleta de colores FUERTES y VIBRANTES
+        const PALETTE = [
+            { name: "ROJO", hex: "#FF0000" },
+            { name: "VERDE", hex: "#00FF00" },
+            { name: "AZUL", hex: "#0066FF" },
+            { name: "AMARILLO", hex: "#FFFF00" },
+            { name: "NARANJA", hex: "#FF8800" },
+            { name: "VIOLETA", hex: "#AA00FF" },
+            { name: "CELESTE", hex: "#00FFFF" },
+            { name: "ROSA", hex: "#FF00FF" }
+        ];
+
+        let currentRound = 0, score = 0, gameActive = false;
+        let stats = { nombre: "", deporte: "", tiempos: [], inicioRonda: 0 };
+
+        function nextRound() {
+            if (currentRound >= 15) return endGame();
+            currentRound++;
+            document.getElementById('round').innerText = currentRound;
+
+            // Seleccionar color objetivo (Lo que dirá la palabra)
+            const targetColor = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+            
+            // Seleccionar color de tinta (Que sea distinto al objetivo para confundir)
+            let inkColor;
+            do { inkColor = PALETTE[Math.floor(Math.random() * PALETTE.length)]; } while (inkColor.name === targetColor.name);
+
+            const stimulusEl = document.getElementById('stimulus');
+            stimulusEl.innerText = targetColor.name;
+            stimulusEl.style.color = inkColor.hex;
+
+            // Crear barras de colores (Mezcladas)
+            const grid = document.getElementById('color-grid');
+            grid.innerHTML = "";
+            
+            [...PALETTE].sort(() => Math.random() - 0.5).forEach(color => {
+                const bar = document.createElement('div');
+                bar.className = "color-bar";
+                bar.style.backgroundColor = color.hex;
+                bar.onclick = () => checkAnswer(color.name, targetColor.name);
+                grid.appendChild(bar);
+            });
+
+            stats.inicioRonda = Date.now();
+            gameActive = true;
+        }
+
+        function checkAnswer(selected, correct) {
+            if (!gameActive) return;
+            const time = (Date.now() - stats.inicioTarget) / 1000;
+
+            if (selected === correct) {
+                score++;
+                document.getElementById('score').innerText = score;
+                stats.tiempos.push((Date.now() - stats.inicioRonda) / 1000);
+            } else {
+                document.body.classList.add('flash-error');
+                setTimeout(() => document.body.classList.remove('flash-error'), 200);
+            }
+
+            gameActive = false;
+            setTimeout(nextRound, 300);
+        }
+
+        function endGame() {
+            gameActive = false;
+            const prom = stats.tiempos.length > 0 ? (stats.tiempos.reduce((a,b)=>a+b)/stats.tiempos.length).toFixed(3) : 0;
+            
+            document.getElementById('final-res').innerHTML = `
+                Aciertos: <b>${score} / 15</b><br>
+                Velocidad: <b>${prom}s</b>
+            `;
+            document.getElementById('end-screen').style.display = 'flex';
+
+            if(DATABASE_URL !== "TU_URL_AQUÍ") {
+                fetch(DATABASE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        nombre: stats.nombre + " (STROOP PRO)",
+                        deporte: stats.deporte,
+                        puntos: score,
+                        reaccion: prom,
+                        aciertos: stats.tiempos.length,
+                        errores: 15 - stats.tiempos.length,
+                        ignorados: 0
+                    })
+                });
+            }
+        }
+
+        document.getElementById('start-btn').onclick = () => {
+            stats.nombre = document.getElementById('nombre').value;
+            stats.deporte = document.getElementById('deporte').value;
+            if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
+            document.getElementById('start-screen').style.display = 'none';
+            nextRound();
+        };
+    </script>
+</body>
+</html>
