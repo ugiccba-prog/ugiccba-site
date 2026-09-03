@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UGI Mobile Training</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <style>
+        :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        
+        #container { position: relative; width: 100%; height: 100%; }
+        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        /* UI de celular: más compacta y arriba */
+        #ui { position: absolute; top: 0; width: 100%; display: flex; background: rgba(0,0,0,0.5); padding: 10px 0; z-index: 10; justify-content: space-around; }
+        .stat { font-size: 0.9rem; font-weight: bold; border-left: 2px solid var(--azul); padding-left: 10px; }
+
+        /* Modal gigante para dedos */
+        .modal { position: absolute; inset: 0; background: #121212; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .form-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+        
+        input { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #333; background: #222; color: white; font-size: 18px !important; box-sizing: border-box; }
+        button { width: 100%; padding: 20px; background: var(--azul); color: white; border: none; border-radius: 50px; font-size: 1.3rem; font-weight: bold; }
+        
+        .instrucciones-mobile { font-size: 0.9rem; text-align: left; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; }
+        
+        /* Flash de error más fuerte para móvil */
+        .flash-error { animation: flash 0.3s; }
+        @keyframes flash { 0% { background: rgba(255,0,0,0); } 50% { background: rgba(255,0,0,0.7); } 100% { background: rgba(255,0,0,0); } }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video id="webcam" autoplay playsinline style="display:none;"></video>
+        <canvas id="output_canvas"></canvas>
+        
+        <div id="ui">
+            <div class="stat">PUNTOS: <span id="score">0</span></div>
+            <div class="stat">TIEMPO: <span id="timer">45</span>s</div>
+        </div>
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="modal">
+            <h2 style="margin-bottom: 20px;">ENTRENAMIENTO UGI</h2>
+            <div class="form-container">
+                <input type="text" id="nombre" placeholder="Tu Nombre">
+                <input type="text" id="deporte" placeholder="Tu Deporte">
+                
+                <div class="instrucciones-mobile">
+                    <p style="margin:0; color:var(--rojo)">● Toca los Rojos</p>
+                    <p style="margin:10px 0 0; color:var(--verde)">○ Ignora los Verdes</p>
+                    <p style="margin:10px 0 0; font-size: 0.7rem; opacity: 0.6;">Apoya el celu y aléjate 1.5 metros.</p>
+                </div>
+                
+                <button id="btn-start">EMPEZAR AHORA</button>
+                <a href="../jugadores.html" style="color: grey; text-decoration: none; font-size: 0.8rem; margin-top: 10px;">Volver atrás</a>
+            </div>
+        </div>
+
+        <div id="end-screen" class="modal" style="display: none;">
+            <h1>¡SESIÓN CUMPLIDA!</h1>
+            <div id="final-res" style="font-size: 1.5rem; margin-bottom: 20px;"></div>
+            <button onclick="location.reload()">REPETIR</button>
+            <a href="../jugadores.html" style="color: white; margin-top: 20px;">Salir al Portal</a>
+        </div>
+    </div>
+
+    <script>
+        // --- PEGA AQUÍ TU MISMA URL DE GOOGLE SHEETS ---
+        const DATABASE_URL = "TU_URL_AQUÍ"; 
+
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        
+        let score = 0, timeLeft = 45, gameActive = false, targetTimer;
+        // Círculos más grandes para celular (radius 65)
+        let target = { x: 0, y: 0, radius: 65, type: 'good' };
+        let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        
+        // OPTIMIZACIÓN PARA MÓVIL: modelComplexity: 0 (Más rápido en celulares viejos)
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5 });
+        
+        hands.onResults((results) => {
+            if (!gameActive) return;
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath(); ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+            ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
+            ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.stroke();
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const x = landmarks[8].x * canvas.width;
+                    const y = landmarks[8].y * canvas.height;
+                    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI * 2); ctx.fill();
+                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 20) processHit();
+                }
+            }
+        });
+
+        function moveTarget() {
+            if (targetTimer) clearTimeout(targetTimer);
+            if (gameActive && target.type === 'bad') stats.ignorados++;
+            target.x = Math.random() * (canvas.width - 120) + 60;
+            target.y = Math.random() * (canvas.height - 120) + 60;
+            target.type = Math.random() > 0.4 ? 'good' : 'bad';
+            stats.inicioTarget = Date.now();
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 2000); 
+        }
+
+        function processHit() {
+            let reac = (Date.now() - stats.inicioTarget) / 1000;
+            if (target.type === 'good') { 
+                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
+            } else { 
+                score -= 10; stats.errores++; 
+                document.getElementById('container').classList.add('flash-error');
+                setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
+            }
+            scoreEl.innerText = score;
+            moveTarget();
+        }
+
+        const camera = new Camera(video, { 
+            onFrame: async () => { await hands.send({image: video}); }, 
+            width: 640, height: 480 
+        });
+
+        document.getElementById('btn-start').onclick = () => {
+            stats.nombre = document.getElementById('nombre').value;
+            stats.deporte = document.getElementById('deporte').value;
+            if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
+
+            // ACTIVAR FULLSCREEN REAL AL HACER CLIC
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) docEl.requestFullscreen();
+            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+
+            document.getElementById('start-screen').style.display = 'none';
+            video.style.display = 'block';
+            gameActive = true;
+            moveTarget();
+            camera.start();
+            
+            let cd = setInterval(() => {
+                timeLeft--; timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) { clearInterval(cd); endGame(); }
+            }, 1000);
+        };
+
+        async function endGame() {
+            gameActive = false;
+            clearTimeout(targetTimer);
+            let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b)/stats.tiemposReaccion.length).toFixed(3) : 0;
+            document.getElementById('final-res').innerHTML = `${stats.nombre}<br><b>${score} PTS</b><br>Reacción: ${prom}s`;
+            document.getElementById('end-screen').style.display = 'flex';
+            
+            fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
+        }
+    </script>
+</body>
+</html>

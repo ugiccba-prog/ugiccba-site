@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jugadores y Jugadoras | UGI CCBA</title>
   <style>
+    /* VARIABLES Y ESTILOS BASE (Igual que tu index.html) */
     :root {
       --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
       --navy: #082b49; --navy-soft: #143d5b; --paper: #fffdf8;
@@ -20,7 +21,7 @@
       position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
       align-items: center; justify-content: space-between; min-height: 5.5rem;
       padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy);
-      transition: background 250ms ease;
+      transition: background 250ms ease, box-shadow 250ms ease;
     }
     .site-header.scrolled {
       min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
@@ -33,45 +34,65 @@
     .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
     
     .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
-    .main-nav a { font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
+    .main-nav a { position: relative; font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
     .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; transition: 0.3s; }
     .nav-cta:hover { color: white; background: var(--navy); }
 
     .menu-toggle { display: none; }
     @media (max-width: 1150px) {
-      .menu-toggle { z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; }
+      .menu-toggle { z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--navy); }
       .menu-toggle span { display: block; width: 1.2rem; height: 1px; background: currentColor; }
       .main-nav { position: fixed; inset: 0; flex-direction: column; justify-content: center; background: var(--navy); opacity: 0; visibility: hidden; transition: 0.3s; }
       .main-nav.open { opacity: 1; visibility: visible; }
-      .main-nav a { color: white; font-size: 2rem; font-family: var(--display); }
+      .main-nav a { color: white; font-size: 2rem; font-family: var(--display); padding: 1rem; }
+      .menu-toggle[aria-expanded="true"] { color: white; }
     }
 
-    /* CONTENIDO */
+    /* CONTENIDO JUGADORES */
     .hero-jugadores { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
-    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; }
+    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; line-height: 1; }
     
     .container { max-width: 900px; margin: 0 auto; padding: 5rem 20px; text-align: center; }
-    .instrucciones-box { background: white; border: 1px solid var(--line); padding: 2.5rem; border-radius: var(--radius); }
+    .instrucciones-box { background: white; border: 1px solid var(--line); padding: 2.5rem; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
     
-    /* EL SIMULADOR */
-    #contenedor-game-full { 
-        background: #000; border-radius: var(--radius); overflow: hidden; 
-        position: relative; width: 100%; padding-top: 56.25%; margin-top: 3rem;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    /* BOTONES */
+    .btn-group { display: flex; flex-direction: column; gap: 1rem; align-items: center; margin-top: 2rem; }
+    .btn-action { 
+        padding: 1.2rem 2.5rem; border-radius: 999px; text-decoration: none; 
+        font-weight: bold; border: none; cursor: pointer; transition: 0.3s; 
+        width: 100%; max-width: 350px; font-size: 1rem;
     }
-    #contenedor-game-full iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .btn-pc { background: var(--navy); color: white; }
+    .btn-mobile { background: #ffc107; color: #000; }
+    .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+    /* SIMULADOR INCORPORADO (PC) */
+    .game-window { 
+        background: #000; border-radius: var(--radius); overflow: hidden; 
+        position: relative; width: 100%; padding-top: 56.25%; margin-top: 4rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15); display: none; /* Se oculta por defecto */
+    }
+    .game-window.active { display: block; }
+    .game-window iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     
-    .btn-fs { background: #28a745; color: white; padding: 1rem 2rem; border-radius: 999px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; margin-top: 1rem; }
+    .footer-simple { background: var(--navy); color: white; padding: 3rem; text-align: center; margin-top: 5rem; }
   </style>
 </head>
 <body>
 
+  <!-- HEADER -->
   <header class="site-header" data-header>
     <a class="brand" href="index.html#inicio">
       <img src="logo-header.png" alt="Logo">
-      <span class="brand-copy"><strong>UGI</strong><small>Club Ciudad de Buenos Aires</small></span>
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
     </a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span></span><span></span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span>
+    </button>
+    
     <nav class="main-nav" id="main-nav">
       <a href="index.html#inicio">Inicio</a>
       <a href="index.html#proposito">Qué hacemos</a>
@@ -85,54 +106,79 @@
 
   <main>
     <section class="hero-jugadores">
-        <h1>Entrenamiento Mental</h1>
+        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold; color: var(--navy);">Área de Entrenamiento Mental</p>
+        <h1>Portal de Jugadores</h1>
     </section>
 
     <div class="container">
         <div class="instrucciones-box">
-            <h2 style="font-family: var(--display); font-size: 2.5rem;">Simulador de Reacción</h2>
-            <p>Entrena tu toma de decisiones. Usa ambas manos.</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
-                <div style="background: #fff0f0; color: #ff3e3e; padding: 1rem; border-radius: 1rem; border: 1px solid;"><b>TOCA EL ROJO</b><br>Suma puntos</div>
-                <div style="background: #f0fff0; color: #008f4c; padding: 1rem; border-radius: 1rem; border: 1px solid;"><b>IGNORA EL VERDE</b><br>Espera 2 seg.</div>
+            <h2 style="font-family: var(--display); font-size: 2.5rem; margin-bottom: 1rem;">Módulo de Reacción</h2>
+            <p>Entrena tu velocidad de procesamiento y toma de decisiones.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0;">
+                <div style="background: #fff0f0; color: #ff3e3e; padding: 1.5rem; border-radius: 1rem; border: 1px solid;">
+                    <b>TOCA EL ROJO</b><br><small>Suma +10 puntos</small>
+                </div>
+                <div style="background: #f0fff0; color: #008f4c; padding: 1.5rem; border-radius: 1rem; border: 1px solid;">
+                    <b>IGNORA EL VERDE</b><br><small>Espera 2 segundos</small>
+                </div>
             </div>
-            <button onclick="entrarFullScreen()" class="btn-fs">ABRIR PANTALLA COMPLETA</button>
+
+            <div class="btn-group">
+                <!-- BOTÓN AMARILLO PARA MÓVILES -->
+                <a href="./training-app/mobile.html" class="btn-action btn-mobile">
+                    🚀 ABRIR VERSIÓN MÓVIL (Recomendado)
+                </a>
+                
+                <!-- BOTÓN PARA PC -->
+                <button onclick="mostrarSimuladorPC()" class="btn-action btn-pc">
+                    🖥️ USAR SIMULADOR EN ESTA PÁGINA
+                </button>
+                
+                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 10px;">
+                    * Requiere acceso a la cámara para detectar tus movimientos.
+                </p>
+            </div>
         </div>
 
-        <div id="contenedor-game-full">
+        <!-- El Simulador de PC que se activa al clickear -->
+        <div id="entrenamiento-pc" class="game-window">
+            <div style="background: var(--navy); color: white; padding: 10px; font-size: 0.8rem; font-weight: bold;">
+                MODO PC ACTIVADO
+            </div>
             <iframe id="iframe-juego" src="./training-app/index.html" allow="camera; fullscreen"></iframe>
-            <button id="btn-salir-fs" onclick="salirFullScreen()" style="display:none; position: fixed; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.7); color: white; border: none; padding: 10px; border-radius: 5px;">✕ Salir</button>
         </div>
     </div>
   </main>
 
+  <footer class="footer-simple">
+    <img src="logo-header.png" alt="UGI" style="max-height: 40px; margin-bottom: 1rem;">
+    <p>© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+  </footer>
+
   <script>
+    // Script para el Header Scrolled
     const header = document.querySelector("[data-header]");
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 24);
+    });
+
+    // Script para el Menú Mobile
     const menuButton = document.querySelector(".menu-toggle");
     const navigation = document.querySelector(".main-nav");
-    
-    window.addEventListener("scroll", () => header.classList.toggle("scrolled", window.scrollY > 24));
     menuButton.addEventListener("click", () => {
       const isOpen = menuButton.getAttribute("aria-expanded") === "true";
       menuButton.setAttribute("aria-expanded", String(!isOpen));
       navigation.classList.toggle("open", !isOpen);
     });
 
-    function entrarFullScreen() {
-      const elem = document.getElementById("contenedor-game-full");
-      if (elem.requestFullscreen) elem.requestFullscreen();
-      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-      document.getElementById("btn-salir-fs").style.display = "block";
+    // Función para mostrar el simulador de PC
+    function mostrarSimuladorPC() {
+        const gameWin = document.getElementById('entrenamiento-pc');
+        gameWin.classList.add('active');
+        // Scroll suave hasta el juego
+        gameWin.scrollIntoView({ behavior: 'smooth' });
     }
-
-    function salirFullScreen() {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) document.getElementById("btn-salir-fs").style.display = "none";
-    });
   </script>
 </body>
 </html>
