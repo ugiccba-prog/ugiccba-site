@@ -209,7 +209,7 @@
             let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b, 0) / stats.tiemposReaccion.length).toFixed(3) : 0;
             document.getElementById('final-res').innerHTML = `<b>${score} PTS</b><br>Reacción: ${prom}s`;
             document.getElementById('end-screen').style.display = 'flex';
-            if(DATABASE_URL !== "https://script.google.com/macros/s/AKfycbxIiYAxIfZBzigXcQh83BrpqNr_hUBLT-jCdpfX2BB4fgwyEr5bpO4TqWZpvxEvX0qQ/exec") {
+            if(DATABASE_URL !== "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec") {
                 fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
             }
         }
