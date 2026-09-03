@@ -9,18 +9,77 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        #container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        video, canvas { position: absolute; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        #ui { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
+        
+        /* Reset total para evitar bloqueos de clics */
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: white; font-family: sans-serif; 
+            overflow: hidden; touch-action: manipulation;
+        }
+
+        #container { position: relative; width: 100%; height: 100%; }
+
+        /* Capas de fondo (Video y Canvas) */
+        video, canvas { 
+            position: absolute; inset: 0; width: 100%; height: 100%; 
+            object-fit: cover; transform: scaleX(-1); z-index: 1; 
+        }
+        
+        /* Capa de Puntos (Sin clics para que no moleste) */
+        #ui { 
+            position: absolute; top: 10px; width: 100%; 
+            display: flex; justify-content: space-around; 
+            z-index: 10; pointer-events: none; 
+        }
         .stat { background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--azul); font-weight: bold; }
-        .modal { position: absolute; inset: 0; background: rgba(18,18,18,0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .form-container { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #222; color: white; font-size: 16px; box-sizing: border-box; }
-        button { padding: 15px; background: var(--azul); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1.1rem; font-weight: bold; }
+
+        /* PANTALLAS (MODALES) - Aquí forzamos que reciba clics */
+        .modal { 
+            position: absolute; inset: 0; 
+            background: rgba(18,18,18,0.98); 
+            z-index: 2000; /* Siempre al frente */
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            text-align: center; padding: 20px;
+            pointer-events: auto !important; /* Forzar clics */
+        }
+
+        .form-container { 
+            width: 100%; max-width: 320px; 
+            display: flex; flex-direction: column; gap: 15px; 
+            pointer-events: auto !important;
+        }
+
+        .form-group { text-align: left; width: 100%; pointer-events: auto !important; }
+        
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--azul); font-weight: bold; }
+
+        input { 
+            width: 100%; padding: 14px; border-radius: 8px; 
+            border: 2px solid #333; background: #222; color: white; 
+            font-size: 16px !important; /* Evita zoom en iPhone */
+            box-sizing: border-box; 
+            outline: none;
+            pointer-events: auto !important;
+        }
+        
+        input:focus { border-color: var(--azul); background: #333; }
+
+        button { 
+            width: 100%; padding: 16px; background: var(--azul); color: white; 
+            border: none; border-radius: 50px; cursor: pointer; 
+            font-size: 1.1rem; font-weight: bold; margin-top: 10px; 
+            pointer-events: auto !important;
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.98); }
+
+        .reglas-box { font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; }
+
         .tabla-res { width: 100%; max-width: 280px; margin-bottom: 15px; border-collapse: collapse; }
         .tabla-res td { padding: 8px 0; border-bottom: 1px solid #333; }
         .val { text-align: right; color: var(--azul); font-weight: bold; }
+        
         .flash-error { animation: flash 0.3s; }
         @keyframes flash { 0% { background: rgba(255,0,0,0); } 50% { background: rgba(255,0,0,0.4); } 100% { background: rgba(255,0,0,0); } }
     </style>
@@ -29,22 +88,31 @@
     <div id="container">
         <video id="webcam" autoplay playsinline style="display:none;"></video>
         <canvas id="output_canvas"></canvas>
+        
         <div id="ui">
             <div class="stat">PTS: <span id="score">0</span></div>
             <div class="stat">⌛ <span id="timer">45</span>s</div>
         </div>
+
         <div id="start-screen" class="modal">
-            <h2>DATOS DEL ATLETA</h2>
+            <h2 style="margin-top:0">DATOS DEL ATLETA</h2>
             <div class="form-container">
-                <input type="text" id="nombre" placeholder="Nombre completo">
-                <input type="text" id="deporte" placeholder="Deporte / Puesto">
-                <div style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
-                    <p style="color:var(--rojo); margin:0">● Rojo: Tocar</p>
-                    <p style="color:var(--verde); margin:5px 0 0">○ Verde: Ignorar</p>
+                <div class="form-group">
+                    <label>Nombre Completo:</label>
+                    <input type="text" id="nombre" placeholder="Escribe aquí..." autocomplete="off">
                 </div>
-                <button id="btn-start">INICIAR</button>
+                <div class="form-group">
+                    <label>Deporte / Puesto:</label>
+                    <input type="text" id="deporte" placeholder="Ej: Fútbol - Arquero" autocomplete="off">
+                </div>
+                <div class="reglas-box">
+                    <p style="color:var(--rojo); margin:0">● Rojo: Tocar (+10 pts)</p>
+                    <p style="color:var(--verde); margin:5px 0 0">○ Verde: Ignorar (-10 pts)</p>
+                </div>
+                <button id="btn-start" type="button">INICIAR ENTRENAMIENTO</button>
             </div>
         </div>
+
         <div id="end-screen" class="modal" style="display: none;">
             <h1>RESULTADOS</h1>
             <table class="tabla-res">
@@ -52,34 +120,45 @@
                 <tr><td>Puntos</td><td id="res-puntos" class="val">0</td></tr>
                 <tr><td>Reacción Prom.</td><td id="res-reaccion" class="val">0s</td></tr>
             </table>
-            <button onclick="location.reload()">FINALIZAR</button>
+            <button onclick="location.reload()" style="background:#444">FINALIZAR</button>
         </div>
     </div>
+
     <script>
-        const DATABASE_URL = "TU_URL_DE_GOOGLE_SHEETS_AQUI"; // REEMPLAZAR
+        // --- PEGA TU URL DE GOOGLE SHEETS AQUÍ ---
+        const DATABASE_URL = "TU_URL_AQUÍ"; 
+
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const timerEl = document.getElementById('timer');
+        
         let score = 0, timeLeft = 45, gameActive = false, targetTimer;
-        let target = { x: 0, y: 0, radius: 50, type: 'good' };
+        let target = { x: 0, y: 0, radius: 55, type: 'good' };
         let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
 
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5 });
+        
         hands.onResults((results) => {
             if (!gameActive) return;
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar círculo
             ctx.beginPath(); ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
             ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
             ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 5; ctx.stroke();
+
             if (results.multiHandLandmarks) {
                 for (const landmarks of results.multiHandLandmarks) {
-                    const x = landmarks[8].x * canvas.width, y = landmarks[8].y * canvas.height;
+                    const x = landmarks[8].x * canvas.width;
+                    const y = landmarks[8].y * canvas.height;
+                    // Dibujar puntero
                     ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fill();
-                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 10) processHit();
+                    // Colisión
+                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 15) processHit();
                 }
             }
         });
@@ -87,38 +166,77 @@
         function moveTarget() {
             if (targetTimer) clearTimeout(targetTimer);
             if (gameActive && target.type === 'bad') stats.ignorados++;
+            
             target.x = Math.random() * (canvas.width - 150) + 75;
             target.y = Math.random() * (canvas.height - 150) + 75;
             target.type = Math.random() > 0.4 ? 'good' : 'bad';
             stats.inicioTarget = Date.now();
+
             targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 2000); 
         }
 
         function processHit() {
             let reac = (Date.now() - stats.inicioTarget) / 1000;
-            if (target.type === 'good') { score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); }
-            else { score -= 10; stats.errores++; document.getElementById('container').classList.add('flash-error'); setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300); }
-            scoreEl.innerText = score; moveTarget();
+            if (target.type === 'good') { 
+                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
+            } else { 
+                score -= 10; stats.errores++; 
+                document.getElementById('container').classList.add('flash-error');
+                setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
+            }
+            scoreEl.innerText = score;
+            moveTarget();
         }
 
-        const camera = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 1280, height: 720 });
-        document.getElementById('btn-start').onclick = () => {
-            stats.nombre = document.getElementById('nombre').value;
-            stats.deporte = document.getElementById('deporte').value;
-            if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
+        const camera = new Camera(video, { 
+            onFrame: async () => { await hands.send({image: video}); }, 
+            width: 1280, height: 720 
+        });
+
+        document.getElementById('btn-start').addEventListener('click', function(e) {
+            e.preventDefault();
+            stats.nombre = document.getElementById('nombre').value.trim();
+            stats.deporte = document.getElementById('deporte').value.trim();
+
+            if(!stats.nombre || !stats.deporte) {
+                alert("Por favor, completa tu nombre y deporte.");
+                return;
+            }
+
             document.getElementById('start-screen').style.display = 'none';
-            video.style.display = 'block'; gameActive = true; moveTarget(); camera.start();
-            let cd = setInterval(() => { timeLeft--; timerEl.innerText = timeLeft; if (timeLeft <= 0) { clearInterval(cd); endGame(); } }, 1000);
-        };
+            video.style.display = 'block';
+            gameActive = true;
+            moveTarget();
+            camera.start().catch(err => alert("Error de cámara: " + err));
+
+            let cd = setInterval(() => {
+                timeLeft--; 
+                timerEl.innerText = timeLeft; 
+                if (timeLeft <= 0) { clearInterval(cd); endGame(); }
+            }, 1000);
+        });
 
         async function endGame() {
-            gameActive = false; clearTimeout(targetTimer);
+            gameActive = false;
+            clearTimeout(targetTimer);
             let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b)/stats.tiemposReaccion.length).toFixed(3) : 0;
+            
             document.getElementById('res-nombre').innerText = stats.nombre;
             document.getElementById('res-puntos').innerText = score;
             document.getElementById('res-reaccion').innerText = prom + "s";
             document.getElementById('end-screen').style.display = 'flex';
-            fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
+
+            // Envío a Google Sheets
+            if(DATABASE_URL !== "TU_URL_AQUÍ") {
+                fetch(DATABASE_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify({ 
+                        nombre: stats.nombre, deporte: stats.deporte, puntos: score, 
+                        reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados 
+                    }) 
+                });
+            }
         }
     </script>
 </body>
