@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal de Jugadores | UGI CCBA</title>
+  <!-- Usamos el mismo CSS de tu página principal (puedes copiar el bloque <style> de tu index.html aquí para que sea idéntico) -->
+  <!-- He simplificado el CSS para que este código sea legible, pero mantiene tus variables -->
+  <style>
+    /* ... (Copia aquí todo el bloque <style> que tienes en tu index.html para mantener la coherencia) ... */
+    :root {
+      --sky: #59bde9; --navy: #082b49; --paper: #fffdf8; --ink: #102b3c; --radius: 1.5rem;
+      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", sans-serif;
+    }
+    body { margin: 0; font-family: var(--sans); background: var(--paper); color: var(--ink); }
+    
+    /* Reutilizamos tus clases principales */
+    .site-header { background: rgba(255, 253, 248, 0.93); min-height: 4.5rem; padding: 0.8rem 4.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(8, 43, 73, 0.1); }
+    .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--navy); font-weight: bold; }
+    .section { padding: 5rem 7vw; }
+    .hero-jugadores { background: var(--sky); padding: 8rem 7vw 4rem; text-align: center; }
+    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 6vw, 5rem); margin: 0; }
+    
+    /* Contenedor de Apps */
+    .app-card {
+        background: white; border-radius: var(--radius); border: 1px solid rgba(8, 43, 73, 0.1);
+        display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; margin-bottom: 3rem;
+    }
+    .app-info { padding: 3rem; }
+    .app-preview { background: #eee; position: relative; min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .app-preview img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    
+    .btn-play { background: var(--navy); color: white; padding: 1rem 2rem; border-radius: 999px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 1.5rem; }
+    
+    @media (max-width: 900px) {
+        .app-card { grid-template-columns: 1fr; }
+        .site-header { padding: 0.8rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img src="logo-header.png" alt="Logo" style="max-height: 40px;">
+      <span>UGI PORTAL</span>
+    </a>
+    <a href="index.html" style="text-decoration: none; font-size: 0.8rem; font-weight: bold; color: var(--navy);">VOLVER AL SITIO</a>
+  </header>
+
+  <main>
+    <section class="hero-jugadores">
+        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold;">Centro de Alto Rendimiento Mental</p>
+        <h1>Portal de Jugadores y Jugadoras</h1>
+        <p style="max-width: 600px; margin: 1.5rem auto;">Selecciona un módulo de entrenamiento para comenzar a trabajar tus habilidades cognitivas.</p>
+    </section>
+
+    <section class="section">
+        <!-- MODULO 1: NEURO-ENTRENAMIENTO -->
+        <article class="app-card">
+            <div class="app-info">
+                <p style="color: var(--sky); font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">Módulo 01</p>
+                <h2 style="font-family: var(--display); font-size: 2.5rem; margin: 0.5rem 0;">Reacción y Toma de Decisiones</h2>
+                <p>Entrena la velocidad con la que procesas información y tu capacidad para inhibir impulsos incorrectos.</p>
+                
+                <div style="margin-top: 1.5rem; background: #f9f9f9; padding: 1rem; border-radius: 1rem; font-size: 0.85rem;">
+                    <strong>Cómo jugar:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.2rem;">
+                        <li>Usa la cámara para detectar tus manos.</li>
+                        <li style="color: #ff3e3e;"><b>Toca los círculos Rojos</b> para ganar puntos.</li>
+                        <li style="color: #28a745;"><b>Ignora los círculos Verdes</b> (espera que desaparezcan).</li>
+                    </ul>
+                </div>
+
+                <a href="#juego-neuro" class="btn-play">EMPEZAR A ENTRENAR</a>
+            </div>
+            
+            <div class="app-preview">
+                <!-- Aquí puedes poner una imagen de "preview" del juego o un GIF -->
+                <img src="img/preview-neuro.jpg" alt="Previsualización del juego" onerror="this.style.background='#082b49'">
+                <div style="position: absolute; color: white; text-align: center;">
+                    <p style="font-weight: bold;">VISTA PREVIA</p>
+                    <small>(Requiere Cámara)</small>
+                </div>
+            </div>
+        </article>
+
+        <!-- AREA DE JUEGO (Se muestra al hacer click o ya está incrustada abajo) -->
+        <div id="juego-neuro" style="margin-top: 4rem; scroll-margin-top: 100px;">
+            <div style="background: var(--navy); padding: 1rem; border-radius: 1rem 1rem 0 0; color: white; text-align: center; font-size: 0.8rem; font-weight: bold; letter-spacing: 0.1em;">
+                SESIÓN DE ENTRENAMIENTO EN VIVO
+            </div>
+            <div style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 0 0 1rem 1rem; overflow: hidden;">
+                <iframe 
+                    src="./training-app/index.html" 
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                    allow="camera">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- ESPACIO PARA FUTURAS APPS -->
+        <div style="margin-top: 6rem; border-top: 1px solid #eee; padding-top: 4rem;">
+            <h3 style="font-family: var(--display); font-size: 2rem;">Próximos Módulos</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div style="padding: 2rem; background: #f5f5f5; border-radius: 1rem; opacity: 0.6;">
+                    <h4>Memoria Táctica</h4>
+                    <p style="font-size: 0.8rem;">Memoriza posiciones de jugadores en el campo y recrea la jugada.</p>
+                    <span style="font-size: 0.6rem; font-weight: bold; border: 1px solid; padding: 2px 5px;">MUY PRONTO</span>
+                </div>
+                <div style="padding: 2rem; background: #f5f5f5; border-radius: 1rem; opacity: 0.6;">
+                    <h4>Visión Periférica</h4>
+                    <p style="font-size: 0.8rem;">Entrenamiento de seguimiento de múltiples objetos simultáneos.</p>
+                    <span style="font-size: 0.6rem; font-weight: bold; border: 1px solid; padding: 2px 5px;">MUY PRONTO</span>
+                </div>
+            </div>
+        </div>
+    </section>
+  </main>
+
+  <footer style="background: var(--navy); color: white; padding: 3rem 7vw; text-align: center; margin-top: 5rem;">
+    <img src="logo-header.png" alt="UGI" style="max-height: 40px; margin-bottom: 1rem;">
+    <p style="font-size: 0.8rem; opacity: 0.7;">© <span id="year"></span> Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
