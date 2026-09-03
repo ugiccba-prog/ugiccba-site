@@ -3,84 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal de Jugadores | UGI CCBA</title>
+  <title>Jugadores y Jugadoras | UGI CCBA</title>
+  
+  <!-- REUTILIZAMOS EXACTAMENTE TU MISMO ESTILO -->
   <style>
+    /* VARIABLES Y BASE (Igual que index.html) */
     :root {
-      --sky: #59bde9; --navy: #082b49; --paper: #fffdf8; --ink: #102b3c; --radius: 1.5rem;
-      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", sans-serif;
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --navy-soft: #143d5b; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --radius: 1.5rem;
+      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", Avenir, sans-serif;
     }
-    body { margin: 0; font-family: var(--sans); background: var(--paper); color: var(--ink); }
-    .site-header { background: rgba(255, 253, 248, 0.93); min-height: 4.5rem; padding: 0.8rem 4.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(8, 43, 73, 0.1); }
-    .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--navy); font-weight: bold; }
-    .hero-jugadores { background: var(--sky); padding: 8rem 7vw 4rem; text-align: center; }
-    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 6vw, 5rem); margin: 0; }
     
-    /* Layout Centrado */
-    .container { max-width: 900px; margin: 0 auto; padding: 4rem 20px; }
-    .app-header { text-align: center; margin-bottom: 3rem; }
-    .app-header h2 { font-family: var(--display); font-size: 3rem; color: var(--navy); margin-bottom: 1rem; }
-    
-    .instrucciones-box { 
-        background: white; border: 1px solid rgba(8,43,73,0.1); 
-        padding: 2.5rem; border-radius: var(--radius); 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 3rem;
-    }
-    .grid-reglas { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
-    .regla { padding: 1rem; border-radius: 1rem; font-weight: bold; }
-    
-    .btn-play { background: var(--navy); color: white; padding: 1.2rem 2.5rem; border-radius: 999px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 2rem; transition: 0.3s; }
-    .btn-play:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(8,43,73,0.2); }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
 
-    .game-window { 
-        background: #000; border-radius: var(--radius); 
-        overflow: hidden; position: relative; width: 100%; padding-top: 56.25%; 
-        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    /* HEADER Y NAVEGACIÓN (Copiado de tu index.html) */
+    .site-header {
+      position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
+      align-items: center; justify-content: space-between; min-height: 5.5rem;
+      padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy);
+      transition: background 250ms ease, box-shadow 250ms ease, min-height 250ms ease;
     }
+    .site-header.scrolled {
+      min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
+      box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    
+    .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
+    .main-nav a { position: relative; font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; transition: 0.3s; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+
+    /* MENU MOBILE */
+    .menu-toggle { display: none; }
+
+    @media (max-width: 1150px) {
+      .menu-toggle { z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--navy); }
+      .menu-toggle span { display: block; width: 1.2rem; height: 1px; background: currentColor; }
+      .main-nav { position: fixed; inset: 0; flex-direction: column; justify-content: center; background: var(--navy); opacity: 0; visibility: hidden; transition: 0.3s; }
+      .main-nav.open { opacity: 1; visibility: visible; }
+      .main-nav a { color: white; font-size: 2rem; font-family: var(--display); }
+      .menu-toggle[aria-expanded="true"] { color: white; }
+    }
+
+    /* ESTILO ESPECÍFICO DE ESTA PÁGINA */
+    .hero-jugadores { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
+    .hero-jugadores h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; line-height: 1; }
+    .container { max-width: 900px; margin: 0 auto; padding: 5rem 20px; }
+    .instrucciones-box { background: white; border: 1px solid var(--line); padding: 2.5rem; border-radius: var(--radius); text-align: center; }
+    .game-window { background: #000; border-radius: var(--radius); overflow: hidden; position: relative; width: 100%; padding-top: 56.25%; margin-top: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
     .game-window iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-
-    @media (max-width: 720px) {
-        .grid-reglas { grid-template-columns: 1fr; }
-        .site-header { padding: 0.8rem 1.2rem; }
-    }
   </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <a class="brand" href="index.html">
-      <img src="logo-header.png" alt="Logo" style="max-height: 40px;">
-      <span>UGI PORTAL</span>
+  <!-- HEADER IDÉNTICO AL ORIGINAL -->
+  <header class="site-header" data-header>
+    <a class="brand" href="index.html#inicio">
+      <img src="logo-header.png" alt="Logo">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
     </a>
-    <a href="index.html" style="text-decoration: none; font-size: 0.8rem; font-weight: bold; color: var(--navy);">VOLVER AL SITIO</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span>
+    </button>
+    
+    <nav class="main-nav" id="main-nav">
+      <!-- Los links ahora apuntan a index.html#... para que funcionen desde aquí -->
+      <a href="index.html#inicio">Inicio</a>
+      <a href="index.html#proposito">Qué hacemos</a>
+      <a href="index.html#programas">Programas</a>
+      <a href="index.html#capacitaciones">Capacitaciones</a>
+      <a href="index.html#material">Material</a>
+      <a href="index.html#juegos">Juegos</a>
+      <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
+    </nav>
   </header>
 
   <main>
     <section class="hero-jugadores">
-        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold;">Módulo de Alto Rendimiento</p>
+        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold; color: var(--navy);">Módulo de Alto Rendimiento</p>
         <h1>Entrenamiento de Reacción</h1>
     </section>
 
     <div class="container">
-        <div class="app-header">
-            <h2>Toma de Decisiones v1.0</h2>
-            <p>Este ejercicio entrena tu velocidad de procesamiento y tu capacidad de frenar impulsos ante estímulos negativos.</p>
-        </div>
-
         <div class="instrucciones-box">
-            <h3>¿Cómo entrenar?</h3>
-            <p>Colócate frente a la cámara de modo que se vean tus manos y torso. El sistema detectará tus movimientos en tiempo real.</p>
-            
-            <div class="grid-reglas">
-                <div class="regla" style="background: rgba(255, 62, 62, 0.1); color: #ff3e3e; border: 1px solid #ff3e3e;">
-                    ● TOCA EL ROJO<br><small>Suma +10 puntos</small>
-                </div>
-                <div class="regla" style="background: rgba(0, 255, 136, 0.1); color: #008f4c; border: 1px solid #00ff88;">
-                    ○ IGNORA EL VERDE<br><small>Espera 2 seg. a que cambie</small>
-                </div>
+            <h2 style="font-family: var(--display); font-size: 2.5rem; margin-bottom: 1rem;">Módulo de Toma de Decisiones</h2>
+            <p>Colócate frente a la cámara de modo que se vean tus manos. El sistema evaluará tu velocidad y control de impulsos.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0;">
+                <div style="background: #fff0f0; color: #ff3e3e; padding: 1rem; border-radius: 1rem; border: 1px solid;"><b>TOCA EL ROJO</b><br>Suma puntos</div>
+                <div style="background: #f0fff0; color: #008f4c; padding: 1rem; border-radius: 1rem; border: 1px solid;"><b>IGNORA EL VERDE</b><br>Espera 2 seg.</div>
             </div>
-            <div style="text-align: center;">
-                <a href="#entrenamiento" class="btn-play">IR AL GIMNASIO VIRTUAL</a>
-            </div>
+            <a href="#entrenamiento" style="background: var(--navy); color: white; padding: 1rem 2rem; border-radius: 999px; text-decoration: none; font-weight: bold; display: inline-block;">IR AL SIMULADOR</a>
         </div>
 
         <div id="entrenamiento" class="game-window">
@@ -89,8 +112,21 @@
     </div>
   </main>
 
-  <footer style="background: var(--navy); color: white; padding: 3rem 7vw; text-align: center;">
-    <p style="font-size: 0.8rem; opacity: 0.7;">© UGI - Club Ciudad de Buenos Aires</p>
-  </footer>
+  <!-- SCRIPTS (Copiados de index.html para que el menú funcione igual) -->
+  <script>
+    const header = document.querySelector("[data-header]");
+    const menuButton = document.querySelector(".menu-toggle");
+    const navigation = document.querySelector(".main-nav");
+    
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 24);
+    });
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+      navigation.classList.toggle("open", !isOpen);
+    });
+  </script>
 </body>
 </html>
