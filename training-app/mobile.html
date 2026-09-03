@@ -73,7 +73,7 @@
     </div>
 
     <script>
-        const DATABASE_URL = "https://script.google.com/macros/s/AKfycbw8KkNDB1xpp4czW3ZVU84KWOsSrSPocMX62HmUtVBk-Lvk1yDL63mGpWhCjMVJNWNk/exec"; 
+        const DATABASE_URL = "TU_URL_DE_GOOGLE_SHEETS_AQUI"; 
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
@@ -117,7 +117,7 @@
                     ctx.shadowBlur = 0; // Reset sombra para el dedo
                     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
                     ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = var(--azul); ctx.lineWidth = 2; ctx.stroke();
+                    ctx.strokeStyle = "var(--azul)"; ctx.lineWidth = 2; ctx.stroke();
                     
                     if (Math.hypot(x - target.x, y - target.y) < target.radius + 20) processHit();
                 }
