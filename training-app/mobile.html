@@ -2,127 +2,135 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>UGI Mobile Pro</title>
-    <!-- Librerías de MediaPipe -->
+    
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    
     <style>
         :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; --oscuro: #0a0a0a; }
         
         body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; color: white; font-family: -apple-system, system-ui, sans-serif; 
+            margin: 0; padding: 0; 
+            width: 100%; height: 100dvh; 
+            background: #000; color: white; 
+            font-family: -apple-system, system-ui, sans-serif; 
             overflow: hidden; touch-action: none;
         }
 
-        #container { position: relative; width: 100%; height: 100%; }
+        #container { position: relative; width: 100%; height: 100dvh; }
         
         video, canvas { 
-            position: absolute; inset: 0; width: 100%; height: 100%; 
+            position: absolute; inset: 0; width: 100%; height: 100dvh; 
             object-fit: cover; transform: scaleX(-1); 
         }
 
-        /* UI Superior: Marcadores */
         #ui { 
             position: absolute; top: 0; width: 100%; 
             display: flex; justify-content: space-around; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-            padding: 15px 0; z-index: 10; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            padding: env(safe-area-inset-top) 0 10px 0;
+            z-index: 10; pointer-events: none;
         }
-        .stat { font-size: 1.1rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .stat { font-size: 1rem; font-weight: 800; }
         .stat span { color: var(--azul); }
 
-        /* Pantallas Modales (Inicio y Fin) */
         .modal { 
             position: absolute; inset: 0; background: var(--oscuro); 
             z-index: 2000; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; padding: 25px; 
+            justify-content: center; align-items: center; padding: 15px; 
             text-align: center; box-sizing: border-box;
+            overflow-y: auto; /* Permite scroll si el teclado tapa algo */
         }
 
-        .form-container { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 15px; }
+        .form-container { 
+            width: 100%; max-width: 500px; 
+            display: flex; flex-direction: column; gap: 10px; 
+        }
         
-        h2 { font-size: 1.8rem; margin: 0 0 5px; letter-spacing: -1px; }
-        p { font-size: 0.9rem; margin-bottom: 20px; opacity: 0.8; }
+        /* Ajuste para modo HORIZONTAL */
+        @media (orientation: landscape) {
+            .modal { justify-content: flex-start; padding-top: 20px; }
+            .form-row { display: flex; gap: 10px; width: 100%; }
+            .form-group { flex: 1; }
+            h2 { font-size: 1.2rem; margin: 0; }
+        }
+
+        .form-group { text-align: left; }
+        label { font-size: 0.75rem; color: var(--azul); font-weight: bold; margin-left: 5px; }
 
         input { 
-            width: 100%; padding: 16px; border-radius: 12px; 
+            width: 100%; padding: 12px; border-radius: 10px; 
             border: 2px solid #333; background: #1a1a1a; color: white; 
-            font-size: 16px; box-sizing: border-box; outline: none;
+            font-size: 16px !important; box-sizing: border-box; outline: none;
         }
-        input:focus { border-color: var(--azul); }
 
         button { 
-            width: 100%; padding: 18px; background: var(--azul); color: white; 
-            border: none; border-radius: 50px; font-size: 1.2rem; 
-            font-weight: bold; cursor: pointer; transition: 0.2s;
+            width: 100%; padding: 15px; background: var(--azul); color: white; 
+            border: none; border-radius: 50px; font-size: 1.1rem; 
+            font-weight: bold; cursor: pointer; margin-top: 5px;
         }
-        button:active { transform: scale(0.96); }
 
         .instrucciones { 
-            font-size: 0.8rem; background: rgba(255,255,255,0.05); 
-            padding: 15px; border-radius: 15px; text-align: left;
+            font-size: 0.75rem; background: rgba(255,255,255,0.05); 
+            padding: 10px; border-radius: 12px; text-align: left;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Efecto de parpadeo al errar */
         .flash-error { animation: flash 0.3s; }
-        @keyframes flash { 
-            0% { background: rgba(255,0,0,0); } 
-            50% { background: rgba(255,62,62,0.4); } 
-            100% { background: rgba(255,0,0,0); } 
-        }
-
-        #btn-back { margin-top: 15px; color: #666; text-decoration: none; font-size: 0.8rem; }
+        @keyframes flash { 0% { background: rgba(255,0,0,0.5); } 100% { background: rgba(255,0,0,0); } }
     </style>
 </head>
 <body>
 
     <div id="container">
-        <!-- Elementos de Fondo -->
         <video id="webcam" autoplay playsinline style="display:none;"></video>
         <canvas id="output_canvas"></canvas>
         
-        <!-- Marcadores -->
         <div id="ui">
-            <div class="stat">PUNTOS: <span id="score">0</span></div>
-            <div class="stat">TIEMPO: <span id="timer">45</span>s</div>
+            <div class="stat">PTS: <span id="score">0</span></div>
+            <div class="stat">⌛: <span id="timer">45</span>s</div>
         </div>
 
         <!-- Pantalla de Inicio -->
         <div id="start-screen" class="modal">
-            <h2>NEURO TRAINING</h2>
-            <p>Módulo de Reacción Móvil v1.5</p>
-            
+            <h2>EVALUACIÓN UGI</h2>
             <div class="form-container">
-                <input type="text" id="nombre" placeholder="Nombre completo" autocomplete="off">
-                <input type="text" id="deporte" placeholder="Deporte / Puesto" autocomplete="off">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Deporte:</label>
+                        <input type="text" id="deporte" placeholder="Tu deporte" autocomplete="off">
+                    </div>
+                </div>
                 
                 <div class="instrucciones">
-                    <b style="color:var(--rojo)">● ROJO:</b> Tocar para sumar (+10)<br>
-                    <b style="color:var(--verde)">○ VERDE:</b> Ignorar (-10 si tocas)<br><br>
-                    <small>Apoya el teléfono y aléjate 2 metros hasta que se vean tus manos.</small>
+                    <span style="color:var(--rojo)">● ROJO: Tocar</span> | 
+                    <span style="color:var(--verde)">○ VERDE: Ignorar</span>
+                    <p style="margin:5px 0 0; opacity:0.6; font-size:0.65rem">Apoya el celu, aléjate 2m y usa ambas manos.</p>
                 </div>
                 
                 <button id="btn-start">INICIAR SESIÓN</button>
-                <a href="../jugadores.html" id="btn-back">Volver al portal</a>
+                <a href="../jugadores.html" style="color:gray; font-size:0.7rem; text-decoration:none;">Volver al Portal</a>
             </div>
         </div>
 
-        <!-- Pantalla de Resultados -->
         <div id="end-screen" class="modal" style="display: none;">
-            <h1 style="color: var(--azul); margin-bottom: 0;">FINALIZADO</h1>
-            <div id="final-res" style="font-size: 1.3rem; margin: 25px 0; line-height: 1.5;"></div>
-            <button onclick="location.reload()" style="background: #333;">REINTENTAR</button>
-            <a href="../jugadores.html" style="margin-top: 20px; color: white; opacity: 0.6; text-decoration: none; font-size: 0.9rem;">Salir</a>
+            <h1 style="color: var(--azul); margin:0">RESULTADOS</h1>
+            <div id="final-res" style="font-size: 1.2rem; margin: 15px 0;"></div>
+            <button onclick="location.reload()">REINTENTAR</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const DATABASE_URL = "TU_URL_AQUÍ"; // Reemplaza por tu URL de Google Apps Script
+        const DATABASE_URL = "TU_URL_AQUÍ"; 
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
@@ -131,99 +139,56 @@
         const timerEl = document.getElementById('timer');
         
         let score = 0, timeLeft = 45, gameActive = false, targetTimer;
-        
-        // CIRCULOS MÁS PEQUEÑOS: Radio 42 (Requiere más puntería)
         let target = { x: 0, y: 0, radius: 42, type: 'good' };
         let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
 
-        // --- IA: DETECCIÓN DE MANOS ---
-        const hands = new Hands({ 
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` 
-        });
-
-        // Configuración para 2 manos y máxima velocidad
-        hands.setOptions({ 
-            maxNumHands: 2, 
-            modelComplexity: 0, 
-            minDetectionConfidence: 0.5, 
-            minTrackingConfidence: 0.5 
-        });
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
 
         hands.onResults((results) => {
             if (!gameActive) return;
-
-            // Ajustar resolución del canvas
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 1. Dibujar el Objetivo (Círculo)
             ctx.beginPath();
             ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
             ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
             ctx.fill();
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 4;
-            ctx.stroke();
+            ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.stroke();
 
-            // 2. Procesar Manos Detectadas
             if (results.multiHandLandmarks) {
                 for (const landmarks of results.multiHandLandmarks) {
-                    // Punto 8 es la punta del dedo índice
                     const x = landmarks[8].x * canvas.width;
                     const y = landmarks[8].y * canvas.height;
-                    
-                    // Dibujar puntero visual en el dedo
-                    ctx.fillStyle = "white";
-                    ctx.beginPath();
-                    ctx.arc(x, y, 14, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = "#007bff"; // Color azul para el borde del puntero
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    // Lógica de colisión (¿Dedo toca círculo?)
-                    const dist = Math.hypot(x - target.x, y - target.y);
-                    if (dist < target.radius + 20) {
-                        processHit();
-                    }
+                    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = "#007bff"; ctx.lineWidth = 2; ctx.stroke();
+                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 20) processHit();
                 }
             }
         });
 
-        // --- LÓGICA DEL JUEGO ---
         function moveTarget() {
             if (targetTimer) clearTimeout(targetTimer);
-            
-            // Si el anterior era verde y no se tocó, cuenta como ignorado (punto positivo mental)
             if (gameActive && target.type === 'bad') stats.ignorados++;
             
-            // Nuevas coordenadas (evitando los bordes de la pantalla)
-            target.x = Math.random() * (canvas.width - 120) + 60;
-            target.y = Math.random() * (canvas.height - 200) + 100;
+            // Margen dinámico según orientación
+            const marginX = canvas.width * 0.15;
+            const marginY = canvas.height * 0.2;
             
-            // Tipo de objetivo: Rojo (bueno) o Verde (malo)
+            target.x = Math.random() * (canvas.width - (marginX * 2)) + marginX;
+            target.y = Math.random() * (canvas.height - (marginY * 2)) + marginY;
             target.type = Math.random() > 0.4 ? 'good' : 'bad';
-            
             stats.inicioTarget = Date.now();
-
-            // Desaparece solo en 1.8 segundos si no lo tocas
-            targetTimer = setTimeout(() => {
-                if (gameActive) moveTarget();
-            }, 1800);
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 1800);
         }
 
         function processHit() {
-            let tiempoReaccion = (Date.now() - stats.inicioTarget) / 1000;
-            
+            let reac = (Date.now() - stats.inicioTarget) / 1000;
             if (target.type === 'good') { 
-                score += 10; 
-                stats.aciertos++; 
-                stats.tiemposReaccion.push(tiempoReaccion); 
+                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
             } else { 
-                score -= 10; 
-                stats.errores++; 
-                // Feedback visual de error
+                score -= 10; stats.errores++; 
                 document.getElementById('container').classList.add('flash-error');
                 setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
             }
@@ -231,28 +196,20 @@
             moveTarget();
         }
 
-        const camera = new Camera(video, {
-            onFrame: async () => {
-                await hands.send({image: video});
-            },
-            width: 640,
-            height: 480
-        });
+        const camera = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 640, height: 480 });
 
-        // --- CONTROLADORES DE EVENTOS ---
+        function toggleFullScreen() {
+            const docEl = document.documentElement;
+            const requestFS = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen;
+            if (requestFS) requestFS.call(docEl);
+        }
+
         document.getElementById('btn-start').onclick = () => {
             stats.nombre = document.getElementById('nombre').value.trim();
             stats.deporte = document.getElementById('deporte').value.trim();
-            
-            if(!stats.nombre || !stats.deporte) {
-                alert("Completa tus datos para empezar");
-                return;
-            }
+            if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
 
-            // Intentar poner en pantalla completa para mejor experiencia
-            const docEl = document.documentElement;
-            if (docEl.requestFullscreen) docEl.requestFullscreen();
-            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+            toggleFullScreen();
 
             document.getElementById('start-screen').style.display = 'none';
             video.style.display = 'block';
@@ -260,52 +217,21 @@
             moveTarget();
             camera.start();
             
-            // Iniciar cuenta regresiva
             let countdown = setInterval(() => {
                 timeLeft--;
                 timerEl.innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    endGame();
-                }
+                if (timeLeft <= 0) { clearInterval(countdown); endGame(); }
             }, 1000);
         };
 
         async function endGame() {
             gameActive = false;
             clearTimeout(targetTimer);
-            
-            // Calcular promedio de reacción
-            let promedio = stats.tiemposReaccion.length > 0 
-                ? (stats.tiemposReaccion.reduce((a,b) => a+b, 0) / stats.tiemposReaccion.length).toFixed(3) 
-                : 0;
-
-            // Mostrar resultados finales
-            document.getElementById('final-res').innerHTML = `
-                <span style="opacity:0.6">${stats.nombre}</span><br>
-                <b style="font-size:3rem">${score}</b> <small>PTS</small><br>
-                <div style="margin-top:10px; color:#007bff">Reacción: ${promedio}s</div>
-            `;
-            
+            let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b, 0) / stats.tiemposReaccion.length).toFixed(3) : 0;
+            document.getElementById('final-res').innerHTML = `${stats.nombre}<br><b style="font-size:2rem">${score}</b> PTS<br>Reacción: ${prom}s`;
             document.getElementById('end-screen').style.display = 'flex';
-
-            // Enviar a la base de datos (Google Sheets)
-            if(DATABASE_URL !== "TU_URLhttps://script.google.com/macros/s/AKfycbw8KkNDB1xpp4czW3ZVU84KWOsSrSPocMX62HmUtVBk-Lvk1yDL63mGpWhCjMVJNWNk/exec_AQUÍ") {
-                const data = {
-                    nombre: stats.nombre,
-                    deporte: stats.deporte,
-                    puntos: score,
-                    reaccion: promedio,
-                    aciertos: stats.aciertos,
-                    errores: stats.errores,
-                    ignorados: stats.ignorados
-                };
-
-                fetch(DATABASE_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(data) 
-                });
+            if(DATABASE_URL !== "TU_URL_AQUÍ") {
+                fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
             }
         }
     </script>
