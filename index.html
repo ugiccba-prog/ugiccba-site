@@ -8,256 +8,148 @@
   <title>Unidad de Gestion Integral | Club Ciudad de Buenos Aires</title>
   <link rel="icon" type="image/png" href="favicon.png" />
   
-  <!-- Enlace al archivo de estilos externo -->
-  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --navy-soft: #143d5b; --cream: #f5f1e8;
+      --paper: #fffdf8; --ink: #102b3c; --muted: #60727d;
+      --line: rgba(8, 43, 73, 0.18); --radius: 1.5rem;
+      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
+      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+
+    .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; min-height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy); transition: all 250ms ease; }
+    .site-header.scrolled { min-height: 4.5rem; background: rgba(255, 253, 248, 0.93); box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px); }
+    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; width: auto; object-fit: contain; }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
+    .main-nav a { font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; }
+
+    .hero { position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-height: 100vh; padding: 8.5rem 7vw 5rem; background: var(--sky); isolation: isolate; overflow: hidden; }
+    .hero-copy { position: relative; z-index: 2; }
+    .hero h1 { font-family: var(--display); font-size: clamp(3rem, 6vw, 6rem); line-height: 0.94; margin: 0; }
+    .hero-visual { position: relative; display: grid; place-items: center; }
+    .court-card { position: relative; width: min(100%, 31rem); height: 40rem; padding: 2rem; color: var(--cream); background: var(--navy); border-radius: 14rem 14rem 1.4rem 1.4rem; transform: rotate(2deg); box-shadow: 1.5rem 1.5rem 0 rgba(255, 253, 248, 0.34); }
+    .court-lines { width: 100%; height: 100%; fill: none; stroke: rgba(245, 241, 232, 0.4); stroke-width: 2; }
+    .pillar { position: absolute; padding: 0.75rem 1rem; color: var(--navy); background: var(--paper); box-shadow: 0 0.8rem 1.8rem rgba(3, 25, 42, 0.22); }
+    .pillar-one { left: -2rem; top: 20%; } .pillar-two { right: -2rem; top: 45%; } .pillar-three { left: 2rem; bottom: 5%; }
+
+    .section { padding: clamp(4rem, 10vw, 10rem) 7vw; }
+    .program-card { display: grid; grid-template-columns: 5rem 1fr 1.2fr; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; background: white; }
+    .program-art { background: var(--sky-light); display: grid; place-items: center; min-height: 15rem; font-size: 3rem; }
+    .program-copy { padding: 3rem; }
+
+    .tarjetas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+    .tarjeta { background: var(--paper); padding: 2.5rem; border-radius: var(--radius); border: 1px solid var(--line); }
+    .embed-container { width: 100%; height: 500px; margin-top: 1.5rem; border-radius: 0.8rem; overflow: hidden; border: 2px dashed var(--line); }
+    .canva-wrapper { position: relative; width: 100%; height: 0; padding-top: 56.25%; overflow: hidden; border-radius: 8px; }
+
+    .site-footer { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2rem; padding: 3rem 7vw; background: var(--navy); color: white; font-size: 0.75rem; }
+    .reveal { opacity: 0; transform: translateY(2rem); transition: all 700ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .menu-toggle { display: none; }
+    @media (max-width: 1150px) {
+      .hero { grid-template-columns: 1fr; text-align: center; }
+      .main-nav { display: none; }
+      .program-card { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#contenido">Saltar al contenido</a>
-  
   <header class="site-header" data-header>
-    <a class="brand" href="#inicio" aria-label="UGI, volver al inicio">
-      <img src="logo-header.png" alt="Logo CCBA y UGI">
-      <span class="brand-copy">
-        <strong>UGI</strong>
-        <small>Club Ciudad de Buenos Aires</small>
-      </span>
+    <a class="brand" href="#inicio">
+      <img src="logo-header.png" alt="Logo UGI">
+      <span class="brand-copy"><strong>UGI</strong><small>Club Ciudad de Buenos Aires</small></span>
     </a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
-      <span class="sr-only">Abrir menú</span>
-      <span></span><span></span>
-    </button>
-    
-    <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
+    <nav class="main-nav">
       <a href="#inicio">Inicio</a>
       <a href="#proposito">Qué hacemos</a>
       <a href="#programas">Programas</a>
-      <a href="#capacitaciones">Capacitaciones</a>
-      <a href="#material">Material</a>
-      <a href="#juegos">Juegos</a>
       <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
     </nav>
   </header>
   
   <main id="contenido">
-    <!-- SECCIÓN INICIO -->
     <section class="hero" id="inicio">
-      <div class="hero-grid" aria-hidden="true"></div>
-      <div class="hero-orbit orbit-one" aria-hidden="true"></div>
-      <div class="hero-orbit orbit-two" aria-hidden="true"></div>
       <div class="hero-copy reveal">
-        <p class="eyebrow">Unidad de Gestión Integral C.C.B.A.</p>
+        <p>Unidad de Gestión Integral</p>
         <h1>El entrenamiento que <em>no se ve</em> también se entrena.</h1>
-        <p class="hero-lead">Profesionalizamos la conducta, la inclusión y los valores para que cada cancha sea un espacio de crecimiento.</p>
-        <div class="hero-actions">
-          <a class="button button-dark" href="#programas">Conocé los programas</a>
-          <a class="text-link" href="#proposito">Nuestra misión <span aria-hidden="true"> </span></a>
-        </div>
+        <a href="#programas" style="display:inline-block; margin-top:2rem; padding:1rem 2rem; background:var(--navy); color:white; border-radius:999px; text-decoration:none; font-weight:bold;">Conocé los programas</a>
       </div>
-      <div class="hero-visual reveal" aria-label="Técnica, mente y valores como pilares de la formación">
+      <div class="hero-visual reveal">
         <div class="court-card">
-          <span class="court-label">Formación integral</span>
-          <svg class="court-lines" viewBox="0 0 520 600" aria-hidden="true">
-            <rect x="24" y="24" width="472" height="552" rx="28" />
-            <path d="M24 300h472M260 24v552" />
-            <circle cx="260" cy="300" r="86" />
-            <path d="M166 24v116h188V24M166 576V460h188v116" />
-            <circle cx="260" cy="300" r="7" class="court-dot" />
-          </svg>
-          <div class="pillar pillar-one"><span>01</span><strong>Técnica</strong></div>
-          <div class="pillar pillar-two"><span>02</span><strong>Mente</strong></div>
-          <div class="pillar pillar-three"><span>03</span><strong>Valores</strong></div>
+          <svg class="court-lines" viewBox="0 0 520 600"><rect x="24" y="24" width="472" height="552" rx="28" /><path d="M24 300h472M260 24v552" /><circle cx="260" cy="300" r="86" /></svg>
+          <div class="pillar pillar-one"><strong>Técnica</strong></div>
+          <div class="pillar pillar-two"><strong>Mente</strong></div>
+          <div class="pillar pillar-three"><strong>Valores</strong></div>
         </div>
       </div>
-      <a class="scroll-cue" href="#proposito" aria-label="Continuar hacia nuestra misión"><span>Deslizá</span><i aria-hidden="true"></i></a>
     </section>
 
-    <!-- PROPÓSITO -->
-    <section class="purpose section" id="proposito">
-      <div class="section-number" aria-hidden="true">01</div>
-      <div class="purpose-intro reveal">
-        <p class="eyebrow eyebrow-blue">Nuestro propósito</p>
-        <h2>Formar deportistas integrales.</h2>
-      </div>
-      <div class="purpose-body reveal">
-        <p class="purpose-statement">La UGI es un órgano técnico transversal que une <strong>educación, conducta y deporte inclusivo</strong> en la base formativa del Club Ciudad.</p>
-        <p>Dejamos atrás la improvisación para aplicar herramientas de neurociencia y arquitectura conductual. Así, deportistas, familias y formadores comparten criterios claros y conviven en sintonía.</p>
-      </div>
-      <div class="principles" aria-label="Principios de la UGI">
-        <article class="principle reveal"><span>Escuchar</span><p>Entender el contexto antes de actuar.</p></article>
-        <article class="principle reveal"><span>Acompañar</span><p>Dar herramientas para crecer con autonomía.</p></article>
-        <article class="principle reveal"><span>Integrar</span><p>Construir un club en el que todos tengan lugar.</p></article>
-      </div>
-    </section>
-
-    <!-- PROGRAMAS -->
-    <section class="programs section" id="programas">
-      <div class="section-heading reveal">
-        <div><p class="eyebrow">Herramientas en cancha</p><h2>Nuestros programas</h2></div>
-        <p>Recursos simples, visuales y concretos para transformar hábitos dentro y fuera del juego.</p>
-      </div>
+    <section class="section" id="programas">
+      <h2>Nuestros Programas</h2>
       <div class="program-list">
-        <article class="program-card program-traffic reveal">
-          <div class="program-index">01</div>
-          <div class="program-art traffic-art" aria-hidden="true">
-            <div class="traffic-light"><i></i><i></i><i></i></div><span class="art-caption">Observar Regular Actuar</span>
-          </div>
+        <article class="program-card reveal">
+          <div class="program-art">🚦</div>
           <div class="program-copy">
-            <p class="card-kicker">Convivencia</p><h3>Semáforo de la UGI</h3>
-            <p>Una guía visual de convivencia y autorregulación para sostener el estándar Ciudad en cada entrenamiento y partido.</p>
-            <a href="semaforo-ugi.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
-          </div>
-        </article>
-        
-        <article class="program-card program-family reveal">
-          <div class="program-index">02</div>
-          <div class="program-art family-art" aria-hidden="true">
-            <svg viewBox="0 0 300 220"><circle cx="76" cy="74" r="28" /><circle cx="205" cy="58" r="35" /><path d="M28 184c3-54 20-80 49-80s47 26 49 80M138 184c4-65 26-96 68-96s64 31 68 96" /><path d="m111 98 30 25 31-34" /></svg>
-            <span class="art-caption">Alentar sin dirigir</span>
-          </div>
-          <div class="program-copy">
-            <p class="card-kicker">Familias</p><h3>El deporte de mis hijos</h3>
-            <p>Claves para ofrecer sostén emocional, disfrutar el proceso y respetar el espacio del entrenador durante la competencia.</p>
-            <a href="deportehijos.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
-          </div>
-        </article>
-        
-       <article class="program-card program-mind reveal">
-          <div class="program-index">03</div>
-          <div class="program-art mind-art" aria-hidden="true">
-            <div class="brain"><span></span><span></span><span></span><span></span><span></span></div><div class="pulse-line"></div>
-            <span class="art-caption">Cuerpo + cerebro</span>
-          </div>
-          <div class="program-copy">
-            <p class="card-kicker">Rendimiento</p><h3>Entrenamiento mental</h3>
-            <p>Herramientas de neurociencia aplicada al deporte para entrenar la atención, gestionar emociones y responder bajo presión.</p>
-            <a href="entrenamiento-mental.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
-          </div>
-        </article> 
-
-        <article class="program-card program-family reveal">
-          <div class="program-index">04</div>
-          <div class="program-art family-art" aria-hidden="true" style="background: #d4e8d2;">
-            <svg viewBox="0 0 300 220">
-              <circle cx="150" cy="110" r="45" fill="none" stroke="var(--navy)" stroke-width="5"/>
-              <circle cx="95" cy="110" r="30" fill="none" stroke="var(--navy)" stroke-width="5"/>
-              <circle cx="205" cy="110" r="30" fill="none" stroke="var(--navy)" stroke-width="5"/>
-            </svg>
-            <span class="art-caption">Pertenencia</span>
-          </div>
-          <div class="program-copy">
-            <p class="card-kicker">Inclusión</p><h3>Ciudad Integrado</h3>
-            <p>Espacio para chicos y chicas con discapacidad, fomentando el sentido de pertenencia y el desarrollo a través del deporte.</p>
-            <a href="ciudad-integrado.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+            <h3>Semáforo de la UGI</h3>
+            <p>Guía visual de convivencia y autorregulación para el estándar Ciudad.</p>
+            <a href="semaforo-ugi.html" style="color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
           </div>
         </article>
 
-    <!-- SECCIÓN CAPACITACIONES -->
-    <section class="section" id="capacitaciones" style="background: var(--cream);">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow">Formación Continua</p>
-          <h2>Capacitaciones</h2>
-        </div>
-        <p>Espacios de aprendizaje y registro para nuestra comunidad.</p>
-      </div>
-      <div class="tarjetas-grid">
-        <article class="tarjeta reveal">
-          <h3>Profesores y Entrenadores</h3>
-          <p>Acceso exclusivo al material de formación del staff UGI.</p>
-          <a href="https://forms.gle/3vmrQR95KaBi42MdA" target="_blank" class="nav-cta" style="display: inline-block; margin-top: 1.5rem;">Ingresar al Portal</a>
+        <article class="program-card reveal">
+          <div class="program-art">🏠</div>
+          <div class="program-copy">
+            <h3>El deporte de mis hijos</h3>
+            <p>Claves para ofrecer sostén emocional y respeto al espacio del entrenador.</p>
+            <a href="deportehijos.html" style="color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+          </div>
         </article>
-        <article class="tarjeta reveal">
-          <h3>Familias y Socios</h3>
-          <p>Talleres sobre el deporte de nuestros hijos y el rol en la tribuna.</p>
-          <span class="proximamente-badge">Próximamente</span>
-        </article>
-        <article class="tarjeta reveal">
-          <h3>Jugadores y Jugadoras</h3>
-          <p>Entrenamiento mental y talleres de convivencia.</p>
-         <a href="jugadores.html" class="nav-cta" style="display: inline-block; margin-top: 1.5rem;">Ingresar al Portal</a>
-        </article>
-      </div>
-    </section>
 
-    <!-- SECCIÓN MATERIAL DE LECTURA -->
-    <section class="section" id="material" style="background: var(--sky-light);">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow">Recursos Compartidos</p>
-          <h2>Material de Lectura</h2>
-        </div>
-      </div>
-      <div class="tarjetas-grid">
-        <article class="tarjeta reveal" style="grid-column: 1 / -1; max-width: 800px; margin: 0 auto; width: 100%;">
-          <h3>Mapa Emocional</h3>
-          <div class="embed-container mapa-container" style="border: none; background: transparent; height: auto;">
-            <div class="canva-wrapper">
-              <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-                src="https://www.canva.com/design/DAHOs1XwqE4/vHRvJptWorh1qiyNTNGyYQ/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-              </iframe>
-            </div>
-            <a class="canva-link" href="https://www.canva.com/design/DAHOs1XwqE4/vHRvJptWorh1qiyNTNGyYQ/view?utm_content=DAHOs1XwqE4&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Emociones (Presentación)</a>
+        <article class="program-card reveal">
+          <div class="program-art">🧠</div>
+          <div class="program-copy">
+            <h3>Entrenamiento mental</h3>
+            <p>Neurociencia aplicada para gestionar emociones bajo presión.</p>
+            <a href="entrenamiento-mental.html" style="color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- SECCIÓN JUEGOS -->
-    <section class="section" id="juegos" style="background: var(--paper);">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow">Dinámicas</p>
-          <h2>Juegos interactivos</h2>
-        </div>
-      </div>
+    <section class="section" id="juegos" style="background: var(--cream);">
+      <h2>Juegos interactivos</h2>
       <div class="tarjetas-grid">
-        <article class="tarjeta reveal">
+        <div class="tarjeta reveal">
           <h3>Memotest Emociones</h3>
-          <div class="embed-container">
-            <iframe src="https://es.educaplay.com/juego/6784522-emociones.html" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-          </div>
-        </article>
-        <article class="tarjeta reveal">
-          <h3>Conducta: Sí o No</h3>
-          <div class="embed-container">
-            <iframe src="https://es.educaplay.com/juego/29012992-conducta.html" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="approach" id="enfoque">
-      <div class="approach-copy reveal">
-        <p class="eyebrow">Una cultura compartida</p>
-        <h2>El resultado importa.<br /><em>La forma también.</em></h2>
-        <p>Trabajamos con todos los actores del club para que cada gesto, decisión y conversación sea parte de una misma formación.</p>
-        <a class="button button-light" href="mailto:ugiccba@gmail.com">Conversemos</a>
-      </div>
-      <div class="roles" aria-label="Personas que integran la comunidad UGI">
-        <div class="role reveal"><span>01</span><strong>Deportistas</strong></div>
-        <div class="role reveal"><span>02</span><strong>Familias</strong></div>
-        <div class="role reveal"><span>03</span><strong>Formadores</strong></div>
-        <div class="role reveal"><span>04</span><strong>Club</strong></div>
+          <div class="embed-container"><iframe src="https://es.educaplay.com/juego/6784522-emociones.html" width="100%" height="100%"></iframe></div>
+        </div>
       </div>
     </section>
   </main>
 
-<footer class="site-footer">
-    <div class="footer-mark">
-      <img src="logo-header.png" alt="Logo UGI" style="max-height: 50px;">
-      <span class="brand-copy" style="color: var(--paper); margin-left: 0.5rem; text-align: left;">
-        <strong style="display: block;">UGI</strong>
-      </span>
-    </div>
-    <div>
-      <p>Unidad de Gestión Integral</p>
-      <p>Club Ciudad de Buenos Aires</p>
-    </div>
-    <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
-    <p class="copyright"> <span data-year></span> C.C.B.A.</p>
+  <footer class="site-footer">
+    <img src="logo-header.png" alt="UGI" style="max-height: 40px;">
+    <p>Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+    <p>© 2026 CCBA</p>
   </footer>
 
-  <!-- Enlace al archivo JavaScript externo -->
-  <script src="js/script.js"></script>
+  <script>
+    const header = document.querySelector("[data-header]");
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 24);
+    });
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("visible"); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+  </script>
 </body>
 </html>
