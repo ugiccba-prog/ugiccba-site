@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UGI Mobile ULTRA</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    
+    <style>
+        :root { --rojo: #ff3e3e; --verde: #00ff88; --azul: #007bff; --oscuro: #0a0a0a; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: white; font-family: sans-serif; 
+            overflow: hidden; touch-action: none;
+        }
+
+        #container { position: relative; width: 100%; height: 100dvh; }
+        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+
+        #ui { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(0,0,0,0.7); padding: 10px 0; z-index: 10; pointer-events: none; }
+        .stat { font-size: 0.9rem; font-weight: bold; color: white; }
+
+        /* PANTALLA DE INICIO RE-DISEÑADA */
+        .modal { 
+            position: absolute; inset: 0; background: var(--oscuro); 
+            z-index: 2000; display: flex; flex-direction: column; 
+            padding: 20px; box-sizing: border-box;
+            overflow-y: auto; /* Permite scroll si el teclado tapa todo */
+        }
+
+        .form-container { 
+            width: 100%; max-width: 600px; margin: auto;
+            display: flex; flex-direction: column; gap: 15px; 
+        }
+
+        /* AJUSTE AGRESIVO PARA HORIZONTAL */
+        @media (orientation: landscape) {
+            .modal { padding: 10px; justify-content: center; }
+            .form-container { 
+                flex-direction: row; /* Pone datos a la izquierda y botón a la derecha */
+                align-items: center; 
+                gap: 20px;
+            }
+            .inputs-col { flex: 2; display: flex; flex-direction: column; gap: 10px; }
+            .button-col { flex: 1; }
+            h2 { display: none; } /* Ocultamos título para ganar espacio */
+            .instrucciones { display: none; } /* Ocultamos texto extra */
+        }
+
+        .form-group { text-align: left; }
+        label { font-size: 0.7rem; color: var(--azul); font-weight: bold; text-transform: uppercase; }
+
+        input { 
+            width: 100%; padding: 12px; border-radius: 8px; 
+            border: 2px solid var(--azul); /* Borde azul para notar el cambio */
+            background: #1a1a1a; color: white; font-size: 16px !important; 
+            box-sizing: border-box; outline: none;
+        }
+
+        button { 
+            width: 100%; padding: 20px; background: var(--azul); color: white; 
+            border: none; border-radius: 12px; font-size: 1.2rem; 
+            font-weight: bold; cursor: pointer;
+        }
+
+        .instrucciones { font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: left; }
+
+        .flash-error { animation: flash 0.3s; }
+        @keyframes flash { 0% { background: rgba(255,0,0,0.5); } 100% { background: rgba(255,0,0,0); } }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <video id="webcam" autoplay playsinline style="display:none;"></video>
+        <canvas id="output_canvas"></canvas>
+        
+        <div id="ui">
+            <div class="stat">PTS: <span id="score">0</span></div>
+            <div class="stat">⌛: <span id="timer">45</span>s</div>
+        </div>
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="modal">
+            <h2 style="color:var(--azul)">DATOS DEL ATLETA</h2>
+            <div class="form-container">
+                
+                <div class="inputs-col">
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Deporte:</label>
+                        <input type="text" id="deporte" placeholder="Tu deporte" autocomplete="off">
+                    </div>
+                    <div class="instrucciones">
+                        <span style="color:var(--rojo)">● Toca Rojo</span> | <span style="color:var(--verde)">○ Evita Verde</span>
+                    </div>
+                </div>
+
+                <div class="button-col">
+                    <button id="btn-start">INICIAR</button>
+                </div>
+
+            </div>
+            <a href="../../pages/jugadores.html" style="color:gray; font-size:0.7rem; margin-top:15px; text-decoration:none;">← Volver al Portal</a>
+        </div>
+
+        <div id="end-screen" class="modal" style="display: none;">
+            <h1 style="color: var(--azul);">RESULTADOS</h1>
+            <div id="final-res" style="font-size: 1.4rem; margin-bottom: 20px;"></div>
+            <button onclick="location.reload()" style="max-width:200px">REPETIR</button>
+        </div>
+    </div>
+
+    <script>
+        const DATABASE_URL = "TU_URL_AQUÍ"; 
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        
+        let score = 0, timeLeft = 45, gameActive = false, targetTimer;
+        let target = { x: 0, y: 0, radius: 42, type: 'good' };
+        let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        hands.onResults((results) => {
+            if (!gameActive) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+            ctx.fillStyle = target.type === 'good' ? '#ff3e3e' : '#00ff88';
+            ctx.fill();
+            ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.stroke();
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const x = landmarks[8].x * canvas.width;
+                    const y = landmarks[8].y * canvas.height;
+                    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = "#007bff"; ctx.lineWidth = 2; ctx.stroke();
+                    if (Math.hypot(x - target.x, y - target.y) < target.radius + 20) processHit();
+                }
+            }
+        });
+
+        function moveTarget() {
+            if (targetTimer) clearTimeout(targetTimer);
+            if (gameActive && target.type === 'bad') stats.ignorados++;
+            target.x = Math.random() * (canvas.width - 150) + 75;
+            target.y = Math.random() * (canvas.height - 150) + 75;
+            target.type = Math.random() > 0.4 ? 'good' : 'bad';
+            stats.inicioTarget = Date.now();
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 1800);
+        }
+
+        function processHit() {
+            let reac = (Date.now() - stats.inicioTarget) / 1000;
+            if (target.type === 'good') { 
+                score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
+            } else { 
+                score -= 10; stats.errores++; 
+                document.getElementById('container').classList.add('flash-error');
+                setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
+            }
+            scoreEl.innerText = score;
+            moveTarget();
+        }
+
+        const camera = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 640, height: 480 });
+
+        document.getElementById('btn-start').onclick = () => {
+            stats.nombre = document.getElementById('nombre').value.trim();
+            stats.deporte = document.getElementById('deporte').value.trim();
+            if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
+
+            const docEl = document.documentElement;
+            const requestFS = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen;
+            if (requestFS) requestFS.call(docEl);
+
+            document.getElementById('start-screen').style.display = 'none';
+            video.style.display = 'block';
+            gameActive = true;
+            moveTarget();
+            camera.start();
+            
+            let countdown = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) { clearInterval(countdown); endGame(); }
+            }, 1000);
+        };
+
+        async function endGame() {
+            gameActive = false;
+            clearTimeout(targetTimer);
+            let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b, 0) / stats.tiemposReaccion.length).toFixed(3) : 0;
+            document.getElementById('final-res').innerHTML = `<b>${score} PTS</b><br>Reacción: ${prom}s`;
+            document.getElementById('end-screen').style.display = 'flex';
+            if(DATABASE_URL !== "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec") {
+                fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
+            }
+        }
+    </script>
+</body>
+</html>

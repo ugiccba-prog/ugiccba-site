@@ -28,11 +28,16 @@ Centralizar y profesionalizar el acceso a herramientas pedagógicas y conductual
 
 ## 📂 Estructura del Repositorio
 - `index.html`: Punto de entrada principal y landing page integral.
-- `semaforo-ugi.html`: Detalle del programa de convivencia.
-- `deportehijos.html`: Recurso para familias y acompañamiento.
-- `entrenamiento-mental.html`: Sección de rendimiento cognitivo.
-- `ciudad-integrado.html`: Sección de inclusión.
-- `jugadores.html`: Portal específico para deportistas.
+- `pages/`: Páginas públicas agrupadas por contenido.
+- `apps/training/`: Aplicación interactiva de entrenamiento y sus recursos.
+- `assets/images/`: Logos, favicon e imágenes editoriales.
+- `assets/styles/`: Hojas de estilo compartidas del sitio.
+- `assets/scripts/`: JavaScript compartido del sitio.
+- `CNAME`: Configuración del dominio de GitHub Pages.
+
+Las páginas y aplicaciones nuevas deben enlazarse desde sus carpetas organizadas. Las
+copias HTML en la raíz y `training-app/` son redirecciones de compatibilidad para
+conservar las URLs publicadas anteriormente.
 
 ## 🔧 Instalación y Desarrollo Local
 Si deseas visualizar el proyecto localmente:
