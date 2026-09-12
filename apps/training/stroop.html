@@ -151,7 +151,7 @@
       Modo daltónico (agrega texturas a las barras)</label>
 
     <button class="btn" id="btn-practica">EMPEZAR PRÁCTICA</button>
-    <a class="salir" href="../jugadores.html">Volver al portal</a>
+    <a class="salir" href="../../pages/jugadores.html">Volver al portal</a>
   </div>
 </section>
 
@@ -197,12 +197,32 @@
     <p id="interpretacion"></p>
     <p id="estado-envio">Guardando…</p>
     <button class="btn" id="btn-repetir">REPETIR</button>
-    <a class="salir" href="../jugadores.html">Volver al portal</a>
+    <a class="salir" href="../../pages/jugadores.html">Volver al portal</a>
   </div>
 </section>
 
 <script src="./ugi-envio.js"></script>
 <script>
+/* Red de seguridad: si ugi-envio.js no carga (404, bloqueo de red, cache vieja),
+   antes se rompía TODO el test — el botón "empezar" no hacía nada. Ahora el test
+   funciona igual y el resultado queda guardado en el celular para reintentar. */
+if (!window.UGI) {
+  console.warn('[UGI] ugi-envio.js no cargó: usando modo local sin envío.');
+  window.UGI = (function(){
+    var COLA='ugi_cola_envios_v1', PERFIL='ugi_perfil_v1';
+    function leer(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+    function escribir(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+    return {
+      getPerfil: function(){ return leer(PERFIL,{nombre:'',deporte:''}); },
+      setPerfil: function(n,d){ escribir(PERFIL,{nombre:n,deporte:d}); },
+      normalizarNombre: function(t){ return String(t||'').trim().replace(/\s+/g,' '); },
+      mediana: function(a){ if(!a||!a.length) return null; var b=a.slice().sort(function(x,y){return x-y;}); var m=Math.floor(b.length/2); return b.length%2?b[m]:(b[m-1]+b[m])/2; },
+      pendientes: function(){ return leer(COLA,[]).length; },
+      enviarResultado: function(p){ var c=leer(COLA,[]); c.push(p); escribir(COLA,c.slice(-50)); return Promise.resolve({ok:false,motivo:'sin_modulo'}); },
+      reintentarCola: function(){ return Promise.resolve(0); }
+    };
+  })();
+}
 (function(){
   'use strict';
 
