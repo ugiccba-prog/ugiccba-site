@@ -113,13 +113,19 @@
 
         <div id="end-screen" class="modal" style="display: none;">
             <h1 style="color: var(--azul);">RESULTADOS</h1>
-            <div id="final-res" style="font-size: 1.4rem; margin-bottom: 20px;"></div>
+            <div id="final-res" style="font-size: 1.4rem; margin-bottom: 12px;"></div>
+            <p id="estado-envio" style="font-size:0.75rem; opacity:0.6; margin:0 0 18px">Guardando…</p>
             <button onclick="location.reload()" style="max-width:200px">REPETIR</button>
+            <a href="../../pages/jugadores.html" style="color:gray; font-size:0.8rem; margin-top:14px; text-decoration:none;">← Volver al portal</a>
         </div>
     </div>
 
+    <script src="./ugi-envio.js"></script>
     <script>
-        const DATABASE_URL = "TU_URL_AQUÍ"; 
+        /* Antes aca decia "TU_URL_AQUÍ" y el if de abajo comparaba contra la URL real:
+           la condicion daba true siempre y el fetch salia contra el texto "TU_URL_AQUÍ".
+           Resultado: esta version nunca guardo un solo resultado. */
+        const URL_REACCION = "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec";
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
         const ctx = canvas.getContext('2d');
@@ -128,15 +134,25 @@
         
         let score = 0, timeLeft = 45, gameActive = false, targetTimer;
         let target = { x: 0, y: 0, radius: 42, type: 'good' };
-        let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
+        let ultimoImpacto = 0;
 
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-
-        hands.onResults((results) => {
-            if (!gameActive) return;
+        function ajustarCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        }
+        ajustarCanvas();
+        window.addEventListener('resize', ajustarCanvas);
+        let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
+
+        /* Si el CDN de MediaPipe no carga (red con filtro, caida de jsdelivr, sin internet),
+           antes la pagina quedaba en negro sin explicar nada: el script moria en esta linea.
+           Ahora avisa y no deja arrancar el juego. */
+        const mediapipeOk = (typeof Hands === 'function' && typeof Camera === 'function');
+        const hands = mediapipeOk ? new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` }) : null;
+        if (hands) hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        if (hands) hands.onResults((results) => {
+            if (!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             ctx.beginPath();
@@ -156,17 +172,20 @@
             }
         });
 
-        function moveTarget() {
+        function moveTarget(porTiempo) {
             if (targetTimer) clearTimeout(targetTimer);
-            if (gameActive && target.type === 'bad') stats.ignorados++;
+            // Solo cuenta como "ignorado" el verde que se fue solo, no el que tocaste
+            if (gameActive && porTiempo && target.type === 'bad') stats.ignorados++;
             target.x = Math.random() * (canvas.width - 150) + 75;
             target.y = Math.random() * (canvas.height - 150) + 75;
             target.type = Math.random() > 0.4 ? 'good' : 'bad';
             stats.inicioTarget = Date.now();
-            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 1800);
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(true); }, 1800);
         }
 
         function processHit() {
+            if (Date.now() - ultimoImpacto < 300) return;
+            ultimoImpacto = Date.now();
             let reac = (Date.now() - stats.inicioTarget) / 1000;
             if (target.type === 'good') { 
                 score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
@@ -176,15 +195,30 @@
                 setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
             }
             scoreEl.innerText = score;
-            moveTarget();
+            moveTarget(false);
         }
 
-        const camera = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 640, height: 480 });
+        const camera = mediapipeOk ? new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 640, height: 480 }) : null;
+
+        if (!mediapipeOk) {
+            const b = document.getElementById('btn-start');
+            b.disabled = true; b.style.opacity = '.45'; b.innerText = 'NO DISPONIBLE';
+            const msg = document.createElement('p');
+            msg.style.cssText = 'color:#ff8a8a;font-size:.85rem;line-height:1.4';
+            msg.innerText = 'No se pudo cargar el detector de manos. Revisá la conexión y volvé a entrar; si estás en una red con filtros, probá desde otra.';
+            b.parentNode.insertBefore(msg, b);
+        }
+
+        const perfil = UGI.getPerfil();
+        document.getElementById('nombre').value = perfil.nombre || '';
+        document.getElementById('deporte').value = perfil.deporte || '';
 
         document.getElementById('btn-start').onclick = () => {
-            stats.nombre = document.getElementById('nombre').value.trim();
+            stats.nombre = UGI.normalizarNombre(document.getElementById('nombre').value);
             stats.deporte = document.getElementById('deporte').value.trim();
             if(!stats.nombre || !stats.deporte) return alert("Completa tus datos");
+            UGI.setPerfil(stats.nombre, stats.deporte);
+            ajustarCanvas();
 
             const docEl = document.documentElement;
             const requestFS = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen;
@@ -193,8 +227,8 @@
             document.getElementById('start-screen').style.display = 'none';
             video.style.display = 'block';
             gameActive = true;
-            moveTarget();
-            camera.start();
+            moveTarget(false);
+            if (camera) camera.start();
             
             let countdown = setInterval(() => {
                 timeLeft--;
@@ -203,15 +237,38 @@
             }, 1000);
         };
 
+        function apagarCamara() {
+            try { camera.stop(); } catch (e) {}
+            const stream = video.srcObject;
+            if (stream) { stream.getTracks().forEach((t) => t.stop()); video.srcObject = null; }
+            if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+        }
+
         async function endGame() {
             gameActive = false;
             clearTimeout(targetTimer);
+            apagarCamara();
             let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b, 0) / stats.tiemposReaccion.length).toFixed(3) : 0;
             document.getElementById('final-res').innerHTML = `<b>${score} PTS</b><br>Reacción: ${prom}s`;
             document.getElementById('end-screen').style.display = 'flex';
-            if(DATABASE_URL !== "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec") {
-                fetch(DATABASE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nombre: stats.nombre, deporte: stats.deporte, puntos: score, reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados }) });
-            }
+
+            const estado = document.getElementById('estado-envio');
+            UGI.enviarResultado({
+                jugador: stats.nombre,
+                deporte: stats.deporte,
+                juego: 'REACCION_MOVIL',
+                version: '2.0',
+                puntos: score,
+                reaccion: prom,
+                aciertos: stats.aciertos,
+                errores: stats.errores,
+                ignorados: stats.ignorados
+            }, URL_REACCION).then(function (r) {
+                const pend = UGI.pendientes();
+                estado.innerText = r.ok
+                    ? '✓ Resultado guardado en la planilla'
+                    : '⚠ Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend > 1 ? 's' : '') + ')' : '') + ', se envía solo al reconectar';
+            });
         }
     </script>
 </body>

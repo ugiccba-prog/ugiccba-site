@@ -120,13 +120,23 @@
                 <tr><td>Puntos</td><td id="res-puntos" class="val">0</td></tr>
                 <tr><td>Reacción Prom.</td><td id="res-reaccion" class="val">0s</td></tr>
             </table>
-            <button onclick="location.reload()" style="background:#444">FINALIZAR</button>
+            <p id="estado-envio" style="font-size:0.75rem; opacity:0.6; margin:0 0 12px">Guardando…</p>
+            <button onclick="location.reload()" style="background:#444">REPETIR</button>
+            <a href="../../pages/jugadores.html" style="color:gray; font-size:0.8rem; margin-top:14px; text-decoration:none;">← Volver al portal</a>
         </div>
     </div>
 
+    <script src="./ugi-envio.js"></script>
     <script>
-        // --- PEGA TU URL DE GOOGLE SHEETS AQUÍ ---
-        const DATABASE_URL = "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec"; 
+        /* En celular esta version se pelea con la pantalla: mobile.html usa un modelo
+           mas liviano, pantalla completa y un target mas chico. Con ?pc=1 se fuerza esta. */
+        if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) && location.search.indexOf('pc=1') === -1) {
+            location.replace('mobile.html' + location.search);
+        }
+
+        /* Planilla propia de los modulos de reaccion (distinta a la del Stroop).
+           Para unificar todo en una sola, borra esta linea: UGI usa su DATABASE_URL. */
+        const URL_REACCION = "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec"; 
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
@@ -136,14 +146,27 @@
         
         let score = 0, timeLeft = 45, gameActive = false, targetTimer;
         let target = { x: 0, y: 0, radius: 55, type: 'good' };
+        let ultimoImpacto = 0;   // evita que dos manos (o dos frames) cuenten el mismo toque
+
+        /* El canvas tiene que tener su tamano real ANTES del primer target: si no,
+           mide 300x150 por defecto y la primera pelota sale siempre arriba a la izquierda. */
+        function ajustarCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        ajustarCanvas();
+        window.addEventListener('resize', ajustarCanvas);
         let stats = { nombre: "", deporte: "", aciertos: 0, errores: 0, ignorados: 0, tiemposReaccion: [], inicioTarget: 0 };
 
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5 });
+        /* Si el CDN de MediaPipe no carga (red con filtro, caida de jsdelivr, sin internet),
+           antes la pagina quedaba en negro sin explicar nada: el script moria en esta linea.
+           Ahora avisa y no deja arrancar el juego. */
+        const mediapipeOk = (typeof Hands === 'function' && typeof Camera === 'function');
+        const hands = mediapipeOk ? new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` }) : null;
+        if (hands) hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5 });
         
-        hands.onResults((results) => {
+        if (hands) hands.onResults((results) => {
             if (!gameActive) return;
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             // Dibujar círculo
@@ -163,19 +186,23 @@
             }
         });
 
-        function moveTarget() {
+        function moveTarget(porTiempo) {
             if (targetTimer) clearTimeout(targetTimer);
-            if (gameActive && target.type === 'bad') stats.ignorados++;
+            // "Ignorado" es el verde que se fue solo, sin que lo tocaran: eso es el acierto
+            // del ejercicio. Antes tambien sumaba cuando lo tocabas, o sea contaba el error dos veces.
+            if (gameActive && porTiempo && target.type === 'bad') stats.ignorados++;
             
             target.x = Math.random() * (canvas.width - 150) + 75;
             target.y = Math.random() * (canvas.height - 150) + 75;
             target.type = Math.random() > 0.4 ? 'good' : 'bad';
             stats.inicioTarget = Date.now();
 
-            targetTimer = setTimeout(() => { if (gameActive) moveTarget(); }, 2000); 
+            targetTimer = setTimeout(() => { if (gameActive) moveTarget(true); }, 2000);
         }
 
         function processHit() {
+            if (Date.now() - ultimoImpacto < 300) return;
+            ultimoImpacto = Date.now();
             let reac = (Date.now() - stats.inicioTarget) / 1000;
             if (target.type === 'good') { 
                 score += 10; stats.aciertos++; stats.tiemposReaccion.push(reac); 
@@ -185,29 +212,46 @@
                 setTimeout(() => document.getElementById('container').classList.remove('flash-error'), 300);
             }
             scoreEl.innerText = score;
-            moveTarget();
+            moveTarget(false);
         }
 
-        const camera = new Camera(video, { 
-            onFrame: async () => { await hands.send({image: video}); }, 
-            width: 1280, height: 720 
-        });
+        const camera = mediapipeOk ? new Camera(video, {
+            onFrame: async () => { await hands.send({image: video}); },
+            width: 1280, height: 720
+        }) : null;
+
+        if (!mediapipeOk) {
+            const b = document.getElementById('btn-start');
+            b.disabled = true; b.style.opacity = '.45'; b.innerText = 'NO DISPONIBLE';
+            const msg = document.createElement('p');
+            msg.style.cssText = 'color:#ff8a8a;font-size:.85rem;line-height:1.4';
+            msg.innerText = 'No se pudo cargar el detector de manos. Revisá la conexión y volvé a entrar; si estás en una red con filtros, probá desde otra.';
+            b.parentNode.insertBefore(msg, b);
+        }
+
+        // El mismo pibe no tiene que retipear su nombre en cada juego
+        const perfil = UGI.getPerfil();
+        document.getElementById('nombre').value = perfil.nombre || '';
+        document.getElementById('deporte').value = perfil.deporte || '';
 
         document.getElementById('btn-start').addEventListener('click', function(e) {
             e.preventDefault();
-            stats.nombre = document.getElementById('nombre').value.trim();
+            stats.nombre = UGI.normalizarNombre(document.getElementById('nombre').value);
             stats.deporte = document.getElementById('deporte').value.trim();
 
             if(!stats.nombre || !stats.deporte) {
                 alert("Por favor, completa tu nombre y deporte.");
                 return;
             }
+            UGI.setPerfil(stats.nombre, stats.deporte);
+
+            ajustarCanvas();
 
             document.getElementById('start-screen').style.display = 'none';
             video.style.display = 'block';
             gameActive = true;
-            moveTarget();
-            camera.start().catch(err => alert("Error de cámara: " + err));
+            moveTarget(false);
+            if (camera) camera.start().catch(err => alert("Error de cámara: " + err));
 
             let cd = setInterval(() => {
                 timeLeft--; 
@@ -216,9 +260,17 @@
             }, 1000);
         });
 
+        function apagarCamara() {
+            // Sin esto la webcam queda prendida despues del test: la lucecita sigue encendida
+            try { camera.stop(); } catch (e) {}
+            const stream = video.srcObject;
+            if (stream) { stream.getTracks().forEach((t) => t.stop()); video.srcObject = null; }
+        }
+
         async function endGame() {
             gameActive = false;
             clearTimeout(targetTimer);
+            apagarCamara();
             let prom = stats.tiemposReaccion.length > 0 ? (stats.tiemposReaccion.reduce((a,b)=>a+b)/stats.tiemposReaccion.length).toFixed(3) : 0;
             
             document.getElementById('res-nombre').innerText = stats.nombre;
@@ -226,17 +278,27 @@
             document.getElementById('res-reaccion').innerText = prom + "s";
             document.getElementById('end-screen').style.display = 'flex';
 
-            // Envío a Google Sheets
-            if(DATABASE_URL !== "TU_URL_AQUÍ") {
-                fetch(DATABASE_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ 
-                        nombre: stats.nombre, deporte: stats.deporte, puntos: score, 
-                        reaccion: prom, aciertos: stats.aciertos, errores: stats.errores, ignorados: stats.ignorados 
-                    }) 
-                });
-            }
+            /* Antes esto era fetch(..., mode:'no-cors'): la respuesta es opaca, asi que el
+               envio "salia bien" aunque el Sheet devolviera error, y si fallaba el resultado
+               se perdia. Ahora UGI verifica la respuesta y, si no entra, lo guarda en el
+               celular y lo reintenta solo cuando el jugador vuelve a abrir cualquier juego. */
+            const estado = document.getElementById('estado-envio');
+            UGI.enviarResultado({
+                jugador: stats.nombre,
+                deporte: stats.deporte,
+                juego: 'REACCION_PC',
+                version: '2.0',
+                puntos: score,
+                reaccion: prom,
+                aciertos: stats.aciertos,
+                errores: stats.errores,
+                ignorados: stats.ignorados
+            }, URL_REACCION).then(function (r) {
+                const pend = UGI.pendientes();
+                estado.innerText = r.ok
+                    ? '✓ Resultado guardado en la planilla'
+                    : '⚠ Sin conexión — guardado en el dispositivo' + (pend ? ' (' + pend + ' pendiente' + (pend > 1 ? 's' : '') + ')' : '') + ', se envía solo al reconectar';
+            });
         }
     </script>
 </body>

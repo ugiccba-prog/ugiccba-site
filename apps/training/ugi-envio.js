@@ -65,23 +65,32 @@ window.UGI = (function () {
      ✅ Content-Type 'text/plain' → es un "simple request", no hay preflight,
         Apps Script lo acepta y podés LEER la respuesta y saber de verdad si
         entró o no.                                                            */
-  function enviarResultado(payload) {
+  /* urlOverride: un juego puede mandar a su propia planilla pasando su URL.
+     Si no se pasa nada, va a DATABASE_URL. La cola offline recuerda a que
+     destino iba cada resultado, asi un reintento no lo manda a la planilla
+     equivocada. */
+  function enviarResultado(payload, urlOverride) {
     const datos = Object.assign({
       enviado_en: new Date().toISOString(),
       dispositivo: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'movil' : 'escritorio',
       id_sesion: Math.random().toString(36).slice(2, 10)
     }, payload);
  
-    if (!DATABASE_URL || DATABASE_URL.indexOf('http') !== 0) {
-      console.warn('[UGI] Falta configurar DATABASE_URL en ugi-envio.js');
-      encolar(datos);
+    const destino = urlOverride || datos._url || DATABASE_URL;
+ 
+    if (!destino || destino.indexOf('http') !== 0) {
+      console.warn('[UGI] URL de envio no configurada (revisa ugi-envio.js o el juego)');
+      encolar(Object.assign({}, datos, { _url: destino }));
       return Promise.resolve({ ok: false, motivo: 'sin_url' });
     }
  
-    return fetch(DATABASE_URL, {
+    const cuerpo = Object.assign({}, datos);
+    delete cuerpo._url;
+ 
+    return fetch(destino, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(datos),
+      body: JSON.stringify(cuerpo),
       redirect: 'follow'
     })
       .then((r) => r.text())
@@ -91,7 +100,7 @@ window.UGI = (function () {
       })
       .catch((err) => {
         console.warn('[UGI] No se pudo enviar, queda en cola:', err.message);
-        encolar(datos);
+        encolar(Object.assign({}, datos, { _url: destino }));
         return { ok: false, motivo: err.message };
       });
   }
@@ -111,7 +120,7 @@ window.UGI = (function () {
     escribirLocal(COLA_KEY, []);            // la vacío ya; lo que falle se re-encola solo
     let enviados = 0;
     return cola.reduce(
-      (p, item) => p.then(() => enviarResultado(item).then((r) => { if (r.ok) enviados++; })),
+      (p, item) => p.then(() => enviarResultado(item, item._url).then((r) => { if (r.ok) enviados++; })),
       Promise.resolve()
     ).then(() => enviados);
   }
