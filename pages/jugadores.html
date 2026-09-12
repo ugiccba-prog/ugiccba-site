@@ -126,6 +126,37 @@
         
         <!-- MODULO 01: REACCIÓN (CÁMARA) -->
         <article class="app-card" style="margin-top: 4rem;">
+          <div class="app-info">
+            <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 01</p>
+            <h2>Reacción con cámara</h2>
+            <p>Aparecen círculos en la pantalla y se responde con la mano, sin tocar nada:
+               la cámara sigue el dedo índice. Hay que <strong>tocar los rojos</strong> y
+               <strong>dejar pasar los verdes</strong>, durante 45 segundos.</p>
+
+            <div style="margin-top:1.5rem; background:#f6f9fb; border-radius:1rem; padding:1rem 1.2rem; font-size:0.85rem;">
+              <strong>Qué mide:</strong>
+              <ul style="margin:0.5rem 0 0; padding-left:1.2rem;">
+                <li><b>Tiempo de reacción:</b> cuánto tarda la mano en llegar al estímulo correcto.</li>
+                <li><b>Inhibición motora:</b> los verdes que dejaste pasar contra los que manoteaste igual.</li>
+              </ul>
+            </div>
+
+            <p style="font-size:0.8rem; opacity:0.65; margin-top:1rem;">Necesita permiso de cámara. En celular se abre la versión liviana.</p>
+
+            <div class="btn-group">
+              <a href="../apps/training/index.html" class="btn-main btn-navy">EMPEZAR ENTRENAMIENTO</a>
+            </div>
+          </div>
+          <div class="app-visual" style="background:#0a0a0a;">
+            <div style="display:flex; gap:18px; align-items:center;">
+              <div style="width:54px; height:54px; border-radius:50%; background:#ff3e3e; border:4px solid #fff;"></div>
+              <div style="width:54px; height:54px; border-radius:50%; background:#00ff88; border:4px solid rgba(255,255,255,.35); opacity:.5;"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- MODULO 02: STROOP -->
+        <article class="app-card" style="margin-top: 4rem;">
   <div class="app-info">
     <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 02</p>
     <h2>Test de Stroop</h2>
@@ -150,34 +181,6 @@
     <div style="font-family:'Arial Black',sans-serif; font-size:2.2rem; color:#00C853;">ROJO</div>
   </div>
 </article>
-
-        <!-- Simulador PC Módulo 01 (Oculto hasta clic) -->
-        <div id="simulador-pc" class="game-window">
-            <div style="background: var(--navy); color: white; padding: 10px 20px; font-size: 0.7rem; font-weight: bold;">SIMULADOR PC ACTIVADO</div>
-            <iframe src="../apps/training/index.html" allow="camera"></iframe>
-        </div>
-
-
-        <!-- MODULO 02: STROOP PRO (BARRAS) -->
-        <article class="app-card" style="margin-top: 4rem;">
-            <div class="app-info">
-                <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 02</p>
-                <h2>Reto Stroop Pro</h2>
-                <p>Aparece una palabra pintada de otro color. Tocá la barra del color de la <strong>tinta</strong> e ignorá lo que dice la palabra, lo más rápido que puedas.</p>
-                
-                <div class="btn-group">
-                    <a href="../apps/training/stroop.html" class="btn-main btn-navy">EMPEZAR RETO STROOP</a>
-                </div>
-            </div>
-            <div class="app-visual" style="background: #0a0a0a;">
-                <div style="display: grid; grid-template-columns: repeat(2, 40px); gap: 10px;">
-                    <div style="width:40px; height:40px; background:#ff3e3e; border-radius:5px;"></div>
-                    <div style="width:40px; height:40px; background:#00ff88; border-radius:5px;"></div>
-                    <div style="width:40px; height:40px; background:#007bff; border-radius:5px;"></div>
-                    <div style="width:40px; height:40px; background:#ffcc00; border-radius:5px;"></div>
-                </div>
-            </div>
-        </article>
 
         <!-- PRÓXIMAMENTE -->
         <div style="text-align: center; margin-top: 6rem; opacity: 0.4;">
@@ -209,12 +212,6 @@
       navigation.classList.toggle("open", !isOpen);
     });
 
-    // ACTIVAR SIMULADOR PC
-    function activarPC() {
-        const sim = document.getElementById('simulador-pc');
-        sim.classList.add('active');
-        sim.scrollIntoView({ behavior: 'smooth' });
-    }
   </script>
 </body>
 </html>
