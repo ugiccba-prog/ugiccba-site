@@ -125,24 +125,31 @@
     <div class="container">
         
         <!-- MODULO 01: REACCIÓN (CÁMARA) -->
-        <article class="app-card">
-            <div class="app-info">
-                <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 01</p>
-                <h2>Toma de Decisiones</h2>
-                <p>Usa tu cámara para entrenar la velocidad de reacción física y coordinación ojo-mano.</p>
-                
-                <div class="btn-group">
-                    <a href="../apps/training/mobile.html" class="btn-main btn-yellow">🚀 ABRIR EN CELULAR (Full Screen)</a>
-                    <button onclick="activarPC()" class="btn-main btn-navy">🖥️ USAR EN ESTA PÁGINA (PC)</button>
-                </div>
-            </div>
-            <div class="app-visual">
-                <div style="text-align:center;">
-                    <span style="font-size: 4rem;">📷</span>
-                    <p style="font-size: 0.7rem; font-weight: bold; color: var(--muted); margin-top: 1rem;">REQUIERE CÁMARA</p>
-                </div>
-            </div>
-        </article>
+        <article class="app-card" style="margin-top: 4rem;">
+  <div class="app-info">
+    <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 02</p>
+    <h2>Test de Stroop</h2>
+    <p>Aparece una palabra pintada de otro color. Hay que tocar el color de la
+       <strong>tinta</strong> e ignorar lo que dice la palabra. Mide cuánto te cuesta
+       frenar el impulso automático de leer.</p>
+
+    <div style="margin-top:1.5rem; background:#f6f9fb; border-radius:1rem; padding:1rem 1.2rem; font-size:0.85rem;">
+      <strong>Qué mide:</strong>
+      <ul style="margin:0.5rem 0 0; padding-left:1.2rem;">
+        <li><b>Precisión:</b> cuántas veces no te ganó el automatismo.</li>
+        <li><b>Efecto Stroop:</b> los milisegundos extra que tardás cuando la palabra
+            contradice al color. Es el dato a seguir semana a semana.</li>
+      </ul>
+    </div>
+
+    <div class="btn-group">
+      <a href="./training-app/stroop.html" class="btn-main btn-navy">EMPEZAR TEST STROOP</a>
+    </div>
+  </div>
+  <div class="app-visual" style="background:#07111a;">
+    <div style="font-family:'Arial Black',sans-serif; font-size:2.2rem; color:#00C853;">ROJO</div>
+  </div>
+</article>
 
         <!-- Simulador PC Módulo 01 (Oculto hasta clic) -->
         <div id="simulador-pc" class="game-window">
