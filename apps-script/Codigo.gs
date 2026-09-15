@@ -44,13 +44,19 @@ function doPost(e) {
     var datos = JSON.parse(e.postData.contents);
     var hoja = obtenerHoja();
 
-    var fila = COLUMNAS.map(function (col) {
-      if (col === 'fecha') return new Date();
-      return datos[col] !== undefined && datos[col] !== null ? datos[col] : '';
+    /* Escribimos siguiendo los encabezados que YA tiene la hoja, no un orden fijo.
+       Si la hoja venia de otro script con otras columnas, escribir por posicion
+       metia cada dato en la columna equivocada: la fila entraba, pero despues el
+       ranking no la encontraba porque buscaba por nombre de columna. */
+    var cabecera = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+    var fila = cabecera.map(function (col) {
+      var clave = String(col).trim();
+      if (clave === 'fecha') return new Date();
+      return datos[clave] !== undefined && datos[clave] !== null ? datos[clave] : '';
     });
     hoja.appendRow(fila);
 
-    return json({ ok: true });
+    return json({ ok: true, id_sesion: datos.id_sesion || '' });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }
@@ -60,6 +66,20 @@ function doPost(e) {
 function doGet(e) {
   var params = (e && e.parameter) || {};
   try {
+    var accion = params.accion || 'top';
+
+    /* El sitio pregunta "¿esto llego?" cuando no pudo leer la respuesta del envio.
+       Sin esto, un resultado bien guardado se reintentaba y quedaba duplicado. */
+    if (accion === 'existe') {
+      return json({ ok: true, existe: existeSesion(params.id || '') }, params.callback);
+    }
+
+    /* Diagnostico: que columnas tiene la hoja y como entraron las ultimas filas.
+       Los nombres salen acortados, igual que en el ranking. */
+    if (accion === 'diagnostico') {
+      return json(diagnostico(), params.callback);
+    }
+
     var juego = (params.juego || 'STROOP').toUpperCase();
     var salida = { ok: true, juego: juego, top: topDiez(juego) };
     return json(salida, params.callback);
@@ -132,6 +152,50 @@ function topDiez(juego) {
   });
 }
 
+function existeSesion(id) {
+  if (!id) return false;
+  var hoja = obtenerHoja();
+  if (hoja.getLastRow() < 2) return false;
+  var valores = hoja.getDataRange().getValues();
+  var cabecera = valores.shift();
+  var col = cabecera.indexOf('id_sesion');
+  if (col === -1) return false;
+  for (var i = valores.length - 1; i >= 0; i--) {
+    if (String(valores[i][col]) === String(id)) return true;
+  }
+  return false;
+}
+
+function diagnostico() {
+  var hoja = obtenerHoja();
+  var cabecera = hoja.getRange(1, 1, 1, Math.max(1, hoja.getLastColumn())).getValues()[0];
+  var faltan = COLUMNAS.filter(function (c) { return cabecera.indexOf(c) === -1; });
+  var filas = [];
+  if (hoja.getLastRow() > 1) {
+    var desde = Math.max(2, hoja.getLastRow() - 2);
+    var datos = hoja.getRange(desde, 1, hoja.getLastRow() - desde + 1, cabecera.length).getValues();
+    datos.forEach(function (f) {
+      var o = {};
+      cabecera.forEach(function (c, i) {
+        var v = f[i];
+        if (c === 'jugador' || c === 'nombre') v = acortarNombre(v);
+        if (v instanceof Date) v = v.toISOString();
+        o[c || ('col' + i)] = v;
+      });
+      filas.push(o);
+    });
+  }
+  return {
+    ok: true,
+    hoja: HOJA,
+    filas_totales: Math.max(0, hoja.getLastRow() - 1),
+    columnas: cabecera,
+    columnas_que_faltan: faltan,
+    ultimas_filas: filas,
+    precision_minima_stroop: PRECISION_MINIMA
+  };
+}
+
 /* ---------------------------- AUXILIARES ---------------------------- */
 function obtenerHoja() {
   var libro = SpreadsheetApp.getActiveSpreadsheet();
@@ -144,6 +208,15 @@ function obtenerHoja() {
   if (hoja.getLastRow() === 0) {
     hoja.appendRow(COLUMNAS);
     hoja.setFrozenRows(1);
+  } else {
+    /* La hoja ya existia (posiblemente de un script anterior): le agregamos al
+       final las columnas que le falten, sin tocar las que ya tenia ni sus datos. */
+    var cabecera = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+    var faltan = COLUMNAS.filter(function (c) { return cabecera.indexOf(c) === -1; });
+    if (faltan.length) {
+      hoja.getRange(1, cabecera.length + 1, 1, faltan.length).setValues([faltan]);
+      hoja.setFrozenRows(1);
+    }
   }
   return hoja;
 }

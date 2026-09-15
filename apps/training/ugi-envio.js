@@ -102,12 +102,41 @@ window.UGI = (function () {
         throw new Error('Respuesta inesperada: ' + String(txt).slice(0, 120));
       })
       .catch((err) => {
-        console.warn('[UGI] No se pudo enviar, queda en cola:', err.message);
-        encolar(Object.assign({}, datos, { _url: destino }));
-        return { ok: false, motivo: err.message };
+        /* Apps Script contesta con un redirect a otro dominio y el navegador a veces
+           no deja leer esa respuesta. El resultado ENTRO igual, pero acá parecía un
+           fallo: el cartel decía "sin conexión" y el resultado quedaba en la cola,
+           así que se volvía a escribir y la planilla terminaba con duplicados.
+           Antes de dar por perdido el envío, le preguntamos a la planilla si llegó. */
+        return existeEnPlanilla(destino, datos.id_sesion).then((llego) => {
+          if (llego) return { ok: true, motivo: 'verificado' };
+          console.warn('[UGI] No se pudo enviar, queda en cola:', err.message);
+          encolar(Object.assign({}, datos, { _url: destino }));
+          return { ok: false, motivo: err.message };
+        });
       });
   }
  
+  /* ---------- ¿Llegó de verdad? ----------
+     Consulta por JSONP (una etiqueta <script>), que no depende de CORS. */
+  function existeEnPlanilla(destino, id) {
+    return new Promise((resolver) => {
+      if (!id || !destino) return resolver(false);
+      const cb = '__ugiExiste' + Math.random().toString(36).slice(2, 9);
+      const script = document.createElement('script');
+      const reloj = setTimeout(() => { limpiar(); resolver(false); }, 7000);
+
+      function limpiar() {
+        clearTimeout(reloj);
+        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[cb] = (r) => { limpiar(); resolver(!!(r && r.existe)); };
+      script.onerror = () => { limpiar(); resolver(false); };
+      script.src = destino + '?accion=existe&id=' + encodeURIComponent(id) + '&callback=' + cb;
+      document.head.appendChild(script);
+    });
+  }
+
   /* ---------- Cola offline ---------- */
   function encolar(datos) {
     const cola = leerLocal(COLA_KEY, []);
@@ -123,7 +152,14 @@ window.UGI = (function () {
     escribirLocal(COLA_KEY, []);            // la vacío ya; lo que falle se re-encola solo
     let enviados = 0;
     return cola.reduce(
-      (p, item) => p.then(() => enviarResultado(item, item._url).then((r) => { if (r.ok) enviados++; })),
+      (p, item) => p.then(() =>
+        // Si ya está en la planilla (envío que sí llegó pero no pudimos leer),
+        // lo damos por hecho en vez de escribirlo dos veces.
+        existeEnPlanilla(item._url || DATABASE_URL, item.id_sesion).then((llego) => {
+          if (llego) { enviados++; return; }
+          return enviarResultado(item, item._url).then((r) => { if (r.ok) enviados++; });
+        })
+      ),
       Promise.resolve()
     ).then(() => enviados);
   }
