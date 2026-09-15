@@ -37,6 +37,11 @@ Centralizar y profesionalizar el acceso a herramientas pedagógicas y conductual
 - `assets/images/`: Logos, favicon e imágenes editoriales.
 - `assets/styles/`: Hojas de estilo compartidas del sitio.
 - `assets/scripts/`: JavaScript compartido del sitio.
+- `apps-script/Codigo.gs`: el Apps Script que guarda los resultados en la
+  planilla y devuelve el top 10 de la tabla de posiciones. Incluye arriba los
+  pasos para implementarlo; al final hay que pegar la URL `/exec` en
+  `apps/training/ugi-envio.js`.
+- `assets/scripts/ranking.js`: tabla de posiciones del portal de jugadores.
 - `CNAME`: Configuración del dominio de GitHub Pages.
 
 Las páginas y aplicaciones nuevas deben enlazarse desde sus carpetas organizadas. Las

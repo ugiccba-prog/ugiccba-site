@@ -133,10 +133,7 @@
         if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) && location.search.indexOf('pc=1') === -1) {
             location.replace('mobile.html' + location.search);
         }
-
-        /* Planilla propia de los modulos de reaccion (distinta a la del Stroop).
-           Para unificar todo en una sola, borra esta linea: UGI usa su DATABASE_URL. */
-        const URL_REACCION = "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec"; 
+ 
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
@@ -293,7 +290,7 @@
                 aciertos: stats.aciertos,
                 errores: stats.errores,
                 ignorados: stats.ignorados
-            }, URL_REACCION).then(function (r) {
+            }).then(function (r) {
                 const pend = UGI.pendientes();
                 estado.innerText = r.ok
                     ? '✓ Resultado guardado en la planilla'

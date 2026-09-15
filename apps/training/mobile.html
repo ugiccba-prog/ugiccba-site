@@ -122,10 +122,9 @@
 
     <script src="./ugi-envio.js"></script>
     <script>
-        /* Antes aca decia "TU_URL_AQUÍ" y el if de abajo comparaba contra la URL real:
-           la condicion daba true siempre y el fetch salia contra el texto "TU_URL_AQUÍ".
-           Resultado: esta version nunca guardo un solo resultado. */
-        const URL_REACCION = "https://script.google.com/macros/s/AKfycbxlggsDTFAzD-Zx7anY7423nm5MXRtm-MQoJUkCwbJ9A8dRSN7PIxN0muBrk9LpSKlh/exec";
+        /* Antes aca habia una DATABASE_URL propia que decia "TU_URL_AQUÍ": el fetch
+           salia contra ese texto y esta version nunca guardo un resultado. Ahora la
+           URL sale de ugi-envio.js, igual que en los demas juegos. */
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('output_canvas');
         const ctx = canvas.getContext('2d');
@@ -263,7 +262,7 @@
                 aciertos: stats.aciertos,
                 errores: stats.errores,
                 ignorados: stats.ignorados
-            }, URL_REACCION).then(function (r) {
+            }).then(function (r) {
                 const pend = UGI.pendientes();
                 estado.innerText = r.ok
                     ? '✓ Resultado guardado en la planilla'

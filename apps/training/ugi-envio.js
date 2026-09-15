@@ -13,8 +13,11 @@
 window.UGI = (function () {
   'use strict';
  
-  // ⬇️ PEGÁ ACÁ LA URL DE TU APPS SCRIPT (la que termina en /exec)
-  const DATABASE_URL = 'https://script.google.com/macros/s/AKfycbyfvPeuupcXI5K2HYMBMiuQgr-xzNWH-lqvG25gVNAbpSA6_3gm-sSQ7BpWXkvyGOUw/exec';
+  /* ⬇️ URL del Apps Script, la que termina en /exec.
+     El codigo del script esta en apps-script/Codigo.gs, con los pasos para
+     implementarlo. Mientras esto este vacio, los resultados quedan guardados
+     en el dispositivo y se mandan solos cuando la URL este puesta. */
+  const DATABASE_URL = 'https://script.google.com/macros/s/AKfycbzzz9bgYenOAydgE78qgL6ChB7L7cpQq8_REOPXZrpGcN3t74XKPnCXy5tTUKQWiXky/exec';
  
   const COLA_KEY = 'ugi_cola_envios_v1';
   const PERFIL_KEY = 'ugi_perfil_v1';

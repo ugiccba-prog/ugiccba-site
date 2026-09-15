@@ -56,6 +56,37 @@
     
     .container { max-width: 1000px; margin: 0 auto; padding: 5rem 20px; }
 
+    /* ---------- Tabla de posiciones ---------- */
+    .ranking { margin-top: 6rem; }
+    .ranking h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.3rem; }
+    .ranking .bajada { color: var(--muted); margin: 0 0 1.6rem; }
+    .rank-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .rank-tab {
+      border: 1px solid var(--line); background: transparent; color: var(--navy);
+      font-family: inherit; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 0.6rem 1.2rem; border-radius: 999px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .rank-tab:hover { border-color: var(--navy); }
+    .rank-tab.activo { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .rank-caja { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; }
+    .rank-tabla { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .rank-tabla th {
+      text-align: left; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line);
+    }
+    .rank-tabla td { padding: 0.9rem 1.2rem; border-bottom: 1px solid rgba(8,43,73,0.07); }
+    .rank-tabla tr:last-child td { border-bottom: none; }
+    .rank-tabla .puesto { width: 3rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .rank-tabla .podio .puesto { color: var(--sky-dark); font-weight: 800; }
+    .rank-tabla .podio td { background: rgba(89,189,233,0.07); }
+    .rank-tabla .dato { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .rank-tabla th:not(:first-child):not(:nth-child(2)) { text-align: right; }
+    .rank-tabla .deporte { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+    .rank-aviso { padding: 1.4rem 1.2rem; margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+    @media (max-width: 560px) { .oculta-chico { display: none; } }
+
+
     /* TARJETAS DE MÓDULOS */
     .app-card {
       background: white; border-radius: var(--radius); border: 1px solid var(--line);
@@ -182,6 +213,19 @@
   </div>
 </article>
 
+        <!-- TABLA DE POSICIONES -->
+        <section class="ranking">
+            <h2>Tabla de posiciones</h2>
+            <p class="bajada">Las diez mejores marcas de cada módulo. Cada jugador aparece una sola vez, con su mejor resultado.</p>
+
+            <div class="rank-tabs">
+                <button class="rank-tab activo" type="button" data-juego="STROOP">Test de Stroop</button>
+                <button class="rank-tab" type="button" data-juego="REACCION">Reacción con cámara</button>
+            </div>
+
+            <div class="rank-caja" id="rank-cuerpo"></div>
+        </section>
+
         <!-- PRÓXIMAMENTE -->
         <div style="text-align: center; margin-top: 6rem; opacity: 0.4;">
             <h3 style="font-family: var(--display); font-size: 2rem;">Próximos lanzamientos</h3>
@@ -196,6 +240,8 @@
     <p style="font-size: 0.8rem; opacity: 0.6;">© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
   </footer>
 
+  <script src="../apps/training/ugi-envio.js"></script>
+  <script src="../assets/scripts/ranking.js"></script>
   <script>
     // HEADER SCROLL
     const header = document.querySelector("[data-header]");
