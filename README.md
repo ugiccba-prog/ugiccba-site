@@ -29,8 +29,11 @@ Centralizar y profesionalizar el acceso a herramientas pedagógicas y conductual
 ## 📂 Estructura del Repositorio
 - `index.html`: Punto de entrada principal y landing page integral.
 - `pages/`: Páginas públicas agrupadas por contenido.
-- `apps/training/`: Aplicación interactiva de entrenamiento y sus recursos.
-  Los juegos (`stroop.html`, `index.html`, `mobile.html`) comparten
+- `apps/training/`: Aplicaciones interactivas de entrenamiento.
+  `reaccion.html` es la app de reacción con cámara, una sola para celular y
+  escritorio: se adapta al tamaño de pantalla. `index.html` y `mobile.html`
+  quedaron como redirecciones para no romper links viejos.
+  Los juegos (`stroop.html`, `reaccion.html`) comparten
   `apps/training/ugi-envio.js`: ahí está la URL del Apps Script, el perfil del
   jugador y la cola offline. Cualquier juego nuevo de esta carpeta tiene que
   cargarlo con `<script src="./ugi-envio.js"></script>` antes de su propio script.
