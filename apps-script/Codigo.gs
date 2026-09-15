@@ -196,6 +196,70 @@ function diagnostico() {
   };
 }
 
+/* ==========================================================================
+   REPARACIÓN DE UNA SOLA VEZ
+   --------------------------------------------------------------------------
+   Una versión anterior de este script escribía las filas en un orden fijo de
+   columnas. Si la hoja ya tenía los encabezados en otro orden, cada dato entró
+   en la columna equivocada: el resultado quedaba guardado pero el ranking no lo
+   encontraba (leía "precision" donde en realidad estaba "omisiones").
+
+   Cómo usarla: en el editor de Apps Script, elegí "repararFilasCorridas" en el
+   selector de funciones de arriba y tocá Ejecutar. Avisa cuántas arregló.
+   Es segura de correr dos veces: las filas ya derechas no las toca.
+   ========================================================================== */
+
+var ORDEN_VIEJO = [
+  'fecha', 'jugador', 'deporte', 'juego', 'version', 'dispositivo', 'id_sesion',
+  'aciertos', 'errores', 'omisiones', 'ignorados', 'total', 'precision',
+  'puntos', 'reaccion', 'rt_congruente_ms', 'rt_incongruente_ms', 'efecto_stroop_ms'
+];
+
+function repararFilasCorridas() {
+  var hoja = obtenerHoja();
+  if (hoja.getLastRow() < 2) return 'No hay filas para revisar.';
+
+  var ancho = hoja.getLastColumn();
+  var cabecera = hoja.getRange(1, 1, 1, ancho).getValues()[0].map(function (c) { return String(c).trim(); });
+  var colAciertos = cabecera.indexOf('aciertos');
+  var colErrores = cabecera.indexOf('errores');
+  if (colAciertos === -1) return 'La hoja no tiene columna "aciertos"; revisá los encabezados.';
+
+  var filas = hoja.getRange(2, 1, hoja.getLastRow() - 1, ancho).getValues();
+  var arregladas = 0;
+
+  filas.forEach(function (fila, i) {
+    /* Firma de una fila corrida: en "aciertos" hay un texto que no es número
+       (cayó ahí el dispositivo: "movil" o "escritorio"). Una fila sana tiene
+       un número. Con esto no tocamos las filas que están bien. */
+    var v = fila[colAciertos];
+    var corrida = (typeof v === 'string' && v !== '' && isNaN(Number(v)));
+    if (colErrores !== -1) {
+      var e = fila[colErrores];
+      corrida = corrida && (typeof e === 'string' && e !== '' && isNaN(Number(e)));
+    }
+    if (!corrida) return;
+
+    // Lo que hay en la posición N es, en realidad, el campo N del orden viejo
+    var valores = {};
+    ORDEN_VIEJO.forEach(function (campo, pos) {
+      if (pos < ancho) valores[campo] = fila[pos];
+    });
+
+    var nueva = cabecera.map(function (col) {
+      return valores[col] !== undefined ? valores[col] : '';
+    });
+    hoja.getRange(2 + i, 1, 1, ancho).setValues([nueva]);
+    arregladas++;
+  });
+
+  var msg = arregladas
+    ? 'Listo: ' + arregladas + ' fila(s) reacomodada(s) a su columna correcta.'
+    : 'No encontré filas corridas: está todo derecho.';
+  try { SpreadsheetApp.getActiveSpreadsheet().toast(msg, 'UGI', 8); } catch (e) {}
+  return msg;
+}
+
 /* ---------------------------- AUXILIARES ---------------------------- */
 function obtenerHoja() {
   var libro = SpreadsheetApp.getActiveSpreadsheet();
