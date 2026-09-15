@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#07111a">
 <title>Reacción con cámara | UGI CCBA</title>
+
+<!-- Detector de manos. Si este CDN esta bloqueado, el script de abajo reintenta
+     con unpkg antes de darse por vencido. -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <style>
   :root{
     --sky:#59bde9; --sky-dark:#2a8fc1; --navy:#082b49;
@@ -231,9 +236,45 @@
   var stats = { aciertos:0, errores:0, esquives:0, perdidos:0, reacciones:[] };
   var wakeLock = null;
 
-  /* MediaPipe puede no cargar (red del club con filtro, caída del CDN).
-     Antes eso dejaba la pantalla en negro sin explicar nada. */
-  var mediapipeOk = (typeof Hands === 'function' && typeof Camera === 'function');
+  /* MediaPipe puede no cargar: red del club con filtro, caída del CDN, o el propio
+     CDN bloqueado. Antes eso dejaba la pantalla en negro sin explicar nada. */
+  var hands = null, camara = null;
+  var baseMP = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/';
+
+  function hayDetector(){ return typeof Hands === 'function' && typeof Camera === 'function'; }
+
+  function cargarScript(src){
+    return new Promise(function(ok, mal){
+      var s = document.createElement('script');
+      s.src = src; s.crossOrigin = 'anonymous';
+      s.onload = ok; s.onerror = function(){ mal(new Error('no cargó ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  /* Segundo intento por otro CDN: en redes de colegio o club es habitual que
+     jsdelivr esté bloqueado y unpkg no, o al revés. */
+  async function asegurarDetector(){
+    if (!hayDetector()){
+      try {
+        await cargarScript('https://unpkg.com/@mediapipe/hands/hands.js');
+        await cargarScript('https://unpkg.com/@mediapipe/camera_utils/camera_utils.js');
+        baseMP = 'https://unpkg.com/@mediapipe/hands/';
+      } catch(e){}
+    }
+    if (!hayDetector()) return false;
+    if (hands) return true;
+
+    // modelComplexity 0: en celulares de gama media el modelo pesado va a 5 fps
+    hands = new Hands({ locateFile: function(f){ return baseMP + f; } });
+    hands.setOptions({ maxNumHands:2, modelComplexity:0, minDetectionConfidence:.5, minTrackingConfidence:.5 });
+    hands.onResults(alDetectar);
+    camara = new Camera(video, {
+      onFrame: async function(){ if (!pausado && hands) await hands.send({ image: video }); },
+      width: 640, height: 480
+    });
+    return true;
+  }
 
   /* ================== LIENZO Y COORDENADAS ================== */
   /* El video se muestra con object-fit:cover, o sea recortado. MediaPipe devuelve
@@ -397,31 +438,21 @@
 
   /* ================== CÁMARA Y DETECCIÓN ================== */
   var manosEnPantalla = [];
-  var hands = mediapipeOk ? new Hands({ locateFile:function(f){ return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/' + f; } }) : null;
-  if (hands){
-    // modelComplexity 0: en celulares de gama media el modelo pesado va a 5 fps
-    hands.setOptions({ maxNumHands:2, modelComplexity:0, minDetectionConfidence:.5, minTrackingConfidence:.5 });
-    hands.onResults(function(res){
-      var ahora = performance.now();
-      manosEnPantalla = [];
-      if (res.multiHandLandmarks && res.multiHandLandmarks.length){
-        ultimaMano = ahora;
-        for (var i=0; i<res.multiHandLandmarks.length; i++){
-          var lm = res.multiHandLandmarks[i];
-          var punta = aPantalla(lm[8]);
-          manosEnPantalla.push(punta);
-          if (jugando && !pausado && target &&
-              Math.hypot(punta.x - target.x, punta.y - target.y) < target.r + 18) impacto();
-        }
-      }
-      pintar(manosEnPantalla, ahora);
-    });
-  }
 
-  var camara = mediapipeOk ? new Camera(video, {
-    onFrame: async function(){ if (!pausado) await hands.send({ image: video }); },
-    width: 640, height: 480
-  }) : null;
+  function alDetectar(res){
+    var ahora = performance.now();
+    manosEnPantalla = [];
+    if (res.multiHandLandmarks && res.multiHandLandmarks.length){
+      ultimaMano = ahora;
+      for (var i=0; i<res.multiHandLandmarks.length; i++){
+        var punta = aPantalla(res.multiHandLandmarks[i][8]);
+        manosEnPantalla.push(punta);
+        if (jugando && !pausado && target &&
+            Math.hypot(punta.x - target.x, punta.y - target.y) < target.r + 18) impacto();
+      }
+    }
+    pintar(manosEnPantalla, ahora);
+  }
 
   function apagarCamara(){
     try { if (camara) camara.stop(); } catch(e){}
@@ -474,8 +505,15 @@
   async function preparar(){
     mostrar('p-listos');
     $('cuenta').textContent = '·';
-    $('texto-listos').textContent = 'Encendiendo la cámara…';
+    $('texto-listos').textContent = 'Cargando el detector de manos…';
 
+    if (!(await asegurarDetector())){
+      mostrar('p-inicio');
+      $('aviso-inicio').textContent = 'No se pudo cargar el detector de manos. Probá con otra conexión: en redes con filtros (colegios, clubes) suele estar bloqueado.';
+      return;
+    }
+
+    $('texto-listos').textContent = 'Encendiendo la cámara…';
     try {
       await camara.start();
     } catch (err){
@@ -604,12 +642,6 @@
   var perfil = UGI.getPerfil();
   $('nombre').value = perfil.nombre || '';
   $('deporte').value = perfil.deporte || '';
-
-  if (!mediapipeOk){
-    $('btn-empezar').disabled = true;
-    $('btn-empezar').textContent = 'NO DISPONIBLE';
-    $('aviso-inicio').textContent = 'No se pudo cargar el detector de manos. Revisá la conexión y volvé a entrar; si estás en una red con filtros, probá desde otra.';
-  }
 
   $('btn-empezar').addEventListener('click', function(){
     var n = UGI.normalizarNombre($('nombre').value);
