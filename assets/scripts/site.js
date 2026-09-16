@@ -3,9 +3,13 @@ const menuButton = document.querySelector(".menu-toggle");
 const navigation = document.querySelector(".main-nav");
 
 // Scroll Header
-window.addEventListener("scroll", () => {
-  if (header) header.classList.toggle("scrolled", window.scrollY > 24);
-}, { passive: true });
+window.addEventListener(
+  "scroll",
+  () => {
+    if (header) header.classList.toggle("scrolled", window.scrollY > 24);
+  },
+  { passive: true },
+);
 
 // Menú Mobile
 if (menuButton && navigation) {
@@ -17,16 +21,21 @@ if (menuButton && navigation) {
 }
 
 // Reveal animations
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add("visible");
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15 });
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.15 },
+);
 
-document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+document
+  .querySelectorAll(".reveal")
+  .forEach((el) => revealObserver.observe(el));
 
 // Copyright Year
 const yearSpan = document.querySelector("#year");

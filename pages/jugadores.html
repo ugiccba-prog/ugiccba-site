@@ -1,263 +1,629 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal de Jugadores | UGI CCBA</title>
-  
-  <style>
-    /* VARIABLES Y BASE (Identico a tu index.html) */
-    :root {
-      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
-      --navy: #082b49; --navy-soft: #143d5b; --paper: #fffdf8;
-      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
-      --radius: 1.5rem;
-      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", Avenir, sans-serif;
-    }
-    
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal de Jugadores | UGI CCBA</title>
 
-    /* HEADER Y NAVEGACIÓN (Copiado de tu index.html) */
-    .site-header {
-      position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
-      align-items: center; justify-content: space-between; min-height: 5.5rem;
-      padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy);
-      transition: background 250ms ease, box-shadow 250ms ease;
-    }
-    .site-header.scrolled {
-      min-height: 4.5rem; background: rgba(255, 253, 248, 0.93);
-      box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
-    }
-    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
-    .brand img { max-height: 55px; width: auto; }
-    .brand-copy { display: grid; line-height: 1.05; }
-    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
-    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
-    
-    .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
-    .main-nav a { position: relative; font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
-    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; transition: 0.3s; }
-    .nav-cta:hover { color: white; background: var(--navy); }
+    <style>
+      /* VARIABLES Y BASE (Identico a tu index.html) */
+      :root {
+        --sky: #59bde9;
+        --sky-light: #a9def1;
+        --sky-dark: #2a8fc1;
+        --navy: #082b49;
+        --navy-soft: #143d5b;
+        --paper: #fffdf8;
+        --ink: #102b3c;
+        --muted: #60727d;
+        --line: rgba(8, 43, 73, 0.18);
+        --radius: 1.5rem;
+        --display: "Bodoni 72", Didot, serif;
+        --sans: "Avenir Next", Avenir, sans-serif;
+      }
 
-    .menu-toggle { display: none; }
-    @media (max-width: 1150px) {
-      .menu-toggle { z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--navy); }
-      .menu-toggle span { display: block; width: 1.2rem; height: 1px; background: currentColor; }
-      .main-nav { position: fixed; inset: 0; flex-direction: column; justify-content: center; background: var(--navy); opacity: 0; visibility: hidden; transition: 0.3s; }
-      .main-nav.open { opacity: 1; visibility: visible; }
-      .main-nav a { color: white; font-size: 2rem; font-family: var(--display); padding: 1rem; }
-    }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: var(--sans);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
 
-    /* CONTENIDO PORTAL */
-    .hero-portal { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
-    .hero-portal h1 { font-family: var(--display); font-size: clamp(3rem, 7vw, 6rem); margin: 0; line-height: 1; }
-    
-    .container { max-width: 1000px; margin: 0 auto; padding: 5rem 20px; }
+      /* HEADER Y NAVEGACIÓN (Copiado de tu index.html) */
+      .site-header {
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 5.5rem;
+        padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem);
+        color: var(--navy);
+        transition:
+          background 250ms ease,
+          box-shadow 250ms ease;
+      }
+      .site-header.scrolled {
+        min-height: 4.5rem;
+        background: rgba(255, 253, 248, 0.93);
+        box-shadow: 0 1px 0 var(--line);
+        backdrop-filter: blur(14px);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: inherit;
+      }
+      .brand img {
+        max-height: 55px;
+        width: auto;
+      }
+      .brand-copy {
+        display: grid;
+        line-height: 1.05;
+      }
+      .brand-copy strong {
+        font-size: 1.05rem;
+        letter-spacing: 0.18em;
+      }
+      .brand-copy small {
+        margin-top: 0.28rem;
+        font-size: 0.62rem;
+        letter-spacing: 0.04em;
+      }
 
-    /* ---------- Tabla de posiciones ---------- */
-    .ranking { margin-top: 6rem; }
-    .ranking h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.3rem; }
-    .ranking .bajada { color: var(--muted); margin: 0 0 1.6rem; }
-    .rank-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
-    .rank-tab {
-      border: 1px solid var(--line); background: transparent; color: var(--navy);
-      font-family: inherit; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; padding: 0.6rem 1.2rem; border-radius: 999px; cursor: pointer;
-      transition: 0.2s;
-    }
-    .rank-tab:hover { border-color: var(--navy); }
-    .rank-tab.activo { background: var(--navy); color: #fff; border-color: var(--navy); }
-    .rank-caja { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; }
-    .rank-tabla { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    .rank-tabla th {
-      text-align: left; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted); font-weight: 700; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line);
-    }
-    .rank-tabla td { padding: 0.9rem 1.2rem; border-bottom: 1px solid rgba(8,43,73,0.07); }
-    .rank-tabla tr:last-child td { border-bottom: none; }
-    .rank-tabla .puesto { width: 3rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .rank-tabla .podio .puesto { color: var(--sky-dark); font-weight: 800; }
-    .rank-tabla .podio td { background: rgba(89,189,233,0.07); }
-    .rank-tabla .dato { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-    .rank-tabla th:not(:first-child):not(:nth-child(2)) { text-align: right; }
-    .rank-tabla .deporte { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
-    .rank-aviso { padding: 1.4rem 1.2rem; margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
-    @media (max-width: 560px) { .oculta-chico { display: none; } }
+      .main-nav {
+        display: flex;
+        align-items: center;
+        gap: clamp(1rem, 2.2vw, 2rem);
+      }
+      .main-nav a {
+        position: relative;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        color: inherit;
+      }
+      .nav-cta {
+        padding: 0.65rem 1.1rem;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        transition: 0.3s;
+      }
+      .nav-cta:hover {
+        color: white;
+        background: var(--navy);
+      }
 
+      .menu-toggle {
+        display: none;
+      }
+      @media (max-width: 1150px) {
+        .menu-toggle {
+          z-index: 2;
+          display: grid;
+          gap: 0.4rem;
+          width: 3rem;
+          height: 3rem;
+          place-content: center;
+          border: 1px solid currentColor;
+          border-radius: 50%;
+          background: transparent;
+          color: var(--navy);
+        }
+        .menu-toggle span {
+          display: block;
+          width: 1.2rem;
+          height: 1px;
+          background: currentColor;
+        }
+        .main-nav {
+          position: fixed;
+          inset: 0;
+          flex-direction: column;
+          justify-content: center;
+          background: var(--navy);
+          opacity: 0;
+          visibility: hidden;
+          transition: 0.3s;
+        }
+        .main-nav.open {
+          opacity: 1;
+          visibility: visible;
+        }
+        .main-nav a {
+          color: white;
+          font-size: 2rem;
+          font-family: var(--display);
+          padding: 1rem;
+        }
+      }
 
-    /* TARJETAS DE MÓDULOS */
-    .app-card {
-      background: white; border-radius: var(--radius); border: 1px solid var(--line);
-      display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; margin-bottom: 4rem;
-      box-shadow: 0 10px 30px rgba(8,43,73,0.05);
-    }
-    .app-info { padding: clamp(2rem, 5vw, 4rem); }
-    .app-info h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 3.5rem); margin: 0.5rem 0; line-height: 1.1; }
-    .app-visual { background: #f0f4f8; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-    
-    /* BOTONES ACCIÓN */
-    .btn-group { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
-    .btn-main { 
-        padding: 1.2rem 2rem; border-radius: 999px; text-decoration: none; 
-        font-weight: bold; text-align: center; transition: 0.3s; font-size: 0.9rem;
-    }
-    .btn-navy { background: var(--navy); color: white; }
-    .btn-yellow { background: #ffc107; color: #000; }
-    .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+      /* CONTENIDO PORTAL */
+      .hero-portal {
+        background: var(--sky);
+        padding: 10rem 7vw 5rem;
+        text-align: center;
+      }
+      .hero-portal h1 {
+        font-family: var(--display);
+        font-size: clamp(3rem, 7vw, 6rem);
+        margin: 0;
+        line-height: 1;
+      }
 
-    /* CONTENEDOR JUEGO PC */
-    .game-window { 
-        display: none; background: #000; border-radius: var(--radius); 
-        overflow: hidden; position: relative; width: 100%; padding-top: 56.25%; 
-        margin-top: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    }
-    .game-window.active { display: block; }
-    .game-window iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 5rem 20px;
+      }
 
-    @media (max-width: 850px) {
-        .app-card { grid-template-columns: 1fr; }
-        .app-visual { order: -1; min-height: 200px; }
-    }
-  </style>
-</head>
-<body>
+      /* ---------- Tabla de posiciones ---------- */
+      .ranking {
+        margin-top: 6rem;
+      }
+      .ranking h2 {
+        font-family: var(--display);
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        margin: 0 0 0.3rem;
+      }
+      .ranking .bajada {
+        color: var(--muted);
+        margin: 0 0 1.6rem;
+      }
+      .rank-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.2rem;
+        flex-wrap: wrap;
+      }
+      .rank-tab {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--navy);
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.6rem 1.2rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .rank-tab:hover {
+        border-color: var(--navy);
+      }
+      .rank-tab.activo {
+        background: var(--navy);
+        color: #fff;
+        border-color: var(--navy);
+      }
+      .rank-caja {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: #fff;
+      }
+      .rank-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      .rank-tabla th {
+        text-align: left;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 700;
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .rank-tabla td {
+        padding: 0.9rem 1.2rem;
+        border-bottom: 1px solid rgba(8, 43, 73, 0.07);
+      }
+      .rank-tabla tr:last-child td {
+        border-bottom: none;
+      }
+      .rank-tabla .puesto {
+        width: 3rem;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .rank-tabla .podio .puesto {
+        color: var(--sky-dark);
+        font-weight: 800;
+      }
+      .rank-tabla .podio td {
+        background: rgba(89, 189, 233, 0.07);
+      }
+      .rank-tabla .dato {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+      .rank-tabla th:not(:first-child):not(:nth-child(2)) {
+        text-align: right;
+      }
+      .rank-tabla .deporte {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .rank-aviso {
+        padding: 1.4rem 1.2rem;
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      @media (max-width: 560px) {
+        .oculta-chico {
+          display: none;
+        }
+      }
 
-  <!-- HEADER (Unificado con index.html) -->
-  <header class="site-header" data-header>
-    <a class="brand" href="../index.html#inicio">
-      <img src="../assets/images/logo-header.png" alt="Logo UGI">
-      <span class="brand-copy">
-        <strong>UGI</strong>
-        <small>Club Ciudad de Buenos Aires</small>
-      </span>
-    </a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
-      <span></span><span></span>
-    </button>
-    <nav class="main-nav" id="main-nav">
-      <a href="../index.html#inicio">Inicio</a>
-      <a href="../index.html#proposito">Qué hacemos</a>
-      <a href="../index.html#programas">Programas</a>
-      <a href="../index.html#capacitaciones">Capacitaciones</a>
-      <a href="../index.html#material">Material</a>
-      <a href="../index.html#juegos">Juegos</a>
-      <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
-    </nav>
-  </header>
+      /* TARJETAS DE MÓDULOS */
+      .app-card {
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        overflow: hidden;
+        margin-bottom: 4rem;
+        box-shadow: 0 10px 30px rgba(8, 43, 73, 0.05);
+      }
+      .app-info {
+        padding: clamp(2rem, 5vw, 4rem);
+      }
+      .app-info h2 {
+        font-family: var(--display);
+        font-size: clamp(2rem, 3.5vw, 3.5rem);
+        margin: 0.5rem 0;
+        line-height: 1.1;
+      }
+      .app-visual {
+        background: #f0f4f8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
 
-  <main>
-    <section class="hero-portal">
-        <p style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: bold; color: var(--navy); margin-bottom: 1rem;">Área de Alto Rendimiento</p>
+      /* BOTONES ACCIÓN */
+      .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .btn-main {
+        padding: 1.2rem 2rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+        text-align: center;
+        transition: 0.3s;
+        font-size: 0.9rem;
+      }
+      .btn-navy {
+        background: var(--navy);
+        color: white;
+      }
+      .btn-yellow {
+        background: #ffc107;
+        color: #000;
+      }
+      .btn-main:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* CONTENEDOR JUEGO PC */
+      .game-window {
+        display: none;
+        background: #000;
+        border-radius: var(--radius);
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        margin-top: 2rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      }
+      .game-window.active {
+        display: block;
+      }
+      .game-window iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      @media (max-width: 850px) {
+        .app-card {
+          grid-template-columns: 1fr;
+        }
+        .app-visual {
+          order: -1;
+          min-height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER (Unificado con index.html) -->
+    <header class="site-header" data-header>
+      <a class="brand" href="../index.html#inicio">
+        <img src="../assets/images/logo-header.png" alt="Logo UGI" />
+        <span class="brand-copy">
+          <strong>UGI</strong>
+          <small>Club Ciudad de Buenos Aires</small>
+        </span>
+      </a>
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="main-nav"
+      >
+        <span></span><span></span>
+      </button>
+      <nav class="main-nav" id="main-nav">
+        <a href="../index.html#inicio">Inicio</a>
+        <a href="../index.html#proposito">Qué hacemos</a>
+        <a href="../index.html#programas">Programas</a>
+        <a href="../index.html#capacitaciones">Capacitaciones</a>
+        <a href="../index.html#material">Material</a>
+        <a href="../index.html#juegos">Juegos</a>
+        <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-portal">
+        <p
+          style="
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--navy);
+            margin-bottom: 1rem;
+          "
+        >
+          Área de Alto Rendimiento
+        </p>
         <h1>Gimnasio Mental</h1>
-    </section>
+      </section>
 
-    <div class="container">
-        
+      <div class="container">
         <!-- MODULO 01: REACCIÓN (CÁMARA) -->
-        <article class="app-card" style="margin-top: 4rem;">
+        <article class="app-card" style="margin-top: 4rem">
           <div class="app-info">
-            <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 01</p>
+            <p
+              style="
+                color: var(--sky-dark);
+                font-weight: 800;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+              "
+            >
+              Módulo 01
+            </p>
             <h2>Reacción con cámara</h2>
-            <p>Aparecen círculos en la pantalla y se responde con la mano, sin tocar nada:
-               la cámara sigue el dedo índice. Hay que <strong>tocar los rojos</strong> y
-               <strong>dejar pasar los verdes</strong>, durante 45 segundos.</p>
+            <p>
+              Aparecen círculos en la pantalla y se responde con la mano, sin
+              tocar nada: la cámara sigue el dedo índice. Hay que
+              <strong>tocar los rojos</strong> y
+              <strong>dejar pasar los verdes</strong>, durante 45 segundos.
+            </p>
 
-            <div style="margin-top:1.5rem; background:#f6f9fb; border-radius:1rem; padding:1rem 1.2rem; font-size:0.85rem;">
+            <div
+              style="
+                margin-top: 1.5rem;
+                background: #f6f9fb;
+                border-radius: 1rem;
+                padding: 1rem 1.2rem;
+                font-size: 0.85rem;
+              "
+            >
               <strong>Qué mide:</strong>
-              <ul style="margin:0.5rem 0 0; padding-left:1.2rem;">
-                <li><b>Tiempo de reacción:</b> cuánto tarda la mano en llegar al estímulo correcto.</li>
-                <li><b>Inhibición motora:</b> los verdes que dejaste pasar contra los que manoteaste igual.</li>
+              <ul style="margin: 0.5rem 0 0; padding-left: 1.2rem">
+                <li>
+                  <b>Tiempo de reacción:</b> cuánto tarda la mano en llegar al
+                  estímulo correcto.
+                </li>
+                <li>
+                  <b>Inhibición motora:</b> los verdes que dejaste pasar contra
+                  los que manoteaste igual.
+                </li>
               </ul>
             </div>
 
-            <p style="font-size:0.8rem; opacity:0.65; margin-top:1rem;">Necesita permiso de cámara. En celular se abre la versión liviana.</p>
+            <p style="font-size: 0.8rem; opacity: 0.65; margin-top: 1rem">
+              Necesita permiso de cámara. En celular se abre la versión liviana.
+            </p>
 
             <div class="btn-group">
-              <a href="../apps/training/reaccion.html" class="btn-main btn-navy">EMPEZAR ENTRENAMIENTO</a>
+              <a href="../apps/training/reaccion.html" class="btn-main btn-navy"
+                >EMPEZAR ENTRENAMIENTO</a
+              >
             </div>
           </div>
-          <div class="app-visual" style="background:#0a0a0a;">
-            <div style="display:flex; gap:18px; align-items:center;">
-              <div style="width:54px; height:54px; border-radius:50%; background:#ff3e3e; border:4px solid #fff;"></div>
-              <div style="width:54px; height:54px; border-radius:50%; background:#00ff88; border:4px solid rgba(255,255,255,.35); opacity:.5;"></div>
+          <div class="app-visual" style="background: #0a0a0a">
+            <div style="display: flex; gap: 18px; align-items: center">
+              <div
+                style="
+                  width: 54px;
+                  height: 54px;
+                  border-radius: 50%;
+                  background: #ff3e3e;
+                  border: 4px solid #fff;
+                "
+              ></div>
+              <div
+                style="
+                  width: 54px;
+                  height: 54px;
+                  border-radius: 50%;
+                  background: #00ff88;
+                  border: 4px solid rgba(255, 255, 255, 0.35);
+                  opacity: 0.5;
+                "
+              ></div>
             </div>
           </div>
         </article>
 
         <!-- MODULO 02: STROOP -->
-        <article class="app-card" style="margin-top: 4rem;">
-  <div class="app-info">
-    <p style="color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Módulo 02</p>
-    <h2>Test de Stroop</h2>
-    <p>Aparece una palabra pintada de otro color. Hay que tocar el color de la
-       <strong>tinta</strong> e ignorar lo que dice la palabra. Mide cuánto te cuesta
-       frenar el impulso automático de leer.</p>
+        <article class="app-card" style="margin-top: 4rem">
+          <div class="app-info">
+            <p
+              style="
+                color: var(--sky-dark);
+                font-weight: 800;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+              "
+            >
+              Módulo 02
+            </p>
+            <h2>Test de Stroop</h2>
+            <p>
+              Aparece una palabra pintada de otro color. Hay que tocar el color
+              de la <strong>tinta</strong> e ignorar lo que dice la palabra.
+              Mide cuánto te cuesta frenar el impulso automático de leer.
+            </p>
 
-    <div style="margin-top:1.5rem; background:#f6f9fb; border-radius:1rem; padding:1rem 1.2rem; font-size:0.85rem;">
-      <strong>Qué mide:</strong>
-      <ul style="margin:0.5rem 0 0; padding-left:1.2rem;">
-        <li><b>Precisión:</b> cuántas veces no te ganó el automatismo.</li>
-        <li><b>Efecto Stroop:</b> los milisegundos extra que tardás cuando la palabra
-            contradice al color. Es el dato a seguir semana a semana.</li>
-      </ul>
-    </div>
+            <div
+              style="
+                margin-top: 1.5rem;
+                background: #f6f9fb;
+                border-radius: 1rem;
+                padding: 1rem 1.2rem;
+                font-size: 0.85rem;
+              "
+            >
+              <strong>Qué mide:</strong>
+              <ul style="margin: 0.5rem 0 0; padding-left: 1.2rem">
+                <li>
+                  <b>Precisión:</b> cuántas veces no te ganó el automatismo.
+                </li>
+                <li>
+                  <b>Efecto Stroop:</b> los milisegundos extra que tardás cuando
+                  la palabra contradice al color. Es el dato a seguir semana a
+                  semana.
+                </li>
+              </ul>
+            </div>
 
-    <div class="btn-group">
-      <a href="../apps/training/stroop.html" class="btn-main btn-navy">EMPEZAR TEST STROOP</a>
-    </div>
-  </div>
-  <div class="app-visual" style="background:#07111a;">
-    <div style="font-family:'Arial Black',sans-serif; font-size:2.2rem; color:#00C853;">ROJO</div>
-  </div>
-</article>
+            <div class="btn-group">
+              <a href="../apps/training/stroop.html" class="btn-main btn-navy"
+                >EMPEZAR TEST STROOP</a
+              >
+            </div>
+          </div>
+          <div class="app-visual" style="background: #07111a">
+            <div
+              style="
+                font-family: &quot;Arial Black&quot;, sans-serif;
+                font-size: 2.2rem;
+                color: #00c853;
+              "
+            >
+              ROJO
+            </div>
+          </div>
+        </article>
 
         <!-- TABLA DE POSICIONES -->
         <section class="ranking">
-            <h2>Tabla de posiciones</h2>
-            <p class="bajada">Las diez mejores marcas de cada módulo. Cada jugador aparece una sola vez, con su mejor resultado.</p>
+          <h2>Tabla de posiciones</h2>
+          <p class="bajada">
+            Las diez mejores marcas de cada módulo. Cada jugador aparece una
+            sola vez, con su mejor resultado.
+          </p>
 
-            <div class="rank-tabs">
-                <button class="rank-tab activo" type="button" data-juego="STROOP">Test de Stroop</button>
-                <button class="rank-tab" type="button" data-juego="REACCION">Reacción con cámara</button>
-            </div>
+          <div class="rank-tabs">
+            <button class="rank-tab activo" type="button" data-juego="STROOP">
+              Test de Stroop
+            </button>
+            <button class="rank-tab" type="button" data-juego="REACCION">
+              Reacción con cámara
+            </button>
+          </div>
 
-            <div class="rank-caja" id="rank-cuerpo"></div>
+          <div class="rank-caja" id="rank-cuerpo"></div>
         </section>
 
         <!-- PRÓXIMAMENTE -->
-        <div style="text-align: center; margin-top: 6rem; opacity: 0.4;">
-            <h3 style="font-family: var(--display); font-size: 2rem;">Próximos lanzamientos</h3>
-            <p>Memoria Táctica • Visión Periférica • Gestión de Ansiedad</p>
+        <div style="text-align: center; margin-top: 6rem; opacity: 0.4">
+          <h3 style="font-family: var(--display); font-size: 2rem">
+            Próximos lanzamientos
+          </h3>
+          <p>Memoria Táctica • Visión Periférica • Gestión de Ansiedad</p>
         </div>
+      </div>
+    </main>
 
-    </div>
-  </main>
+    <footer
+      style="
+        background: var(--navy);
+        color: var(--paper);
+        padding: 4rem 7vw;
+        text-align: center;
+      "
+    >
+      <img
+        src="../assets/images/logo-header.png"
+        alt="UGI"
+        style="max-height: 50px; margin-bottom: 1.5rem"
+      />
+      <p style="font-size: 0.8rem; opacity: 0.6">
+        © Unidad de Gestión Integral - Club Ciudad de Buenos Aires
+      </p>
+    </footer>
 
-  <footer style="background: var(--navy); color: var(--paper); padding: 4rem 7vw; text-align: center;">
-    <img src="../assets/images/logo-header.png" alt="UGI" style="max-height: 50px; margin-bottom: 1.5rem;">
-    <p style="font-size: 0.8rem; opacity: 0.6;">© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
-  </footer>
+    <script src="../apps/training/ugi-envio.js"></script>
+    <script src="../assets/scripts/ranking.js"></script>
+    <script>
+      // HEADER SCROLL
+      const header = document.querySelector("[data-header]");
+      window.addEventListener("scroll", () => {
+        header.classList.toggle("scrolled", window.scrollY > 24);
+      });
 
-  <script src="../apps/training/ugi-envio.js"></script>
-  <script src="../assets/scripts/ranking.js"></script>
-  <script>
-    // HEADER SCROLL
-    const header = document.querySelector("[data-header]");
-    window.addEventListener("scroll", () => {
-      header.classList.toggle("scrolled", window.scrollY > 24);
-    });
-
-    // MENU MOBILE
-    const menuButton = document.querySelector(".menu-toggle");
-    const navigation = document.querySelector(".main-nav");
-    menuButton.addEventListener("click", () => {
-      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-      menuButton.setAttribute("aria-expanded", String(!isOpen));
-      navigation.classList.toggle("open", !isOpen);
-    });
-
-  </script>
-</body>
+      // MENU MOBILE
+      const menuButton = document.querySelector(".menu-toggle");
+      const navigation = document.querySelector(".main-nav");
+      menuButton.addEventListener("click", () => {
+        const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+        menuButton.setAttribute("aria-expanded", String(!isOpen));
+        navigation.classList.toggle("open", !isOpen);
+      });
+    </script>
+  </body>
 </html>

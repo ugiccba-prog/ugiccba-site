@@ -1,674 +1,1187 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#07111a">
-<title>Reacción con cámara | UGI CCBA</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#07111a" />
+    <title>Reacción con cámara | UGI CCBA</title>
 
-<!-- Detector de manos. Si este CDN esta bloqueado, el script de abajo reintenta
+    <!-- Detector de manos. Si este CDN esta bloqueado, el script de abajo reintenta
      con unpkg antes de darse por vencido. -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<style>
-  :root{
-    --sky:#59bde9; --sky-dark:#2a8fc1; --navy:#082b49;
-    --fondo:#07111a; --panel:#0d1c28; --linea:rgba(255,255,255,.12); --texto:#eaf4fa;
-    --tocar:#FF2D2D; --evitar:#00C853; --aviso:#FFD600;
-  }
-  *,*::before,*::after{box-sizing:border-box}
-  html,body{margin:0;height:100%}
-  body{
-    background:var(--fondo); color:var(--texto);
-    font-family:"Avenir Next",Avenir,system-ui,-apple-system,"Segoe UI",sans-serif;
-    overflow:hidden; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-  }
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      :root {
+        --sky: #59bde9;
+        --sky-dark: #2a8fc1;
+        --navy: #082b49;
+        --fondo: #07111a;
+        --panel: #0d1c28;
+        --linea: rgba(255, 255, 255, 0.12);
+        --texto: #eaf4fa;
+        --tocar: #ff2d2d;
+        --evitar: #00c853;
+        --aviso: #ffd600;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--fondo);
+        color: var(--texto);
+        font-family:
+          "Avenir Next",
+          Avenir,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        overflow: hidden;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
 
-  #escena{position:fixed; inset:0; overflow:hidden}
-  /* El video se muestra espejado para que la mano se mueva "como en un espejo".
+      #escena {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+      }
+      /* El video se muestra espejado para que la mano se mueva "como en un espejo".
      El canvas NO se espeja por CSS: el espejado se hace al calcular las coordenadas,
      porque si no el texto que dibujamos encima saldría al revés. */
-  #webcam{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1)}
-  #lienzo{position:absolute; inset:0; width:100%; height:100%}
+      #webcam {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+      #lienzo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
 
-  /* ---------- Barra superior ---------- */
-  #hud{
-    position:absolute; left:0; right:0; top:0; z-index:5; pointer-events:none;
-    display:flex; justify-content:space-between; align-items:center; gap:.8rem;
-    padding:max(.6rem,env(safe-area-inset-top)) 1rem .6rem;
-    background:linear-gradient(to bottom,rgba(7,17,26,.85),transparent);
-    font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; opacity:.9;
-  }
-  #hud b{display:block; font-size:1.25rem; letter-spacing:0; color:var(--sky); font-variant-numeric:tabular-nums}
-  #hud .der{text-align:right}
-  #barra-tiempo{position:absolute; left:0; bottom:0; height:3px; width:100%; background:var(--sky); transform-origin:left; transition:transform .2s linear}
+      /* ---------- Barra superior ---------- */
+      #hud {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 5;
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.8rem;
+        padding: max(0.6rem, env(safe-area-inset-top)) 1rem 0.6rem;
+        background: linear-gradient(
+          to bottom,
+          rgba(7, 17, 26, 0.85),
+          transparent
+        );
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      #hud b {
+        display: block;
+        font-size: 1.25rem;
+        letter-spacing: 0;
+        color: var(--sky);
+        font-variant-numeric: tabular-nums;
+      }
+      #hud .der {
+        text-align: right;
+      }
+      #barra-tiempo {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background: var(--sky);
+        transform-origin: left;
+        transition: transform 0.2s linear;
+      }
 
-  /* Cartel de "no te veo" */
-  #sin-mano{
-    position:absolute; left:50%; bottom:max(1.2rem,env(safe-area-inset-bottom)); transform:translateX(-50%);
-    z-index:6; background:rgba(7,17,26,.9); border:1px solid var(--linea); border-radius:99px;
-    padding:.6rem 1.1rem; font-size:.8rem; display:none; align-items:center; gap:.5rem; white-space:nowrap;
-  }
-  #sin-mano.visible{display:flex}
-  #sin-mano .punto{width:8px;height:8px;border-radius:50%;background:var(--aviso);animation:latir 1s infinite}
-  @keyframes latir{50%{opacity:.25}}
+      /* Cartel de "no te veo" */
+      #sin-mano {
+        position: absolute;
+        left: 50%;
+        bottom: max(1.2rem, env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        z-index: 6;
+        background: rgba(7, 17, 26, 0.9);
+        border: 1px solid var(--linea);
+        border-radius: 99px;
+        padding: 0.6rem 1.1rem;
+        font-size: 0.8rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      #sin-mano.visible {
+        display: flex;
+      }
+      #sin-mano .punto {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--aviso);
+        animation: latir 1s infinite;
+      }
+      @keyframes latir {
+        50% {
+          opacity: 0.25;
+        }
+      }
 
-  /* ---------- Pantallas ---------- */
-  .pantalla{
-    position:absolute; inset:0; z-index:20; display:none; flex-direction:column;
-    background:var(--fondo); overflow-y:auto; overscroll-behavior:contain;
-    padding:max(1.2rem,env(safe-area-inset-top)) 1.2rem max(1.2rem,env(safe-area-inset-bottom));
-  }
-  .pantalla.activa{display:flex}
-  .centro{margin:auto; width:100%; max-width:440px; display:flex; flex-direction:column; gap:1rem; text-align:center}
+      /* ---------- Pantallas ---------- */
+      .pantalla {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        flex-direction: column;
+        background: var(--fondo);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: max(1.2rem, env(safe-area-inset-top)) 1.2rem
+          max(1.2rem, env(safe-area-inset-bottom));
+      }
+      .pantalla.activa {
+        display: flex;
+      }
+      .centro {
+        margin: auto;
+        width: 100%;
+        max-width: 440px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
 
-  h1{font-size:clamp(1.6rem,6vw,2.4rem); margin:0; letter-spacing:-.02em}
-  h1 span{color:var(--sky)}
-  p{margin:0; line-height:1.5}
-  .chico{font-size:.82rem; opacity:.6; line-height:1.5}
+      h1 {
+        font-size: clamp(1.6rem, 6vw, 2.4rem);
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+      h1 span {
+        color: var(--sky);
+      }
+      p {
+        margin: 0;
+        line-height: 1.5;
+      }
+      .chico {
+        font-size: 0.82rem;
+        opacity: 0.6;
+        line-height: 1.5;
+      }
 
-  .campo{text-align:left}
-  .campo label{display:block; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; opacity:.5; margin-bottom:.3rem}
-  input[type=text]{
-    width:100%; padding:.85rem 1rem; border-radius:12px; border:2px solid var(--linea);
-    background:var(--panel); color:var(--texto); font-size:16px; font-family:inherit; outline:none;
-  }
-  input[type=text]:focus{border-color:var(--sky)}
+      .campo {
+        text-align: left;
+      }
+      .campo label {
+        display: block;
+        font-size: 0.66rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.5;
+        margin-bottom: 0.3rem;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        border: 2px solid var(--linea);
+        background: var(--panel);
+        color: var(--texto);
+        font-size: 16px;
+        font-family: inherit;
+        outline: none;
+      }
+      input[type="text"]:focus {
+        border-color: var(--sky);
+      }
 
-  .reglas{display:flex; gap:.7rem; background:var(--panel); border:1px solid var(--linea); border-radius:14px; padding:.9rem}
-  .regla{flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; font-size:.78rem}
-  .regla b{font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; opacity:.75}
+      .reglas {
+        display: flex;
+        gap: 0.7rem;
+        background: var(--panel);
+        border: 1px solid var(--linea);
+        border-radius: 14px;
+        padding: 0.9rem;
+      }
+      .regla {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+      }
+      .regla b {
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.75;
+      }
 
-  .btn{
-    border:none; border-radius:999px; padding:1.05rem 2rem; font-size:1rem; font-weight:800;
-    font-family:inherit; letter-spacing:.04em; cursor:pointer; background:var(--sky); color:var(--navy);
-    width:100%; transition:transform .12s ease;
-  }
-  .btn:active{transform:scale(.97)}
-  .btn[disabled]{opacity:.45; cursor:default}
-  .btn.fantasma{background:transparent; color:var(--texto); border:2px solid var(--linea)}
-  .salir{color:var(--texto); opacity:.45; text-decoration:none; font-size:.82rem; padding:.6rem}
+      .btn {
+        border: none;
+        border-radius: 999px;
+        padding: 1.05rem 2rem;
+        font-size: 1rem;
+        font-weight: 800;
+        font-family: inherit;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        background: var(--sky);
+        color: var(--navy);
+        width: 100%;
+        transition: transform 0.12s ease;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn[disabled] {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .btn.fantasma {
+        background: transparent;
+        color: var(--texto);
+        border: 2px solid var(--linea);
+      }
+      .salir {
+        color: var(--texto);
+        opacity: 0.45;
+        text-decoration: none;
+        font-size: 0.82rem;
+        padding: 0.6rem;
+      }
 
-  /* Cuenta regresiva y pausa, encima del juego */
-  #p-listos,#p-pausa{background:rgba(7,17,26,.92)}
-  #cuenta{font-size:clamp(4rem,22vw,9rem); font-weight:900; line-height:1; color:var(--sky)}
+      /* Cuenta regresiva y pausa, encima del juego */
+      #p-listos,
+      #p-pausa {
+        background: rgba(7, 17, 26, 0.92);
+      }
+      #cuenta {
+        font-size: clamp(4rem, 22vw, 9rem);
+        font-weight: 900;
+        line-height: 1;
+        color: var(--sky);
+      }
 
-  /* ---------- Resultados ---------- */
-  .tarjetas{display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem}
-  .tarjeta{background:var(--panel); border:1px solid var(--linea); border-radius:14px; padding:.8rem .5rem}
-  .tarjeta .n{font-size:1.6rem; font-weight:800; color:var(--sky); line-height:1.1; font-variant-numeric:tabular-nums}
-  .tarjeta .e{font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; opacity:.55; margin-top:.2rem}
-  .destacado{grid-column:1/-1}
-  .destacado .n{font-size:2.3rem}
-  #estado-envio{font-size:.75rem; opacity:.55}
+      /* ---------- Resultados ---------- */
+      .tarjetas {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+      }
+      .tarjeta {
+        background: var(--panel);
+        border: 1px solid var(--linea);
+        border-radius: 14px;
+        padding: 0.8rem 0.5rem;
+      }
+      .tarjeta .n {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--sky);
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+      }
+      .tarjeta .e {
+        font-size: 0.6rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.55;
+        margin-top: 0.2rem;
+      }
+      .destacado {
+        grid-column: 1/-1;
+      }
+      .destacado .n {
+        font-size: 2.3rem;
+      }
+      #estado-envio {
+        font-size: 0.75rem;
+        opacity: 0.55;
+      }
 
-  /* En horizontal y pantallas bajas, el formulario se acomoda en dos columnas */
-  @media (orientation:landscape) and (max-height:520px){
-    .centro{max-width:760px; display:grid; grid-template-columns:1fr 1fr; gap:.8rem 1.4rem; text-align:left}
-    .centro h1,.centro .reglas,.centro .btn,.centro .salir{grid-column:1/-1}
-    .centro h1{font-size:1.4rem}
-    .reglas{padding:.6rem}
-  }
-</style>
-</head>
-<body>
+      /* En horizontal y pantallas bajas, el formulario se acomoda en dos columnas */
+      @media (orientation: landscape) and (max-height: 520px) {
+        .centro {
+          max-width: 760px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.8rem 1.4rem;
+          text-align: left;
+        }
+        .centro h1,
+        .centro .reglas,
+        .centro .btn,
+        .centro .salir {
+          grid-column: 1/-1;
+        }
+        .centro h1 {
+          font-size: 1.4rem;
+        }
+        .reglas {
+          padding: 0.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="escena">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="lienzo"></canvas>
 
-<div id="escena">
-  <video id="webcam" autoplay playsinline muted></video>
-  <canvas id="lienzo"></canvas>
+      <div id="hud">
+        <div>Puntos <b id="hud-puntos">0</b></div>
+        <div class="der">Quedan <b id="hud-tiempo">45</b></div>
+        <div id="barra-tiempo"></div>
+      </div>
 
-  <div id="hud">
-    <div>Puntos <b id="hud-puntos">0</b></div>
-    <div class="der">Quedan <b id="hud-tiempo">45</b></div>
-    <div id="barra-tiempo"></div>
-  </div>
+      <div id="sin-mano">
+        <span class="punto"></span> No te veo la mano — alejate un poco
+      </div>
 
-  <div id="sin-mano"><span class="punto"></span> No te veo la mano — alejate un poco</div>
+      <!-- ============================ INICIO ============================ -->
+      <section id="p-inicio" class="pantalla activa">
+        <div class="centro">
+          <p
+            class="chico"
+            style="letter-spacing: 0.2em; text-transform: uppercase"
+          >
+            Gimnasio Mental · Módulo 01
+          </p>
+          <h1>Reacción <span>con cámara</span></h1>
 
-  <!-- ============================ INICIO ============================ -->
-  <section id="p-inicio" class="pantalla activa">
-    <div class="centro">
-      <p class="chico" style="letter-spacing:.2em;text-transform:uppercase">Gimnasio Mental · Módulo 01</p>
-      <h1>Reacción <span>con cámara</span></h1>
+          <div class="reglas">
+            <div class="regla">
+              <svg
+                width="46"
+                height="46"
+                viewBox="0 0 46 46"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="23"
+                  cy="23"
+                  r="18"
+                  fill="#FF2D2D"
+                  stroke="#fff"
+                  stroke-width="3"
+                />
+                <circle cx="23" cy="23" r="6" fill="#fff" />
+              </svg>
+              <b>Tocar</b>
+              <span>Lleno, con punto</span>
+            </div>
+            <div class="regla">
+              <svg
+                width="46"
+                height="46"
+                viewBox="0 0 46 46"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="23"
+                  cy="23"
+                  r="18"
+                  fill="none"
+                  stroke="#00C853"
+                  stroke-width="6"
+                />
+                <line
+                  x1="12"
+                  y1="34"
+                  x2="34"
+                  y2="12"
+                  stroke="#00C853"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <b>Esquivar</b>
+              <span>Hueco, tachado</span>
+            </div>
+          </div>
 
-      <div class="reglas">
-        <div class="regla">
-          <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
-            <circle cx="23" cy="23" r="18" fill="#FF2D2D" stroke="#fff" stroke-width="3"/>
-            <circle cx="23" cy="23" r="6" fill="#fff"/>
-          </svg>
-          <b>Tocar</b>
-          <span>Lleno, con punto</span>
+          <p class="chico">
+            45 segundos. Se juega con la mano en el aire: la cámara sigue tu
+            dedo índice. No hace falta tocar la pantalla.
+          </p>
+
+          <div class="campo">
+            <label for="nombre">Nombre y apellido</label>
+            <input
+              type="text"
+              id="nombre"
+              autocomplete="name"
+              placeholder="Juan Pérez"
+            />
+          </div>
+          <div class="campo">
+            <label for="deporte">Deporte / puesto</label>
+            <input
+              type="text"
+              id="deporte"
+              autocomplete="off"
+              placeholder="Hockey · Volante"
+            />
+          </div>
+
+          <button class="btn" id="btn-empezar">EMPEZAR</button>
+          <p class="chico" id="aviso-inicio"></p>
+          <a class="salir" href="../../pages/jugadores.html"
+            >← Volver al portal</a
+          >
         </div>
-        <div class="regla">
-          <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
-            <circle cx="23" cy="23" r="18" fill="none" stroke="#00C853" stroke-width="6"/>
-            <line x1="12" y1="34" x2="34" y2="12" stroke="#00C853" stroke-width="6" stroke-linecap="round"/>
-          </svg>
-          <b>Esquivar</b>
-          <span>Hueco, tachado</span>
+      </section>
+
+      <!-- ====================== PREPARARSE / CUENTA ====================== -->
+      <section id="p-listos" class="pantalla">
+        <div class="centro">
+          <div id="cuenta">3</div>
+          <p id="texto-listos">Poné la mano frente a la cámara</p>
+          <p class="chico">
+            Apoyá el celular en algo y alejate hasta que se te vea el brazo
+            entero.
+          </p>
         </div>
-      </div>
+      </section>
 
-      <p class="chico">45 segundos. Se juega con la mano en el aire: la cámara sigue tu dedo índice. No hace falta tocar la pantalla.</p>
+      <!-- ============================ PAUSA ============================ -->
+      <section id="p-pausa" class="pantalla">
+        <div class="centro">
+          <h1>En pausa</h1>
+          <p class="chico">
+            Saliste de la app o giraste la pantalla. El tiempo quedó frenado.
+          </p>
+          <button class="btn" id="btn-seguir">SEGUIR JUGANDO</button>
+          <button class="btn fantasma" id="btn-cortar">TERMINAR ACÁ</button>
+        </div>
+      </section>
 
-      <div class="campo">
-        <label for="nombre">Nombre y apellido</label>
-        <input type="text" id="nombre" autocomplete="name" placeholder="Juan Pérez">
-      </div>
-      <div class="campo">
-        <label for="deporte">Deporte / puesto</label>
-        <input type="text" id="deporte" autocomplete="off" placeholder="Hockey · Volante">
-      </div>
-
-      <button class="btn" id="btn-empezar">EMPEZAR</button>
-      <p class="chico" id="aviso-inicio"></p>
-      <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
+      <!-- ========================== RESULTADOS ========================== -->
+      <section id="p-fin" class="pantalla">
+        <div class="centro">
+          <h1>Resultados</h1>
+          <div class="tarjetas">
+            <div class="tarjeta destacado">
+              <div class="n" id="r-puntos">–</div>
+              <div class="e">Puntos</div>
+            </div>
+            <div class="tarjeta">
+              <div class="n" id="r-reaccion">–</div>
+              <div class="e">Reacción (mediana)</div>
+            </div>
+            <div class="tarjeta">
+              <div class="n" id="r-precision">–</div>
+              <div class="e">Precisión</div>
+            </div>
+            <div class="tarjeta">
+              <div class="n" id="r-aciertos">–</div>
+              <div class="e">Tocaste bien</div>
+            </div>
+            <div class="tarjeta">
+              <div class="n" id="r-errores">–</div>
+              <div class="e">Te ganó el impulso</div>
+            </div>
+          </div>
+          <p class="chico" id="interpretacion"></p>
+          <p id="estado-envio">Guardando…</p>
+          <button class="btn" id="btn-repetir">REPETIR</button>
+          <a class="salir" href="../../pages/jugadores.html"
+            >← Volver al portal</a
+          >
+        </div>
+      </section>
     </div>
-  </section>
 
-  <!-- ====================== PREPARARSE / CUENTA ====================== -->
-  <section id="p-listos" class="pantalla">
-    <div class="centro">
-      <div id="cuenta">3</div>
-      <p id="texto-listos">Poné la mano frente a la cámara</p>
-      <p class="chico">Apoyá el celular en algo y alejate hasta que se te vea el brazo entero.</p>
-    </div>
-  </section>
+    <script src="./ugi-envio.js"></script>
+    <script>
+      (function () {
+        "use strict";
 
-  <!-- ============================ PAUSA ============================ -->
-  <section id="p-pausa" class="pantalla">
-    <div class="centro">
-      <h1>En pausa</h1>
-      <p class="chico">Saliste de la app o giraste la pantalla. El tiempo quedó frenado.</p>
-      <button class="btn" id="btn-seguir">SEGUIR JUGANDO</button>
-      <button class="btn fantasma" id="btn-cortar">TERMINAR ACÁ</button>
-    </div>
-  </section>
+        /* ================== CONFIGURACIÓN ================== */
+        var CFG = {
+          JUEGO: "REACCION_MOVIL",
+          VERSION: "3.0",
+          DURACION_S: 45,
+          VIDA_TARGET_MS: 1800, // cuánto dura un estímulo antes de irse solo
+          COOLDOWN_MS: 260, // evita que el mismo toque cuente dos veces
+          PROP_TOCAR: 0.6, // 60% para tocar, 40% para esquivar
+          PUNTOS_ACIERTO: 10,
+          PUNTOS_BONUS: 10, // extra por velocidad, proporcional
+          PUNTOS_ERROR: -10,
+          PUNTOS_ESQUIVE: 2, // premio por dejar pasar el que no había que tocar
+          MARGEN_HUD: 74, // no nacen estímulos abajo de la barra superior
+        };
 
-  <!-- ========================== RESULTADOS ========================== -->
-  <section id="p-fin" class="pantalla">
-    <div class="centro">
-      <h1>Resultados</h1>
-      <div class="tarjetas">
-        <div class="tarjeta destacado"><div class="n" id="r-puntos">–</div><div class="e">Puntos</div></div>
-        <div class="tarjeta"><div class="n" id="r-reaccion">–</div><div class="e">Reacción (mediana)</div></div>
-        <div class="tarjeta"><div class="n" id="r-precision">–</div><div class="e">Precisión</div></div>
-        <div class="tarjeta"><div class="n" id="r-aciertos">–</div><div class="e">Tocaste bien</div></div>
-        <div class="tarjeta"><div class="n" id="r-errores">–</div><div class="e">Te ganó el impulso</div></div>
-      </div>
-      <p class="chico" id="interpretacion"></p>
-      <p id="estado-envio">Guardando…</p>
-      <button class="btn" id="btn-repetir">REPETIR</button>
-      <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
-    </div>
-  </section>
-</div>
+        var $ = function (id) {
+          return document.getElementById(id);
+        };
+        var video = $("webcam"),
+          lienzo = $("lienzo"),
+          ctx = lienzo.getContext("2d");
 
-<script src="./ugi-envio.js"></script>
-<script>
-(function(){
-  'use strict';
+        /* ================== ESTADO ================== */
+        var jugador = { nombre: "", deporte: "" };
+        var puntos = 0,
+          jugando = false,
+          pausado = false;
+        var target = null,
+          ultimoImpacto = 0,
+          ultimaMano = 0;
+        var finEn = 0,
+          restanteAlPausar = 0;
+        var stats = {
+          aciertos: 0,
+          errores: 0,
+          esquives: 0,
+          perdidos: 0,
+          reacciones: [],
+        };
+        var wakeLock = null;
 
-  /* ================== CONFIGURACIÓN ================== */
-  var CFG = {
-    JUEGO: 'REACCION_MOVIL',
-    VERSION: '3.0',
-    DURACION_S: 45,
-    VIDA_TARGET_MS: 1800,   // cuánto dura un estímulo antes de irse solo
-    COOLDOWN_MS: 260,       // evita que el mismo toque cuente dos veces
-    PROP_TOCAR: 0.6,        // 60% para tocar, 40% para esquivar
-    PUNTOS_ACIERTO: 10,
-    PUNTOS_BONUS: 10,       // extra por velocidad, proporcional
-    PUNTOS_ERROR: -10,
-    PUNTOS_ESQUIVE: 2,      // premio por dejar pasar el que no había que tocar
-    MARGEN_HUD: 74          // no nacen estímulos abajo de la barra superior
-  };
-
-  var $ = function(id){ return document.getElementById(id); };
-  var video = $('webcam'), lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
-
-  /* ================== ESTADO ================== */
-  var jugador = { nombre:'', deporte:'' };
-  var puntos = 0, jugando = false, pausado = false;
-  var target = null, ultimoImpacto = 0, ultimaMano = 0;
-  var finEn = 0, restanteAlPausar = 0;
-  var stats = { aciertos:0, errores:0, esquives:0, perdidos:0, reacciones:[] };
-  var wakeLock = null;
-
-  /* MediaPipe puede no cargar: red del club con filtro, caída del CDN, o el propio
+        /* MediaPipe puede no cargar: red del club con filtro, caída del CDN, o el propio
      CDN bloqueado. Antes eso dejaba la pantalla en negro sin explicar nada. */
-  var hands = null, camara = null;
-  var baseMP = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/';
+        var hands = null,
+          camara = null;
+        var baseMP = "https://cdn.jsdelivr.net/npm/@mediapipe/hands/";
 
-  function hayDetector(){ return typeof Hands === 'function' && typeof Camera === 'function'; }
+        function hayDetector() {
+          return typeof Hands === "function" && typeof Camera === "function";
+        }
 
-  function cargarScript(src){
-    return new Promise(function(ok, mal){
-      var s = document.createElement('script');
-      s.src = src; s.crossOrigin = 'anonymous';
-      s.onload = ok; s.onerror = function(){ mal(new Error('no cargó ' + src)); };
-      document.head.appendChild(s);
-    });
-  }
+        function cargarScript(src) {
+          return new Promise(function (ok, mal) {
+            var s = document.createElement("script");
+            s.src = src;
+            s.crossOrigin = "anonymous";
+            s.onload = ok;
+            s.onerror = function () {
+              mal(new Error("no cargó " + src));
+            };
+            document.head.appendChild(s);
+          });
+        }
 
-  /* Segundo intento por otro CDN: en redes de colegio o club es habitual que
+        /* Segundo intento por otro CDN: en redes de colegio o club es habitual que
      jsdelivr esté bloqueado y unpkg no, o al revés. */
-  async function asegurarDetector(){
-    if (!hayDetector()){
-      try {
-        await cargarScript('https://unpkg.com/@mediapipe/hands/hands.js');
-        await cargarScript('https://unpkg.com/@mediapipe/camera_utils/camera_utils.js');
-        baseMP = 'https://unpkg.com/@mediapipe/hands/';
-      } catch(e){}
-    }
-    if (!hayDetector()) return false;
-    if (hands) return true;
+        async function asegurarDetector() {
+          if (!hayDetector()) {
+            try {
+              await cargarScript("https://unpkg.com/@mediapipe/hands/hands.js");
+              await cargarScript(
+                "https://unpkg.com/@mediapipe/camera_utils/camera_utils.js",
+              );
+              baseMP = "https://unpkg.com/@mediapipe/hands/";
+            } catch (e) {}
+          }
+          if (!hayDetector()) return false;
+          if (hands) return true;
 
-    // modelComplexity 0: en celulares de gama media el modelo pesado va a 5 fps
-    hands = new Hands({ locateFile: function(f){ return baseMP + f; } });
-    hands.setOptions({ maxNumHands:2, modelComplexity:0, minDetectionConfidence:.5, minTrackingConfidence:.5 });
-    hands.onResults(alDetectar);
-    camara = new Camera(video, {
-      onFrame: async function(){ if (!pausado && hands) await hands.send({ image: video }); },
-      width: 640, height: 480
-    });
-    return true;
-  }
+          // modelComplexity 0: en celulares de gama media el modelo pesado va a 5 fps
+          hands = new Hands({
+            locateFile: function (f) {
+              return baseMP + f;
+            },
+          });
+          hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+          });
+          hands.onResults(alDetectar);
+          camara = new Camera(video, {
+            onFrame: async function () {
+              if (!pausado && hands) await hands.send({ image: video });
+            },
+            width: 640,
+            height: 480,
+          });
+          return true;
+        }
 
-  /* ================== LIENZO Y COORDENADAS ================== */
-  /* El video se muestra con object-fit:cover, o sea recortado. MediaPipe devuelve
+        /* ================== LIENZO Y COORDENADAS ================== */
+        /* El video se muestra con object-fit:cover, o sea recortado. MediaPipe devuelve
      coordenadas 0..1 sobre el cuadro COMPLETO de la cámara, no sobre lo que se ve.
      Sin esta corrección el puntero aparece corrido respecto del dedo real, y cada
      vez más cuanto más distinta es la proporción del celular a la de la cámara. */
-  function medidas(){
-    var an = lienzo.clientWidth, al = lienzo.clientHeight;
-    var vw = video.videoWidth || 640, vh = video.videoHeight || 480;
-    var escala = Math.max(an / vw, al / vh);
-    return { an:an, al:al, escala:escala, ox:(an - vw*escala)/2, oy:(al - vh*escala)/2, vw:vw, vh:vh };
-  }
+        function medidas() {
+          var an = lienzo.clientWidth,
+            al = lienzo.clientHeight;
+          var vw = video.videoWidth || 640,
+            vh = video.videoHeight || 480;
+          var escala = Math.max(an / vw, al / vh);
+          return {
+            an: an,
+            al: al,
+            escala: escala,
+            ox: (an - vw * escala) / 2,
+            oy: (al - vh * escala) / 2,
+            vw: vw,
+            vh: vh,
+          };
+        }
 
-  function aPantalla(punto){
-    var m = medidas();
-    var x = punto.x * m.vw * m.escala + m.ox;
-    // El video está espejado por CSS; el lienzo no. Espejamos acá para que el
-    // puntero caiga sobre el dedo y el texto del lienzo siga legible.
-    return { x: m.an - x, y: punto.y * m.vh * m.escala + m.oy };
-  }
+        function aPantalla(punto) {
+          var m = medidas();
+          var x = punto.x * m.vw * m.escala + m.ox;
+          // El video está espejado por CSS; el lienzo no. Espejamos acá para que el
+          // puntero caiga sobre el dedo y el texto del lienzo siga legible.
+          return { x: m.an - x, y: punto.y * m.vh * m.escala + m.oy };
+        }
 
-  function ajustarLienzo(){
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);   // en pantallas retina, sin esto se ve borroso
-    lienzo.width = Math.round(lienzo.clientWidth * dpr);
-    lienzo.height = Math.round(lienzo.clientHeight * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  window.addEventListener('resize', ajustarLienzo);
-  ajustarLienzo();
+        function ajustarLienzo() {
+          var dpr = Math.min(window.devicePixelRatio || 1, 2); // en pantallas retina, sin esto se ve borroso
+          lienzo.width = Math.round(lienzo.clientWidth * dpr);
+          lienzo.height = Math.round(lienzo.clientHeight * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener("resize", ajustarLienzo);
+        ajustarLienzo();
 
-  function radioTarget(){
-    var m = Math.min(lienzo.clientWidth, lienzo.clientHeight);
-    return Math.max(34, Math.min(70, m * 0.11));
-  }
+        function radioTarget() {
+          var m = Math.min(lienzo.clientWidth, lienzo.clientHeight);
+          return Math.max(34, Math.min(70, m * 0.11));
+        }
 
-  /* ================== ESTÍMULOS ================== */
-  function nuevoTarget(){
-    var r = radioTarget(), an = lienzo.clientWidth, al = lienzo.clientHeight;
-    var margen = r + 14;
-    var arriba = CFG.MARGEN_HUD + margen;                       // nunca tapado por el HUD
-    var abajo = al - margen - 24;
-    var tipo = Math.random() < CFG.PROP_TOCAR ? 'tocar' : 'esquivar';
+        /* ================== ESTÍMULOS ================== */
+        function nuevoTarget() {
+          var r = radioTarget(),
+            an = lienzo.clientWidth,
+            al = lienzo.clientHeight;
+          var margen = r + 14;
+          var arriba = CFG.MARGEN_HUD + margen; // nunca tapado por el HUD
+          var abajo = al - margen - 24;
+          var tipo = Math.random() < CFG.PROP_TOCAR ? "tocar" : "esquivar";
 
-    // Que no salga dos veces seguidas en el mismo lugar: aburre y deja de medir reacción
-    var x, y, intento = 0;
-    do {
-      x = margen + Math.random() * (an - margen*2);
-      y = arriba + Math.random() * Math.max(40, abajo - arriba);
-      intento++;
-    } while (target && intento < 12 && Math.hypot(x - target.x, y - target.y) < r * 3);
+          // Que no salga dos veces seguidas en el mismo lugar: aburre y deja de medir reacción
+          var x,
+            y,
+            intento = 0;
+          do {
+            x = margen + Math.random() * (an - margen * 2);
+            y = arriba + Math.random() * Math.max(40, abajo - arriba);
+            intento++;
+          } while (
+            target &&
+            intento < 12 &&
+            Math.hypot(x - target.x, y - target.y) < r * 3
+          );
 
-    target = { x:x, y:y, r:r, tipo:tipo, nace:performance.now(), tocado:false };
-  }
+          target = {
+            x: x,
+            y: y,
+            r: r,
+            tipo: tipo,
+            nace: performance.now(),
+            tocado: false,
+          };
+        }
 
-  function seVaSolo(){
-    if (!target || target.tocado) return;
-    if (target.tipo === 'esquivar'){ stats.esquives++; sumar(CFG.PUNTOS_ESQUIVE); }
-    else { stats.perdidos++; }
-    nuevoTarget();
-  }
+        function seVaSolo() {
+          if (!target || target.tocado) return;
+          if (target.tipo === "esquivar") {
+            stats.esquives++;
+            sumar(CFG.PUNTOS_ESQUIVE);
+          } else {
+            stats.perdidos++;
+          }
+          nuevoTarget();
+        }
 
-  function sumar(n){
-    puntos += n;
-    $('hud-puntos').textContent = puntos;
-  }
+        function sumar(n) {
+          puntos += n;
+          $("hud-puntos").textContent = puntos;
+        }
 
-  function impacto(){
-    var ahora = performance.now();
-    if (!jugando || pausado || !target || target.tocado) return;
-    if (ahora - ultimoImpacto < CFG.COOLDOWN_MS) return;
-    ultimoImpacto = ahora;
-    target.tocado = true;
+        function impacto() {
+          var ahora = performance.now();
+          if (!jugando || pausado || !target || target.tocado) return;
+          if (ahora - ultimoImpacto < CFG.COOLDOWN_MS) return;
+          ultimoImpacto = ahora;
+          target.tocado = true;
 
-    var rt = ahora - target.nace;
-    if (target.tipo === 'tocar'){
-      stats.aciertos++;
-      stats.reacciones.push(rt);
-      // Cuanto más rápido, más bonus: premia la reacción, no solo el acierto
-      var bonus = Math.round(CFG.PUNTOS_BONUS * Math.max(0, 1 - rt / CFG.VIDA_TARGET_MS));
-      sumar(CFG.PUNTOS_ACIERTO + bonus);
-      vibrar(25);
-      destello('rgba(0,200,83,.25)');
-    } else {
-      stats.errores++;
-      sumar(CFG.PUNTOS_ERROR);
-      vibrar([40, 60, 40]);
-      destello('rgba(255,45,45,.35)');
-    }
-    nuevoTarget();
-  }
+          var rt = ahora - target.nace;
+          if (target.tipo === "tocar") {
+            stats.aciertos++;
+            stats.reacciones.push(rt);
+            // Cuanto más rápido, más bonus: premia la reacción, no solo el acierto
+            var bonus = Math.round(
+              CFG.PUNTOS_BONUS * Math.max(0, 1 - rt / CFG.VIDA_TARGET_MS),
+            );
+            sumar(CFG.PUNTOS_ACIERTO + bonus);
+            vibrar(25);
+            destello("rgba(0,200,83,.25)");
+          } else {
+            stats.errores++;
+            sumar(CFG.PUNTOS_ERROR);
+            vibrar([40, 60, 40]);
+            destello("rgba(255,45,45,.35)");
+          }
+          nuevoTarget();
+        }
 
-  function vibrar(p){ try { if (navigator.vibrate) navigator.vibrate(p); } catch(e){} }
+        function vibrar(p) {
+          try {
+            if (navigator.vibrate) navigator.vibrate(p);
+          } catch (e) {}
+        }
 
-  var flash = { hasta:0, color:'' };
-  function destello(color){ flash.color = color; flash.hasta = performance.now() + 220; }
+        var flash = { hasta: 0, color: "" };
+        function destello(color) {
+          flash.color = color;
+          flash.hasta = performance.now() + 220;
+        }
 
-  /* ================== DIBUJO ================== */
-  function dibujarTarget(ahora){
-    if (!target) return;
-    var vida = Math.min(1, (ahora - target.nace) / CFG.VIDA_TARGET_MS);
-    var r = target.r;
+        /* ================== DIBUJO ================== */
+        function dibujarTarget(ahora) {
+          if (!target) return;
+          var vida = Math.min(1, (ahora - target.nace) / CFG.VIDA_TARGET_MS);
+          var r = target.r;
 
-    // Aparición: crece los primeros 120 ms para que el ojo lo enganche
-    var escala = Math.min(1, (ahora - target.nace) / 120);
-    var rr = r * (0.6 + 0.4 * escala);
+          // Aparición: crece los primeros 120 ms para que el ojo lo enganche
+          var escala = Math.min(1, (ahora - target.nace) / 120);
+          var rr = r * (0.6 + 0.4 * escala);
 
-    ctx.save();
-    ctx.translate(target.x, target.y);
+          ctx.save();
+          ctx.translate(target.x, target.y);
 
-    /* Sombra y contorno oscuro: la cámara puede tener detrás una pared verde, una
+          /* Sombra y contorno oscuro: la cámara puede tener detrás una pared verde, una
        camiseta roja o una ventana quemada. Sin esto, el estímulo se pierde contra
        el fondo justo cuando hay que reaccionar rápido. */
-    ctx.shadowColor = 'rgba(0,0,0,.55)';
-    ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(0, 0, rr + 4, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 8; ctx.stroke();
-    ctx.shadowBlur = 0;
+          ctx.shadowColor = "rgba(0,0,0,.55)";
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(0, 0, rr + 4, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(0,0,0,.55)";
+          ctx.lineWidth = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
 
-    // Anillo de tiempo restante: se ve cuánto queda antes de que se vaya
-    ctx.beginPath();
-    ctx.arc(0, 0, rr + 9, -Math.PI/2, -Math.PI/2 + (1 - vida) * Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.stroke();
+          // Anillo de tiempo restante: se ve cuánto queda antes de que se vaya
+          ctx.beginPath();
+          ctx.arc(
+            0,
+            0,
+            rr + 9,
+            -Math.PI / 2,
+            -Math.PI / 2 + (1 - vida) * Math.PI * 2,
+          );
+          ctx.strokeStyle = "rgba(255,255,255,.35)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
 
-    if (target.tipo === 'tocar'){
-      // Lleno + punto blanco: se distingue del otro por FORMA, no solo por color
-      ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI*2);
-      ctx.fillStyle = '#FF2D2D'; ctx.fill();
-      ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, 0, rr*0.3, 0, Math.PI*2);
-      ctx.fillStyle = '#fff'; ctx.fill();
-    } else {
-      // Hueco + tachado
-      ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI*2);
-      ctx.lineWidth = Math.max(6, rr*0.22); ctx.strokeStyle = '#00C853'; ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-rr*0.6, rr*0.6); ctx.lineTo(rr*0.6, -rr*0.6);
-      ctx.lineCap = 'round'; ctx.stroke();
-    }
-    ctx.restore();
-  }
+          if (target.tipo === "tocar") {
+            // Lleno + punto blanco: se distingue del otro por FORMA, no solo por color
+            ctx.beginPath();
+            ctx.arc(0, 0, rr, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF2D2D";
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#fff";
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, rr * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+          } else {
+            // Hueco + tachado
+            ctx.beginPath();
+            ctx.arc(0, 0, rr, 0, Math.PI * 2);
+            ctx.lineWidth = Math.max(6, rr * 0.22);
+            ctx.strokeStyle = "#00C853";
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-rr * 0.6, rr * 0.6);
+            ctx.lineTo(rr * 0.6, -rr * 0.6);
+            ctx.lineCap = "round";
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
 
-  function dibujarPuntero(p){
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 10;
-    ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.lineWidth = 3; ctx.strokeStyle = '#2979FF'; ctx.stroke();
-    ctx.restore();
-  }
+        function dibujarPuntero(p) {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,.6)";
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 13, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255,255,255,.95)";
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#2979FF";
+          ctx.stroke();
+          ctx.restore();
+        }
 
-  function pintar(manos, ahora){
-    ctx.clearRect(0, 0, lienzo.clientWidth, lienzo.clientHeight);
-    if (flash.hasta > ahora){
-      ctx.fillStyle = flash.color;
-      ctx.fillRect(0, 0, lienzo.clientWidth, lienzo.clientHeight);
-    }
-    if (jugando && !pausado) dibujarTarget(ahora);
-    for (var i=0; i<manos.length; i++) dibujarPuntero(manos[i]);
-  }
+        function pintar(manos, ahora) {
+          ctx.clearRect(0, 0, lienzo.clientWidth, lienzo.clientHeight);
+          if (flash.hasta > ahora) {
+            ctx.fillStyle = flash.color;
+            ctx.fillRect(0, 0, lienzo.clientWidth, lienzo.clientHeight);
+          }
+          if (jugando && !pausado) dibujarTarget(ahora);
+          for (var i = 0; i < manos.length; i++) dibujarPuntero(manos[i]);
+        }
 
-  /* ================== CÁMARA Y DETECCIÓN ================== */
-  var manosEnPantalla = [];
+        /* ================== CÁMARA Y DETECCIÓN ================== */
+        var manosEnPantalla = [];
 
-  function alDetectar(res){
-    var ahora = performance.now();
-    manosEnPantalla = [];
-    if (res.multiHandLandmarks && res.multiHandLandmarks.length){
-      ultimaMano = ahora;
-      for (var i=0; i<res.multiHandLandmarks.length; i++){
-        var punta = aPantalla(res.multiHandLandmarks[i][8]);
-        manosEnPantalla.push(punta);
-        if (jugando && !pausado && target &&
-            Math.hypot(punta.x - target.x, punta.y - target.y) < target.r + 18) impacto();
-      }
-    }
-    pintar(manosEnPantalla, ahora);
-  }
+        function alDetectar(res) {
+          var ahora = performance.now();
+          manosEnPantalla = [];
+          if (res.multiHandLandmarks && res.multiHandLandmarks.length) {
+            ultimaMano = ahora;
+            for (var i = 0; i < res.multiHandLandmarks.length; i++) {
+              var punta = aPantalla(res.multiHandLandmarks[i][8]);
+              manosEnPantalla.push(punta);
+              if (
+                jugando &&
+                !pausado &&
+                target &&
+                Math.hypot(punta.x - target.x, punta.y - target.y) <
+                  target.r + 18
+              )
+                impacto();
+            }
+          }
+          pintar(manosEnPantalla, ahora);
+        }
 
-  function apagarCamara(){
-    try { if (camara) camara.stop(); } catch(e){}
-    var s = video.srcObject;
-    if (s){ s.getTracks().forEach(function(t){ t.stop(); }); video.srcObject = null; }
-    soltarPantalla();
-    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch(e){}
-  }
+        function apagarCamara() {
+          try {
+            if (camara) camara.stop();
+          } catch (e) {}
+          var s = video.srcObject;
+          if (s) {
+            s.getTracks().forEach(function (t) {
+              t.stop();
+            });
+            video.srcObject = null;
+          }
+          soltarPantalla();
+          try {
+            if (document.fullscreenElement && document.exitFullscreen)
+              document.exitFullscreen();
+          } catch (e) {}
+        }
 
-  function mensajeCamara(err){
-    var n = (err && err.name) || '';
-    if (n === 'NotAllowedError') return 'Bloqueaste el permiso de cámara. Habilitalo en el candado de la barra de direcciones y volvé a entrar.';
-    if (n === 'NotFoundError')   return 'No encontramos ninguna cámara en este dispositivo.';
-    if (n === 'NotReadableError')return 'La cámara la está usando otra app. Cerrala y probá de nuevo.';
-    return 'No pudimos abrir la cámara: ' + (err && err.message ? err.message : 'error desconocido');
-  }
+        function mensajeCamara(err) {
+          var n = (err && err.name) || "";
+          if (n === "NotAllowedError")
+            return "Bloqueaste el permiso de cámara. Habilitalo en el candado de la barra de direcciones y volvé a entrar.";
+          if (n === "NotFoundError")
+            return "No encontramos ninguna cámara en este dispositivo.";
+          if (n === "NotReadableError")
+            return "La cámara la está usando otra app. Cerrala y probá de nuevo.";
+          return (
+            "No pudimos abrir la cámara: " +
+            (err && err.message ? err.message : "error desconocido")
+          );
+        }
 
-  /* Mantiene la pantalla encendida durante los 45 segundos */
-  async function reservarPantalla(){
-    try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
-  }
-  function soltarPantalla(){ try { if (wakeLock){ wakeLock.release(); wakeLock = null; } } catch(e){} }
+        /* Mantiene la pantalla encendida durante los 45 segundos */
+        async function reservarPantalla() {
+          try {
+            if (navigator.wakeLock)
+              wakeLock = await navigator.wakeLock.request("screen");
+          } catch (e) {}
+        }
+        function soltarPantalla() {
+          try {
+            if (wakeLock) {
+              wakeLock.release();
+              wakeLock = null;
+            }
+          } catch (e) {}
+        }
 
-  /* ================== RELOJ DEL JUEGO ================== */
-  function tick(){
-    if (!jugando) return;
-    if (!pausado){
-      var restante = Math.max(0, finEn - performance.now());
-      var seg = Math.ceil(restante / 1000);
-      $('hud-tiempo').textContent = seg;
-      $('barra-tiempo').style.transform = 'scaleX(' + (restante / (CFG.DURACION_S*1000)) + ')';
+        /* ================== RELOJ DEL JUEGO ================== */
+        function tick() {
+          if (!jugando) return;
+          if (!pausado) {
+            var restante = Math.max(0, finEn - performance.now());
+            var seg = Math.ceil(restante / 1000);
+            $("hud-tiempo").textContent = seg;
+            $("barra-tiempo").style.transform =
+              "scaleX(" + restante / (CFG.DURACION_S * 1000) + ")";
 
-      if (target && !target.tocado && performance.now() - target.nace > CFG.VIDA_TARGET_MS) seVaSolo();
-      $('sin-mano').classList.toggle('visible', performance.now() - ultimaMano > 900);
+            if (
+              target &&
+              !target.tocado &&
+              performance.now() - target.nace > CFG.VIDA_TARGET_MS
+            )
+              seVaSolo();
+            $("sin-mano").classList.toggle(
+              "visible",
+              performance.now() - ultimaMano > 900,
+            );
 
-      if (restante <= 0) return terminar();
-    }
-    requestAnimationFrame(tick);
-  }
+            if (restante <= 0) return terminar();
+          }
+          requestAnimationFrame(tick);
+        }
 
-  /* ================== PANTALLAS ================== */
-  function mostrar(id){
-    ['p-inicio','p-listos','p-pausa','p-fin'].forEach(function(p){
-      $(p).classList.toggle('activa', p === id);
-    });
-  }
-  function ocultarTodas(){ mostrar(''); }
+        /* ================== PANTALLAS ================== */
+        function mostrar(id) {
+          ["p-inicio", "p-listos", "p-pausa", "p-fin"].forEach(function (p) {
+            $(p).classList.toggle("activa", p === id);
+          });
+        }
+        function ocultarTodas() {
+          mostrar("");
+        }
 
-  /* ================== ARRANQUE DE PARTIDA ================== */
-  async function preparar(){
-    mostrar('p-listos');
-    $('cuenta').textContent = '·';
-    $('texto-listos').textContent = 'Cargando el detector de manos…';
+        /* ================== ARRANQUE DE PARTIDA ================== */
+        async function preparar() {
+          mostrar("p-listos");
+          $("cuenta").textContent = "·";
+          $("texto-listos").textContent = "Cargando el detector de manos…";
 
-    if (!(await asegurarDetector())){
-      mostrar('p-inicio');
-      $('aviso-inicio').textContent = 'No se pudo cargar el detector de manos. Probá con otra conexión: en redes con filtros (colegios, clubes) suele estar bloqueado.';
-      return;
-    }
+          if (!(await asegurarDetector())) {
+            mostrar("p-inicio");
+            $("aviso-inicio").textContent =
+              "No se pudo cargar el detector de manos. Probá con otra conexión: en redes con filtros (colegios, clubes) suele estar bloqueado.";
+            return;
+          }
 
-    $('texto-listos').textContent = 'Encendiendo la cámara…';
-    try {
-      await camara.start();
-    } catch (err){
-      mostrar('p-inicio');
-      $('aviso-inicio').textContent = mensajeCamara(err);
-      return;
-    }
+          $("texto-listos").textContent = "Encendiendo la cámara…";
+          try {
+            await camara.start();
+          } catch (err) {
+            mostrar("p-inicio");
+            $("aviso-inicio").textContent = mensajeCamara(err);
+            return;
+          }
 
-    await reservarPantalla();
-    try {
-      var el = document.documentElement;
-      var fs = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (fs) await fs.call(el).catch(function(){});
-    } catch(e){}
+          await reservarPantalla();
+          try {
+            var el = document.documentElement;
+            var fs = el.requestFullscreen || el.webkitRequestFullscreen;
+            if (fs) await fs.call(el).catch(function () {});
+          } catch (e) {}
 
-    // No arrancamos el reloj hasta verle la mano: si no, el jugador pierde
-    // los primeros segundos acomodando el celular.
-    $('texto-listos').textContent = 'Poné la mano frente a la cámara';
-    var espera = performance.now();
-    await new Promise(function(listo){
-      (function esperar(){
-        if (performance.now() - ultimaMano < 400) return listo();
-        // A los 12 segundos seguimos igual, para no dejar a nadie trabado
-        if (performance.now() - espera > 12000) return listo();
-        requestAnimationFrame(esperar);
+          // No arrancamos el reloj hasta verle la mano: si no, el jugador pierde
+          // los primeros segundos acomodando el celular.
+          $("texto-listos").textContent = "Poné la mano frente a la cámara";
+          var espera = performance.now();
+          await new Promise(function (listo) {
+            (function esperar() {
+              if (performance.now() - ultimaMano < 400) return listo();
+              // A los 12 segundos seguimos igual, para no dejar a nadie trabado
+              if (performance.now() - espera > 12000) return listo();
+              requestAnimationFrame(esperar);
+            })();
+          });
+
+          $("texto-listos").textContent = "¡Preparado!";
+          for (var n = 3; n > 0; n--) {
+            $("cuenta").textContent = n;
+            vibrar(15);
+            await new Promise(function (r) {
+              setTimeout(r, 700);
+            });
+          }
+
+          ocultarTodas();
+          puntos = 0;
+          stats = {
+            aciertos: 0,
+            errores: 0,
+            esquives: 0,
+            perdidos: 0,
+            reacciones: [],
+          };
+          $("hud-puntos").textContent = "0";
+          jugando = true;
+          pausado = false;
+          finEn = performance.now() + CFG.DURACION_S * 1000;
+          nuevoTarget();
+          tick();
+        }
+
+        /* ================== PAUSA ================== */
+        function pausar() {
+          if (!jugando || pausado) return;
+          pausado = true;
+          restanteAlPausar = Math.max(0, finEn - performance.now());
+          mostrar("p-pausa");
+        }
+        async function reanudar() {
+          mostrar("p-listos");
+          for (var n = 3; n > 0; n--) {
+            $("cuenta").textContent = n;
+            await new Promise(function (r) {
+              setTimeout(r, 600);
+            });
+          }
+          ocultarTodas();
+          pausado = false;
+          finEn = performance.now() + restanteAlPausar;
+          if (target) target.nace = performance.now(); // no cobrarle al jugador el tiempo pausado
+          tick();
+        }
+        document.addEventListener("visibilitychange", function () {
+          if (document.hidden) pausar();
+        });
+        window.addEventListener("orientationchange", function () {
+          setTimeout(ajustarLienzo, 250);
+        });
+
+        /* ================== FIN ================== */
+        function mediana(a) {
+          if (!a.length) return null;
+          var b = a.slice().sort(function (x, y) {
+            return x - y;
+          });
+          var m = Math.floor(b.length / 2);
+          return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+        }
+
+        function terminar() {
+          jugando = false;
+          apagarCamara();
+
+          var decisiones =
+            stats.aciertos + stats.errores + stats.perdidos + stats.esquives;
+          var buenas = stats.aciertos + stats.esquives;
+          var precision = decisiones
+            ? Math.round((buenas / decisiones) * 100)
+            : 0;
+          var med = mediana(stats.reacciones);
+          var segundos = med !== null ? (med / 1000).toFixed(2) : "";
+
+          $("r-puntos").textContent = puntos;
+          $("r-reaccion").textContent = segundos !== "" ? segundos + " s" : "–";
+          $("r-precision").textContent = precision + "%";
+          $("r-aciertos").textContent = stats.aciertos;
+          $("r-errores").textContent = stats.errores;
+
+          var txt;
+          if (decisiones < 5) {
+            txt =
+              "Quedaron muy pocas jugadas para sacar conclusiones. Puede que la cámara no te haya visto bien: probá con más luz y el brazo entero en pantalla.";
+          } else if (precision < 60) {
+            txt =
+              "Se te está yendo la mano con los verdes. Frenar el impulso es la mitad del ejercicio: mejor perder un rojo que manotear un verde.";
+          } else if (med !== null && med < 600) {
+            txt =
+              "Reacción muy rápida y precisión alta. Buen control del impulso bajo presión de tiempo.";
+          } else {
+            txt =
+              "Buen equilibrio entre velocidad y control. Lo interesante es ver si la reacción baja sesión a sesión.";
+          }
+          $("interpretacion").textContent =
+            txt + " No es un diagnóstico: sirve para compararte con vos mismo.";
+
+          mostrar("p-fin");
+
+          UGI.enviarResultado({
+            jugador: jugador.nombre,
+            deporte: jugador.deporte,
+            juego: CFG.JUEGO,
+            version: CFG.VERSION,
+            puntos: puntos,
+            reaccion: segundos,
+            aciertos: stats.aciertos,
+            errores: stats.errores,
+            ignorados: stats.esquives,
+            total: decisiones,
+            precision: precision,
+          }).then(function (r) {
+            var pend = UGI.pendientes();
+            $("estado-envio").textContent = r.ok
+              ? "✓ Resultado guardado en la planilla"
+              : "⚠ Sin conexión — guardado en el celular" +
+                (pend
+                  ? " (" + pend + " pendiente" + (pend > 1 ? "s" : "") + ")"
+                  : "") +
+                ", se envía solo al reconectar";
+          });
+        }
+
+        /* ================== ENGANCHES ================== */
+        var perfil = UGI.getPerfil();
+        $("nombre").value = perfil.nombre || "";
+        $("deporte").value = perfil.deporte || "";
+
+        $("btn-empezar").addEventListener("click", function () {
+          var n = UGI.normalizarNombre($("nombre").value);
+          var d = $("deporte").value.trim();
+          if (n.length < 3 || !d) {
+            $("aviso-inicio").textContent =
+              "Completá tu nombre y tu deporte para poder registrar el resultado.";
+            return;
+          }
+          $("aviso-inicio").textContent = "";
+          jugador.nombre = n;
+          jugador.deporte = d;
+          UGI.setPerfil(n, d);
+          ajustarLienzo();
+          preparar();
+        });
+
+        // Gancho para las pruebas automatizadas. No lo usa la app.
+        window.__ugi = {
+          estado: function () {
+            return {
+              puntos: puntos,
+              jugando: jugando,
+              pausado: pausado,
+              target: target,
+              stats: stats,
+            };
+          },
+          aPantalla: aPantalla,
+          medidas: medidas,
+          forzarTarget: function (t) {
+            target = t;
+          },
+        };
+
+        $("btn-seguir").addEventListener("click", reanudar);
+        $("btn-cortar").addEventListener("click", function () {
+          pausado = false;
+          terminar();
+        });
+        $("btn-repetir").addEventListener("click", function () {
+          location.reload();
+        });
       })();
-    });
-
-    $('texto-listos').textContent = '¡Preparado!';
-    for (var n = 3; n > 0; n--){
-      $('cuenta').textContent = n;
-      vibrar(15);
-      await new Promise(function(r){ setTimeout(r, 700); });
-    }
-
-    ocultarTodas();
-    puntos = 0; stats = { aciertos:0, errores:0, esquives:0, perdidos:0, reacciones:[] };
-    $('hud-puntos').textContent = '0';
-    jugando = true; pausado = false;
-    finEn = performance.now() + CFG.DURACION_S * 1000;
-    nuevoTarget();
-    tick();
-  }
-
-  /* ================== PAUSA ================== */
-  function pausar(){
-    if (!jugando || pausado) return;
-    pausado = true;
-    restanteAlPausar = Math.max(0, finEn - performance.now());
-    mostrar('p-pausa');
-  }
-  async function reanudar(){
-    mostrar('p-listos');
-    for (var n = 3; n > 0; n--){
-      $('cuenta').textContent = n;
-      await new Promise(function(r){ setTimeout(r, 600); });
-    }
-    ocultarTodas();
-    pausado = false;
-    finEn = performance.now() + restanteAlPausar;
-    if (target) target.nace = performance.now();   // no cobrarle al jugador el tiempo pausado
-    tick();
-  }
-  document.addEventListener('visibilitychange', function(){ if (document.hidden) pausar(); });
-  window.addEventListener('orientationchange', function(){ setTimeout(ajustarLienzo, 250); });
-
-  /* ================== FIN ================== */
-  function mediana(a){
-    if (!a.length) return null;
-    var b = a.slice().sort(function(x,y){ return x-y; });
-    var m = Math.floor(b.length/2);
-    return b.length % 2 ? b[m] : (b[m-1] + b[m]) / 2;
-  }
-
-  function terminar(){
-    jugando = false;
-    apagarCamara();
-
-    var decisiones = stats.aciertos + stats.errores + stats.perdidos + stats.esquives;
-    var buenas = stats.aciertos + stats.esquives;
-    var precision = decisiones ? Math.round(buenas / decisiones * 100) : 0;
-    var med = mediana(stats.reacciones);
-    var segundos = med !== null ? (med / 1000).toFixed(2) : '';
-
-    $('r-puntos').textContent    = puntos;
-    $('r-reaccion').textContent  = segundos !== '' ? segundos + ' s' : '–';
-    $('r-precision').textContent = precision + '%';
-    $('r-aciertos').textContent  = stats.aciertos;
-    $('r-errores').textContent   = stats.errores;
-
-    var txt;
-    if (decisiones < 5){
-      txt = 'Quedaron muy pocas jugadas para sacar conclusiones. Puede que la cámara no te haya visto bien: probá con más luz y el brazo entero en pantalla.';
-    } else if (precision < 60){
-      txt = 'Se te está yendo la mano con los verdes. Frenar el impulso es la mitad del ejercicio: mejor perder un rojo que manotear un verde.';
-    } else if (med !== null && med < 600){
-      txt = 'Reacción muy rápida y precisión alta. Buen control del impulso bajo presión de tiempo.';
-    } else {
-      txt = 'Buen equilibrio entre velocidad y control. Lo interesante es ver si la reacción baja sesión a sesión.';
-    }
-    $('interpretacion').textContent = txt + ' No es un diagnóstico: sirve para compararte con vos mismo.';
-
-    mostrar('p-fin');
-
-    UGI.enviarResultado({
-      jugador: jugador.nombre,
-      deporte: jugador.deporte,
-      juego: CFG.JUEGO,
-      version: CFG.VERSION,
-      puntos: puntos,
-      reaccion: segundos,
-      aciertos: stats.aciertos,
-      errores: stats.errores,
-      ignorados: stats.esquives,
-      total: decisiones,
-      precision: precision
-    }).then(function(r){
-      var pend = UGI.pendientes();
-      $('estado-envio').textContent = r.ok
-        ? '✓ Resultado guardado en la planilla'
-        : '⚠ Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
-    });
-  }
-
-  /* ================== ENGANCHES ================== */
-  var perfil = UGI.getPerfil();
-  $('nombre').value = perfil.nombre || '';
-  $('deporte').value = perfil.deporte || '';
-
-  $('btn-empezar').addEventListener('click', function(){
-    var n = UGI.normalizarNombre($('nombre').value);
-    var d = $('deporte').value.trim();
-    if (n.length < 3 || !d){
-      $('aviso-inicio').textContent = 'Completá tu nombre y tu deporte para poder registrar el resultado.';
-      return;
-    }
-    $('aviso-inicio').textContent = '';
-    jugador.nombre = n; jugador.deporte = d;
-    UGI.setPerfil(n, d);
-    ajustarLienzo();
-    preparar();
-  });
-
-  // Gancho para las pruebas automatizadas. No lo usa la app.
-  window.__ugi = {
-    estado: function(){ return { puntos:puntos, jugando:jugando, pausado:pausado, target:target, stats:stats }; },
-    aPantalla: aPantalla,
-    medidas: medidas,
-    forzarTarget: function(t){ target = t; }
-  };
-
-  $('btn-seguir').addEventListener('click', reanudar);
-  $('btn-cortar').addEventListener('click', function(){ pausado = false; terminar(); });
-  $('btn-repetir').addEventListener('click', function(){ location.reload(); });
-})();
-</script>
-</body>
+    </script>
+  </body>
 </html>
