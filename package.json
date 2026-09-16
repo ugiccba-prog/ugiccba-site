@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}

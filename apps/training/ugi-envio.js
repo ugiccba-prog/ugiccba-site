@@ -9,50 +9,62 @@
    queda guardado en el celular y se reintenta solo la próxima vez que el
    jugador abra cualquier juego. Antes, ese resultado se perdía para siempre.
    ========================================================================== */
- 
+
 window.UGI = (function () {
-  'use strict';
- 
+  "use strict";
+
   /* ⬇️ URL del Apps Script, la que termina en /exec.
      El codigo del script esta en apps-script/Codigo.gs, con los pasos para
      implementarlo. Mientras esto este vacio, los resultados quedan guardados
      en el dispositivo y se mandan solos cuando la URL este puesta. */
-  const DATABASE_URL = 'https://script.google.com/macros/s/AKfycbzzz9bgYenOAydgE78qgL6ChB7L7cpQq8_REOPXZrpGcN3t74XKPnCXy5tTUKQWiXky/exec';
- 
-  const COLA_KEY = 'ugi_cola_envios_v1';
-  const PERFIL_KEY = 'ugi_perfil_v1';
+  const DATABASE_URL =
+    "https://script.google.com/macros/s/AKfycbzzz9bgYenOAydgE78qgL6ChB7L7cpQq8_REOPXZrpGcN3t74XKPnCXy5tTUKQWiXky/exec";
+
+  const COLA_KEY = "ugi_cola_envios_v1";
+  const PERFIL_KEY = "ugi_perfil_v1";
   const MAX_COLA = 50;
- 
+
   /* ---------- localStorage a prueba de balas ---------- */
   function leerLocal(clave, porDefecto) {
     try {
       const v = localStorage.getItem(clave);
       return v ? JSON.parse(v) : porDefecto;
-    } catch (e) { return porDefecto; }
+    } catch (e) {
+      return porDefecto;
+    }
   }
- 
+
   function escribirLocal(clave, valor) {
-    try { localStorage.setItem(clave, JSON.stringify(valor)); return true; }
-    catch (e) { return false; }
+    try {
+      localStorage.setItem(clave, JSON.stringify(valor));
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
- 
+
   /* ---------- Perfil del jugador (para no retipear el nombre) ---------- */
-  function getPerfil() { return leerLocal(PERFIL_KEY, { nombre: '', deporte: '' }); }
+  function getPerfil() {
+    return leerLocal(PERFIL_KEY, { nombre: "", deporte: "" });
+  }
   function setPerfil(nombre, deporte) {
     escribirLocal(PERFIL_KEY, { nombre: nombre, deporte: deporte });
   }
- 
+
   /* ---------- Normalización de nombres ----------
      Sin esto, el mismo pibe entra como "juan", "Juan M", "JUAN" y en el Sheet
      aparecen tres jugadores distintos. Con esto, siempre "Juan M".            */
   function normalizarNombre(txt) {
-    return String(txt || '')
+    return String(txt || "")
       .trim()
-      .replace(/\s+/g, ' ')
+      .replace(/\s+/g, " ")
       .toLowerCase()
-      .replace(/(^|[\s'-])([a-záéíóúñü])/g, (m, sep, letra) => sep + letra.toUpperCase());
+      .replace(
+        /(^|[\s'-])([a-záéíóúñü])/g,
+        (m, sep, letra) => sep + letra.toUpperCase(),
+      );
   }
- 
+
   /* ---------- El envío ----------
      IMPORTANTE — acá estaba el bug que hacía que no llegara nada:
  
@@ -73,33 +85,40 @@ window.UGI = (function () {
      destino iba cada resultado, asi un reintento no lo manda a la planilla
      equivocada. */
   function enviarResultado(payload, urlOverride) {
-    const datos = Object.assign({
-      enviado_en: new Date().toISOString(),
-      dispositivo: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'movil' : 'escritorio',
-      id_sesion: Math.random().toString(36).slice(2, 10)
-    }, payload);
- 
+    const datos = Object.assign(
+      {
+        enviado_en: new Date().toISOString(),
+        dispositivo: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+          ? "movil"
+          : "escritorio",
+        id_sesion: Math.random().toString(36).slice(2, 10),
+      },
+      payload,
+    );
+
     const destino = urlOverride || datos._url || DATABASE_URL;
- 
-    if (!destino || destino.indexOf('http') !== 0) {
-      console.warn('[UGI] URL de envio no configurada (revisa ugi-envio.js o el juego)');
+
+    if (!destino || destino.indexOf("http") !== 0) {
+      console.warn(
+        "[UGI] URL de envio no configurada (revisa ugi-envio.js o el juego)",
+      );
       encolar(Object.assign({}, datos, { _url: destino }));
-      return Promise.resolve({ ok: false, motivo: 'sin_url' });
+      return Promise.resolve({ ok: false, motivo: "sin_url" });
     }
- 
+
     const cuerpo = Object.assign({}, datos);
     delete cuerpo._url;
- 
+
     return fetch(destino, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(cuerpo),
-      redirect: 'follow'
+      redirect: "follow",
     })
       .then((r) => r.text())
       .then((txt) => {
         if (txt && txt.indexOf('"ok":true') !== -1) return { ok: true };
-        throw new Error('Respuesta inesperada: ' + String(txt).slice(0, 120));
+        throw new Error("Respuesta inesperada: " + String(txt).slice(0, 120));
       })
       .catch((err) => {
         /* Apps Script contesta con un redirect a otro dominio y el navegador a veces
@@ -108,31 +127,49 @@ window.UGI = (function () {
            así que se volvía a escribir y la planilla terminaba con duplicados.
            Antes de dar por perdido el envío, le preguntamos a la planilla si llegó. */
         return existeEnPlanilla(destino, datos.id_sesion).then((llego) => {
-          if (llego) return { ok: true, motivo: 'verificado' };
-          console.warn('[UGI] No se pudo enviar, queda en cola:', err.message);
+          if (llego) return { ok: true, motivo: "verificado" };
+          console.warn("[UGI] No se pudo enviar, queda en cola:", err.message);
           encolar(Object.assign({}, datos, { _url: destino }));
           return { ok: false, motivo: err.message };
         });
       });
   }
- 
+
   /* ---------- ¿Llegó de verdad? ----------
      Consulta por JSONP (una etiqueta <script>), que no depende de CORS. */
   function existeEnPlanilla(destino, id) {
     return new Promise((resolver) => {
       if (!id || !destino) return resolver(false);
-      const cb = '__ugiExiste' + Math.random().toString(36).slice(2, 9);
-      const script = document.createElement('script');
-      const reloj = setTimeout(() => { limpiar(); resolver(false); }, 7000);
+      const cb = "__ugiExiste" + Math.random().toString(36).slice(2, 9);
+      const script = document.createElement("script");
+      const reloj = setTimeout(() => {
+        limpiar();
+        resolver(false);
+      }, 7000);
 
       function limpiar() {
         clearTimeout(reloj);
-        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        try {
+          delete window[cb];
+        } catch (e) {
+          window[cb] = undefined;
+        }
         if (script.parentNode) script.parentNode.removeChild(script);
       }
-      window[cb] = (r) => { limpiar(); resolver(!!(r && r.existe)); };
-      script.onerror = () => { limpiar(); resolver(false); };
-      script.src = destino + '?accion=existe&id=' + encodeURIComponent(id) + '&callback=' + cb;
+      window[cb] = (r) => {
+        limpiar();
+        resolver(!!(r && r.existe));
+      };
+      script.onerror = () => {
+        limpiar();
+        resolver(false);
+      };
+      script.src =
+        destino +
+        "?accion=existe&id=" +
+        encodeURIComponent(id) +
+        "&callback=" +
+        cb;
       document.head.appendChild(script);
     });
   }
@@ -143,27 +180,39 @@ window.UGI = (function () {
     cola.push(datos);
     escribirLocal(COLA_KEY, cola.slice(-MAX_COLA));
   }
- 
-  function pendientes() { return leerLocal(COLA_KEY, []).length; }
- 
+
+  function pendientes() {
+    return leerLocal(COLA_KEY, []).length;
+  }
+
   function reintentarCola() {
     const cola = leerLocal(COLA_KEY, []);
     if (!cola.length || !navigator.onLine) return Promise.resolve(0);
-    escribirLocal(COLA_KEY, []);            // la vacío ya; lo que falle se re-encola solo
+    escribirLocal(COLA_KEY, []); // la vacío ya; lo que falle se re-encola solo
     let enviados = 0;
-    return cola.reduce(
-      (p, item) => p.then(() =>
-        // Si ya está en la planilla (envío que sí llegó pero no pudimos leer),
-        // lo damos por hecho en vez de escribirlo dos veces.
-        existeEnPlanilla(item._url || DATABASE_URL, item.id_sesion).then((llego) => {
-          if (llego) { enviados++; return; }
-          return enviarResultado(item, item._url).then((r) => { if (r.ok) enviados++; });
-        })
-      ),
-      Promise.resolve()
-    ).then(() => enviados);
+    return cola
+      .reduce(
+        (p, item) =>
+          p.then(() =>
+            // Si ya está en la planilla (envío que sí llegó pero no pudimos leer),
+            // lo damos por hecho en vez de escribirlo dos veces.
+            existeEnPlanilla(item._url || DATABASE_URL, item.id_sesion).then(
+              (llego) => {
+                if (llego) {
+                  enviados++;
+                  return;
+                }
+                return enviarResultado(item, item._url).then((r) => {
+                  if (r.ok) enviados++;
+                });
+              },
+            ),
+          ),
+        Promise.resolve(),
+      )
+      .then(() => enviados);
   }
- 
+
   /* ---------- Utilidades de medición ---------- */
   function mediana(arr) {
     if (!arr || !arr.length) return null;
@@ -171,11 +220,15 @@ window.UGI = (function () {
     const m = Math.floor(a.length / 2);
     return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
   }
- 
+
   // Al arrancar cualquier juego, intenta mandar lo que quedó pendiente.
-  window.addEventListener('load', () => { reintentarCola(); });
-  window.addEventListener('online', () => { reintentarCola(); });
- 
+  window.addEventListener("load", () => {
+    reintentarCola();
+  });
+  window.addEventListener("online", () => {
+    reintentarCola();
+  });
+
   return {
     DATABASE_URL,
     enviarResultado,
@@ -184,7 +237,6 @@ window.UGI = (function () {
     getPerfil,
     setPerfil,
     normalizarNombre,
-    mediana
+    mediana,
   };
 })();
- 
