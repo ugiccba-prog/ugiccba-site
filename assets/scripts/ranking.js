@@ -50,12 +50,17 @@
 
   function tabla(juego, top) {
     var esReaccion = juego.indexOf('REACCION') === 0;
-    var encabezado = esReaccion
+    var esVision = juego.indexOf('VISION') === 0;
+    var encabezado = esVision
+      ? '<th>Umbral</th><th class="oculta-chico">Centro</th>'
+      : esReaccion
       ? '<th>Puntos</th><th class="oculta-chico">Reacción</th>'
       : '<th>Efecto Stroop</th><th class="oculta-chico">Precisión</th>';
 
     var filas = top.map(function (f) {
-      var celdas = esReaccion
+      var celdas = esVision
+        ? '<td class="dato">' + f.umbral + ' ms</td><td class="dato oculta-chico">' + (f.centro != null ? f.centro + '%' : '–') + '</td>'
+        : esReaccion
         ? '<td class="dato">' + f.puntos + '</td><td class="dato oculta-chico">' + (f.reaccion ? f.reaccion + ' s' : '–') + '</td>'
         : '<td class="dato">' + (f.efecto > 0 ? '+' : '') + f.efecto + ' ms</td><td class="dato oculta-chico">' + f.precision + '%</td>';
       return '<tr class="' + (f.puesto <= 3 ? 'podio' : '') + '">' +
@@ -65,9 +70,13 @@
              '</tr>';
     }).join('');
 
+    var nota = esVision
+      ? 'Ordenado por el menor tiempo de exposición necesario. Solo entran los que mantuvieron la mirada en el centro (70% o más de aciertos en la figura central).'
+      : esReaccion ? ''
+      : 'Ordenado por el menor costo de inhibición, entre quienes respondieron bien al menos el 80%.';
+
     return '<table class="rank-tabla"><thead><tr><th></th><th>Jugador</th>' + encabezado +
-           '</tr></thead><tbody>' + filas + '</tbody></table>' +
-           (esReaccion ? '' : aviso('Ordenado por el menor costo de inhibición, entre quienes respondieron bien al menos el 80%.'));
+           '</tr></thead><tbody>' + filas + '</tbody></table>' + (nota ? aviso(nota) : '');
   }
 
   function escapar(t) {

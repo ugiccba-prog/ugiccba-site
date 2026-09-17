@@ -33,7 +33,9 @@ Centralizar y profesionalizar el acceso a herramientas pedagógicas y conductual
   `reaccion.html` es la app de reacción con cámara, una sola para celular y
   escritorio: se adapta al tamaño de pantalla. `index.html` y `mobile.html`
   quedaron como redirecciones para no romper links viejos.
-  Los juegos (`stroop.html`, `reaccion.html`) comparten
+  `vision.html` es el test de visión periférica (doble tarea con destello y
+  máscara, y escalera adaptativa que busca el umbral en milisegundos).
+  Los juegos (`stroop.html`, `reaccion.html`, `vision.html`) comparten
   `apps/training/ugi-envio.js`: ahí está la URL del Apps Script, el perfil del
   jugador y la cola offline. Cualquier juego nuevo de esta carpeta tiene que
   cargarlo con `<script src="./ugi-envio.js"></script>` antes de su propio script.

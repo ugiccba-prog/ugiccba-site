@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07111a">
+<title>Visión periférica | UGI CCBA</title>
+<style>
+  :root{
+    --sky:#59bde9; --sky-dark:#2a8fc1; --navy:#082b49;
+    --fondo:#07111a; --panel:#0d1c28; --linea:rgba(255,255,255,.12); --texto:#eaf4fa;
+    --ok:#00C853; --mal:#FF2D2D; --aviso:#FFD600;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--fondo); color:var(--texto);
+    font-family:"Avenir Next",Avenir,system-ui,-apple-system,"Segoe UI",sans-serif;
+    overflow:hidden; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  }
+  .pantalla{
+    position:fixed; inset:0; display:none; flex-direction:column;
+    padding:max(1rem,env(safe-area-inset-top)) 1rem max(1rem,env(safe-area-inset-bottom));
+  }
+  .pantalla.activa{display:flex}
+  .centro{margin:auto; width:100%; max-width:460px; display:flex; flex-direction:column; gap:1rem; text-align:center}
+
+  h1{font-size:clamp(1.6rem,6vw,2.4rem); margin:0; letter-spacing:-.02em}
+  h1 span{color:var(--sky)}
+  p{margin:0; line-height:1.5}
+  .chico{font-size:.82rem; opacity:.6; line-height:1.5}
+
+  .campo{text-align:left}
+  .campo label{display:block; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; opacity:.5; margin-bottom:.3rem}
+  input[type=text]{
+    width:100%; padding:.85rem 1rem; border-radius:12px; border:2px solid var(--linea);
+    background:var(--panel); color:var(--texto); font-size:16px; font-family:inherit; outline:none;
+  }
+  input[type=text]:focus{border-color:var(--sky)}
+
+  .btn{
+    border:none; border-radius:999px; padding:1rem 2rem; font-size:1rem; font-weight:800;
+    font-family:inherit; letter-spacing:.04em; cursor:pointer; background:var(--sky); color:var(--navy);
+    width:100%; transition:transform .12s ease;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.fantasma{background:transparent; color:var(--texto); border:2px solid var(--linea)}
+  .salir{color:var(--texto); opacity:.45; text-decoration:none; font-size:.82rem; padding:.5rem}
+
+  /* ---------- Escenario del test ---------- */
+  #p-test{padding:0}
+  #hud{
+    position:absolute; left:0; right:0; top:0; z-index:3; pointer-events:none;
+    display:flex; justify-content:space-between; padding:max(.7rem,env(safe-area-inset-top)) 1rem .7rem;
+    font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; opacity:.75;
+  }
+  #hud b{color:var(--sky); font-variant-numeric:tabular-nums}
+  /* Un <canvas> es un elemento reemplazado: con inset:0 y sin medidas se queda
+     en su tamaño intrínseco (300x150) pegado arriba a la izquierda. Las medidas
+     explícitas son las que lo hacen ocupar la pantalla. */
+  #arena{position:absolute; inset:0; display:block; width:100%; height:100%}
+
+  /* Botones de respuesta */
+  .respuesta{
+    position:absolute; inset:0; z-index:4; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:1.4rem; padding:1rem;
+    background:rgba(7,17,26,.82);
+  }
+  .respuesta.activa{display:flex}
+  .respuesta h2{font-size:1rem; font-weight:700; margin:0; opacity:.85; text-align:center}
+  .formas{display:flex; gap:1.2rem}
+  .forma{
+    width:clamp(96px,26vw,140px); height:clamp(96px,26vw,140px); border-radius:20px;
+    border:2px solid var(--linea); background:var(--panel); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .forma:active{transform:scale(.96)}
+  #rueda{touch-action:manipulation; cursor:pointer}
+
+  /* ---------- Resultados ---------- */
+  .tarjetas{display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem}
+  .tarjeta{background:var(--panel); border:1px solid var(--linea); border-radius:14px; padding:.8rem .5rem}
+  .tarjeta .n{font-size:1.6rem; font-weight:800; color:var(--sky); line-height:1.1; font-variant-numeric:tabular-nums}
+  .tarjeta .e{font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; opacity:.55; margin-top:.2rem}
+  .destacado{grid-column:1/-1}
+  .destacado .n{font-size:2.4rem}
+  #estado-envio{font-size:.75rem; opacity:.55}
+</style>
+</head>
+<body>
+
+<!-- ============================ INICIO ============================ -->
+<section id="p-inicio" class="pantalla activa">
+  <div class="centro">
+    <p class="chico" style="letter-spacing:.2em;text-transform:uppercase">Gimnasio Mental · Módulo 03</p>
+    <h1>Visión <span>periférica</span></h1>
+
+    <p>En el centro aparece una figura, y al mismo tiempo, <b>de reojo</b>, un punto en algún lado.
+       Un destello muy corto. Después te preguntamos las dos cosas: qué había en el centro y dónde estaba el punto.</p>
+
+    <p class="chico"><b>La clave:</b> no muevas los ojos del centro. Si los movés, el test deja de medir
+       tu visión periférica y pasa a medir tu velocidad para mirar.</p>
+
+    <p class="chico">El destello se acorta cuando acertás y se alarga cuando fallás, hasta encontrar el
+       mínimo que necesitás. Unos 3 minutos.</p>
+
+    <div class="campo">
+      <label for="nombre">Nombre y apellido</label>
+      <input type="text" id="nombre" autocomplete="name" placeholder="Juan Pérez">
+    </div>
+    <div class="campo">
+      <label for="deporte">Deporte / puesto</label>
+      <input type="text" id="deporte" autocomplete="off" placeholder="Hockey · Volante">
+    </div>
+
+    <button class="btn" id="btn-practica">EMPEZAR PRÁCTICA</button>
+    <p class="chico" id="aviso"></p>
+    <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
+  </div>
+</section>
+
+<!-- ============================ TEST ============================ -->
+<section id="p-test" class="pantalla">
+  <div id="hud">
+    <div>Ronda <b id="hud-ronda">0</b></div>
+    <div id="hud-fase">Práctica</div>
+    <div>Destello <b id="hud-ms">–</b></div>
+  </div>
+
+  <canvas id="arena"></canvas>
+
+  <div class="respuesta" id="r-centro">
+    <h2>¿Qué había en el CENTRO?</h2>
+    <div class="formas">
+      <button class="forma" data-figura="circulo" aria-label="Círculo">
+        <svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="26" fill="#eaf4fa"/></svg>
+      </button>
+      <button class="forma" data-figura="triangulo" aria-label="Triángulo">
+        <svg width="70" height="70" viewBox="0 0 70 70"><polygon points="35,8 63,58 7,58" fill="#eaf4fa"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="respuesta" id="r-donde">
+    <h2>¿Dónde apareció el punto?</h2>
+    <canvas id="rueda" width="300" height="300"></canvas>
+    <p class="chico">Tocá la zona. Si no lo viste, elegí la que te parezca.</p>
+  </div>
+</section>
+
+<!-- ====================== FIN DE LA PRÁCTICA ====================== -->
+<section id="p-listo" class="pantalla">
+  <div class="centro">
+    <h1>Ahora va <span>en serio</span></h1>
+    <p>28 rondas. El destello se va a poner cada vez más corto.</p>
+    <p class="chico">Acordate: los ojos clavados en el centro. Vas a fallar seguido y está bien —
+       el test busca justo tu límite.</p>
+    <button class="btn" id="btn-test">ARRANCAR TEST</button>
+  </div>
+</section>
+
+<!-- ========================== RESULTADOS ========================== -->
+<section id="p-fin" class="pantalla">
+  <div class="centro">
+    <h1>Resultados</h1>
+    <div class="tarjetas">
+      <div class="tarjeta destacado"><div class="n" id="r-umbral">–</div><div class="e">Umbral: lo mínimo que necesitás para ver de reojo</div></div>
+      <div class="tarjeta"><div class="n" id="r-centro-ok">–</div><div class="e">Centro correcto</div></div>
+      <div class="tarjeta"><div class="n" id="r-peri-ok">–</div><div class="e">Ubicación correcta</div></div>
+    </div>
+    <p class="chico" id="interpretacion"></p>
+    <p id="estado-envio">Guardando…</p>
+    <button class="btn" id="btn-repetir">REPETIR</button>
+    <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
+  </div>
+</section>
+
+<script src="./ugi-envio.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  /* ================== CONFIGURACIÓN ================== */
+  var CFG = {
+    JUEGO: 'VISION_PERIFERICA',
+    VERSION: '1.0',
+    PRACTICA: 4,
+    RONDAS: 28,
+    MS_INICIAL: 320,       // duración del destello al empezar
+    MS_MIN: 40,            // por debajo de esto ninguna pantalla puede mostrarlo bien
+    MS_MAX: 900,
+    PASO_GRANDE: 1.35,     // cuánto se acorta/alarga al principio
+    PASO_CHICO: 1.15,      // después de 3 cambios de sentido, afina
+    FIJACION_MS: 600,      // la cruz antes del destello
+    MASCARA_MS: 220,       // tapa la imagen residual: sin esto el umbral sale falso
+    SECTORES: 8
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var arena = $('arena'), ctx = arena.getContext('2d');
+  var rueda = $('rueda'), rctx = rueda.getContext('2d');
+
+  /* ================== ESTADO ================== */
+  var jugador = { nombre:'', deporte:'' };
+  var fase = 'practica', ronda = 0, msActual = CFG.MS_INICIAL;
+  var seguidas = 0, reversiones = [], ultimaDireccion = 0;
+  var ensayo = null, registros = [];
+
+  /* ================== LIENZO ================== */
+  function ajustar(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    arena.width = Math.round(arena.clientWidth * dpr);
+    arena.height = Math.round(arena.clientHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', function(){ ajustar(); });
+
+  function centroPantalla(){ return { x: arena.clientWidth/2, y: arena.clientHeight/2 }; }
+
+  /* La excentricidad es el radio donde aparece el punto: lo más lejos posible del
+     centro sin salirse de la pantalla. En una tablet cubre bastante más ángulo
+     visual que en un celular, y por eso el umbral no se compara entre pantallas
+     distintas: guardamos también el radio para saberlo. */
+  function excentricidad(){
+    return Math.min(arena.clientWidth, arena.clientHeight) * 0.38;
+  }
+
+  function limpiar(){ ctx.clearRect(0, 0, arena.clientWidth, arena.clientHeight); }
+
+  function dibujarCruz(){
+    var c = centroPantalla();
+    limpiar();
+    ctx.strokeStyle = 'rgba(234,244,250,.8)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(c.x - 14, c.y); ctx.lineTo(c.x + 14, c.y);
+    ctx.moveTo(c.x, c.y - 14); ctx.lineTo(c.x, c.y + 14);
+    ctx.stroke();
+  }
+
+  function dibujarEstimulo(e){
+    var c = centroPantalla(), lado = 46;
+    limpiar();
+
+    // Figura central: la que hay que identificar. Obliga a mirar al centro.
+    ctx.fillStyle = '#eaf4fa';
+    if (e.figura === 'circulo'){
+      ctx.beginPath(); ctx.arc(c.x, c.y, lado*0.5, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y - lado*0.55);
+      ctx.lineTo(c.x + lado*0.55, c.y + lado*0.45);
+      ctx.lineTo(c.x - lado*0.55, c.y + lado*0.45);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // Punto periférico
+    var ang = e.sector * (Math.PI*2 / CFG.SECTORES) - Math.PI/2;
+    var px = c.x + Math.cos(ang) * e.radio, py = c.y + Math.sin(ang) * e.radio;
+    ctx.beginPath(); ctx.arc(px, py, 17, 0, Math.PI*2);
+    ctx.fillStyle = '#FFD600'; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+
+  /* La máscara borra la imagen que queda "pegada" en la retina. Sin esto, el
+     jugador sigue leyendo el estímulo después de que desapareció y el umbral
+     medido baja hasta valores que no son reales. */
+  function dibujarMascara(){
+    var an = arena.clientWidth, al = arena.clientHeight;
+    limpiar();
+    for (var i = 0; i < 90; i++){
+      var x = Math.random()*an, y = Math.random()*al, r = 6 + Math.random()*16;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fillStyle = ['#59bde9','#FFD600','#eaf4fa','#2a8fc1'][Math.floor(Math.random()*4)];
+      ctx.globalAlpha = .35 + Math.random()*.4;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ================== RUEDA DE RESPUESTA ================== */
+  function dibujarRueda(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var lado = Math.min(300, Math.min(window.innerWidth, window.innerHeight) * 0.7);
+    rueda.style.width = lado + 'px'; rueda.style.height = lado + 'px';
+    rueda.width = lado * dpr; rueda.height = lado * dpr;
+    rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var c = lado/2, r = c - 6;
+    rctx.clearRect(0,0,lado,lado);
+    for (var s = 0; s < CFG.SECTORES; s++){
+      var a0 = s*(Math.PI*2/CFG.SECTORES) - Math.PI/2 - Math.PI/CFG.SECTORES;
+      var a1 = a0 + Math.PI*2/CFG.SECTORES;
+      rctx.beginPath(); rctx.moveTo(c, c); rctx.arc(c, c, r, a0, a1); rctx.closePath();
+      rctx.fillStyle = s % 2 ? 'rgba(89,189,233,.10)' : 'rgba(89,189,233,.18)';
+      rctx.fill();
+      rctx.strokeStyle = 'rgba(255,255,255,.22)'; rctx.lineWidth = 1.5; rctx.stroke();
+    }
+    // Centro de referencia, para que se entienda que las zonas son alrededor
+    rctx.beginPath(); rctx.arc(c, c, 16, 0, Math.PI*2);
+    rctx.fillStyle = '#0d1c28'; rctx.fill();
+    rctx.strokeStyle = 'rgba(255,255,255,.35)'; rctx.stroke();
+    rctx.strokeStyle = 'rgba(234,244,250,.7)'; rctx.lineWidth = 3; rctx.lineCap='round';
+    rctx.beginPath();
+    rctx.moveTo(c-7, c); rctx.lineTo(c+7, c); rctx.moveTo(c, c-7); rctx.lineTo(c, c+7);
+    rctx.stroke();
+  }
+
+  function sectorDesdeToque(ev){
+    var caja = rueda.getBoundingClientRect();
+    var t = (ev.touches && ev.touches[0]) || ev;
+    var dx = t.clientX - (caja.left + caja.width/2);
+    var dy = t.clientY - (caja.top + caja.height/2);
+    if (Math.hypot(dx, dy) < caja.width * 0.09) return -1;   // el centro no es respuesta
+    var ang = Math.atan2(dy, dx) + Math.PI/2;                 // 0 = arriba
+    while (ang < 0) ang += Math.PI*2;
+    return Math.round(ang / (Math.PI*2/CFG.SECTORES)) % CFG.SECTORES;
+  }
+
+  /* ================== ESCALERA ADAPTATIVA ================== */
+  /* Dos aciertos seguidos y el destello se acorta; un error y se alarga. Eso
+     converge al punto en el que acierta alrededor del 70% de las veces: su
+     umbral. Cada cambio de sentido es una "reversión", y el umbral final es el
+     promedio de las últimas, que es donde la escalera ya se estabilizó. */
+  function ajustarEscalera(correcto){
+    var paso = reversiones.length >= 3 ? CFG.PASO_CHICO : CFG.PASO_GRANDE;
+    var direccion = 0;
+    if (correcto){
+      seguidas++;
+      if (seguidas >= 2){ seguidas = 0; direccion = -1; }
+    } else {
+      seguidas = 0; direccion = 1;
+    }
+    if (!direccion) return;
+    if (ultimaDireccion && direccion !== ultimaDireccion) reversiones.push(msActual);
+    ultimaDireccion = direccion;
+    msActual = direccion < 0 ? msActual / paso : msActual * paso;
+    msActual = Math.max(CFG.MS_MIN, Math.min(CFG.MS_MAX, Math.round(msActual)));
+  }
+
+  function umbralFinal(){
+    var usar = reversiones.slice(-6);
+    if (usar.length < 2){
+      // Sin suficientes reversiones, el mejor dato disponible es dónde terminó
+      return Math.round(msActual);
+    }
+    // Media geométrica: la escalera es multiplicativa, promediar así no sesga
+    var suma = usar.reduce(function(a,b){ return a + Math.log(b); }, 0);
+    return Math.round(Math.exp(suma / usar.length));
+  }
+
+  /* ================== CICLO DE RONDA ================== */
+  function esperar(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  function mostrarPor(dibujar, ms){
+    /* Medimos cuánto estuvo DE VERDAD en pantalla: a 60 Hz nada dura menos de
+       16 ms, así que pedir 40 puede ser 50. Guardamos lo real, no lo pedido. */
+    return new Promise(function(listo){
+      requestAnimationFrame(function(){
+        dibujar();
+        requestAnimationFrame(function(t0){
+          var inicio = performance.now();
+          (function revisar(){
+            if (performance.now() - inicio >= ms){
+              var real = performance.now() - inicio;
+              dibujarMascara();
+              return listo(real);
+            }
+            requestAnimationFrame(revisar);
+          })();
+        });
+      });
+    });
+  }
+
+  async function siguienteRonda(){
+    var total = fase === 'practica' ? CFG.PRACTICA : CFG.RONDAS;
+    if (ronda >= total) return fase === 'practica' ? pasarATest() : terminar();
+    ronda++;
+    $('hud-ronda').textContent = ronda + ' / ' + total;
+    $('hud-ms').textContent = Math.round(msActual) + ' ms';
+
+    ensayo = {
+      figura: Math.random() < .5 ? 'circulo' : 'triangulo',
+      sector: Math.floor(Math.random() * CFG.SECTORES),
+      radio: excentricidad(),
+      pedido: Math.round(msActual)
+    };
+
+    dibujarCruz();
+    await esperar(CFG.FIJACION_MS);
+    ensayo.real = Math.round(await mostrarPor(function(){ dibujarEstimulo(ensayo); }, msActual));
+    await esperar(CFG.MASCARA_MS);
+    limpiar();
+    dibujarCruz();
+    $('r-centro').classList.add('activa');
+  }
+
+  function responderCentro(figura){
+    $('r-centro').classList.remove('activa');
+    ensayo.figuraElegida = figura;
+    dibujarRueda();
+    $('r-donde').classList.add('activa');
+  }
+
+  function responderDonde(sector){
+    if (sector < 0) return;
+    $('r-donde').classList.remove('activa');
+    ensayo.sectorElegido = sector;
+
+    var centroOk = ensayo.figuraElegida === ensayo.figura;
+    // Aceptamos el sector exacto o uno pegado: a 45° por zona, errar por uno
+    // es ruido de la respuesta, no de la visión.
+    var dif = Math.abs(sector - ensayo.sector);
+    dif = Math.min(dif, CFG.SECTORES - dif);
+    var periOk = dif <= 1;
+    var correcto = centroOk && periOk;
+
+    if (fase === 'test'){
+      registros.push({
+        ms_pedido: ensayo.pedido, ms_real: ensayo.real, sector: ensayo.sector,
+        centro_ok: centroOk, periferia_ok: periOk, correcto: correcto
+      });
+      ajustarEscalera(correcto);
+    } else if (!correcto){
+      // En la práctica no movemos la escalera, pero damos una pista
+      msActual = Math.min(CFG.MS_MAX, Math.round(msActual * 1.2));
+    }
+
+    destello(correcto ? 'rgba(0,200,83,.22)' : 'rgba(255,45,45,.25)');
+    setTimeout(siguienteRonda, 320);
+  }
+
+  function destello(color){
+    limpiar();
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, arena.clientWidth, arena.clientHeight);
+  }
+
+  /* ================== PANTALLAS ================== */
+  function mostrar(id){
+    ['p-inicio','p-test','p-listo','p-fin'].forEach(function(p){
+      $(p).classList.toggle('activa', p === id);
+    });
+  }
+
+  function pasarATest(){
+    mostrar('p-listo');
+  }
+
+  function terminar(){
+    var n = registros.length || 1;
+    var centroOk = registros.filter(function(r){ return r.centro_ok; }).length;
+    var periOk = registros.filter(function(r){ return r.periferia_ok; }).length;
+    var umbral = umbralFinal();
+
+    $('r-umbral').textContent = umbral + ' ms';
+    $('r-centro-ok').textContent = Math.round(centroOk / n * 100) + '%';
+    $('r-peri-ok').textContent = Math.round(periOk / n * 100) + '%';
+
+    var txt;
+    if (centroOk / n < 0.7){
+      txt = 'Fallaste seguido la figura del centro, así que el umbral no es confiable: probablemente estabas mirando al punto en vez de al centro. Repetilo clavando la mirada en la cruz.';
+    } else if (umbral <= 90){
+      txt = 'Umbral muy bajo: te alcanza un destello mínimo para registrar algo fuera del foco. Es la base de levantar la cabeza y ver al compañero libre.';
+    } else if (umbral <= 200){
+      txt = 'Umbral dentro de lo habitual. Lo que importa es si baja con las semanas de entrenamiento.';
+    } else {
+      txt = 'Necesitás bastante tiempo de exposición para captar lo periférico. Es entrenable, y es de lo que más se nota en cancha.';
+    }
+    $('interpretacion').textContent = txt + ' Se compara contra vos mismo y en la misma pantalla: en un celular el punto aparece mucho más cerca del centro que en una tablet.';
+
+    mostrar('p-fin');
+
+    UGI.enviarResultado({
+      jugador: jugador.nombre,
+      deporte: jugador.deporte,
+      juego: CFG.JUEGO,
+      version: CFG.VERSION,
+      umbral_ms: umbral,
+      aciertos: registros.filter(function(r){ return r.correcto; }).length,
+      errores: registros.filter(function(r){ return !r.correcto; }).length,
+      total: registros.length,
+      precision: Math.round(registros.filter(function(r){ return r.correcto; }).length / n * 100),
+      centro_ok_pct: Math.round(centroOk / n * 100),
+      periferia_ok_pct: Math.round(periOk / n * 100),
+      excentricidad_px: Math.round(excentricidad())
+    }).then(function(r){
+      var pend = UGI.pendientes();
+      $('estado-envio').textContent = r.ok
+        ? '✓ Resultado guardado en la planilla'
+        : '⚠ Sin conexión — guardado en el dispositivo' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
+    });
+  }
+
+  /* ================== ARRANQUE ================== */
+  var perfil = UGI.getPerfil();
+  $('nombre').value = perfil.nombre || '';
+  $('deporte').value = perfil.deporte || '';
+
+  Array.prototype.forEach.call(document.querySelectorAll('.forma'), function(b){
+    b.addEventListener('click', function(){ responderCentro(b.getAttribute('data-figura')); });
+  });
+  rueda.addEventListener('click', function(ev){ responderDonde(sectorDesdeToque(ev)); });
+
+  $('btn-practica').addEventListener('click', function(){
+    var nom = UGI.normalizarNombre($('nombre').value);
+    var dep = $('deporte').value.trim();
+    if (nom.length < 3 || !dep){
+      $('aviso').textContent = 'Completá tu nombre y tu deporte para poder registrar el resultado.';
+      return;
+    }
+    jugador.nombre = nom; jugador.deporte = dep;
+    UGI.setPerfil(nom, dep);
+    fase = 'practica'; ronda = 0; msActual = 520;
+    $('hud-fase').textContent = 'Práctica';
+    mostrar('p-test'); ajustar(); siguienteRonda();
+  });
+
+  $('btn-test').addEventListener('click', function(){
+    fase = 'test'; ronda = 0; registros = [];
+    msActual = CFG.MS_INICIAL; seguidas = 0; reversiones = []; ultimaDireccion = 0;
+    $('hud-fase').textContent = 'Test';
+    mostrar('p-test'); ajustar(); siguienteRonda();
+  });
+
+  $('btn-repetir').addEventListener('click', function(){ location.reload(); });
+
+  // Gancho para las pruebas automatizadas. No lo usa la app.
+  window.__ugiVision = {
+    estado: function(){ return { fase:fase, ronda:ronda, msActual:msActual, ensayo:ensayo,
+                                 registros:registros, reversiones:reversiones, umbral:umbralFinal() }; },
+    responderCentro: responderCentro,
+    responderDonde: responderDonde,
+    CFG: CFG
+  };
+})();
+</script>
+</body>
+</html>

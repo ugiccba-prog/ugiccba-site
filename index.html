@@ -305,7 +305,22 @@
     /* ACÁ ESTÁ EL CAMBIO PARA CELULARES */
     @media (max-width: 720px) {
       .brand-copy small { display: none; }
-      .hero { padding-bottom: 4rem; }
+
+      /* En el celular el alto de la ventana cambia cuando aparece y desaparece la
+         barra del navegador: con min-height:100vh la portada quedaba más alta que
+         la pantalla y el contenido de abajo se cortaba. */
+      .hero { min-height: auto; padding-top: 7.5rem; padding-bottom: 4rem; }
+
+      /* Los títulos tenían un mínimo pensado para escritorio (51px): en 390px de
+         ancho entraban tres palabras por renglón y costaba leer. */
+      .purpose h2, .section-heading h2, .approach h2 { font-size: clamp(2rem, 9vw, 2.9rem); line-height: 1.08; }
+      .section, .approach { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .approach { padding-top: 4rem; padding-bottom: 4rem; }
+      .purpose-body p, .section-heading > p { font-size: 1rem; }
+
+      /* Decoración que en pantalla chica solo aparecía cortada contra el borde */
+      .section-number, .hero-orbit, .pulse-line { display: none; }
       .hero h1 { font-size: clamp(2.5rem, 11vw, 3.5rem); line-height: 1.1; overflow-wrap: break-word; hyphens: auto; }
       .hero-actions { align-items: flex-start; flex-direction: column; gap: 1.2rem; }
       .hero-visual { height: auto; min-height: 26rem; margin-top: 2rem; }
@@ -322,6 +337,9 @@
       .program-card { grid-template-columns: 2.2rem 1fr; max-width: 100%; overflow: hidden; }
       .program-index { grid-row: 1 / 3; font-size: 0.65rem; }
       .program-art { min-height: 14rem; }
+      /* En pantalla chica el dibujo tapaba la bajada: la ponemos sobre una pastilla */
+      .art-caption { left: .9rem; bottom: .9rem; padding: .3rem .7rem; border-radius: 99px;
+                     background: rgba(255, 253, 248, .92); }
       .program-copy { padding: 1.5rem 1.2rem 2rem; }
       .program-copy h3 { font-size: 2rem; overflow-wrap: break-word; line-height: 1.1; }
       .approach { grid-template-columns: 1fr; }
@@ -330,6 +348,10 @@
       .site-footer a, .copyright { grid-column: 1 / -1; }
     }
     
+    @media (max-width: 720px) {
+      .reveal { transition-duration: 420ms; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
@@ -359,7 +381,6 @@
       <a href="#programas">Programas</a>
       <a href="#capacitaciones">Capacitaciones</a>
       <a href="#material">Material</a>
-      <a href="#juegos">Juegos</a>
       <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
     </nav>
   </header>
@@ -538,29 +559,6 @@
       </div>
     </section>
 
-    <!-- SECCIÓN JUEGOS (EDUCAPLAY INTEGRADO) -->
-    <section class="section" id="juegos" style="background: var(--paper);">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow">Dinámicas</p>
-          <h2>Juegos interactivos</h2>
-        </div>
-      </div>
-      <div class="tarjetas-grid">
-        <article class="tarjeta reveal">
-          <h3>Memotest Emociones</h3>
-          <div class="embed-container">
-            <iframe src="https://es.educaplay.com/juego/6784522-emociones.html" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-          </div>
-        </article>
-        <article class="tarjeta reveal">
-          <h3>Conducta: Sí o No</h3>
-          <div class="embed-container">
-            <iframe src="https://es.educaplay.com/juego/29012992-conducta.html" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-          </div>
-        </article>
-      </div>
-    </section>
 
     <section class="approach" id="enfoque">
       <div class="approach-copy reveal">
@@ -622,6 +620,13 @@
     window.addEventListener("scroll", updateHeader, { passive: true });
     updateHeader();
 
+    /* El texto arranca invisible y aparece al entrar en pantalla. Si el navegador
+       no soporta IntersectionObserver, sin esta salida la página quedaría en
+       blanco: mejor mostrar todo de una que no mostrar nada. */
+    if (!("IntersectionObserver" in window)) {
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+    }
+
     const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -630,7 +635,9 @@
           revealObserver.unobserve(entry.target);
         });
       },
-      { threshold: 0.14 }
+      // Se dispara apenas asoma: en el celular, con 14% y textos altos, el título
+      // aparecía cuando ya lo estabas leyendo.
+      { threshold: 0.02, rootMargin: "0px 0px -4% 0px" }
     );
 
     document.querySelectorAll(".reveal").forEach((element, index) => {

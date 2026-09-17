@@ -30,13 +30,20 @@ var COLUMNAS = [
   'fecha', 'jugador', 'deporte', 'juego', 'version', 'dispositivo', 'id_sesion',
   'aciertos', 'errores', 'omisiones', 'ignorados', 'total', 'precision',
   'puntos', 'reaccion',
-  'rt_congruente_ms', 'rt_incongruente_ms', 'efecto_stroop_ms'
+  'rt_congruente_ms', 'rt_incongruente_ms', 'efecto_stroop_ms',
+  'umbral_ms', 'centro_ok_pct', 'periferia_ok_pct', 'excentricidad_px'
 ];
 
 /* Para entrar al ranking del Stroop hay que haber respondido bien al menos
    este porcentaje: si no, el más rápido siempre sería el que apretó cualquier
    cosa sin mirar. */
 var PRECISION_MINIMA = 80;
+
+/* Visión periférica: el umbral solo vale si el jugador mantuvo la mirada en el
+   centro. Si fallo la figura central, estaba mirando al punto y el numero no
+   mide lo que dice medir. */
+var CENTRO_MINIMO = 70;
+var RONDAS_MINIMAS_VISION = 20;
 
 /* ---------------------------- GUARDAR ---------------------------- */
 function doPost(e) {
@@ -98,17 +105,35 @@ function topDiez(juego) {
   cabecera.forEach(function (nombre, i) { idx[nombre] = i; });
 
   var esReaccion = juego.indexOf('REACCION') === 0;
+  var esVision = juego.indexOf('VISION') === 0;
   var mejores = {};   // una sola fila por jugador: su mejor marca
 
   valores.forEach(function (fila) {
     var juegoFila = String(fila[idx.juego] || '').toUpperCase();
-    if (esReaccion ? juegoFila.indexOf('REACCION') !== 0 : juegoFila !== juego) return;
+    var coincide = esReaccion ? juegoFila.indexOf('REACCION') === 0
+                 : esVision   ? juegoFila.indexOf('VISION') === 0
+                 : juegoFila === juego;
+    if (!coincide) return;
 
     var jugador = String(fila[idx.jugador] || '').trim();
     if (!jugador) return;
 
     var marca;
-    if (esReaccion) {
+    if (esVision) {
+      var umbral = numero(fila[idx.umbral_ms]);
+      var centro = numero(fila[idx.centro_ok_pct]);
+      var rondas = numero(fila[idx.total]);
+      if (umbral === null) return;
+      if (centro !== null && centro < CENTRO_MINIMO) return;
+      if (rondas !== null && rondas < RONDAS_MINIMAS_VISION) return;
+      marca = {
+        jugador: jugador,
+        deporte: fila[idx.deporte] || '',
+        umbral: umbral,
+        centro: centro,
+        fecha: fila[idx.fecha]
+      };
+    } else if (esReaccion) {
       marca = {
         jugador: jugador,
         deporte: fila[idx.deporte] || '',
@@ -133,21 +158,26 @@ function topDiez(juego) {
     var clave = jugador.toLowerCase();
     var previo = mejores[clave];
     if (!previo) { mejores[clave] = marca; return; }
-    var gana = esReaccion ? (marca.puntos > previo.puntos) : (marca.efecto < previo.efecto);
+    var gana = esVision   ? (marca.umbral < previo.umbral)
+             : esReaccion ? (marca.puntos > previo.puntos)
+             :              (marca.efecto < previo.efecto);
     if (gana) mejores[clave] = marca;
   });
 
   var lista = Object.keys(mejores).map(function (k) { return mejores[k]; });
   lista.sort(function (a, b) {
-    return esReaccion ? b.puntos - a.puntos : a.efecto - b.efecto;
+    return esVision   ? a.umbral - b.umbral
+         : esReaccion ? b.puntos - a.puntos
+         :              a.efecto - b.efecto;
   });
 
   /* El nombre completo NUNCA sale de acá: el sitio es público y los que juegan
      son chicos del club. Afuera va "Juan M.". */
   return lista.slice(0, 10).map(function (m, i) {
     var salida = { puesto: i + 1, jugador: acortarNombre(m.jugador), deporte: m.deporte };
-    if (esReaccion) { salida.puntos = m.puntos; salida.reaccion = m.reaccion; }
-    else { salida.efecto = m.efecto; salida.precision = m.precision; }
+    if (esVision)        { salida.umbral = m.umbral; salida.centro = m.centro; }
+    else if (esReaccion) { salida.puntos = m.puntos; salida.reaccion = m.reaccion; }
+    else                 { salida.efecto = m.efecto; salida.precision = m.precision; }
     return salida;
   });
 }
