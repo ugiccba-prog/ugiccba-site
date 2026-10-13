@@ -33,7 +33,7 @@
         }
 
         .app-container {
-            max-width: 780px;
+            max-width: 820px;
             width: 100%;
             background: var(--blanco);
             border-radius: 20px;
@@ -132,7 +132,7 @@
             border-radius: 14px;
             padding: 16px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 12px;
             margin-bottom: 22px;
         }
@@ -146,7 +146,7 @@
             color: var(--violeta-ugi);
         }
 
-        .field input, .field select {
+        .field input {
             width: 100%;
             padding: 10px 12px;
             border-radius: 8px;
@@ -166,11 +166,11 @@
             display: block;
         }
 
-        /* Botonera de situaciones */
+        /* Botonera de situaciones perfectamente alineada en 5 columnas */
         .grid-situaciones {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             margin-bottom: 20px;
         }
 
@@ -178,18 +178,44 @@
             background: var(--fondo-claro);
             border: 2px solid transparent;
             border-radius: 12px;
-            padding: 14px 10px;
+            padding: 12px 6px;
+            min-height: 68px;
             font-family: inherit;
             font-weight: 800;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             color: var(--azul-ccba);
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            text-align: center;
+            line-height: 1.15;
+        }
+
+        .btn-situacion .icono {
+            font-size: 1.25rem;
+            line-height: 1;
         }
 
         .btn-situacion.active, .btn-situacion:hover {
             background: var(--azul-ccba);
             color: var(--blanco);
+        }
+
+        /* Ajuste en celulares para que nunca quede un botón suelto desalineado */
+        @media (max-width: 620px) {
+            .grid-situaciones {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .btn-situacion:last-child {
+                grid-column: span 2;
+                flex-direction: row;
+                min-height: 48px;
+                gap: 8px;
+            }
         }
 
         /* Tarjeta de respuesta */
@@ -201,11 +227,38 @@
             margin-bottom: 22px;
         }
 
+        .respuesta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
         .respuesta-titulo {
-            font-size: 1.15rem;
+            font-size: 1.12rem;
             font-weight: 900;
             color: var(--violeta-ugi);
-            margin: 0 0 12px 0;
+            margin: 0;
+        }
+
+        .btn-rotar {
+            background: var(--violeta-ugi);
+            color: var(--blanco);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn-rotar:active {
+            transform: scale(0.96);
         }
 
         .paso {
@@ -356,7 +409,7 @@
         <div id="error-login" class="status-msg" style="color:#c0392b;"></div>
     </div>
 
-    <!-- CONTENIDO PRINCIPAL (OCULTO HASTA PONER CLAVE) -->
+    <!-- CONTENIDO PRINCIPAL -->
     <div id="contenido-app" class="hidden">
         <div class="top-bar">
             <span class="badge">UGI • Enseñar a Enseñar</span>
@@ -369,7 +422,7 @@
         <!-- VISTA PROFE -->
         <div id="vista-profe">
             <h1>ASISTENTE RÁPIDO DE CANCHA</h1>
-            <div class="subtitle">Elegí qué trabajar hoy en el entrenamiento y registrá tu sesión para llevar tu propio control.</div>
+            <div class="subtitle">Elegí qué trabajar hoy, rotá entre las 10 variantes de cada eje y registrá tu sesión.</div>
 
             <div class="perfil-box">
                 <div class="field">
@@ -377,25 +430,33 @@
                     <input type="text" id="profe-nombre" placeholder="Ej: Martín Gómez" oninput="guardarPerfil()">
                 </div>
                 <div class="field">
-                    <label>Deporte / Categoría</label>
-                    <select id="profe-categoria" onchange="guardarPerfil()">
-                        <option value="">Seleccionar...</option>
-                        <option value="Hockey Sobre Césped - Formativas">Hockey Sobre Césped - Formativas</option>
-                        <option value="Hockey Sobre Césped - Competitivo">Hockey Sobre Césped - Competitivo</option>
-                        <option value="Hockey Sobre Patines">Hockey Sobre Patines</option>
-                        <option value="Fútbol / Otros Deportes">Fútbol / Otros Deportes</option>
-                        <option value="Colonia / Iniciación">Colonia / Iniciación</option>
-                    </select>
+                    <label>Deporte / Actividad y Categoría</label>
+                    <input type="text" id="profe-categoria" placeholder="Ej: Hockey 7ma, Básquet, Natación, PF..." oninput="guardarPerfil()">
                 </div>
             </div>
 
             <span class="section-label">1. ¿Qué foco querés trabajar o destrabar hoy?</span>
             <div class="grid-situaciones">
-                <button class="btn-situacion active" onclick="seleccionarGuia('Grupo Disperso', this)">⚡ Grupo Disperso</button>
-                <button class="btn-situacion" onclick="seleccionarGuia('Frustración por Error', this)">😤 Frustración</button>
-                <button class="btn-situacion" onclick="seleccionarGuia('Roce o Discusión', this)">🛑 Roce / Conflicto</button>
-                <button class="btn-situacion" onclick="seleccionarGuia('Toma de Decisiones', this)">🧠 Foco Cognitivo</button>
-                <button class="btn-situacion" onclick="seleccionarGuia('Cierre y Feedback', this)">🟢 Cierre 2 Min</button>
+                <button class="btn-situacion active" onclick="seleccionarGuia('Grupo Disperso', this)">
+                    <span class="icono">⚡</span>
+                    <span>Grupo Disperso</span>
+                </button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Frustración por Error', this)">
+                    <span class="icono">😤</span>
+                    <span>Frustración</span>
+                </button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Roce o Discusión', this)">
+                    <span class="icono">🛑</span>
+                    <span>Roce / Conflicto</span>
+                </button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Toma de Decisiones', this)">
+                    <span class="icono">🧠</span>
+                    <span>Foco Cognitivo</span>
+                </button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Cierre y Feedback', this)">
+                    <span class="icono">🟢</span>
+                    <span>Cierre 2 Min</span>
+                </button>
             </div>
 
             <div id="panel-respuesta" class="respuesta-box"></div>
@@ -403,7 +464,7 @@
             <div class="checklist-box">
                 <span class="section-label">2. Autoevaluación rápida de la sesión</span>
                 <label class="check-item"><input type="checkbox" id="chk-1"> Consigna clara en menos de 2 minutos</label>
-                <label class="check-item"><input type="checkbox" id="chk-2"> Apliqué variante de entrenamiento cognitivo</label>
+                <label class="check-item"><input type="checkbox" id="chk-2"> Apliqué la variante pedagógica / cognitiva sugerida</label>
                 <label class="check-item"><input type="checkbox" id="chk-3"> Reforcé conductas positivas (Semáforo / Tarjeta Verde)</label>
                 <input type="text" id="profe-nota" class="nota-input" placeholder="Observación breve de la práctica (opcional)...">
             </div>
@@ -447,43 +508,324 @@
     // URL CONECTADA A TU GOOGLE SHEET
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxH7kZSoKxiHTReWUfhBCN9KOT8Vf7ElFXAiXsxvPwKohi76NciLJzL5diyEMS3oesWYA/exec";
 
-    // Claves de acceso
-    const CLAVE_STAFF = "profeugi";     // La que le pasás a los profes por WhatsApp
-    const CLAVE_DIRECTOR = "argon2026"; // Tu clave privada para ver el Panel de Control
+    const CLAVE_STAFF = "profeugi";
+    const CLAVE_DIRECTOR = "argon2026";
 
     let situacionActual = "Grupo Disperso";
+    let indiceVariante = 0;
 
+    // BANCO DE 50 VARIANTES (10 POR EJE)
     const guias = {
-        "Grupo Disperso": {
-            titulo: "⚡ Cómo recuperar el foco atencional sin gritar",
-            queHacer: "Cortá la fila larga. Pasá a una tarea continua con estímulo visual o auditivo cambiante.",
-            ajuste: "Regla cognitiva: antes de pasar la bocha/pelota, el jugador tiene que cantar el color o número que muestra el profe.",
-            frase: "«Chicos, 30 segundos: cambio de regla. Ahora gana el equipo que más rápido lee la señal antes de jugar.»"
-        },
-        "Frustración por Error": {
-            titulo: "😤 Gestión de la frustración tras el error",
-            queHacer: "Validá la emoción rápido pero redirigí la atención a la siguiente acción inmediata (Semáforo en Amarillo: frenar, respirar, seguir).",
-            ajuste: "Puntuá la recuperación: en los próximos 5 minutos, recuperar o pedir pase en los 3 segundos posteriores a perderla vale doble.",
-            frase: "«El error ya pasó, es parte del juego. Lo único que miramos ahora es qué hacés en los 3 segundos siguientes.»"
-        },
-        "Roce o Discusión": {
-            titulo: "🛑 Intervención rápida ante roces entre compañeros",
-            queHacer: "Separá la conducta de la persona. Pausa de 20 segundos, pauta objetiva de convivencia y reinicio inmediato.",
-            ajuste: "Gol o punto válido solo si hubo pase previo o comunicación positiva entre los involucrados.",
-            frase: "«En este equipo nos exigimos cuidando al compañero. Hablamos para ordenar la jugada, no para reprochar.»"
-        },
-        "Toma de Decisiones": {
-            titulo: "🧠 Sumar carga cognitiva al ejercicio técnico",
-            queHacer: "No repitas el gesto técnico en automático: obligá al jugador a escanear la cancha antes de recibir.",
-            ajuste: "Asigná 2 opciones de resolución según dónde esté parado el defensor o qué mano levante el receptor.",
-            frase: "«Cabeza arriba antes de recibir: primero leo qué pasa alrededor y después ejecuto.»"
-        },
-        "Cierre y Feedback": {
-            titulo: "🟢 Cierre formativo en 2 minutos",
-            queHacer: "Hacé que los jugadores verbalicen qué aprendieron hoy antes de retirarse.",
-            ajuste: "Tres preguntas rápidas: 1) ¿Qué salió bien hoy? 2) ¿Qué nos costó? 3) ¿Quién merece mención por actitud de equipo?",
-            frase: "«Nos llevamos una cosa técnica para mejorar y una actitud de equipo para repetir el próximo entrenamiento.»"
-        }
+        "Grupo Disperso": [
+            {
+                subtitulo: "Estímulo Visual Cambiante",
+                queHacer: "Cortá la fila larga. Pasá a una tarea continua donde tengan que mirar tu mano antes de actuar.",
+                ajuste: "Antes de pasar o definir, el deportista tiene que cantar el color del cono o número de dedos que mostrás.",
+                frase: "«Chicos, 30 segundos: cambio de regla. Ahora suma punto el que lee la señal visual antes de ejecutar.»"
+            },
+            {
+                subtitulo: "Inhibición Motriz (Regla Inversa)",
+                queHacer: "Despertá la atención cambiando el patrón automático del ejercicio por 4 minutos.",
+                ajuste: "Código inverso: si digo 'Adelante' van atrás, si digo 'Derecha' salen por izquierda, o prohibido devolverle el pase al que me la dio.",
+                frase: "«Apagamos el piloto automático: el que se equivoca de señal hace 3 saltos en el lugar y vuelve rápido.»"
+            },
+            {
+                subtitulo: "Cuenta Regresiva de 5 Segundos",
+                queHacer: "Meté ritmo con límite de tiempo corto para eliminar tiempos muertos de charla.",
+                ajuste: "Cada posesión o serie dura máximo 5 segundos contados en voz alta por todo el grupo. Si no definen antes del 'cero', cambia la posesión.",
+                frase: "«Jugamos a reloj rápido: tienen 5 segundos desde que tocan el elemento para resolver.»"
+            },
+            {
+                subtitulo: "Caos Controlado (Doble Estímulo)",
+                queHacer: "Sumá una segunda pelota/bocha o un comodín sorpresa para obligar a que todos estén activos.",
+                ajuste: "Hay dos acciones en simultáneo en el mismo espacio. Nadie puede quedarse parado mirando.",
+                frase: "«Atención dividida: hay dos jugadas vivas al mismo tiempo, el que desconecta pierde la ventaja.»"
+            },
+            {
+                subtitulo: "Consigna en Susurro",
+                queHacer: "En vez de levantar la voz por encima del bullicio, bajá el volumen al mínimo al dar la indicación.",
+                ajuste: "Reuní al grupo a un paso de distancia y hablá muy bajo: el primero que escucha la consigna ya puede salir a ejecutarla.",
+                frase: "«El que ya escuchó qué cono hay que tocar y cómo definir, arranca ya mismo con ventaja.»"
+            },
+            {
+                subtitulo: "Desafío de Racha Grupal",
+                queHacer: "Transformá un ejercicio técnico repetitivo en un récord cooperativo contra reloj.",
+                ajuste: "El grupo entero tiene 3 minutos para lograr 15 ejecuciones seguidas sin que caiga o se pierda el control. Si se corta, vuelve a cero.",
+                frase: "«Objetivo común: 15 seguidas limpias entre todos antes de que suene el reloj. Cada pase cuenta.»"
+            },
+            {
+                subtitulo: "Congelado Reactivo (Stop & Go)",
+                queHacer: "Entrená el freno inhibitorio intercalando pausas sorpresivas en pleno movimiento.",
+                ajuste: "Un silbato significa seguir jugando; dos silbatos cortos obligan a quedar congelados en equilibrio en 1 segundo.",
+                frase: "«Oído atento al ritmo: al doble silbato clavo frenos en equilibrio total, el que da un paso de más pierde punto.»"
+            },
+            {
+                subtitulo: "Cambio de Base Relámpago",
+                queHacer: "Cortá la dispersión espacial moviendo el lugar donde se inicia el ejercicio.",
+                ajuste: "En mitad de la tarea, mudá el punto de salida 10 metros al costado y premiá con 2 puntos al subgrupo que se arme primero.",
+                frase: "«Cambio de escenario en 5, 4, 3... el primer grupo listo para salir desde la línea nueva arranca 2-0 arriba.»"
+            },
+            {
+                subtitulo: "Jugada Silenciosa (Solo Señas)",
+                queHacer: "Cuando el grupo está pasado de rosca hablando encima tuyo, prohibí el uso de la voz por 3 minutos.",
+                ajuste: "Durante este bloque solo vale pedir el pase o coordinar marcas con gestos manuales y contacto visual.",
+                frase: "«Modo silencio activado por 3 minutos: el que habla pierde posesión, todo se comunica con gestos y mirada.»"
+            },
+            {
+                subtitulo: "Líder de Estación Rotativo",
+                queHacer: "Devolvele protagonismo a los que están distraídos dándoles el mando del ritmo.",
+                ajuste: "Elegí a dos de los más dispersos para que den la señal de salida y cuenten el puntaje de la serie durante 3 minutos.",
+                frase: "«En esta tanda ustedes dos manejan el cronómetro y validan qué repetición estuvo bien hecha.»"
+            }
+        ],
+        "Frustración por Error": [
+            {
+                subtitulo: "Regla de los 3 Segundos",
+                queHacer: "Validá el enojo sin sermonear y redirigí el foco a la reacción inmediata (Semáforo en Amarillo).",
+                ajuste: "Durante los próximos 5 minutos, recuperar, volver a intentar o pedir el pase en los 3 segundos posteriores a un fallo vale doble.",
+                frase: "«El error ya pasó. Lo único que miro y puntúo ahora es qué hacés en los 3 segundos siguientes a equivocarte.»"
+            },
+            {
+                subtitulo: "Palabra Clave de Reseteo",
+                queHacer: "Instalá un gesto físico rápido para cortar la rumiación mental cuando algo no sale.",
+                ajuste: "Cuando alguien falla, tiene que tocar el piso (o aplaudir una vez), decir 'Siguiente' y ubicarse para la próxima acción.",
+                frase: "«Prohibido quedarse enganchado en la jugada anterior: toco el piso, respiro y ya estoy en la que viene.»"
+            },
+            {
+                subtitulo: "Premiar la Intención sobre el Resultado",
+                queHacer: "Bajá la ansiedad de rendimiento puntuando la decisión correcta aunque falle la ejecución técnica.",
+                ajuste: "Si la decisión o el intento fue el correcto pero la definición se fue afuera, suma 1 punto igual para el equipo.",
+                frase: "«Hoy premiamos atreverse a intentar lo que entrenamos: si la idea fue buena, suma punto aunque no entre.»"
+            },
+            {
+                subtitulo: "Cambio de Rol Inmediato",
+                queHacer: "Evitá que el deportista frustrado quede aislado después del fallo.",
+                ajuste: "El que comete un error se convierte automáticamente en el iniciador o comodín de la jugada siguiente.",
+                frase: "«Nadie se esconde después de errar: el que falla tiene revancha inmediata iniciando la próxima jugada.»"
+            },
+            {
+                subtitulo: "Semáforo Amarillo (Respiración Caja)",
+                queHacer: "Enseñá a bajar pulsaciones antes de que el enojo derive en infracción o abandono.",
+                ajuste: "El jugador que siente bronca levanta la mano, sale 15 segundos a la línea lateral, hace 2 respiraciones profundas y reingresa.",
+                frase: "«Usen el Semáforo Amarillo a favor: prefiero que frenen 15 segundos afuera para enfriar la cabeza y vuelvan en verde.»"
+            },
+            {
+                subtitulo: "Laboratorio de Errores (Cuota de Fallo)",
+                queHacer: "Desdramatizá el fallo cuando están aprendiendo una habilidad nueva o difícil.",
+                ajuste: "Para superar la estación, cada deportista tiene que intentar la variante difícil hasta sumar al menos 3 errores buscando el límite.",
+                frase: "«Si no se equivocan hoy es porque están jugando demasiado fácil. Quiero ver que arriesguen con la técnica nueva.»"
+            },
+            {
+                subtitulo: "Foco en un Solo Detalle Técnico",
+                queHacer: "Cuando el deportista se frustra porque 'no le sale nada', achicá el objetivo a una variable controlable.",
+                ajuste: "Olvidate de dónde termina la jugada: en las próximas 4 repeticiones solo evaluamos la posición de los pies o el agarre.",
+                frase: "«Olvidate del arco/resultado por 3 minutos: enfocate únicamente en armar bien el gesto de salida.»"
+            },
+            {
+                subtitulo: "Reencuadre del 'Todavía'",
+                queHacer: "Cortá las frases absolutistas ('no me sale', 'soy malísimo') en el momento en que aparecen.",
+                ajuste: "Cada vez que alguien dice 'no puedo' o 'no me sale', debe agregar la palabra 'todavía' y decir qué va a cambiar en el próximo intento.",
+                frase: "«No digas 'no me sale', decí 'todavía no me salió' y contame qué vas a ajustar en la que viene.»"
+            },
+            {
+                subtitulo: "Comodín de Segunda Vida",
+                queHacer: "Aliviá la presión en ejercicios eliminatorios o de competencia por puntos.",
+                ajuste: "Cada jugador o pareja cuenta con una 'segunda pelota/intento inmediato' que puede pedir en el acto tras un fallo.",
+                frase: "«Tienen un comodín de revancha instantánea: si fallan, piden 'segunda' al toque y corrigen el movimiento.»"
+            },
+            {
+                subtitulo: "Escala de Esfuerzo 1 al 5",
+                queHacer: "Desplazá la autoevaluación desde el éxito/fracaso hacia el nivel de entrega personal.",
+                ajuste: "Al terminar el bloque, cada uno puntúa con los dedos del 1 al 5 cuánta concentración y esfuerzo sostuvo pese a las dificultades.",
+                frase: "«El resultado del ejercicio es anecdótico; muéstrenme del 1 al 5 cuánto sostuvieron la actitud cuando costó.»"
+            }
+        ],
+        "Roce o Discusión": [
+            {
+                subtitulo: "Asistencia Obligatoria",
+                queHacer: "Frená 20 segundos. Separá la conducta de la persona y transformá la tensión en cooperación.",
+                ajuste: "En los próximos 5 minutos, el punto o gol vale triple si participan o se asisten los dos compañeros que tuvieron el roce.",
+                frase: "«En este grupo nos exigimos cuidando al compañero. Ahora el punto vale triple si lo construyen entre ustedes dos.»"
+            },
+            {
+                subtitulo: "Regla de Comunicación Limpia",
+                queHacer: "Cortá los reproches instalando qué tipo de comunicación está permitida en cancha.",
+                ajuste: "Solo vale hablar para 3 cosas: pedir, avisar ('solo', 'atrás') o felicitar. Cualquier reproche le da punto o posesión al otro grupo.",
+                frase: "«Hablamos para ordenar y ayudar al compañero, nunca para reprochar. El reproche le regala punto al rival.»"
+            },
+            {
+                subtitulo: "Tarjeta Verde en Juego",
+                queHacer: "Usá el refuerzo positivo para cambiar el clima competitivo tenso.",
+                ajuste: "Designá que los próximos 10 minutos tienen 'Tarjeta Verde': el equipo que resuelve un roce o fallo dudoso sin protestar gana un punto extra.",
+                frase: "«Activamos Tarjeta Verde: el grupo que mejor controle sus reacciones bajo presión se lleva el bonus del ejercicio.»"
+            },
+            {
+                subtitulo: "Cambio de Parejas / Equipos Cruzados",
+                queHacer: "Rompé la rivalidad fija que está recalentando el ejercicio.",
+                ajuste: "Mezclá un integrante de cada grupo en 10 segundos para que los que chocaban pasen a defender el mismo objetivo.",
+                frase: "«Rotación rápida de equipos: ahora les toca tirar para el mismo lado y ordenar al grupo.»"
+            },
+            {
+                subtitulo: "Auto-Arbitraje con Acuerdo en 5 Segundos",
+                queHacer: "Quitá el foco de protestarle al entrenador y entrená la resolución autónoma de conflictos.",
+                ajuste: "Si hay una jugada dudosa, los dos involucrados tienen 5 segundos para ponerse de acuerdo o el punto/posesión se anula para ambos.",
+                frase: "«No me miren a mí para protestar: tienen 5 segundos para resolverlo con honestidad entre ustedes o pierden los dos.»"
+            },
+            {
+                subtitulo: "Pausa Fría de 30 Segundos",
+                queHacer: "Cuando el roce escala en intensidad física o verbal, enfriá el contexto sin dar un discurso largo.",
+                ajuste: "Todos dejan el elemento en el piso, dan una vuelta trotando suave hasta el cono lejano en silencio y reanudan con consigna limpia.",
+                frase: "«Dejamos todo en el piso, trote hasta el fondo para bajar revoluciones y volvemos a jugar con cabeza fría.»"
+            },
+            {
+                subtitulo: "Choque de Manos como Reinicio",
+                queHacer: "Cerrá físicamente el micro-conflicto en el acto para que no quede resentimiento en la jugada siguiente.",
+                ajuste: "Tras cualquier falta o choque fuerte, el juego no se reanuda hasta que ambos se chocan la mano y verifican que el otro está bien.",
+                frase: "«Jugamos intenso pero leal: primero levanto al compañero o choco la mano, y recién ahí se habilita la jugada.»"
+            },
+            {
+                subtitulo: "Inversión de Roles (Defensor / Atacante)",
+                queHacer: "Generá empatía táctica y emocional haciendo que vivan la dificultad del puesto del otro.",
+                ajuste: "El que se quejaba de que no le llegaba el pase pasa a iniciar la salida; el que protestaba la marca pasa a defender en inferioridad.",
+                frase: "«Cambiamos los roles por 4 minutos para entender lo que cuesta resolver desde el lugar del compañero.»"
+            },
+            {
+                subtitulo: "Vocero Único por Equipo",
+                queHacer: "Eliminá el griterío cruzado cuando varios reclaman al mismo tiempo.",
+                ajuste: "Elegí un capitán/vocero por grupo para los próximos 8 minutos: es el único habilitado para hacer consultas o pedir tiempo.",
+                frase: "«Se terminaron los reclamos grupales: ordenen las ideas entre ustedes y habla únicamente el vocero designado.»"
+            },
+            {
+                subtitulo: "Punto por Rescate al Compañero",
+                queHacer: "Cambiá la cultura de señalar al que se equivocó por la de cubrirle la espalda.",
+                ajuste: "Si un compañero pierde la posesión y otro del equipo corre a recuperar o relevar sin quejarse, ese recupero suma 2 puntos.",
+                frase: "«Cuando un compañero pierde la pelota no me quedo parado quejándome: corro a respaldarlo y vale doble.»"
+            }
+        ],
+        "Toma de Decisiones": [
+            {
+                subtitulo: "Escaneo Previo (Cabeza Arriba)",
+                queHacer: "Evitá que resuelvan en automático mirando solo el piso o el elemento.",
+                ajuste: "Antes de recibir o iniciar, el deportista tiene que mirar hacia donde está el profe o un compañero lejos y cantar la señal que hace.",
+                frase: "«Cabeza arriba antes de recibir: primero escaneo qué pasa alrededor y después ejecuto.»"
+            },
+            {
+                subtitulo: "Semáforo de Opciones",
+                queHacer: "Obligá a elegir entre dos respuestas técnicas según el estímulo del entorno.",
+                ajuste: "Si el rival/profe levanta mano derecha, resuelvo con pase o acción rápida; si levanta mano izquierda, conduzco o cambio de dirección.",
+                frase: "«No decidan de memoria antes de empezar: lean qué hace el que tienen enfrente y elijan la herramienta.»"
+            },
+            {
+                subtitulo: "Zonas de Puntaje Variable",
+                queHacer: "Fomentá la lectura de espacios libres sin detener el entrenamiento para explicarlo.",
+                ajuste: "Cambiá cada 2 minutos qué zona o forma de resolución vale doble (ej. entrar por los costados vale 2, por el centro vale 1).",
+                frase: "«Atentos al cambio: ahora el espacio exterior vale doble. Busquen dónde está la ventaja.»"
+            },
+            {
+                subtitulo: "Superioridad Sorpresa",
+                queHacer: "Entrená la velocidad mental ante cambios numéricos o de contexto.",
+                ajuste: "El ejercicio arranca parejo, pero al silbato o color que cantás, un jugador sale o entra generando superioridad o inferioridad.",
+                frase: "«Reacción mental rápida: apenas escuchan la señal, identifiquen dónde sobra o falta uno y resuelvan.»"
+            },
+            {
+                subtitulo: "Memoria de Trabajo (Secuencia de Colores)",
+                queHacer: "Ejercitá la retención de información bajo fatiga física.",
+                ajuste: "Cantá una secuencia de 3 colores o números antes de que salgan: deben tocar o pasar por esos puntos en ese orden exacto antes de definir.",
+                frase: "«Retengan la secuencia en la cabeza mientras se mueven: primero resuelvo el orden y después defino.»"
+            },
+            {
+                subtitulo: "Prohibido Repetir Receptor (Abanico)",
+                queHacer: "Rompé la tendencia a pasarle siempre al mismo compañero de confianza.",
+                ajuste: "No se puede devolver la pelota al que me la acaba de pasar; obligatoriamente hay que buscar una tercera opción libre.",
+                frase: "«Prohibido el pase de compromiso al que me la dio: obligo a mi cabeza a encontrar al tercer jugador libre.»"
+            },
+            {
+                subtitulo: "Arcos o Metas Múltiples Habilitadas",
+                queHacer: "Desarrollá la visión periférica y el cambio de orientación de juego.",
+                ajuste: "Colocá 2 o 3 metas pequeñas con conos de distinto color; mientras atacan, cantás cuál queda bloqueada y cuál habilitada.",
+                frase: "«Si se cierra una puerta, en un segundo giro el cuerpo y ataco la meta que quedó libre.»"
+            },
+            {
+                subtitulo: "Límite de Toques o Segundos Condicionado",
+                queHacer: "Acelerá el procesamiento mental antes de que el jugador entre en contacto con el elemento.",
+                ajuste: "En campo propio tienen máximo 2 toques/segundos para soltarla; en zona de definición tienen vía libre para el 1 vs 1.",
+                frase: "«Pienso antes de recibir para jugar simple atrás y guardo la creatividad para los últimos metros.»"
+            },
+            {
+                subtitulo: "Cálculo Rápido Par / Impar",
+                queHacer: "Sumá una tarea dual cognitiva para automatizar la técnica mientras la mente resuelve un problema.",
+                ajuste: "Gritá una suma simple (ej. '4+3'): si da impar atacan hacia la derecha, si da par atacan hacia la izquierda.",
+                frase: "«Cuerpo en control y mente despierta: resuelvan el cálculo en el aire y ataquen el espacio correcto.»"
+            },
+            {
+                subtitulo: "Comodín con Condición Cambiante",
+                queHacer: "Hacé que los jugadores lean constantemente las reglas del contexto.",
+                ajuste: "El jugador con pechera distinta juega para el que tiene la posesión, pero solo puede dar pases hacia adelante o a un toque.",
+                frase: "«Usen al comodín con inteligencia: sáquenle provecho sabiendo qué puede hacer y qué tiene limitado.»"
+            }
+        ],
+        "Cierre y Feedback": [
+            {
+                subtitulo: "Las 3 Preguntas de Cancha",
+                queHacer: "Hacé que los deportistas pongan en palabras qué aprendieron antes de irse.",
+                ajuste: "Ronda de 90 segundos: 1) ¿Qué nos salió bien hoy? 2) ¿Qué nos costó? 3) ¿Quién merece mención por actitud?",
+                frase: "«Nos llevamos una cosa técnica para mejorar y una actitud de equipo para repetir el próximo entrenamiento.»"
+            },
+            {
+                subtitulo: "Semáforo Grupal del Día",
+                queHacer: "Medí rápido cómo sintió el grupo el clima y la concentración de hoy.",
+                ajuste: "A la cuenta de 3, todos muestran con la mano cómo estuvo el foco hoy (arriba = verde, medio = amarillo, abajo = rojo) y 2 explican por qué.",
+                frase: "«Autoevaluación honesta en 10 segundos: ¿en qué color del semáforo entrenamos hoy como grupo?»"
+            },
+            {
+                subtitulo: "Reconocimiento Cruzado",
+                queHacer: "Fortalecé la cohesión grupal cerrando con foco en el esfuerzo del otro.",
+                ajuste: "Pedí que 2 o 3 deportistas destaquen una acción positiva o de esfuerzo que vieron hoy en un compañero.",
+                frase: "«Antes de terminar: ¿quién vio hoy un gesto de esfuerzo o compañerismo de otro que valga la pena destacar?»"
+            },
+            {
+                subtitulo: "Titular en Una Palabra",
+                queHacer: "Cierre ágil cuando queda poco tiempo para consolidar la huella del entrenamiento.",
+                ajuste: "Cada fila o subgrupo tiene 10 segundos para elegir una sola palabra que resuma qué trabajaron hoy.",
+                frase: "«En una sola palabra por grupo: ¿qué entrenamos hoy acá adentro además de lo físico y lo técnico?»"
+            },
+            {
+                subtitulo: "Conexión Entrenamiento - Partido",
+                queHacer: "Ayudá a que entiendan para qué sirve lo que acaban de practicar.",
+                ajuste: "Preguntale a dos jugadores en qué momento real de la competencia van a usar el ejercicio que hicieron hoy.",
+                frase: "«¿En qué situación real del fin de semana nos va a servir exactamente esto que entrenamos hoy?»"
+            },
+            {
+                subtitulo: "Misión para el Próximo Entrenamiento",
+                queHacer: "Dejá instalado el foco de continuidad para la sesión siguiente.",
+                ajuste: "Definí junto con el grupo un único objetivo corto para los primeros 10 minutos de la próxima práctica.",
+                frase: "«El próximo entrenamiento arranca exactamente donde terminamos hoy: este va a ser nuestro primer desafío.»"
+            },
+            {
+                subtitulo: "Entrega Simbólica de Tarjeta Verde",
+                queHacer: "Cerrá reforzando públicamente los valores del programa Ciudad Integrado / UGI.",
+                ajuste: "Otorgá la mención de Tarjeta Verde del día al jugador o subgrupo que mejor manejó la frustración o ayudó al resto.",
+                frase: "«La Tarjeta Verde de hoy se la lleva quien demostró que se puede entrenar al 100% cuidando al equipo.»"
+            },
+            {
+                subtitulo: "Lo Que Me Llevo y Lo Que Dejo",
+                queHacer: "Enseñá a limpiar la cabeza antes de volver a casa.",
+                ajuste: "Dos voluntarios dicen algo positivo que se llevan en el bolso y una bronca o error que dejan tirado en la cancha.",
+                frase: "«Los errores de hoy quedan acá en el piso para aprender; a casa nos llevamos solo lo que sumó.»"
+            },
+            {
+                subtitulo: "Feedback Sándwich del Grupo",
+                queHacer: "Entrená la autocrítica constructiva guiada por los propios deportistas.",
+                ajuste: "El grupo nombra: 1 fortaleza del día, 1 punto flojo a corregir y 1 compromiso de actitud para el cierre.",
+                frase: "«Armemos el balance nosotros mismos: qué hicimos fuerte, qué hay que ajustar y cómo cerramos.»"
+            },
+            {
+                subtitulo: "Respiración de Vuelta a la Calma (60 Segundos)",
+                queHacer: "Bajá la activación nerviosa antes de que se reencuentren con las familias o se retiren.",
+                ajuste: "Sentados o elongando, hacen 4 ciclos lentos de inhalar en 4 segundos y exhalar en 6 mientras repasás el logro del día.",
+                frase: "«Bajamos pulsaciones un minuto en silencio: gran trabajo hoy, desconectamos el cuerpo y nos vamos en verde.»"
+            }
+        ]
     };
 
     function verificarAccesoStaff() {
@@ -504,11 +846,27 @@
     function seleccionarGuia(clave, boton) {
         situacionActual = clave;
         document.querySelectorAll('.btn-situacion').forEach(b => b.classList.remove('active'));
-        boton.classList.add('active');
+        if (boton) boton.classList.add('active');
 
-        const data = guias[clave];
+        const lista = guias[clave];
+        indiceVariante = Math.floor(Math.random() * lista.length);
+        renderGuia();
+    }
+
+    function rotarVariante() {
+        const lista = guias[situacionActual];
+        indiceVariante = (indiceVariante + 1) % lista.length;
+        renderGuia();
+    }
+
+    function renderGuia() {
+        const lista = guias[situacionActual];
+        const data = lista[indiceVariante];
         document.getElementById('panel-respuesta').innerHTML = `
-            <div class="respuesta-titulo">${data.titulo}</div>
+            <div class="respuesta-header">
+                <h2 class="respuesta-titulo">${situacionActual}: ${data.subtitulo} (${indiceVariante + 1}/${lista.length})</h2>
+                <button class="btn-rotar" onclick="rotarVariante()">🔄 Otra variante (${indiceVariante + 1}/${lista.length})</button>
+            </div>
             <div class="paso"><strong>1. Acción inmediata del Profe:</strong> ${data.queHacer}</div>
             <div class="paso"><strong>2. Variante Cognitiva / Conductual:</strong> ${data.ajuste}</div>
             <div class="frase-clave">💬 Qué decir en cancha: ${data.frase}</div>
@@ -527,26 +885,28 @@
 
     async function registrarUso() {
         const nombre = document.getElementById('profe-nombre').value.trim();
-        const categoria = document.getElementById('profe-categoria').value;
+        const categoria = document.getElementById('profe-categoria').value.trim();
         const msg = document.getElementById('status-msg');
 
         if (!nombre || !categoria) {
             msg.style.color = "#c0392b";
-            msg.textContent = "⚠️ Completá tu nombre y categoría arriba antes de registrar.";
+            msg.textContent = "⚠️ Completá tu nombre y deporte/actividad arriba antes de registrar.";
             return;
         }
 
         const checks = [
             document.getElementById('chk-1').checked ? "Consigna <2m" : null,
-            document.getElementById('chk-2').checked ? "Variante Cognitiva" : null,
+            document.getElementById('chk-2').checked ? "Variante Aplicada" : null,
             document.getElementById('chk-3').checked ? "Refuerzo Positivo" : null
         ].filter(Boolean).join(", ") || "Sin tildar";
+
+        const varianteElegida = guias[situacionActual][indiceVariante].subtitulo;
 
         const registro = {
             fecha: new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }),
             profe: nombre,
             categoria: categoria,
-            foco: situacionActual,
+            foco: `${situacionActual} (${varianteElegida})`,
             checklist: checks,
             nota: document.getElementById('profe-nota').value.trim()
         };
@@ -636,7 +996,10 @@
 
         const conteoFocos = {};
         datos.forEach(d => {
-            if (d.foco) conteoFocos[d.foco] = (conteoFocos[d.foco] || 0) + 1;
+            if (d.foco) {
+                const focoBase = d.foco.split(' (')[0];
+                conteoFocos[focoBase] = (conteoFocos[focoBase] || 0) + 1;
+            }
         });
         const topFoco = Object.entries(conteoFocos).sort((a,b) => b[1] - a[1])[0];
         document.getElementById('stat-top-foco').textContent = topFoco ? topFoco[0] : "-";
@@ -658,7 +1021,6 @@
         `).join('');
     }
 
-    // Si el profe ya puso la clave una vez en su celular, entra directo
     if (localStorage.getItem('ugi_acceso_autorizado') === 'si') {
         mostrarApp();
     }
