@@ -2,7 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portal oficial de Jugadores y Jugadoras UGI - Club Ciudad de Buenos Aires. Gimnasio mental interactivo, guías descargables y herramientas formativas." />
+  <meta name="theme-color" content="#59bde9" />
+  <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
+  
+  <!-- OPEN GRAPH / WHATSAPP / REDES -->
+  <meta property="og:title" content="Portal de Jugadores | UGI CCBA" />
+  <meta property="og:description" content="Gimnasio Mental interactivo, guías de formación 'Tu Equipo', cuadernillo 'Mi Equipo' y herramientas de neurociencia deportiva." />
+  <meta property="og:image" content="../assets/images/logo-header.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <title>Portal de Jugadores | UGI CCBA</title>
   
   <style>
@@ -117,8 +127,207 @@
     .game-window iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
     @media (max-width: 850px) {
-        .app-card { grid-template-columns: 1fr; }
-        .app-visual { order: -1; min-height: 200px; }
+      .app-card { grid-template-columns: 1fr; }
+      .app-visual { order: -1; min-height: 200px; }
+    }
+
+    /* =========================================
+       WIDGET SEMÁFORO DIARIO (RECUADRO INSTITUCIONAL)
+       ========================================= */
+    .semaforo-diario-card {
+      background: white; border: 2px solid var(--sky); border-radius: var(--radius);
+      padding: clamp(2.5rem, 5vw, 4rem); margin: 3.5rem 0 5rem;
+      box-shadow: 0 14px 38px rgba(8,43,73,0.08); text-align: center;
+      position: relative;
+    }
+    .semaforo-diario-card .sem-eyebrow {
+      text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
+      color: var(--sky-dark); margin: 0 0 0.5rem; font-family: var(--sans); display: block;
+    }
+    .semaforo-diario-card h2 {
+      font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3.2rem); margin: 0 0 0.6rem;
+      color: var(--navy); line-height: 1.15;
+    }
+    .semaforo-diario-card .bajada {
+      max-width: 640px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem;
+      font-family: var(--sans); line-height: 1.5;
+    }
+    
+    .semaforo-btns-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+      max-width: 760px; margin: 0 auto 2.2rem;
+    }
+    @media (max-width: 680px) {
+      .semaforo-btns-grid { grid-template-columns: 1fr; }
+    }
+    .semaforo-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+      background: #faf8f5; border: 2px solid var(--line); border-radius: 1.25rem;
+      padding: 1.5rem 1.2rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: var(--sans); outline: none;
+    }
+    .semaforo-btn:hover {
+      transform: translateY(-4px); box-shadow: 0 10px 24px rgba(8,43,73,0.1);
+      border-color: var(--sky-dark); background: white;
+    }
+    .semaforo-circle {
+      width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 1.6rem; transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .sem-verde .semaforo-circle { background: #e8f5e9; border: 2.5px solid #78aa85; box-shadow: 0 4px 14px rgba(120, 170, 133, 0.35); }
+    .sem-amarillo .semaforo-circle { background: #fef9e7; border: 2.5px solid #e8c46e; box-shadow: 0 4px 14px rgba(232, 196, 110, 0.35); }
+    .sem-rojo .semaforo-circle { background: #fdf2f0; border: 2.5px solid #e17c6b; box-shadow: 0 4px 14px rgba(225, 124, 107, 0.35); }
+    
+    .semaforo-btn strong { color: var(--navy); font-size: 1.05rem; font-weight: 700; }
+    .semaforo-btn small { color: var(--muted); font-size: 0.82rem; line-height: 1.35; }
+
+    /* Estado seleccionado con claro feedback visual */
+    .semaforo-btn.selected {
+      border-color: var(--navy); background: white;
+      box-shadow: 0 12px 30px rgba(8,43,73,0.15);
+      outline: 2.5px solid var(--navy); outline-offset: -2px;
+    }
+    .semaforo-btn.selected .semaforo-circle {
+      transform: scale(1.12);
+    }
+
+    .semaforo-feedback-box {
+      display: none; background: #f7fafc; border: 1.5px solid var(--line); border-radius: 1.25rem;
+      padding: 2.2rem clamp(1.4rem, 4vw, 2.5rem); max-width: 700px; margin: 1.5rem auto 0;
+      animation: fadeIn 0.35s ease; text-align: center;
+    }
+    
+    /* ANIMACIÓN RESPIRACIÓN */
+    .breathing-box {
+      margin-top: 1.8rem; padding: 2.2rem 1.8rem;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+      color: white; border-radius: 1.25rem; display: none; text-align: center;
+      box-shadow: 0 12px 30px rgba(8,43,73,0.18); font-family: var(--sans);
+    }
+    .breathing-circle-wrapper {
+      position: relative; width: 130px; height: 130px; margin: 1.5rem auto; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .breathing-circle {
+      width: 58px; height: 58px; border-radius: 50%; background: var(--sky);
+      transition: transform 4s ease-in-out; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.15rem; color: var(--navy); box-shadow: 0 0 25px rgba(89,189,233,0.6);
+    }
+    .breathing-circle.inhale { transform: scale(2.1); background: var(--sky-light); }
+    .breathing-circle.exhale { transform: scale(1); background: var(--sky); }
+
+    /* =========================================
+       GENERADOR DE DIPLOMA (COMPACTO Y ELEGANTE)
+       ========================================= */
+    .diploma-editor-section {
+      background: white; border: 1.5px solid var(--line); border-radius: var(--radius);
+      padding: clamp(2.5rem, 5vw, 4rem); margin: 5rem 0;
+      box-shadow: 0 12px 36px rgba(8,43,73,0.06); text-align: center;
+    }
+    .diploma-editor-section .dip-eyebrow {
+      text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
+      color: #b8860b; margin: 0 0 0.5rem; font-family: var(--sans); display: block;
+    }
+    .diploma-editor-section h2 {
+      font-family: var(--display); font-size: clamp(2.2rem, 3.8vw, 3rem); margin: 0 0 0.6rem;
+      color: var(--navy); line-height: 1.15;
+    }
+    .diploma-editor-section .bajada {
+      max-width: 620px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem;
+      font-family: var(--sans); line-height: 1.5;
+    }
+    
+    .diploma-form {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem; max-width: 760px; margin: 0 auto 2.5rem; text-align: left;
+    }
+    @media (max-width: 740px) {
+      .diploma-form { grid-template-columns: 1fr; }
+    }
+    .diploma-input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .diploma-input-group label {
+      font-size: 0.82rem; font-weight: 700; color: var(--navy); font-family: var(--sans);
+    }
+    .diploma-input {
+      padding: 0.85rem 1rem; border-radius: 12px; border: 1.5px solid var(--line);
+      font-family: var(--sans); font-size: 0.92rem; background: #faf8f5; color: var(--navy);
+      transition: all 0.2s ease; width: 100%; box-sizing: border-box;
+    }
+    .diploma-input:focus {
+      outline: none; border-color: #b8860b; background: white;
+      box-shadow: 0 0 0 4px rgba(184,134,11,0.2);
+    }
+
+    /* MARCO DEL DIPLOMA OFICIAL (COMPACTO Y PRESTIGIOSO) */
+    .diploma-frame {
+      max-width: 580px; margin: 0 auto; background: #fffdf9;
+      border: 2px solid var(--navy); border-radius: 8px;
+      padding: 2.4rem clamp(1.5rem, 4vw, 2.8rem); position: relative;
+      box-shadow: 0 12px 32px rgba(8,43,73,0.08);
+      outline: 1.5px solid #c5a059; outline-offset: -10px;
+    }
+    .diploma-logos {
+      display: flex; justify-content: center; align-items: center; gap: 1.6rem; margin-bottom: 1rem;
+    }
+    .diploma-logos img { height: 44px; width: auto; object-fit: contain; }
+    
+    .diploma-title {
+      font-family: var(--display); font-size: 1.7rem; color: var(--navy);
+      letter-spacing: 0.12em; margin: 0 0 0.35rem; text-transform: uppercase; font-weight: 700;
+    }
+    .diploma-sub {
+      font-family: var(--sans); font-size: 0.82rem; font-weight: 700; color: #b8860b;
+      text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 1.2rem;
+    }
+    .diploma-awarded {
+      font-family: var(--sans); font-size: 0.78rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.3rem;
+    }
+    .diploma-name-display {
+      font-family: var(--display); font-size: 1.9rem; color: var(--navy);
+      border-bottom: 1.5px solid var(--navy); display: inline-block;
+      padding: 0.1rem 1.8rem; margin: 0.3rem 0 1rem; min-width: 220px; font-weight: 700;
+    }
+    .diploma-body {
+      font-family: var(--sans); font-size: 0.92rem; color: #233b4d;
+      line-height: 1.6; margin: 0 auto 1.4rem; max-width: 460px;
+    }
+    .diploma-footer {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px dashed rgba(8,43,73,0.18);
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .diploma-club-info {
+      font-family: var(--sans); font-size: 0.78rem; color: var(--muted); text-align: left; line-height: 1.35;
+    }
+    .diploma-sign { text-align: center; }
+    .diploma-sign-line { width: 140px; height: 1px; background: var(--navy); margin: 0 auto 0.35rem; }
+    .diploma-sign-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); font-family: var(--sans); }
+    .diploma-sign-sub { font-size: 0.7rem; color: var(--muted); font-family: var(--sans); }
+
+    .btn-print-diploma {
+      background: #b8860b; color: white; border: none; padding: 1.05rem 2.4rem;
+      cursor: pointer; border-radius: 999px; font-weight: 800; font-size: 0.92rem;
+      letter-spacing: 0.04em; transition: all 0.25s ease; box-shadow: 0 6px 20px rgba(184,134,11,0.22);
+      font-family: var(--sans);
+    }
+    .btn-print-diploma:hover {
+      background: #996e08; transform: translateY(-2px); box-shadow: 0 10px 26px rgba(184,134,11,0.3);
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ESTILOS DE IMPRESIÓN EXCLUSIVA DEL DIPLOMA */
+    @media print {
+      body * { visibility: hidden !important; }
+      .diploma-frame, .diploma-frame * { visibility: visible !important; }
+      .diploma-frame {
+        position: fixed !important; left: 50% !important; top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important; max-width: 650px !important; box-shadow: none !important;
+        border-width: 3px !important; margin: 0 !important; padding: 2.5rem !important;
+        background: #ffffff !important;
+      }
     }
   </style>
 </head>
@@ -154,13 +363,63 @@
           Entrenar la cabeza y el corazón, además del cuerpo: neurociencia aplicada, juegos cognitivos y guías de formación para deportistas.
         </p>
         <div style="display: flex; gap: 0.8rem; justify-content: center; margin-top: 1.8rem; flex-wrap: wrap;">
+          <a href="#semaforo-hoy" class="nav-cta" style="background: rgba(8,43,73,0.08); color: var(--navy); border: 1px solid rgba(8,43,73,0.2); padding: 0.65rem 1.4rem;">Semáforo de Hoy</a>
           <a href="#entrenamiento" class="nav-cta" style="background: var(--navy); color: white; border: 1px solid var(--navy); padding: 0.65rem 1.4rem;">Juegos Mentales</a>
-          <a href="#guias-descarga" class="nav-cta" style="background: white; color: var(--navy); border: 1px solid var(--navy); padding: 0.65rem 1.4rem;">Guías y Cuadernillos PDF</a>
-          <a href="#ranking" class="nav-cta" style="background: transparent; color: var(--navy); border: 1px solid var(--navy); padding: 0.65rem 1.4rem;">Tabla de Posiciones</a>
+          <a href="#guias-descarga" class="nav-cta" style="background: white; color: var(--navy); border: 1px solid var(--navy); padding: 0.65rem 1.4rem;">Guías y Cuadernillos</a>
+          <a href="#diploma" class="nav-cta" style="background: #2e7d32; color: white; border: none; padding: 0.65rem 1.4rem;">Generador Diploma 🏆</a>
+          <a href="#ranking" class="nav-cta" style="background: transparent; color: var(--navy); border: 1px solid var(--navy); padding: 0.65rem 1.4rem;">Posiciones</a>
         </div>
     </section>
 
     <div class="container">
+
+        <!-- ========================================================
+             WIDGET: ¿CÓMO LLEGO A ENTRENAR HOY? (SEMÁFORO DEL DÍA)
+             ======================================================== -->
+        <section class="semaforo-diario-card" id="semaforo-hoy">
+          <span class="sem-eyebrow">Check-in Emocional Diario &middot; UGI CCBA</span>
+          <h2>¿Cómo llegás hoy a la cancha?</h2>
+          <p class="bajada">
+            Elegí cómo te sentís antes de empezar. Reconocer tus emociones es el primer paso para jugar con la cabeza clara.
+          </p>
+
+          <div class="semaforo-btns-grid">
+            <button type="button" class="semaforo-btn sem-verde" data-estado="verde">
+              <div class="semaforo-circle">😊</div>
+              <strong>Tranquilo/a</strong>
+              <small style="color: var(--muted); font-size: 0.78rem;">Con ganas y enfocado</small>
+            </button>
+
+            <button type="button" class="semaforo-btn sem-amarillo" data-estado="amarillo">
+              <div class="semaforo-circle">😐</div>
+              <strong>Nervioso/a</strong>
+              <small style="color: var(--muted); font-size: 0.78rem;">Cansancio o dudas</small>
+            </button>
+
+            <button type="button" class="semaforo-btn sem-rojo" data-estado="rojo">
+              <div class="semaforo-circle">😤</div>
+              <strong>Con bronca</strong>
+              <small style="color: var(--muted); font-size: 0.78rem;">Frustración o enojo</small>
+            </button>
+          </div>
+
+          <div class="semaforo-feedback-box" id="sem-feedback">
+            <h3 id="sem-fb-title" style="font-family: var(--display); font-size: 1.6rem; margin: 0 0 0.5rem; color: var(--navy);"></h3>
+            <p id="sem-fb-text" style="margin: 0; font-size: 1rem; color: var(--ink); line-height: 1.5;"></p>
+            
+            <div class="breathing-box" id="breathing-exercise">
+              <h4 style="margin: 0 0 0.4rem; font-size: 1.15rem; color: var(--sky-light);">Respiración guiada de 30 segundos</h4>
+              <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">"Olé una flor y soplá una vela"</p>
+              
+              <div class="breathing-circle-wrapper">
+                <div class="breathing-circle" id="breath-circle">Inhalá</div>
+              </div>
+
+              <div id="breath-instruction" style="font-weight: 700; font-size: 1.1rem; color: var(--sky);">Preparate...</div>
+              <div id="breath-timer" style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">30 segundos restantes</div>
+            </div>
+          </div>
+        </section>
         
         <!-- MODULO 01: REACCIÓN (CÁMARA) -->
         <article class="app-card" id="entrenamiento" style="margin-top: 4rem;">
@@ -359,6 +618,81 @@
 
         </section>
 
+        <!-- ========================================================
+             GENERADOR DE DIPLOMA DIGITAL AL GRAN COMPAÑERO/A
+             ======================================================== -->
+        <section class="diploma-editor-section" id="diploma">
+          <span class="dip-eyebrow">Reconocimiento al Valor Deportivo &middot; UGI CCBA</span>
+          <h2>Generador de Diploma Oficial</h2>
+          <p class="bajada">
+            Personalizá tu diploma al gran compañero o gran compañera de equipo. Escribí tus datos, mirá la vista previa en vivo e imprimilo o guardalo en PDF.
+          </p>
+
+          <div class="diploma-form">
+            <div class="diploma-input-group">
+              <label for="dip-nombre">Nombre y Apellido del deportista:</label>
+              <input type="text" id="dip-nombre" class="diploma-input" placeholder="Tu nombre y apellido" value="Santiago Pérez" />
+            </div>
+
+            <div class="diploma-input-group">
+              <label for="dip-deporte">Deporte / Categoría:</label>
+              <input type="text" id="dip-deporte" class="diploma-input" placeholder="Ej: Hockey Sub-12 o Rugby M12" value="Hockey Sub-12" />
+            </div>
+
+            <div class="diploma-input-group">
+              <label for="dip-firma">Nombre de quien firma:</label>
+              <input type="text" id="dip-firma" class="diploma-input" placeholder="Ej: Tu Entrenador/a o Staff UGI" value="Staff UGI &middot; C.C.B.A." />
+            </div>
+          </div>
+
+          <!-- VISTA PREVIA DEL DIPLOMA OFICIAL (COMPACTA Y PRESTIGIOSA) -->
+          <div class="diploma-frame diploma-print-area">
+            <div class="diploma-logos">
+              <img src="../assets/images/guia/escudo-ccba.png" alt="Club Ciudad de Buenos Aires" />
+              <img src="../assets/images/guia/logo-ugi.png" alt="Unidad de Gestión Integral" />
+            </div>
+
+            <h3 class="diploma-title">DIPLOMA DE HONOR</h3>
+            <div class="diploma-sub">Al Gran Compañero / A la Gran Compañera de Equipo</div>
+
+            <div class="diploma-awarded">
+              Otorgado con orgullo a:
+            </div>
+
+            <div class="diploma-name-display" id="dip-display-name">
+              Santiago Pérez
+            </div>
+
+            <div class="diploma-body">
+              Por entrenar con ganas y alegría en <strong><span id="dip-display-deporte">Hockey Sub-12</span></strong>,
+              apoyar siempre a sus compañeros y compañeras adentro y afuera de la cancha,
+              y recordar que <em>el entrenamiento que no se ve también se entrena</em>.
+            </div>
+
+            <div class="diploma-footer">
+              <div class="diploma-club-info">
+                <strong>Club Ciudad de Buenos Aires</strong><br>
+                Unidad de Gestión Integral (UGI)<br>
+                <span id="dip-display-fecha">Fecha: 13/10/2026</span>
+              </div>
+
+              <div class="diploma-sign">
+                <div class="diploma-sign-line"></div>
+                <div class="diploma-sign-title" id="dip-display-firma">
+                  Staff UGI &middot; C.C.B.A.
+                </div>
+                <div class="diploma-sign-sub">Firma del entrenador / formador</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 2.5rem;">
+            <button type="button" onclick="window.print()" class="btn-print-diploma">
+              🖨️ IMPRIMIR / GUARDAR DIPLOMA EN PDF
+            </button>
+          </div>
+        </section>
+
         <!-- TABLA DE POSICIONES -->
         <section class="ranking" id="ranking">
             <h2>Tabla de posiciones</h2>
@@ -405,6 +739,117 @@
       navigation.classList.toggle("open", !isOpen);
     });
 
+    // ==========================================
+    // SEMÁFORO DIARIO Y RESPIRACIÓN GUIADA
+    // ==========================================
+    const semBtns = document.querySelectorAll(".semaforo-btn");
+    const semFeedback = document.getElementById("sem-feedback");
+    const semFbTitle = document.getElementById("sem-fb-title");
+    const semFbText = document.getElementById("sem-fb-text");
+    const breathingBox = document.getElementById("breathing-exercise");
+    const breathCircle = document.getElementById("breath-circle");
+    const breathInst = document.getElementById("breath-instruction");
+    const breathTimer = document.getElementById("breath-timer");
+    let breathingInterval = null;
+
+    semBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        semBtns.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        const estado = btn.getAttribute("data-estado");
+        semFeedback.style.display = "block";
+
+        if (breathingInterval) {
+          clearInterval(breathingInterval);
+          breathingInterval = null;
+        }
+
+        if (estado === "verde") {
+          semFbTitle.textContent = "🟢 ¡Excelente estado! Estás en Verde";
+          semFbText.innerHTML = "Estás con buena energía y tranquilidad. Es el momento perfecto para disfrutar del juego, probar cosas nuevas sin miedo y contagiar buena onda a tu equipo.";
+          breathingBox.style.display = "none";
+        } else if (estado === "amarillo") {
+          semFbTitle.textContent = "🟡 Alerta temprana: Estás en Amarillo";
+          semFbText.innerHTML = "Es normal sentir nervios, dudas o cansancio antes de jugar. Hacé una pausa, recordá tu frase ancla y respirá hondo para bajar la intensidad antes de entrar a la cancha.";
+          startBreathingExercise(30);
+        } else if (estado === "rojo") {
+          semFbTitle.textContent = "🔴 Emoción intensa: Estás en Rojo";
+          semFbText.innerHTML = "Si sentís bronca o frustración, parar un segundo es de crack. En este estado la cabeza se nubla: primero respiramos para bajar las pulsaciones y después volvemos al juego.";
+          startBreathingExercise(30);
+        }
+      });
+    });
+
+    function startBreathingExercise(seconds) {
+      breathingBox.style.display = "block";
+      let remaining = seconds;
+      breathTimer.textContent = remaining + " segundos restantes";
+      
+      let isInhale = true;
+      breathCircle.classList.remove("exhale");
+      breathCircle.classList.add("inhale");
+      breathCircle.textContent = "Inhalá";
+      breathInst.textContent = "🌸 Olé una flor... (inhalá profundo)";
+
+      breathingInterval = setInterval(() => {
+        remaining -= 4;
+        if (remaining <= 0) {
+          clearInterval(breathingInterval);
+          breathingInterval = null;
+          breathCircle.classList.remove("inhale", "exhale");
+          breathCircle.textContent = "¡Listo!";
+          breathInst.textContent = "✨ ¡Muy bien! Ya regulaste tu respiración. ¡Listo para volver!";
+          breathTimer.textContent = "Ejercicio completado con éxito";
+          return;
+        }
+        isInhale = !isInhale;
+        if (isInhale) {
+          breathCircle.classList.remove("exhale");
+          breathCircle.classList.add("inhale");
+          breathCircle.textContent = "Inhalá";
+          breathInst.textContent = "🌸 Olé una flor... (inhalá profundo)";
+        } else {
+          breathCircle.classList.remove("inhale");
+          breathCircle.classList.add("exhale");
+          breathCircle.textContent = "Exhalá";
+          breathInst.textContent = "🕯️ Soplá una vela... (exhalá despacio)";
+        }
+        breathTimer.textContent = remaining + " segundos restantes";
+      }, 4000);
+    }
+
+    // ==========================================
+    // GENERADOR DE DIPLOMA EN VIVO
+    // ==========================================
+    const inputNombre = document.getElementById("dip-nombre");
+    const inputDeporte = document.getElementById("dip-deporte");
+    const inputFirma = document.getElementById("dip-firma");
+
+    const displayName = document.getElementById("dip-display-name");
+    const displayDeporte = document.getElementById("dip-display-deporte");
+    const displayFirma = document.getElementById("dip-display-firma");
+    const displayFecha = document.getElementById("dip-display-fecha");
+
+    if (displayFecha) {
+      const hoy = new Date();
+      displayFecha.textContent = "Fecha: " + hoy.toLocaleDateString("es-AR");
+    }
+
+    if (inputNombre) {
+      inputNombre.addEventListener("input", (e) => {
+        displayName.textContent = e.target.value.trim() || "Nombre del Deportista";
+      });
+    }
+    if (inputDeporte) {
+      inputDeporte.addEventListener("input", (e) => {
+        displayDeporte.textContent = e.target.value.trim() || "Tu Deporte";
+      });
+    }
+    if (inputFirma) {
+      inputFirma.addEventListener("input", (e) => {
+        displayFirma.innerHTML = e.target.value.trim() || "Staff UGI &middot; C.C.B.A.";
+      });
+    }
   </script>
 </body>
 </html>

@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portal oficial de Familias y Socios de la UGI - Club Ciudad de Buenos Aires. Guía descargable El Otro Equipo, pautas de convivencia y autodiagnóstico." />
+  <meta name="theme-color" content="#59bde9" />
+  
+  <!-- OPEN GRAPH / WHATSAPP / REDES -->
+  <meta property="og:title" content="Portal de Familias y Socios | UGI CCBA" />
+  <meta property="og:description" content="Guía oficial descargable 'El Otro Equipo', pautas de convivencia en la tribuna y autodiagnóstico interactivo para familias." />
+  <meta property="og:image" content="../assets/images/logo-header.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <title>Portal de Familias y Socios | UGI CCBA</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
   
@@ -216,6 +226,136 @@
       .app-card { grid-template-columns: 1fr; }
       .app-visual { order: -1; min-height: 220px; }
     }
+
+    /* =========================================
+       AUTODIAGNÓSTICO FAMILIAR (TEST DE LA BASE SEGURA)
+       ========================================= */
+    .quiz-section {
+      background: #fdfcf9; border-radius: var(--radius); border: 1.5px solid var(--line);
+      padding: clamp(2.5rem, 5vw, 4rem); margin: 5rem 0;
+      box-shadow: 0 10px 30px rgba(8,43,73,0.05);
+    }
+    .quiz-section .quiz-eyebrow {
+      text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
+      color: var(--sky-dark); text-align: center; margin-bottom: 0.5rem; font-family: var(--sans);
+    }
+    .quiz-section h2 {
+      font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3.2rem); color: var(--navy);
+      margin: 0 0 0.5rem; text-align: center; line-height: 1.1;
+    }
+    .quiz-section .bajada {
+      color: var(--muted); text-align: center; max-width: 680px; margin: 0 auto 3rem; font-size: 1.05rem; line-height: 1.5; font-family: var(--sans);
+    }
+    .quiz-question-card {
+      background: white; border: 1.5px solid var(--line); border-radius: 1.25rem;
+      padding: 1.8rem clamp(1.2rem, 3vw, 2.2rem); margin-bottom: 1.8rem;
+      box-shadow: 0 4px 16px rgba(8,43,73,0.03); transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .quiz-question-card:hover {
+      border-color: rgba(8,43,73,0.3);
+    }
+    .quiz-q-header { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.2rem; }
+    .quiz-q-num {
+      background: var(--navy); color: white; font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.85rem; border-radius: 999px;
+      font-family: var(--sans); white-space: nowrap;
+    }
+    .quiz-q-title {
+      font-family: var(--display); font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 700;
+      color: var(--navy); margin: 0; line-height: 1.35;
+    }
+    .quiz-options-grid { display: grid; gap: 0.85rem; }
+    
+    /* Input Radio Real Oculto + Label Card Visible */
+    .quiz-opt-label { display: block; position: relative; cursor: pointer; }
+    .quiz-opt-radio { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+    .quiz-opt-box {
+      background: #faf8f5; border: 1.5px solid var(--line); border-radius: 14px;
+      padding: 1.15rem 1.4rem; display: flex; align-items: center; gap: 1.1rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .quiz-opt-box:hover {
+      background: #f3f8fd; border-color: var(--sky-dark); transform: translateY(-1px);
+    }
+    .quiz-opt-badge {
+      width: 2.2rem; height: 2.2rem; min-width: 2.2rem; border-radius: 50%;
+      border: 2px solid var(--line); background: white; color: var(--navy);
+      font-weight: 800; font-size: 0.88rem; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease; font-family: var(--sans);
+    }
+    .quiz-opt-text {
+      font-size: 1rem; color: var(--ink); line-height: 1.5; font-weight: 500; font-family: var(--sans);
+    }
+    
+    /* Estado Seleccionado Marcado en Alto Contraste */
+    .quiz-opt-radio:checked + .quiz-opt-box {
+      background: #eaf5fc; border-color: var(--navy);
+      box-shadow: 0 4px 18px rgba(8,43,73,0.12);
+      outline: 2.5px solid var(--navy); outline-offset: -2px;
+    }
+    .quiz-opt-radio:checked + .quiz-opt-box .quiz-opt-badge {
+      background: var(--navy); border-color: var(--navy); color: white;
+    }
+    .quiz-opt-radio:checked + .quiz-opt-box .quiz-opt-text {
+      color: var(--navy); font-weight: 700;
+    }
+
+    .btn-calc-quiz {
+      background: var(--navy); color: white; font-family: var(--sans); font-weight: 700;
+      font-size: 0.95rem; letter-spacing: 0.05em; padding: 1.15rem 2.6rem; border-radius: 999px;
+      border: none; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(8,43,73,0.14);
+    }
+    .btn-calc-quiz:hover {
+      background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(8,43,73,0.2);
+    }
+
+    .quiz-result-box {
+      display: none; background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+      color: white; border-radius: var(--radius); padding: 3.5rem clamp(1.5rem, 5vw, 3.5rem); text-align: center;
+      margin-top: 3rem; animation: fadeIn 0.4s ease; box-shadow: 0 16px 40px rgba(8,43,73,0.18);
+    }
+
+    /* =========================================
+       FORMULARIO DE TALLERES (ESTÉTICA INSTITUCIONAL)
+       ========================================= */
+    .workshop-form-card {
+      background: white; border: 1.5px solid var(--line); border-radius: var(--radius);
+      padding: clamp(2.5rem, 5vw, 4rem); margin-top: 5.5rem;
+      box-shadow: 0 12px 36px rgba(8,43,73,0.06); text-align: center;
+    }
+    .workshop-form-card .ws-eyebrow {
+      text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
+      color: var(--sky-dark); margin-bottom: 0.5rem; display: block; font-family: var(--sans);
+    }
+    .workshop-form-card h2 { font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 0.6rem; color: var(--navy); line-height: 1.15; }
+    .workshop-form-card .bajada { max-width: 660px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem; line-height: 1.5; font-family: var(--sans); }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; text-align: left; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 0.88rem; font-weight: 700; color: var(--navy); letter-spacing: 0.02em; font-family: var(--sans); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 0.95rem 1.1rem; border-radius: 12px; border: 1.5px solid var(--line);
+      font-family: var(--sans); font-size: 0.95rem; background: #faf8f5; color: var(--navy);
+      transition: all 0.2s ease; box-sizing: border-box;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: var(--navy); background: white; box-shadow: 0 0 0 4px rgba(89,189,233,0.25);
+    }
+    .btn-workshop-submit {
+      background: var(--navy); color: white; font-family: var(--sans); font-weight: 700;
+      font-size: 0.95rem; letter-spacing: 0.05em; padding: 1.15rem 2.8rem; border-radius: 999px;
+      border: none; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 18px rgba(8,43,73,0.12);
+    }
+    .btn-workshop-submit:hover {
+      background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(8,43,73,0.18);
+    }
+    @media (max-width: 720px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -409,6 +549,172 @@
             Descargar la Guía Completa en PDF
           </a>
         </div>
+      </section>
+
+      <!-- ========================================================
+           AUTODIAGNÓSTICO INTERACTIVO: TEST DE LA BASE SEGURA
+           ======================================================== -->
+      <section class="quiz-section" id="autodiagnostico">
+        <p class="quiz-eyebrow">Herramienta Interactiva &middot; El Otro Equipo</p>
+        <h2>Autodiagnóstico Familiar</h2>
+        <p class="bajada">
+          Cinco preguntas tomadas del capítulo inicial para reflexionar sobre tu rol en el deporte de tus hijos y descubrir qué herramientas aplicar en cada etapa.
+        </p>
+
+        <form id="quiz-form" onsubmit="return false;">
+          
+          <!-- PREGUNTA 1 -->
+          <div class="quiz-question-card">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">Pregunta 01</span>
+              <h3 class="quiz-q-title">Cuando tu hijo/a pierde un partido, ¿qué sentís habitualmente en primer lugar?</h3>
+            </div>
+            <div class="quiz-options-grid">
+              <label class="quiz-opt-label">
+                <input type="radio" name="q1" value="1" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">A</span>
+                  <span class="quiz-opt-text">Tristeza o empatía por él/ella, enfocándome en darle sostén emocional.</span>
+                </div>
+              </label>
+              <label class="quiz-opt-label">
+                <input type="radio" name="q1" value="0" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">B</span>
+                  <span class="quiz-opt-text">Incomodidad personal, nerviosismo o frustración por el resultado del partido.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- PREGUNTA 2 -->
+          <div class="quiz-question-card">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">Pregunta 02</span>
+              <h3 class="quiz-q-title">Durante la semana, ¿de qué temas hablás más con él o ella?</h3>
+            </div>
+            <div class="quiz-options-grid">
+              <label class="quiz-opt-label">
+                <input type="radio" name="q2" value="1" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">A</span>
+                  <span class="quiz-opt-text">De cómo la pasó, si disfrutó entrenar, el grupo y sus compañeros/as.</span>
+                </div>
+              </label>
+              <label class="quiz-opt-label">
+                <input type="radio" name="q2" value="0" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">B</span>
+                  <span class="quiz-opt-text">De resultados, goles, minutos jugados o si es titular en el equipo.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- PREGUNTA 3 -->
+          <div class="quiz-question-card">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">Pregunta 03</span>
+              <h3 class="quiz-q-title">En el auto o viaje de regreso a casa después de una competencia:</h3>
+            </div>
+            <div class="quiz-options-grid">
+              <label class="quiz-opt-label">
+                <input type="radio" name="q3" value="1" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">A</span>
+                  <span class="quiz-opt-text">Pregunto si la pasó bien y espero a que él/ella traiga el tema del partido si tiene ganas.</span>
+                </div>
+              </label>
+              <label class="quiz-opt-label">
+                <input type="radio" name="q3" value="0" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">B</span>
+                  <span class="quiz-opt-text">Suelo corregir jugadas, marcar errores o analizar tácticamente lo que pasó.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- PREGUNTA 4 -->
+          <div class="quiz-question-card">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">Pregunta 04</span>
+              <h3 class="quiz-q-title">¿Sabés qué le gusta específicamente de su deporte, más allá de ganar?</h3>
+            </div>
+            <div class="quiz-options-grid">
+              <label class="quiz-opt-label">
+                <input type="radio" name="q4" value="1" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">A</span>
+                  <span class="quiz-opt-text">Sí, conozco qué jugadas disfruta, su relación con amigos y el valor que le da al club.</span>
+                </div>
+              </label>
+              <label class="quiz-opt-label">
+                <input type="radio" name="q4" value="0" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">B</span>
+                  <span class="quiz-opt-text">No lo tengo tan claro; solemos poner el foco principal en que compita y mejore su nivel.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- PREGUNTA 5 -->
+          <div class="quiz-question-card">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">Pregunta 05</span>
+              <h3 class="quiz-q-title">¿Cómo describirías tu comportamiento en la tribuna en las últimas semanas?</h3>
+            </div>
+            <div class="quiz-options-grid">
+              <label class="quiz-opt-label">
+                <input type="radio" name="q5" value="1" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">A</span>
+                  <span class="quiz-opt-text">Aliento sin dar órdenes técnicas, respeto decisiones de árbitros y formadores.</span>
+                </div>
+              </label>
+              <label class="quiz-opt-label">
+                <input type="radio" name="q5" value="0" class="quiz-opt-radio" />
+                <div class="quiz-opt-box">
+                  <span class="quiz-opt-badge">B</span>
+                  <span class="quiz-opt-text">A veces me gana la adrenalina, doy indicaciones a los gritos o me quejo con el arbitraje.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 2.8rem;">
+            <button type="button" id="btn-calcular-quiz" class="btn-calc-quiz">
+              CALCULAR MI DEVOLUCIÓN FORMATIVA
+            </button>
+            <p id="quiz-alert" style="color: #c62828; font-size: 0.92rem; margin-top: 1rem; display: none; font-weight: 700; font-family: var(--sans);">
+              ⚠️ Por favor respondé las 5 preguntas antes de calcular tu diagnóstico.
+            </p>
+          </div>
+
+          <!-- RESULTADO DEL TEST -->
+          <div class="quiz-result-box" id="quiz-result">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;" id="quiz-icon">🛡️</div>
+            <h3 style="font-family: var(--display); font-size: clamp(2rem, 3.8vw, 2.6rem); margin: 0 0 0.8rem;" id="quiz-title">
+              Perfil: Acompañante Base Segura
+            </h3>
+            <p style="max-width: 680px; margin: 0 auto 1.5rem; font-size: 1.05rem; line-height: 1.6; opacity: 0.95;" id="quiz-desc">
+              Descripción personalizada...
+            </p>
+            <div style="background: rgba(255,255,255,0.12); border-radius: 12px; padding: 1.1rem 1.6rem; max-width: 620px; margin: 0 auto 2rem; font-size: 0.95rem;" id="quiz-capitulos">
+              <strong>Capítulo clave:</strong> Capítulo 4 &middot; La química del auto de vuelta.
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <a href="../assets/docs/El-Otro-Equipo-Guia-Familias-UGI.pdf" download class="btn-main" style="background: white; color: var(--navy); border: none;">
+                Descargar Guía en PDF
+              </a>
+              <button type="button" id="btn-reiniciar-quiz" class="btn-main" style="background: transparent; border: 1.5px solid white; color: white; cursor: pointer;">
+                Volver a responder
+              </button>
+            </div>
+          </div>
+
+        </form>
       </section>
 
       <!-- ========================================================
@@ -607,6 +913,73 @@
         </article>
       </div>
 
+      <!-- ========================================================
+           PREINSCRIPCIÓN A TALLERES Y ENCUENTROS 2026
+           ======================================================== -->
+      <section class="workshop-form-card" id="talleres">
+        <span class="ws-eyebrow">Acompañamiento Institucional &middot; Talleres 2026</span>
+        <h2>Espacios de Formación para Familias</h2>
+        <p class="bajada">
+          Sumate a los encuentros presenciales y virtuales coordinados por los psicólogos deportivos y pedagogos de la UGI. Completá tus datos para recibir convocatorias de tu disciplina deportiva.
+        </p>
+
+        <form id="workshop-form" onsubmit="handleWorkshopSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="ws-nombre">Nombre y Apellido del adulto:</label>
+              <input type="text" id="ws-nombre" class="form-input" placeholder="Ej: Marcela Gómez" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ws-deporte">Deporte de tu hijo/a:</label>
+              <select id="ws-deporte" class="form-select" required>
+                <option value="">Seleccionar disciplina...</option>
+                <option value="Hockey">Hockey</option>
+                <option value="Rugby">Rugby</option>
+                <option value="Vóley">Vóley</option>
+                <option value="Fútbol">Fútbol</option>
+                <option value="Básquet">Básquet</option>
+                <option value="Tenis">Tenis</option>
+                <option value="Iniciación Deportiva">Iniciación Deportiva</option>
+                <option value="Ciudad Integrado">Ciudad Integrado</option>
+                <option value="Otro">Otro deporte</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ws-categoria">Categoría o edad de tu hijo/a:</label>
+              <input type="text" id="ws-categoria" class="form-input" placeholder="Ej: Décima (8-9 años) o Sub-14" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ws-tema">Temática que más te interesa:</label>
+              <select id="ws-tema" class="form-select" required>
+                <option value="Manejo de la frustración y el error">Manejo de la frustración y el error</option>
+                <option value="La química del auto de regreso a casa">La química del auto de regreso a casa</option>
+                <option value="Alentar sin dirigir: rol en la tribuna">Alentar sin dirigir: rol en la tribuna</option>
+                <option value="Hábitos: bolso, descanso y celular">Hábitos: bolso, descanso y celular</option>
+                <option value="Todos los talleres">Todos los talleres del ciclo</option>
+              </select>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="ws-consulta">Inquietud, duda o consulta adicional (opcional):</label>
+              <textarea id="ws-consulta" class="form-textarea" rows="3" placeholder="Contanos si hay algún tema puntual que te gustaría conversar..."></textarea>
+            </div>
+          </div>
+
+          <div style="margin-top: 2.2rem;">
+            <button type="submit" class="btn-workshop-submit">
+              ENVIAR PREINSCRIPCIÓN / CONSULTA
+            </button>
+          </div>
+
+          <div id="ws-confirm" style="display: none; background: #e8f5e9; border: 1px solid #78aa85; color: #1b5e20; border-radius: 12px; padding: 1.2rem; margin-top: 1.5rem; font-weight: 600;">
+            ¡Muchas gracias! Abrimos tu gestor de correo con el mensaje listo para enviar al equipo UGI.
+          </div>
+        </form>
+      </section>
+
       <!-- BANNER DE CONTACTO -->
       <section class="contact-banner">
         <h2>¿Tenés inquietudes o propuestas?</h2>
@@ -641,6 +1014,94 @@
       menuButton.setAttribute("aria-expanded", String(!isOpen));
       navigation.classList.toggle("open", !isOpen);
     });
+
+    // ==========================================
+    // LÓGICA DE AUTODIAGNÓSTICO FAMILIAR
+    // ==========================================
+    const quizRadios = document.querySelectorAll(".quiz-opt-radio");
+    const btnCalcular = document.getElementById("btn-calcular-quiz");
+    const quizAlert = document.getElementById("quiz-alert");
+    const quizResult = document.getElementById("quiz-result");
+
+    quizRadios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        quizAlert.style.display = "none";
+      });
+    });
+
+    btnCalcular.addEventListener("click", () => {
+      const checkedRadios = document.querySelectorAll(".quiz-opt-radio:checked");
+      if (checkedRadios.length < 5) {
+        quizAlert.style.display = "block";
+        return;
+      }
+      quizAlert.style.display = "none";
+
+      let total = 0;
+      checkedRadios.forEach(r => {
+        total += parseInt(r.value, 10);
+      });
+
+      const icon = document.getElementById("quiz-icon");
+      const title = document.getElementById("quiz-title");
+      const desc = document.getElementById("quiz-desc");
+      const cap = document.getElementById("quiz-capitulos");
+
+      if (total >= 4) {
+        icon.textContent = "🛡️";
+        title.textContent = "Perfil: Acompañante Base Segura (" + total + "/5 puntos)";
+        desc.textContent = "¡Excelente! Tu mirada está centrada en la persona, el disfrute y el aprendizaje. Ofrecés contención emocional sin invadir el rol técnico del entrenador. Tu actitud crea el entorno ideal para que tu hijo/a crezca con confianza y pasión por el deporte.";
+        cap.innerHTML = "<strong>Capítulos clave de tu guía:</strong> Capítulo 4 &middot; <em>La química del auto de vuelta</em> y Capítulo 7 &middot; <em>El código de honor familiar</em>.";
+      } else if (total >= 2) {
+        icon.textContent = "⚖️";
+        title.textContent = "Perfil: Acompañamiento en Transición (" + total + "/5 puntos)";
+        desc.textContent = "Tenés claro el valor formativo del deporte, pero en momentos de alta competencia o nerviosismo puede ganarte la adrenalina y llevarte a corregir jugadas o focalizarte en el resultado numérico. Pequeños ajustes en la comunicación van a marcar una gran diferencia.";
+        cap.innerHTML = "<strong>Capítulos clave de tu guía:</strong> Capítulo 1 &middot; <em>Tu rol real (base segura)</em> y Capítulo 6 &middot; <em>Cuando la frustración explota</em>.";
+      } else {
+        icon.textContent = "⚡";
+        title.textContent = "Perfil: Enfoque en Rendimiento (" + total + "/5 puntos)";
+        desc.textContent = "Es natural querer que a tu hijo/a le vaya bien, pero cuando la exigencia y la crítica técnica se trasladan al hogar o la tribuna, el deportista siente presión excesiva y riesgo de desgaste. Esta guía te brinda pautas concretas para transformar esa exigencia en sostén positivo.";
+        cap.innerHTML = "<strong>Capítulos clave de tu guía:</strong> Capítulo 1 &middot; <em>Base segura</em>, Capítulo 2 &middot; <em>Modelo de las 4C</em> y Capítulo 3 &middot; <em>Semáforo emocional</em>.";
+      }
+
+      quizResult.style.display = "block";
+      quizResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    document.getElementById("btn-reiniciar-quiz").addEventListener("click", () => {
+      document.querySelectorAll(".quiz-opt-radio").forEach(r => {
+        r.checked = false;
+      });
+      quizResult.style.display = "none";
+      document.getElementById("autodiagnostico").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // ==========================================
+    // LÓGICA DE FORMULARIO DE TALLERES
+    // ==========================================
+    function handleWorkshopSubmit(event) {
+      event.preventDefault();
+      const nombre = document.getElementById("ws-nombre").value;
+      const deporte = document.getElementById("ws-deporte").value;
+      const categoria = document.getElementById("ws-categoria").value;
+      const tema = document.getElementById("ws-tema").value;
+      const consulta = document.getElementById("ws-consulta").value;
+
+      const subject = encodeURIComponent("Preinscripción Taller Familias UGI - " + nombre + " (" + deporte + ")");
+      const body = encodeURIComponent(
+        "Hola equipo UGI CCBA,\n\n" +
+        "Quisiera preinscribirme a los talleres y espacios de familias con los siguientes datos:\n\n" +
+        "- Adulto: " + nombre + "\n" +
+        "- Deporte: " + deporte + "\n" +
+        "- Categoría / Edad: " + categoria + "\n" +
+        "- Temática de interés: " + tema + "\n" +
+        (consulta ? "- Consulta adicional: " + consulta + "\n\n" : "\n") +
+        "Saludos cordiales."
+      );
+
+      document.getElementById("ws-confirm").style.display = "block";
+      window.location.href = "mailto:ugiccba@gmail.com?subject=" + subject + "&body=" + body;
+    }
   </script>
 </body>
 </html>

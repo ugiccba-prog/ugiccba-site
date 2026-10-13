@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Evita que Google indexe esta página privada -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Staff Entrenadores | UGI - CCBA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --azul-ccba: #1d3567;
+            --violeta-ugi: #3a1c54;
+            --celeste-pill: #7fa8d6;
+            --fondo-claro: #e5ecf4;
+            --verde-check: #38b030;
+            --blanco: #ffffff;
+            --gris-texto: #4a5d80;
+            --borde: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--fondo-claro);
+            color: var(--azul-ccba);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            max-width: 780px;
+            width: 100%;
+            background: var(--blanco);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 12px 32px rgba(29, 53, 103, 0.12);
+        }
+
+        /* Pantalla de bloqueo para que no entre cualquiera */
+        .login-gate {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-gate input {
+            padding: 12px 16px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--celeste-pill);
+            width: 100%;
+            max-width: 280px;
+            margin: 16px 0;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .btn-acceso {
+            background: var(--violeta-ugi);
+            color: var(--blanco);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* Encabezado y navegación */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            background-color: var(--celeste-pill);
+            color: var(--violeta-ugi);
+            font-weight: 800;
+            font-size: 0.78rem;
+            padding: 6px 14px;
+            border-radius: 30px;
+            text-transform: uppercase;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background: var(--fondo-claro);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--azul-ccba);
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--violeta-ugi);
+            color: var(--blanco);
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 900;
+            margin: 0 0 6px 0;
+            color: var(--violeta-ugi);
+        }
+
+        .subtitle {
+            font-size: 0.94rem;
+            color: var(--gris-texto);
+            margin-bottom: 20px;
+        }
+
+        /* Perfil del Profe */
+        .perfil-box {
+            background: #f4f7fb;
+            border: 1px solid #d0deef;
+            border-radius: 14px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: var(--violeta-ugi);
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #b8cae0;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--azul-ccba);
+        }
+
+        .section-label {
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Botonera de situaciones */
+        .grid-situaciones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-situacion {
+            background: var(--fondo-claro);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 14px 10px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: var(--azul-ccba);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-situacion.active, .btn-situacion:hover {
+            background: var(--azul-ccba);
+            color: var(--blanco);
+        }
+
+        /* Tarjeta de respuesta */
+        .respuesta-box {
+            background: #f8fafd;
+            border-left: 6px solid var(--verde-check);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 22px;
+        }
+
+        .respuesta-titulo {
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: var(--violeta-ugi);
+            margin: 0 0 12px 0;
+        }
+
+        .paso {
+            margin-bottom: 10px;
+            line-height: 1.45;
+            font-size: 0.94rem;
+        }
+
+        .frase-clave {
+            background: var(--fondo-claro);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--violeta-ugi);
+            margin-top: 10px;
+        }
+
+        /* Checklist y Registro */
+        .checklist-box {
+            border-top: 2px solid var(--fondo-claro);
+            padding-top: 18px;
+            margin-bottom: 20px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+
+        .check-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--verde-check);
+        }
+
+        .nota-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #b8cae0;
+            font-family: inherit;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-registrar {
+            width: 100%;
+            background: var(--verde-check);
+            color: var(--blanco);
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-registrar:hover { opacity: 0.92; }
+
+        .status-msg {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* Historial y Panel UGI */
+        .historial-section {
+            margin-top: 28px;
+            border-top: 2px solid var(--fondo-claro);
+            padding-top: 20px;
+        }
+
+        .log-card {
+            background: #f4f7fb;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 0.88rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .log-tag {
+            background: var(--azul-ccba);
+            color: var(--blanco);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .hidden { display: none !important; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--fondo-claro);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--violeta-ugi);
+        }
+
+        .stat-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- PANTALLA DE ACCESO EXCLUSIVO PROFES -->
+    <div id="pantalla-login" class="login-gate">
+        <span class="badge">UGI • C.C.B.A.</span>
+        <h1 style="margin-top:14px;">ACCESO EXCLUSIVO STAFF</h1>
+        <p class="subtitle">Ingresá la clave de entrenadores por única vez para desbloquear la herramienta en tu teléfono.</p>
+        <div>
+            <input type="password" id="input-clave-staff" placeholder="Clave de staff..." onkeydown="if(event.key==='Enter') verificarAccesoStaff()">
+        </div>
+        <button class="btn-acceso" onclick="verificarAccesoStaff()">Ingresar a la Herramienta</button>
+        <div id="error-login" class="status-msg" style="color:#c0392b;"></div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL (OCULTO HASTA PONER CLAVE) -->
+    <div id="contenido-app" class="hidden">
+        <div class="top-bar">
+            <span class="badge">UGI • Enseñar a Enseñar</span>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="cambiarVista('profe', this)">Modo Profe</button>
+                <button class="tab-btn" onclick="cambiarVista('admin', this)">Control Dirección</button>
+            </div>
+        </div>
+
+        <!-- VISTA PROFE -->
+        <div id="vista-profe">
+            <h1>ASISTENTE RÁPIDO DE CANCHA</h1>
+            <div class="subtitle">Elegí qué trabajar hoy en el entrenamiento y registrá tu sesión para llevar tu propio control.</div>
+
+            <div class="perfil-box">
+                <div class="field">
+                    <label>Nombre y Apellido del Profe</label>
+                    <input type="text" id="profe-nombre" placeholder="Ej: Martín Gómez" oninput="guardarPerfil()">
+                </div>
+                <div class="field">
+                    <label>Deporte / Categoría</label>
+                    <select id="profe-categoria" onchange="guardarPerfil()">
+                        <option value="">Seleccionar...</option>
+                        <option value="Hockey Sobre Césped - Formativas">Hockey Sobre Césped - Formativas</option>
+                        <option value="Hockey Sobre Césped - Competitivo">Hockey Sobre Césped - Competitivo</option>
+                        <option value="Hockey Sobre Patines">Hockey Sobre Patines</option>
+                        <option value="Fútbol / Otros Deportes">Fútbol / Otros Deportes</option>
+                        <option value="Colonia / Iniciación">Colonia / Iniciación</option>
+                    </select>
+                </div>
+            </div>
+
+            <span class="section-label">1. ¿Qué foco querés trabajar o destrabar hoy?</span>
+            <div class="grid-situaciones">
+                <button class="btn-situacion active" onclick="seleccionarGuia('Grupo Disperso', this)">⚡ Grupo Disperso</button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Frustración por Error', this)">😤 Frustración</button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Roce o Discusión', this)">🛑 Roce / Conflicto</button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Toma de Decisiones', this)">🧠 Foco Cognitivo</button>
+                <button class="btn-situacion" onclick="seleccionarGuia('Cierre y Feedback', this)">🟢 Cierre 2 Min</button>
+            </div>
+
+            <div id="panel-respuesta" class="respuesta-box"></div>
+
+            <div class="checklist-box">
+                <span class="section-label">2. Autoevaluación rápida de la sesión</span>
+                <label class="check-item"><input type="checkbox" id="chk-1"> Consigna clara en menos de 2 minutos</label>
+                <label class="check-item"><input type="checkbox" id="chk-2"> Apliqué variante de entrenamiento cognitivo</label>
+                <label class="check-item"><input type="checkbox" id="chk-3"> Reforcé conductas positivas (Semáforo / Tarjeta Verde)</label>
+                <input type="text" id="profe-nota" class="nota-input" placeholder="Observación breve de la práctica (opcional)...">
+            </div>
+
+            <button class="btn-registrar" onclick="registrarUso()">✔ Registrar Sesión en mi Bitácora</button>
+            <div id="status-msg" class="status-msg"></div>
+
+            <div class="historial-section">
+                <span class="section-label">📋 Mi Control Personal de Sesiones (en este teléfono)</span>
+                <div id="lista-historial-profe"></div>
+            </div>
+        </div>
+
+        <!-- VISTA DIRECTOR UGI (JUAN) -->
+        <div id="vista-admin" class="hidden">
+            <h1>AUDITORÍA DE USO - DIRECCIÓN UGI</h1>
+            <div class="subtitle">Control de qué profes usaron la herramienta y qué dinámicas trabajaron.</div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-total">0</div>
+                    <div class="stat-label">Sesiones Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-profes">0</div>
+                    <div class="stat-label">Profes Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-top-foco">-</div>
+                    <div class="stat-label">Foco #1</div>
+                </div>
+            </div>
+
+            <span class="section-label">Historial completo de uso del staff</span>
+            <div id="lista-historial-admin">Cargando registros...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // URL CONECTADA A TU GOOGLE SHEET
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxH7kZSoKxiHTReWUfhBCN9KOT8Vf7ElFXAiXsxvPwKohi76NciLJzL5diyEMS3oesWYA/exec";
+
+    // Claves de acceso
+    const CLAVE_STAFF = "profeugi";     // La que le pasás a los profes por WhatsApp
+    const CLAVE_DIRECTOR = "argon2026"; // Tu clave privada para ver el Panel de Control
+
+    let situacionActual = "Grupo Disperso";
+
+    const guias = {
+        "Grupo Disperso": {
+            titulo: "⚡ Cómo recuperar el foco atencional sin gritar",
+            queHacer: "Cortá la fila larga. Pasá a una tarea continua con estímulo visual o auditivo cambiante.",
+            ajuste: "Regla cognitiva: antes de pasar la bocha/pelota, el jugador tiene que cantar el color o número que muestra el profe.",
+            frase: "«Chicos, 30 segundos: cambio de regla. Ahora gana el equipo que más rápido lee la señal antes de jugar.»"
+        },
+        "Frustración por Error": {
+            titulo: "😤 Gestión de la frustración tras el error",
+            queHacer: "Validá la emoción rápido pero redirigí la atención a la siguiente acción inmediata (Semáforo en Amarillo: frenar, respirar, seguir).",
+            ajuste: "Puntuá la recuperación: en los próximos 5 minutos, recuperar o pedir pase en los 3 segundos posteriores a perderla vale doble.",
+            frase: "«El error ya pasó, es parte del juego. Lo único que miramos ahora es qué hacés en los 3 segundos siguientes.»"
+        },
+        "Roce o Discusión": {
+            titulo: "🛑 Intervención rápida ante roces entre compañeros",
+            queHacer: "Separá la conducta de la persona. Pausa de 20 segundos, pauta objetiva de convivencia y reinicio inmediato.",
+            ajuste: "Gol o punto válido solo si hubo pase previo o comunicación positiva entre los involucrados.",
+            frase: "«En este equipo nos exigimos cuidando al compañero. Hablamos para ordenar la jugada, no para reprochar.»"
+        },
+        "Toma de Decisiones": {
+            titulo: "🧠 Sumar carga cognitiva al ejercicio técnico",
+            queHacer: "No repitas el gesto técnico en automático: obligá al jugador a escanear la cancha antes de recibir.",
+            ajuste: "Asigná 2 opciones de resolución según dónde esté parado el defensor o qué mano levante el receptor.",
+            frase: "«Cabeza arriba antes de recibir: primero leo qué pasa alrededor y después ejecuto.»"
+        },
+        "Cierre y Feedback": {
+            titulo: "🟢 Cierre formativo en 2 minutos",
+            queHacer: "Hacé que los jugadores verbalicen qué aprendieron hoy antes de retirarse.",
+            ajuste: "Tres preguntas rápidas: 1) ¿Qué salió bien hoy? 2) ¿Qué nos costó? 3) ¿Quién merece mención por actitud de equipo?",
+            frase: "«Nos llevamos una cosa técnica para mejorar y una actitud de equipo para repetir el próximo entrenamiento.»"
+        }
+    };
+
+    function verificarAccesoStaff() {
+        const ingresada = document.getElementById('input-clave-staff').value.trim().toLowerCase();
+        if (ingresada === CLAVE_STAFF || ingresada === CLAVE_DIRECTOR) {
+            localStorage.setItem('ugi_acceso_autorizado', 'si');
+            mostrarApp();
+        } else {
+            document.getElementById('error-login').textContent = "❌ Clave incorrecta. Pedila a la coordinación UGI.";
+        }
+    }
+
+    function mostrarApp() {
+        document.getElementById('pantalla-login').classList.add('hidden');
+        document.getElementById('contenido-app').classList.remove('hidden');
+    }
+
+    function seleccionarGuia(clave, boton) {
+        situacionActual = clave;
+        document.querySelectorAll('.btn-situacion').forEach(b => b.classList.remove('active'));
+        boton.classList.add('active');
+
+        const data = guias[clave];
+        document.getElementById('panel-respuesta').innerHTML = `
+            <div class="respuesta-titulo">${data.titulo}</div>
+            <div class="paso"><strong>1. Acción inmediata del Profe:</strong> ${data.queHacer}</div>
+            <div class="paso"><strong>2. Variante Cognitiva / Conductual:</strong> ${data.ajuste}</div>
+            <div class="frase-clave">💬 Qué decir en cancha: ${data.frase}</div>
+        `;
+    }
+
+    function guardarPerfil() {
+        localStorage.setItem('ugi_profe_nombre', document.getElementById('profe-nombre').value);
+        localStorage.setItem('ugi_profe_categoria', document.getElementById('profe-categoria').value);
+    }
+
+    function cargarPerfil() {
+        document.getElementById('profe-nombre').value = localStorage.getItem('ugi_profe_nombre') || '';
+        document.getElementById('profe-categoria').value = localStorage.getItem('ugi_profe_categoria') || '';
+    }
+
+    async function registrarUso() {
+        const nombre = document.getElementById('profe-nombre').value.trim();
+        const categoria = document.getElementById('profe-categoria').value;
+        const msg = document.getElementById('status-msg');
+
+        if (!nombre || !categoria) {
+            msg.style.color = "#c0392b";
+            msg.textContent = "⚠️ Completá tu nombre y categoría arriba antes de registrar.";
+            return;
+        }
+
+        const checks = [
+            document.getElementById('chk-1').checked ? "Consigna <2m" : null,
+            document.getElementById('chk-2').checked ? "Variante Cognitiva" : null,
+            document.getElementById('chk-3').checked ? "Refuerzo Positivo" : null
+        ].filter(Boolean).join(", ") || "Sin tildar";
+
+        const registro = {
+            fecha: new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }),
+            profe: nombre,
+            categoria: categoria,
+            foco: situacionActual,
+            checklist: checks,
+            nota: document.getElementById('profe-nota').value.trim()
+        };
+
+        const historialLocal = JSON.parse(localStorage.getItem('ugi_historial_sesiones') || '[]');
+        historialLocal.unshift(registro);
+        localStorage.setItem('ugi_historial_sesiones', JSON.stringify(historialLocal));
+        renderHistorialProfe();
+
+        msg.style.color = "#38b030";
+        msg.textContent = "⏳ Guardando sesión...";
+
+        if (GOOGLE_SCRIPT_URL) {
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(registro)
+                });
+                msg.textContent = "✅ ¡Sesión registrada en tu bitácora y enviada a UGI!";
+            } catch (e) {
+                console.error(e);
+                msg.textContent = "✅ Guardado en tu teléfono (sin conexión a red).";
+            }
+        }
+
+        document.getElementById('chk-1').checked = false;
+        document.getElementById('chk-2').checked = false;
+        document.getElementById('chk-3').checked = false;
+        document.getElementById('profe-nota').value = '';
+    }
+
+    function renderHistorialProfe() {
+        const cont = document.getElementById('lista-historial-profe');
+        const historial = JSON.parse(localStorage.getItem('ugi_historial_sesiones') || '[]');
+
+        if (historial.length === 0) {
+            cont.innerHTML = `<p style="color:#6c7a96; font-size:0.9rem;">Todavía no registraste sesiones desde este teléfono.</p>`;
+            return;
+        }
+
+        cont.innerHTML = historial.slice(0, 10).map(item => `
+            <div class="log-card">
+                <div>
+                    <strong>${item.fecha}</strong> • ${item.categoria}<br>
+                    <span style="color:#4a5d80;">Logros: ${item.checklist} ${item.nota ? ' | 📝 ' + item.nota : ''}</span>
+                </div>
+                <span class="log-tag">${item.foco}</span>
+            </div>
+        `).join('');
+    }
+
+    async function cambiarVista(vista, btn) {
+        if (vista === 'admin') {
+            const pin = prompt("Ingresá tu clave de Dirección UGI:");
+            if (pin !== CLAVE_DIRECTOR) {
+                alert("Clave incorrecta");
+                return;
+            }
+            cargarPanelAdmin();
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.getElementById('vista-profe').classList.toggle('hidden', vista !== 'profe');
+        document.getElementById('vista-admin').classList.toggle('hidden', vista !== 'admin');
+    }
+
+    async function cargarPanelAdmin() {
+        let datos = JSON.parse(localStorage.getItem('ugi_historial_sesiones') || '[]');
+
+        if (GOOGLE_SCRIPT_URL) {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                const remotos = await res.json();
+                if (Array.isArray(remotos) && remotos.length > 0) datos = remotos;
+            } catch (e) {
+                console.log("Mostrando registros locales como respaldo.");
+            }
+        }
+
+        document.getElementById('stat-total').textContent = datos.length;
+        const profesUnicos = new Set(datos.map(d => (d.profe || "").toLowerCase()).filter(Boolean));
+        document.getElementById('stat-profes').textContent = profesUnicos.size;
+
+        const conteoFocos = {};
+        datos.forEach(d => {
+            if (d.foco) conteoFocos[d.foco] = (conteoFocos[d.foco] || 0) + 1;
+        });
+        const topFoco = Object.entries(conteoFocos).sort((a,b) => b[1] - a[1])[0];
+        document.getElementById('stat-top-foco').textContent = topFoco ? topFoco[0] : "-";
+
+        const contAdmin = document.getElementById('lista-historial-admin');
+        if (datos.length === 0) {
+            contAdmin.innerHTML = `<p>No hay registros todavía.</p>`;
+            return;
+        }
+
+        contAdmin.innerHTML = datos.map(item => `
+            <div class="log-card">
+                <div>
+                    <strong>${item.profe}</strong> (${item.categoria}) — <small>${item.fecha}</small><br>
+                    <span style="color:#4a5d80;">${item.checklist} ${item.nota ? ' | 📝 ' + item.nota : ''}</span>
+                </div>
+                <span class="log-tag">${item.foco}</span>
+            </div>
+        `).join('');
+    }
+
+    // Si el profe ya puso la clave una vez en su celular, entra directo
+    if (localStorage.getItem('ugi_acceso_autorizado') === 'si') {
+        mostrarApp();
+    }
+    cargarPerfil();
+    seleccionarGuia('Grupo Disperso', document.querySelector('.btn-situacion'));
+    renderHistorialProfe();
+</script>
+
+</body>
+</html>
