@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal de Familias y Socios | UGI CCBA</title>
+  <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
+  
+  <style>
+    /* VARIABLES Y BASE (Idéntico al sistema de diseño UGI) */
+    :root {
+      --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
+      --navy: #082b49; --navy-soft: #143d5b; --cream: #f5f1e8; --paper: #fffdf8;
+      --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
+      --radius: 1.5rem;
+      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", Avenir, sans-serif;
+    }
+    
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+
+    /* HEADER Y NAVEGACIÓN */
+    .site-header {
+      position: fixed; inset: 0 0 auto; z-index: 50; display: flex;
+      align-items: center; justify-content: space-between; min-height: 5.5rem;
+      padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); color: var(--navy);
+      transition: background 250ms ease, box-shadow 250ms ease, min-height 250ms ease;
+    }
+    .site-header.scrolled {
+      min-height: 4.5rem; background: rgba(255, 253, 248, 0.95);
+      box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(14px);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    .brand img { max-height: 55px; width: auto; }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .brand-copy strong { font-size: 1.05rem; letter-spacing: 0.18em; }
+    .brand-copy small { margin-top: 0.28rem; font-size: 0.62rem; letter-spacing: 0.04em; }
+    
+    .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
+    .main-nav a { position: relative; font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
+    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; transition: 0.3s; }
+    .nav-cta:hover { color: white; background: var(--navy); }
+
+    .menu-toggle { display: none; }
+    @media (max-width: 1150px) {
+      .menu-toggle { z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--navy); cursor: pointer; }
+      .menu-toggle span { display: block; width: 1.2rem; height: 1px; background: currentColor; }
+      .main-nav { position: fixed; inset: 0; flex-direction: column; justify-content: center; background: var(--navy); opacity: 0; visibility: hidden; transition: 0.3s; }
+      .main-nav.open { opacity: 1; visibility: visible; }
+      .main-nav a { color: white; font-size: 2rem; font-family: var(--display); padding: 1rem; }
+    }
+
+    /* HERO PORTAL */
+    .hero-portal { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
+    .hero-portal .eyebrow { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; font-weight: bold; color: var(--navy); margin-bottom: 0.75rem; }
+    .hero-portal h1 { font-family: var(--display); font-size: clamp(2.8rem, 6.5vw, 5.5rem); margin: 0; line-height: 1.05; color: var(--navy); }
+    .hero-portal .bajada { max-width: 720px; margin: 1.4rem auto 0; font-size: 1.15rem; color: var(--navy-soft); line-height: 1.5; }
+    
+    .container { max-width: 1080px; margin: 0 auto; padding: 4rem 20px 6rem; }
+
+    /* =========================================
+       TARJETA DESTACADA: GUÍA "EL OTRO EQUIPO"
+       ========================================= */
+    .guide-hero-card {
+      background: white; border-radius: var(--radius); border: 2px solid var(--sky-dark);
+      padding: clamp(2rem, 5vw, 3.8rem); margin-bottom: 4.5rem;
+      box-shadow: 0 16px 40px rgba(8,43,73,0.1); position: relative; overflow: hidden;
+    }
+    .guide-hero-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+      background: linear-gradient(90deg, var(--sky-dark), var(--sky), var(--navy));
+    }
+    .guide-header-logos {
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+      margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+    .guide-logos-group { display: flex; align-items: center; gap: 1.2rem; }
+    .guide-logos-group img { height: 58px; width: auto; object-fit: contain; }
+    .guide-badge-official {
+      background: rgba(8, 43, 73, 0.08); color: var(--navy); font-size: 0.75rem;
+      font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--line);
+    }
+
+    .guide-grid { display: grid; grid-template-columns: 1.25fr 0.95fr; gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+    .guide-content .kicker { color: var(--sky-dark); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 0.5rem; }
+    .guide-content h2 { font-family: var(--display); font-size: clamp(2.4rem, 4.5vw, 3.8rem); margin: 0 0 0.6rem; line-height: 1.05; color: var(--navy); }
+    .guide-content .subtitulo { font-size: 1.15rem; font-weight: 600; color: var(--navy-soft); margin: 0 0 1.2rem; line-height: 1.4; }
+    .guide-content p { color: var(--ink); margin: 0 0 1.4rem; font-size: 1rem; }
+
+    .guide-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.8rem; }
+    .guide-chip {
+      background: var(--cream); color: var(--navy); font-size: 0.82rem; font-weight: 700;
+      padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid var(--line);
+    }
+
+    .guide-actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .btn-download-pdf {
+      background: var(--navy); color: white; padding: 1rem 1.8rem; border-radius: 999px;
+      text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.03em;
+      display: inline-flex; align-items: center; gap: 0.6rem; transition: 0.3s;
+      box-shadow: 0 6px 18px rgba(8,43,73,0.2);
+    }
+    .btn-download-pdf:hover { background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(8,43,73,0.3); }
+    .btn-download-docx {
+      background: white; color: var(--navy); border: 1px solid var(--navy); padding: 0.95rem 1.4rem;
+      border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.88rem;
+      display: inline-flex; align-items: center; gap: 0.5rem; transition: 0.3s;
+    }
+    .btn-download-docx:hover { background: var(--cream); }
+
+    .guide-preview-box {
+      background: linear-gradient(145deg, #f7fafd, #eef5fa); border: 1px solid var(--line);
+      border-radius: 1.2rem; padding: 2rem; text-align: center; box-shadow: 0 8px 24px rgba(8,43,73,0.06);
+    }
+    .guide-cover-illustration {
+      max-width: 100%; height: auto; max-height: 170px; margin: 0 auto 1.5rem; display: block;
+    }
+    .guide-preview-quote {
+      font-style: italic; color: var(--navy); font-size: 0.95rem; border-left: 3px solid var(--sky-dark);
+      padding-left: 1rem; text-align: left; margin: 1rem 0; line-height: 1.5;
+    }
+
+    /* MÓDULOS DEL PORTAL */
+    .app-card {
+      background: white; border-radius: var(--radius); border: 1px solid var(--line);
+      display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; margin-bottom: 3.5rem;
+      box-shadow: 0 10px 30px rgba(8,43,73,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .app-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(8,43,73,0.09); }
+    .app-info { padding: clamp(2rem, 5vw, 3.5rem); display: flex; flex-direction: column; justify-content: center; }
+    .app-info .modulo-kicker { color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 0.5rem; }
+    .app-info h2 { font-family: var(--display); font-size: clamp(2rem, 3.2vw, 3rem); margin: 0.2rem 0 1rem; line-height: 1.1; color: var(--navy); }
+    .app-info p { margin: 0 0 1.2rem; color: var(--ink); font-size: 1rem; }
+    
+    .info-box { background: #f6f9fb; border-radius: 1rem; padding: 1.1rem 1.3rem; font-size: 0.9rem; margin-top: 0.5rem; border: 1px solid rgba(8,43,73,0.06); }
+    .info-box strong { color: var(--navy); display: block; margin-bottom: 0.4rem; }
+    .info-box ul { margin: 0; padding-left: 1.2rem; }
+    .info-box li { margin-bottom: 0.4rem; }
+    .info-box li:last-child { margin-bottom: 0; }
+
+    .app-visual { background: #f0f4f8; display: flex; align-items: center; justify-content: center; padding: 2.5rem; position: relative; overflow: hidden; }
+    
+    /* BOTONES */
+    .btn-group { display: flex; gap: 1rem; margin-top: 1.8rem; flex-wrap: wrap; }
+    .btn-main { 
+      padding: 0.95rem 1.8rem; border-radius: 999px; text-decoration: none; 
+      font-weight: 700; text-align: center; transition: 0.3s; font-size: 0.85rem;
+      letter-spacing: 0.04em; display: inline-block;
+    }
+    .btn-navy { background: var(--navy); color: white; border: 1px solid var(--navy); }
+    .btn-navy:hover { background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 8px 18px rgba(8,43,73,0.15); }
+
+    /* SECCIÓN CAPÍTULOS DE LA GUÍA (DESGLOSE) */
+    .capitulos-section {
+      background: white; border-radius: var(--radius); border: 1px solid var(--line);
+      padding: clamp(2rem, 5vw, 3.5rem); margin: 4.5rem 0;
+      box-shadow: 0 8px 25px rgba(8,43,73,0.05);
+    }
+    .capitulos-section h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); color: var(--navy); margin: 0 0 0.5rem; text-align: center; }
+    .capitulos-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 2.5rem; }
+    
+    .capitulos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.3rem; }
+    .capitulo-card {
+      background: #faf8f5; border: 1px solid var(--line); border-radius: 1rem;
+      padding: 1.4rem; display: flex; gap: 1rem; transition: 0.2s;
+    }
+    .capitulo-card:hover { background: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(8,43,73,0.07); }
+    .capitulo-num {
+      width: 2.2rem; height: 2.2rem; min-width: 2.2rem; border-radius: 50%;
+      background: var(--navy); color: white; font-size: 0.85rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .capitulo-card h3 { margin: 0 0 0.35rem; font-size: 1rem; color: var(--navy); }
+    .capitulo-card p { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+
+    /* SECCIÓN PLANTILLAS IMPRIMIBLES */
+    .plantillas-section { margin-top: 5rem; }
+    .plantillas-section h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.4rem; color: var(--navy); text-align: center; }
+    .plantillas-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 3rem; font-size: 1.05rem; }
+    
+    .plantillas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .plantilla-card {
+      background: white; border: 1px solid var(--line); border-radius: 1.2rem;
+      padding: 1.6rem; box-shadow: 0 4px 14px rgba(8,43,73,0.04);
+      display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+    }
+    .plantilla-top { display: flex; align-items: flex-start; gap: 1rem; }
+    .plantilla-icon { font-size: 1.8rem; line-height: 1; }
+    .plantilla-card h3 { margin: 0 0 0.2rem; font-size: 1.05rem; color: var(--navy); }
+    .plantilla-card .cap-tag { font-size: 0.72rem; color: var(--sky-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .plantilla-card p { margin: 0.4rem 0 0; font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
+
+    /* BANNER CONTACTO */
+    .contact-banner {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+      color: white; border-radius: var(--radius); padding: 3.5rem clamp(1.5rem, 5vw, 3.5rem);
+      text-align: center; margin-top: 5rem;
+    }
+    .contact-banner h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); margin: 0 0 1rem; }
+    .contact-banner p { max-width: 600px; margin: 0 auto 2rem; opacity: 0.9; font-size: 1.05rem; }
+    .btn-white { background: white; color: var(--navy); border: none; }
+    .btn-white:hover { background: var(--sky-light); transform: translateY(-2px); }
+
+    /* FOOTER */
+    .site-footer {
+      background: var(--navy); color: var(--paper); padding: 4rem 7vw; text-align: center;
+    }
+    .site-footer img { max-height: 50px; margin-bottom: 1.5rem; }
+    .site-footer p { font-size: 0.8rem; opacity: 0.6; margin: 0; }
+
+    @media (max-width: 900px) {
+      .guide-grid { grid-template-columns: 1fr; }
+      .app-card { grid-template-columns: 1fr; }
+      .app-visual { order: -1; min-height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html#inicio">
+      <img src="../assets/images/logo-header.png" alt="Logo UGI">
+      <span class="brand-copy">
+        <strong>UGI</strong>
+        <small>Club Ciudad de Buenos Aires</small>
+      </span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú">
+      <span></span><span></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
+      <a href="../index.html#inicio">Inicio</a>
+      <a href="../index.html#proposito">Qué hacemos</a>
+      <a href="../index.html#programas">Programas</a>
+      <a href="../index.html#capacitaciones">Capacitaciones</a>
+      <a href="#guia-descarga">Guía Familias</a>
+      <a href="../index.html#material">Material</a>
+      <a class="nav-cta" href="mailto:ugiccba@gmail.com">Contacto</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero-portal">
+      <p class="eyebrow">Comunidad &middot; Club Ciudad de Buenos Aires</p>
+      <h1>Portal de Familias y Socios</h1>
+      <p class="bajada">
+        "El acompañamiento que no se ve también se entrena." Recursos, guías formativas y herramientas prácticas para hacer equipo entre el club y las familias.
+      </p>
+    </section>
+
+    <div class="container">
+
+      <!-- ========================================================
+           DOCUMENTO DESTACADO: EL OTRO EQUIPO (DESCARGA OFICIAL)
+           ======================================================== -->
+      <article class="guide-hero-card" id="guia-descarga">
+        
+        <div class="guide-header-logos">
+          <div class="guide-logos-group">
+            <img src="../assets/images/guia/escudo-ccba.png" alt="Escudo CCBA" title="Club Ciudad de Buenos Aires" />
+            <img src="../assets/images/guia/logo-ugi.png" alt="Logo UGI" title="Unidad de Gestión Integral" />
+          </div>
+          <span class="guide-badge-official">Guía Oficial &middot; UGI CCBA</span>
+        </div>
+
+        <div class="guide-grid">
+          
+          <div class="guide-content">
+            <p class="kicker">Material de Formación y Descarga</p>
+            <h2>EL OTRO EQUIPO</h2>
+            <p class="subtitulo">
+              Guía práctica para padres de deportistas en formación:<br>
+              <em>Cómo acompañar (sin presionar) al deportista que tu hijo o hija está construyendo.</em>
+            </p>
+            <p>
+              Nadie te entrega un manual cuando tu hijo/a empieza un deporte: vas aprendiendo qué decir después de una derrota, cómo calmar la frustración y cómo gestionar la presión en la tribuna. Esta guía reúne sistemas de regulación emocional, construcción de hábitos y comunicación adaptados a casa, el auto y la tribuna.
+            </p>
+
+            <div class="guide-chips">
+              <span class="guide-chip">📘 10 Capítulos</span>
+              <span class="guide-chip">⚡ +25 Ejercicios Prácticos</span>
+              <span class="guide-chip">📋 10 Plantillas Imprimibles</span>
+              <span class="guide-chip">⏱️ Plan de Acción 30 Días</span>
+            </div>
+
+            <div class="guide-actions">
+              <a href="../assets/docs/El-Otro-Equipo-Guia-Familias-UGI.pdf" download="El-Otro-Equipo-Guia-Familias-UGI.pdf" class="btn-download-pdf">
+                <span>📥 Descargar Guía Oficial en PDF</span>
+                <small style="opacity: 0.8; font-size: 0.75rem;">(4.7 MB)</small>
+              </a>
+              <a href="#capitulos-detalle" style="color: var(--navy); font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.5rem 0.8rem;">
+                Ver los 10 capítulos &darr;
+              </a>
+            </div>
+          </div>
+
+          <div class="guide-preview-box">
+            <img src="../assets/images/guia/banner-siluetas.png" alt="El Otro Equipo - Familias y Deportistas" class="guide-cover-illustration" />
+            <div class="guide-preview-quote">
+              "El deporte de tu hijo o hija no se juega solo en la cancha. Se juega también en cómo lo recibís cuando pierde, en lo que decís en el auto de vuelta y en lo que ve que hacés vos cuando las cosas no salen como esperabas."
+            </div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 1rem;">
+              Incluye autodiagnóstico inicial y paquete de plantillas para imprimir.
+            </div>
+          </div>
+
+        </div>
+
+      </article>
+
+      <!-- ========================================================
+           DESGLOSE DE LOS 10 CAPÍTULOS DE LA GUÍA
+           ======================================================== -->
+      <section class="capitulos-section" id="capitulos-detalle">
+        <h2>Contenido de la Guía: 10 Capítulos</h2>
+        <p class="bajada">Diseñada para leer a tu ritmo, capítulo por capítulo, con un ejercicio práctico para aplicar cada semana.</p>
+
+        <div class="capitulos-grid">
+          
+          <div class="capitulo-card">
+            <div class="capitulo-num">01</div>
+            <div>
+              <h3>Tu rol real (y no el de entrenador)</h3>
+              <p>La base segura: sostener a la persona y no analizar la jugada. El currículo oculto del deporte.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">02</div>
+            <div>
+              <h3>Mirar más allá del resultado: Las 4C</h3>
+              <p>Métricas formativas: Competencia, Confianza, Conexión y Carácter. Tu propio marcador semanal.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">03</div>
+            <div>
+              <h3>El semáforo emocional en casa</h3>
+              <p>Verde, Amarillo y Rojo. Protocolo de 3 pasos: Nombrar, Respirar y Anclar.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">04</div>
+            <div>
+              <h3>La química del auto de vuelta</h3>
+              <p>La regla de las 2 preguntas permitidas y las 5 frases a evitar apenas termina el partido.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">05</div>
+            <div>
+              <h3>Construir hábitos sin premios ni castigos</h3>
+              <p>Economía de fichas familiar: hábitos sostenibles sin sobornos materiales.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">06</div>
+            <div>
+              <h3>Cuando la frustración explota</h3>
+              <p>Guiones para el momento difícil: Validar la emoción &rarr; Acordar límites &rarr; Reiniciar.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">07</div>
+            <div>
+              <h3>El código de honor familiar</h3>
+              <p>Acuerdo escrito de convivencia en tribuna, hogar y compromisos de puntualidad.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">08</div>
+            <div>
+              <h3>Hablar con el entrenador sin conflicto</h3>
+              <p>La regla de las 24 horas y cómo preparar una reunión constructiva.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">09</div>
+            <div>
+              <h3>Cuidar las ganas: motivación deportiva</h3>
+              <p>Prevención del abandono temprano y señales de alerta en el entusiasmo.</p>
+            </div>
+          </div>
+
+          <div class="capitulo-card">
+            <div class="capitulo-num">10</div>
+            <div>
+              <h3>Plan de acción de 30 días</h3>
+              <p>Cronograma paso a paso distribuido en 4 semanas para transformar el acompañamiento familiar.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 2.5rem;">
+          <a href="../assets/docs/El-Otro-Equipo-Guia-Familias-UGI.pdf" download class="btn-download-pdf">
+            Descargar la Guía Completa en PDF
+          </a>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           PAQUETE DE 10 PLANTILLAS IMPRIMIBLES INCLUIDAS
+           ======================================================== -->
+      <section class="plantillas-section">
+        <h2>Paquete de Recursos Imprimibles</h2>
+        <p class="bajada">Diez herramientas listas para usar incluidas al final del PDF. Podés imprimirlas y tenerlas a mano en casa, en la heladera o en el auto.</p>
+
+        <div class="plantillas-grid">
+          
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">💬</span>
+              <div>
+                <span class="cap-tag">Capítulo 1</span>
+                <h3>Frases prohibidas / Frases que sí</h3>
+              </div>
+            </div>
+            <p>Ficha de bolsillo para reemplazar frases centradas en el resultado por preguntas centradas en la persona.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">🎯</span>
+              <div>
+                <span class="cap-tag">Capítulo 2</span>
+                <h3>Mi propio marcador (Las 4C)</h3>
+              </div>
+            </div>
+            <p>Tabla semanal de observación para registrar progresos en Competencia, Confianza, Conexión y Carácter.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">🚦</span>
+              <div>
+                <span class="cap-tag">Capítulo 3</span>
+                <h3>Semáforo emocional</h3>
+              </div>
+            </div>
+            <p>Plantilla para definir en familia las señales de alerta y la frase ancla acordada para volver a la calma.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">🚗</span>
+              <div>
+                <span class="cap-tag">Capítulo 4</span>
+                <h3>Guion del auto de vuelta</h3>
+              </div>
+            </div>
+            <p>Tarjeta para plastificar y dejar en el auto con las preguntas clave para el regreso a casa.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">🪙</span>
+              <div>
+                <span class="cap-tag">Capítulo 5</span>
+                <h3>Tablero de economía de fichas</h3>
+              </div>
+            </div>
+            <p>Organizador para armar el bolso solo, cuidar el equipo y canjear por actividades familiares no materiales.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">🔄</span>
+              <div>
+                <span class="cap-tag">Capítulo 6</span>
+                <h3>Tarjeta Validar &ndash; Acordar &ndash; Reiniciar</h3>
+              </div>
+            </div>
+            <p>Guion para el bolsillo ante picos de frustración, llanto o enojo en entrenamientos o competencias.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">📜</span>
+              <div>
+                <span class="cap-tag">Capítulo 7</span>
+                <h3>Código de honor familiar</h3>
+              </div>
+            </div>
+            <p>Documento de compromiso conjunto para firmar entre todos y exhibir en un lugar visible de casa.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">✉️</span>
+              <div>
+                <span class="cap-tag">Capítulo 8</span>
+                <h3>Mensaje para pedir reunión con el DT</h3>
+              </div>
+            </div>
+            <p>Estructura paso a paso para solicitar una charla constructiva respetando la regla de las 24 horas.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">📋</span>
+              <div>
+                <span class="cap-tag">Capítulo 9</span>
+                <h3>Checklist mensual de motivación</h3>
+              </div>
+            </div>
+            <p>5 preguntas simples para monitorear el entusiasmo de tu hijo/a y detectar señales tempranas de desgaste.</p>
+          </div>
+
+          <div class="plantilla-card">
+            <div class="plantilla-top">
+              <span class="plantilla-icon">📅</span>
+              <div>
+                <span class="cap-tag">Capítulo 10</span>
+                <h3>Calendario de 30 días</h3>
+              </div>
+            </div>
+            <p>Planificador de 4 semanas para incorporar una herramienta por vez sin agobios ni exigencias irreales.</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           MÓDULOS DE PROGRAMAS COMPLEMENTARIOS
+           ======================================================== -->
+      <div style="margin-top: 5rem;">
+        <h2 style="font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); color: var(--navy); text-align: center; margin-bottom: 0.5rem;">Otros Espacios y Recursos</h2>
+        <p style="text-align: center; color: var(--muted); max-width: 600px; margin: 0 auto 3rem;">Programas y herramientas transversales de la UGI para deportistas y familias.</p>
+
+        <!-- MÓDULO: EL DEPORTE DE MIS HIJOS (SUBPÁGINA) -->
+        <article class="app-card">
+          <div class="app-info">
+            <p class="modulo-kicker">Guía Web Rápida</p>
+            <h2>El deporte de mis hijos</h2>
+            <p>
+              Lectura digital de las pautas institucionales de tribuna del Club Ciudad de Buenos Aires: qué sí y qué no en cada partido.
+            </p>
+            <div class="btn-group">
+              <a href="deportehijos.html" class="btn-main btn-navy">LEER GUÍA ONLINE</a>
+            </div>
+          </div>
+          <div class="app-visual" style="background: linear-gradient(135deg, #e9f4fa 0%, #d4eaf5 100%);">
+            <div style="text-align: center;">
+              <svg viewBox="0 0 300 220" style="width: 200px; max-width: 100%; stroke: var(--navy); fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3.5;">
+                <circle cx="76" cy="74" r="28" fill="var(--sky-light)" />
+                <circle cx="205" cy="58" r="35" fill="var(--sky)" />
+                <path d="M28 184c3-54 20-80 49-80s47 26 49 80M138 184c4-65 26-96 68-96s64 31 68 96" />
+                <path d="m111 98 30 25 31-34" stroke="var(--sky-dark)" stroke-width="4" />
+              </svg>
+              <p style="margin: 0.8rem 0 0; font-size: 0.8rem; font-weight: 700; color: var(--navy); text-transform: uppercase;">Alentar sin dirigir</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- MÓDULO: SEMÁFORO CONDUCTUAL -->
+        <article class="app-card">
+          <div class="app-info">
+            <p class="modulo-kicker">Marco Conductual</p>
+            <h2>Semáforo de la UGI</h2>
+            <p>
+              Marco de referencia común para deportistas, familias y formadores. Convivencia deportiva y criterios compartidos en entrenamientos y torneos.
+            </p>
+            <div class="btn-group">
+              <a href="semaforo-ugi.html" class="btn-main btn-navy">CONOCER EL SEMÁFORO</a>
+            </div>
+          </div>
+          <div class="app-visual" style="background: #082b49;">
+            <div style="display: flex; flex-direction: column; gap: 14px; align-items: center; background: rgba(255,255,255,0.06); padding: 20px 24px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15);">
+              <div style="width: 42px; height: 42px; border-radius: 50%; background: #e17c6b; box-shadow: 0 0 16px rgba(225,124,107,0.6);"></div>
+              <div style="width: 42px; height: 42px; border-radius: 50%; background: #e8c46e; box-shadow: 0 0 16px rgba(232,196,110,0.6);"></div>
+              <div style="width: 42px; height: 42px; border-radius: 50%; background: #78aa85; box-shadow: 0 0 16px rgba(120,170,133,0.6);"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- MÓDULO: CIUDAD INTEGRADO -->
+        <article class="app-card">
+          <div class="app-info">
+            <p class="modulo-kicker">Inclusión y Comunidad</p>
+            <h2>Ciudad Integrado</h2>
+            <p>
+              Espacio para chicos y chicas con discapacidad, fomentando el sentido de pertenencia y el desarrollo a través del deporte.
+            </p>
+            <div class="btn-group">
+              <a href="ciudad-integrado.html" class="btn-main btn-navy">VER DETALLES</a>
+            </div>
+          </div>
+          <div class="app-visual" style="background: linear-gradient(135deg, #082b49 0%, #143d5b 100%);">
+            <div style="text-align: center; color: white;">
+              <div style="font-size: 2.8rem; margin-bottom: 0.3rem;">🤝</div>
+              <div style="font-family: var(--display); font-size: 1.6rem;">Inclusión &amp; Pertenencia</div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- BANNER DE CONTACTO -->
+      <section class="contact-banner">
+        <h2>¿Tenés inquietudes o propuestas?</h2>
+        <p>
+          El equipo de la UGI está a disposición de todas las familias y socios del Club Ciudad de Buenos Aires para acompañar procesos y responder consultas.
+        </p>
+        <a href="mailto:ugiccba@gmail.com?subject=Consulta%20Familias%20y%20Socios" class="btn-main btn-white">CONTACTAR A LA UGI</a>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <img src="../assets/images/logo-header.png" alt="UGI Club Ciudad de Buenos Aires">
+    <p>&copy; Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    // Header scrolled effect
+    const header = document.querySelector("[data-header]");
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 24);
+    });
+
+    // Mobile menu toggle
+    const menuButton = document.querySelector(".menu-toggle");
+    const navigation = document.querySelector(".main-nav");
+    menuButton.addEventListener("click", () => {
+      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+      navigation.classList.toggle("open", !isOpen);
+    });
+  </script>
+</body>
+</html>
