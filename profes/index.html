@@ -22,6 +22,11 @@
 
         * { box-sizing: border-box; }
 
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--fondo-claro);
@@ -39,6 +44,9 @@
             border-radius: 20px;
             padding: 28px;
             box-shadow: 0 12px 32px rgba(29, 53, 103, 0.12);
+            overflow-wrap: break-word;
+            word-break: break-word;
+            box-sizing: border-box;
         }
 
         /* Pantalla de bloqueo para que no entre cualquiera */
@@ -112,16 +120,22 @@
         }
 
         h1 {
-            font-size: 1.7rem;
+            font-size: clamp(1.35rem, 5.5vw, 1.7rem);
             font-weight: 900;
             margin: 0 0 6px 0;
             color: var(--violeta-ugi);
+            line-height: 1.2;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .subtitle {
             font-size: 0.94rem;
             color: var(--gris-texto);
             margin-bottom: 20px;
+            line-height: 1.45;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         /* Perfil del profe */
@@ -134,6 +148,7 @@
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 12px;
             margin-bottom: 22px;
+            box-sizing: border-box;
         }
 
         .field label {
@@ -153,6 +168,7 @@
             font-size: 0.92rem;
             font-weight: 600;
             color: var(--azul-ccba);
+            box-sizing: border-box;
         }
 
         .section-label {
@@ -161,9 +177,12 @@
             margin-bottom: 10px;
             display: block;
             color: var(--violeta-ugi);
+            line-height: 1.35;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
-        /* Botonera de situaciones perfectamente alineada en 5 columnas */
+        /* Botonera de situaciones */
         .grid-situaciones {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -175,8 +194,8 @@
             background: var(--fondo-claro);
             border: 2px solid transparent;
             border-radius: 12px;
-            padding: 12px 6px;
-            min-height: 68px;
+            padding: 10px 6px;
+            min-height: 64px;
             font-family: inherit;
             font-weight: 800;
             font-size: 0.82rem;
@@ -190,6 +209,11 @@
             gap: 5px;
             text-align: center;
             line-height: 1.15;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .btn-situacion .icono {
@@ -202,19 +226,6 @@
             color: var(--blanco);
         }
 
-        /* Ajuste en celulares para que nunca quede un botón suelto desalineado */
-        @media (max-width: 620px) {
-            .grid-situaciones {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .btn-situacion:last-child {
-                grid-column: span 2;
-                flex-direction: row;
-                min-height: 48px;
-                gap: 8px;
-            }
-        }
-
         /* Tarjeta de respuesta */
         .respuesta-box {
             background: #f8fafd;
@@ -222,6 +233,9 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 22px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            box-sizing: border-box;
         }
 
         .respuesta-header {
@@ -234,10 +248,13 @@
         }
 
         .respuesta-titulo {
-            font-size: 1.12rem;
+            font-size: clamp(1rem, 4vw, 1.12rem);
             font-weight: 900;
             color: var(--violeta-ugi);
             margin: 0;
+            line-height: 1.35;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .btn-rotar {
@@ -262,6 +279,8 @@
             margin-bottom: 10px;
             line-height: 1.45;
             font-size: 0.94rem;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .frase-clave {
@@ -272,6 +291,10 @@
             font-weight: 600;
             color: var(--violeta-ugi);
             margin-top: 10px;
+            line-height: 1.45;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            box-sizing: border-box;
         }
 
         /* Checklist y registro */
@@ -279,21 +302,28 @@
             border-top: 2px solid var(--fondo-claro);
             padding-top: 18px;
             margin-bottom: 20px;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .check-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
             margin-bottom: 10px;
             font-weight: 600;
             font-size: 0.92rem;
             cursor: pointer;
+            line-height: 1.35;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .check-item input {
             width: 18px;
             height: 18px;
+            min-width: 18px;
+            margin-top: 2px;
             accent-color: var(--verde-check);
         }
 
@@ -305,6 +335,7 @@
             font-family: inherit;
             margin-top: 8px;
             font-size: 0.9rem;
+            box-sizing: border-box;
         }
 
         .btn-registrar {
@@ -316,9 +347,12 @@
             border-radius: 12px;
             font-family: inherit;
             font-size: 1rem;
-            font-weight: 800;
+            font-weight: 900;
+            text-transform: uppercase;
             cursor: pointer;
             transition: opacity 0.2s;
+            box-sizing: border-box;
+            letter-spacing: 0.02em;
         }
 
         .btn-registrar:hover { opacity: 0.92; }
@@ -329,6 +363,8 @@
             font-size: 0.9rem;
             margin-top: 10px;
             min-height: 20px;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         /* Historial y panel UGI */
@@ -341,30 +377,46 @@
         .log-card {
             background: #f4f7fb;
             border-radius: 10px;
-            padding: 12px 16px;
+            padding: 12px 14px;
             margin-bottom: 10px;
             font-size: 0.88rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .log-card > div {
+            width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .log-tag {
             background: var(--azul-ccba);
             color: var(--blanco);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.74rem;
             font-weight: 700;
+            display: inline-block;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            line-height: 1.3;
+            box-sizing: border-box;
         }
 
         .hidden { display: none !important; }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 12px;
             margin-bottom: 20px;
         }
@@ -374,6 +426,8 @@
             padding: 16px;
             border-radius: 12px;
             text-align: center;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .stat-num {
@@ -385,6 +439,102 @@
         .stat-label {
             font-size: 0.8rem;
             font-weight: 700;
+        }
+
+        /* =========================================
+           ADAPTACIONES EXCLUSIVAS PARA CELULARES
+           ========================================= */
+        @media (max-width: 620px) {
+            body {
+                padding: 8px;
+            }
+
+            .app-container {
+                padding: 18px 14px;
+                border-radius: 16px;
+            }
+
+            .login-gate {
+                padding: 24px 10px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .badge {
+                align-self: flex-start;
+            }
+
+            .tabs {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                width: 100%;
+            }
+
+            .tab-btn {
+                padding: 10px 8px;
+                text-align: center;
+                font-size: 0.8rem;
+            }
+
+            .perfil-box {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+
+            .grid-situaciones {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .btn-situacion {
+                min-height: 56px;
+                font-size: 0.76rem;
+                padding: 8px 4px;
+            }
+
+            .btn-situacion:last-child {
+                grid-column: span 2;
+                flex-direction: row;
+                min-height: 42px;
+                gap: 8px;
+            }
+
+            .respuesta-box {
+                padding: 14px 12px;
+            }
+
+            .respuesta-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .btn-rotar {
+                width: 100%;
+                padding: 10px;
+                text-align: center;
+                white-space: normal;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 580px) {
+            .log-card {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .log-card > div {
+                width: auto;
+                flex: 1;
+            }
         }
     </style>
 </head>

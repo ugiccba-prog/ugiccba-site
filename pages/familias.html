@@ -27,8 +27,8 @@
     }
     
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; width: 100%; }
 
     /* HEADER Y NAVEGACIÓN */
     .site-header {
@@ -172,10 +172,11 @@
     .capitulos-section h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); color: var(--navy); margin: 0 0 0.5rem; text-align: center; }
     .capitulos-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 2.5rem; }
     
-    .capitulos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.3rem; }
+    .capitulos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.3rem; }
     .capitulo-card {
       background: #faf8f5; border: 1px solid var(--line); border-radius: 1rem;
       padding: 1.4rem; display: flex; gap: 1rem; transition: 0.2s;
+      box-sizing: border-box; max-width: 100%;
     }
     .capitulo-card:hover { background: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(8,43,73,0.07); }
     .capitulo-num {
@@ -183,19 +184,20 @@
       background: var(--navy); color: white; font-size: 0.85rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
     }
-    .capitulo-card h3 { margin: 0 0 0.35rem; font-size: 1rem; color: var(--navy); }
-    .capitulo-card p { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+    .capitulo-card h3 { margin: 0 0 0.35rem; font-size: 1rem; color: var(--navy); overflow-wrap: break-word; word-break: break-word; }
+    .capitulo-card p { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.4; overflow-wrap: break-word; word-break: break-word; }
 
     /* SECCIÓN PLANTILLAS IMPRIMIBLES */
     .plantillas-section { margin-top: 5rem; }
     .plantillas-section h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.4rem; color: var(--navy); text-align: center; }
     .plantillas-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 3rem; font-size: 1.05rem; }
     
-    .plantillas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .plantillas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem; }
     .plantilla-card {
       background: white; border: 1px solid var(--line); border-radius: 1.2rem;
       padding: 1.6rem; box-shadow: 0 4px 14px rgba(8,43,73,0.04);
       display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+      box-sizing: border-box; max-width: 100%;
     }
     .plantilla-top { display: flex; align-items: flex-start; gap: 1rem; }
     .plantilla-icon { font-size: 1.8rem; line-height: 1; }
@@ -304,6 +306,7 @@
       background: var(--navy); color: white; font-family: var(--sans); font-weight: 700;
       font-size: 0.95rem; letter-spacing: 0.05em; padding: 1.15rem 2.6rem; border-radius: 999px;
       border: none; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(8,43,73,0.14);
+      max-width: 100%; box-sizing: border-box; overflow-wrap: break-word; word-break: break-word;
     }
     .btn-calc-quiz:hover {
       background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(8,43,73,0.2);
@@ -313,6 +316,7 @@
       display: none; background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
       color: white; border-radius: var(--radius); padding: 3.5rem clamp(1.5rem, 5vw, 3.5rem); text-align: center;
       margin-top: 3rem; animation: fadeIn 0.4s ease; box-shadow: 0 16px 40px rgba(8,43,73,0.18);
+      overflow-wrap: break-word; word-break: break-word; box-sizing: border-box; max-width: 100%;
     }
 
     /* =========================================
@@ -322,22 +326,23 @@
       background: white; border: 1.5px solid var(--line); border-radius: var(--radius);
       padding: clamp(2.5rem, 5vw, 4rem); margin-top: 5.5rem;
       box-shadow: 0 12px 36px rgba(8,43,73,0.06); text-align: center;
+      overflow-wrap: break-word; word-break: break-word; box-sizing: border-box; max-width: 100%;
     }
     .workshop-form-card .ws-eyebrow {
       text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
       color: var(--sky-dark); margin-bottom: 0.5rem; display: block; font-family: var(--sans);
     }
-    .workshop-form-card h2 { font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 0.6rem; color: var(--navy); line-height: 1.15; }
+    .workshop-form-card h2 { font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 0.6rem; color: var(--navy); line-height: 1.15; overflow-wrap: break-word; word-break: break-word; }
     .workshop-form-card .bajada { max-width: 660px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem; line-height: 1.5; font-family: var(--sans); }
     
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; text-align: left; }
-    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
     .form-group.full { grid-column: 1 / -1; }
     .form-label { font-size: 0.88rem; font-weight: 700; color: var(--navy); letter-spacing: 0.02em; font-family: var(--sans); }
     .form-input, .form-select, .form-textarea {
       width: 100%; padding: 0.95rem 1.1rem; border-radius: 12px; border: 1.5px solid var(--line);
       font-family: var(--sans); font-size: 0.95rem; background: #faf8f5; color: var(--navy);
-      transition: all 0.2s ease; box-sizing: border-box;
+      transition: all 0.2s ease; box-sizing: border-box; max-width: 100%;
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       outline: none; border-color: var(--navy); background: white; box-shadow: 0 0 0 4px rgba(89,189,233,0.25);
@@ -346,15 +351,65 @@
       background: var(--navy); color: white; font-family: var(--sans); font-weight: 700;
       font-size: 0.95rem; letter-spacing: 0.05em; padding: 1.15rem 2.8rem; border-radius: 999px;
       border: none; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 18px rgba(8,43,73,0.12);
+      max-width: 100%; box-sizing: border-box; overflow-wrap: break-word; word-break: break-word;
     }
     .btn-workshop-submit:hover {
       background: var(--navy-soft); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(8,43,73,0.18);
     }
+    
     @media (max-width: 720px) {
       .form-grid { grid-template-columns: 1fr; }
     }
-    @media (max-width: 720px) {
-      .form-grid { grid-template-columns: 1fr; }
+
+    @media (max-width: 680px) {
+      .hero-portal { padding: 7.5rem 5vw 3.5rem; }
+      .container { padding: 2.2rem 14px 4rem; width: 100%; max-width: 100%; box-sizing: border-box; }
+      
+      /* Tarjeta Destacada Guía */
+      .guide-hero-card { padding: 1.8rem 1.2rem; margin-bottom: 3rem; border-radius: 1.1rem; }
+      .guide-header-logos { flex-direction: column; align-items: flex-start; gap: 0.8rem; margin-bottom: 1.2rem; padding-bottom: 1.2rem; }
+      .guide-logos-group img { height: 44px; }
+      .guide-badge-official { font-size: 0.7rem; padding: 0.35rem 0.8rem; }
+      .guide-chips { gap: 0.4rem; margin-bottom: 1.4rem; }
+      .guide-chip { font-size: 0.74rem; padding: 0.35rem 0.65rem; }
+      .guide-actions { flex-direction: column; align-items: stretch; width: 100%; gap: 0.8rem; }
+      .btn-download-pdf { width: 100%; justify-content: center; text-align: center; padding: 0.95rem 1rem; font-size: 0.88rem; white-space: normal; }
+      .guide-preview-box { padding: 1.4rem 1rem; }
+
+      /* Secciones y Grillas */
+      .capitulos-section { padding: 2rem 1.2rem; margin: 3.5rem 0; border-radius: 1.1rem; }
+      .capitulos-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .capitulo-card { padding: 1.1rem 1rem; overflow-wrap: break-word; word-break: break-word; }
+      .capitulo-card h3, .capitulo-card p { overflow-wrap: break-word; word-break: break-word; }
+      
+      .plantillas-section { margin-top: 3.5rem; }
+      .plantillas-grid { grid-template-columns: 1fr; gap: 1.1rem; }
+      .plantilla-card { padding: 1.3rem 1.1rem; overflow-wrap: break-word; word-break: break-word; }
+      .plantilla-card h3, .plantilla-card p { overflow-wrap: break-word; word-break: break-word; }
+
+      /* Autodiagnóstico */
+      .quiz-section { padding: 2rem 1.1rem; margin: 3.5rem 0; border-radius: 1.1rem; }
+      .quiz-section .bajada { margin-bottom: 2rem; font-size: 0.95rem; }
+      .quiz-question-card { padding: 1.3rem 1rem; margin-bottom: 1.3rem; border-radius: 1rem; overflow-wrap: break-word; word-break: break-word; }
+      .quiz-q-header { flex-direction: column; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem; }
+      .quiz-q-title { overflow-wrap: break-word; word-break: break-word; min-width: 0; }
+      .quiz-opt-box { padding: 0.9rem 0.9rem; gap: 0.8rem; border-radius: 12px; }
+      .quiz-opt-badge { width: 1.9rem; height: 1.9rem; min-width: 1.9rem; font-size: 0.8rem; }
+      .quiz-opt-text { font-size: 0.92rem; line-height: 1.4; overflow-wrap: break-word; word-break: break-word; min-width: 0; }
+      .btn-calc-quiz { width: 100%; padding: 1.05rem 1rem; font-size: clamp(0.78rem, 3.4vw, 0.88rem); white-space: normal; line-height: 1.35; text-align: center; }
+      .quiz-result-box { padding: 2.2rem 1.2rem; border-radius: 1.1rem; margin-top: 2rem; }
+
+      /* Formulario de talleres */
+      .workshop-form-card { padding: 2rem 1.1rem; margin-top: 3.5rem; border-radius: 1.1rem; }
+      .workshop-form-card .bajada { margin-bottom: 2rem; font-size: 0.95rem; }
+      .form-input, .form-select, .form-textarea { padding: 0.85rem 0.95rem; font-size: 0.9rem; }
+      .btn-workshop-submit { width: 100%; padding: 1.05rem 1rem; font-size: clamp(0.78rem, 3.4vw, 0.88rem); white-space: normal; line-height: 1.35; text-align: center; }
+
+      /* Módulos y banners */
+      .app-card { margin-bottom: 2.2rem; }
+      .app-info { padding: 1.8rem 1.2rem; }
+      .btn-main { width: 100%; box-sizing: border-box; text-align: center; }
+      .contact-banner { padding: 2.5rem 1.2rem; margin-top: 3.5rem; border-radius: 1.1rem; }
     }
   </style>
 </head>

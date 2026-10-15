@@ -26,8 +26,8 @@
     }
     
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; width: 100%; }
 
     /* HEADER Y NAVEGACIÓN (Copiado de tu index.html) */
     .site-header {
@@ -136,42 +136,43 @@
        ========================================= */
     .semaforo-diario-card {
       background: white; border: 2px solid var(--sky); border-radius: var(--radius);
-      padding: clamp(2.5rem, 5vw, 4rem); margin: 3.5rem 0 5rem;
+      padding: clamp(1.8rem, 5vw, 3.8rem) clamp(1rem, 3.5vw, 2.5rem); margin: 3.5rem 0 5rem;
       box-shadow: 0 14px 38px rgba(8,43,73,0.08); text-align: center;
-      position: relative;
+      position: relative; overflow-wrap: break-word; word-break: break-word; box-sizing: border-box;
     }
     .semaforo-diario-card .sem-eyebrow {
       text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
       color: var(--sky-dark); margin: 0 0 0.5rem; font-family: var(--sans); display: block;
     }
     .semaforo-diario-card h2 {
-      font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3.2rem); margin: 0 0 0.6rem;
-      color: var(--navy); line-height: 1.15;
+      font-family: var(--display); font-size: clamp(1.8rem, 6vw, 3.2rem); margin: 0 0 0.6rem;
+      color: var(--navy); line-height: 1.15; overflow-wrap: break-word;
     }
     .semaforo-diario-card .bajada {
       max-width: 640px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem;
-      font-family: var(--sans); line-height: 1.5;
+      font-family: var(--sans); line-height: 1.5; overflow-wrap: break-word;
     }
     
     .semaforo-btns-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem;
       max-width: 760px; margin: 0 auto 2.2rem;
     }
     @media (max-width: 680px) {
-      .semaforo-btns-grid { grid-template-columns: 1fr; }
+      .semaforo-btns-grid { grid-template-columns: 1fr; gap: 0.9rem; }
     }
     .semaforo-btn {
       display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
       background: #faf8f5; border: 2px solid var(--line); border-radius: 1.25rem;
-      padding: 1.5rem 1.2rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      font-family: var(--sans); outline: none;
+      padding: 1.3rem 1rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: var(--sans); outline: none; width: 100%; box-sizing: border-box;
+      overflow-wrap: break-word; word-break: break-word;
     }
     .semaforo-btn:hover {
       transform: translateY(-4px); box-shadow: 0 10px 24px rgba(8,43,73,0.1);
       border-color: var(--sky-dark); background: white;
     }
     .semaforo-circle {
-      width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
+      width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
       justify-content: center; font-size: 1.6rem; transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
     .sem-verde .semaforo-circle { background: #e8f5e9; border: 2.5px solid #78aa85; box-shadow: 0 4px 14px rgba(120, 170, 133, 0.35); }
@@ -193,27 +194,29 @@
 
     .semaforo-feedback-box {
       display: none; background: #f7fafc; border: 1.5px solid var(--line); border-radius: 1.25rem;
-      padding: 2.2rem clamp(1.4rem, 4vw, 2.5rem); max-width: 700px; margin: 1.5rem auto 0;
-      animation: fadeIn 0.35s ease; text-align: center;
+      padding: clamp(1.4rem, 4vw, 2.2rem) clamp(1rem, 3.5vw, 2.5rem); max-width: 700px; margin: 1.5rem auto 0;
+      animation: fadeIn 0.35s ease; text-align: center; box-sizing: border-box;
+      overflow-wrap: break-word; word-break: break-word;
     }
     
     /* ANIMACIÓN RESPIRACIÓN */
     .breathing-box {
-      margin-top: 1.8rem; padding: 2.2rem 1.8rem;
+      margin-top: 1.8rem; padding: clamp(1.4rem, 4vw, 2.2rem) clamp(1rem, 3vw, 1.8rem);
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
       color: white; border-radius: 1.25rem; display: none; text-align: center;
       box-shadow: 0 12px 30px rgba(8,43,73,0.18); font-family: var(--sans);
+      box-sizing: border-box; overflow-wrap: break-word;
     }
     .breathing-circle-wrapper {
-      position: relative; width: 130px; height: 130px; margin: 1.5rem auto; display: flex;
+      position: relative; width: 120px; height: 120px; margin: 1.2rem auto; display: flex;
       align-items: center; justify-content: center;
     }
     .breathing-circle {
-      width: 58px; height: 58px; border-radius: 50%; background: var(--sky);
+      width: 54px; height: 54px; border-radius: 50%; background: var(--sky);
       transition: transform 4s ease-in-out; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1.15rem; color: var(--navy); box-shadow: 0 0 25px rgba(89,189,233,0.6);
+      font-weight: 800; font-size: 1.1rem; color: var(--navy); box-shadow: 0 0 25px rgba(89,189,233,0.6);
     }
-    .breathing-circle.inhale { transform: scale(2.1); background: var(--sky-light); }
+    .breathing-circle.inhale { transform: scale(2.0); background: var(--sky-light); }
     .breathing-circle.exhale { transform: scale(1); background: var(--sky); }
 
     /* =========================================
@@ -221,20 +224,21 @@
        ========================================= */
     .diploma-editor-section {
       background: white; border: 1.5px solid var(--line); border-radius: var(--radius);
-      padding: clamp(2.5rem, 5vw, 4rem); margin: 5rem 0;
+      padding: clamp(1.8rem, 5vw, 3.8rem) clamp(1rem, 3.5vw, 2.5rem); margin: 5rem 0;
       box-shadow: 0 12px 36px rgba(8,43,73,0.06); text-align: center;
+      box-sizing: border-box; overflow-wrap: break-word;
     }
     .diploma-editor-section .dip-eyebrow {
       text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
       color: #b8860b; margin: 0 0 0.5rem; font-family: var(--sans); display: block;
     }
     .diploma-editor-section h2 {
-      font-family: var(--display); font-size: clamp(2.2rem, 3.8vw, 3rem); margin: 0 0 0.6rem;
-      color: var(--navy); line-height: 1.15;
+      font-family: var(--display); font-size: clamp(1.8rem, 6vw, 3rem); margin: 0 0 0.6rem;
+      color: var(--navy); line-height: 1.15; overflow-wrap: break-word;
     }
     .diploma-editor-section .bajada {
       max-width: 620px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem;
-      font-family: var(--sans); line-height: 1.5;
+      font-family: var(--sans); line-height: 1.5; overflow-wrap: break-word;
     }
     
     .diploma-form {
@@ -242,7 +246,7 @@
       gap: 1.2rem; max-width: 760px; margin: 0 auto 2.5rem; text-align: left;
     }
     @media (max-width: 740px) {
-      .diploma-form { grid-template-columns: 1fr; }
+      .diploma-form { grid-template-columns: 1fr; gap: 0.9rem; }
     }
     .diploma-input-group { display: flex; flex-direction: column; gap: 0.4rem; }
     .diploma-input-group label {
@@ -260,59 +264,84 @@
 
     /* MARCO DEL DIPLOMA OFICIAL (COMPACTO Y PRESTIGIOSO) */
     .diploma-frame {
-      max-width: 580px; margin: 0 auto; background: #fffdf9;
+      max-width: 580px; width: 100%; margin: 0 auto; background: #fffdf9;
       border: 2px solid var(--navy); border-radius: 8px;
-      padding: 2.4rem clamp(1.5rem, 4vw, 2.8rem); position: relative;
+      padding: clamp(1.6rem, 4vw, 2.4rem) clamp(0.9rem, 3.5vw, 2.4rem); position: relative;
       box-shadow: 0 12px 32px rgba(8,43,73,0.08);
-      outline: 1.5px solid #c5a059; outline-offset: -10px;
+      outline: 1.5px solid #c5a059; outline-offset: -8px;
+      box-sizing: border-box; overflow-wrap: break-word; word-break: break-word;
     }
     .diploma-logos {
-      display: flex; justify-content: center; align-items: center; gap: 1.6rem; margin-bottom: 1rem;
+      display: flex; justify-content: center; align-items: center; gap: 1.4rem; margin-bottom: 0.9rem;
     }
-    .diploma-logos img { height: 44px; width: auto; object-fit: contain; }
+    .diploma-logos img { height: 42px; width: auto; object-fit: contain; }
     
     .diploma-title {
-      font-family: var(--display); font-size: 1.7rem; color: var(--navy);
-      letter-spacing: 0.12em; margin: 0 0 0.35rem; text-transform: uppercase; font-weight: 700;
+      font-family: var(--display); font-size: clamp(1.25rem, 5vw, 1.7rem); color: var(--navy);
+      letter-spacing: clamp(0.04em, 1.2vw, 0.12em); margin: 0 0 0.35rem; text-transform: uppercase; font-weight: 700;
+      line-height: 1.2; overflow-wrap: break-word;
     }
     .diploma-sub {
-      font-family: var(--sans); font-size: 0.82rem; font-weight: 700; color: #b8860b;
-      text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 1.2rem;
+      font-family: var(--sans); font-size: clamp(0.68rem, 2.6vw, 0.82rem); font-weight: 700; color: #b8860b;
+      text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 1rem; line-height: 1.35;
+      overflow-wrap: break-word; word-break: break-word;
     }
     .diploma-awarded {
-      font-family: var(--sans); font-size: 0.78rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.3rem;
+      font-family: var(--sans); font-size: 0.76rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;
     }
     .diploma-name-display {
-      font-family: var(--display); font-size: 1.9rem; color: var(--navy);
+      font-family: var(--display); font-size: clamp(1.25rem, 5.5vw, 1.9rem); color: var(--navy);
       border-bottom: 1.5px solid var(--navy); display: inline-block;
-      padding: 0.1rem 1.8rem; margin: 0.3rem 0 1rem; min-width: 220px; font-weight: 700;
+      padding: 0.1rem 0.6rem; margin: 0.2rem auto 0.9rem; max-width: 100%; font-weight: 700;
+      box-sizing: border-box; overflow-wrap: break-word; word-break: break-word;
     }
     .diploma-body {
-      font-family: var(--sans); font-size: 0.92rem; color: #233b4d;
-      line-height: 1.6; margin: 0 auto 1.4rem; max-width: 460px;
+      font-family: var(--sans); font-size: clamp(0.82rem, 3vw, 0.92rem); color: #233b4d;
+      line-height: 1.55; margin: 0 auto 1.3rem; max-width: 460px;
+      overflow-wrap: break-word; word-break: break-word;
     }
     .diploma-footer {
       display: flex; justify-content: space-between; align-items: flex-end;
-      margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px dashed rgba(8,43,73,0.18);
-      flex-wrap: wrap; gap: 1rem;
+      margin-top: 1.6rem; padding-top: 1.2rem; border-top: 1px dashed rgba(8,43,73,0.18);
+      flex-wrap: wrap; gap: 1rem; width: 100%; box-sizing: border-box;
     }
     .diploma-club-info {
       font-family: var(--sans); font-size: 0.78rem; color: var(--muted); text-align: left; line-height: 1.35;
     }
     .diploma-sign { text-align: center; }
-    .diploma-sign-line { width: 140px; height: 1px; background: var(--navy); margin: 0 auto 0.35rem; }
+    .diploma-sign-line { width: 130px; height: 1px; background: var(--navy); margin: 0 auto 0.35rem; }
     .diploma-sign-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); font-family: var(--sans); }
     .diploma-sign-sub { font-size: 0.7rem; color: var(--muted); font-family: var(--sans); }
 
     .btn-print-diploma {
-      background: #b8860b; color: white; border: none; padding: 1.05rem 2.4rem;
-      cursor: pointer; border-radius: 999px; font-weight: 800; font-size: 0.92rem;
-      letter-spacing: 0.04em; transition: all 0.25s ease; box-shadow: 0 6px 20px rgba(184,134,11,0.22);
-      font-family: var(--sans);
+      background: #b8860b; color: white; border: none; padding: 1rem 1.8rem;
+      cursor: pointer; border-radius: 999px; font-weight: 800; font-size: clamp(0.78rem, 3vw, 0.92rem);
+      letter-spacing: 0.03em; transition: all 0.25s ease; box-shadow: 0 6px 20px rgba(184,134,11,0.22);
+      font-family: var(--sans); max-width: 100%; box-sizing: border-box;
     }
     .btn-print-diploma:hover {
       background: #996e08; transform: translateY(-2px); box-shadow: 0 10px 26px rgba(184,134,11,0.3);
+    }
+
+    @media (max-width: 520px) {
+      .diploma-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.2rem;
+      }
+      .diploma-club-info {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .hero-portal { padding: 7.5rem 5vw 3.5rem; }
+      .container { padding: 2.5rem 12px 4rem; }
+      .app-card { margin-bottom: 2.5rem; }
+      .app-info { padding: 1.8rem 1.2rem; }
+      .btn-main { padding: 0.95rem 1.2rem; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

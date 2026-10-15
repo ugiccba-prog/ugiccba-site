@@ -230,12 +230,13 @@
     .program-copy > p:last-child { max-width: 36rem; margin: 1.5rem 0 0; color: rgba(255, 253, 248, 0.68); }
 
     /* NUEVAS SECCIONES UGI */
-    .tarjetas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 3rem; }
+    .tarjetas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 2rem; margin-top: 3rem; }
     .tarjeta {
       background: var(--paper); padding: 2.5rem; border-radius: var(--radius);
       border: 1px solid var(--line); box-shadow: 0 4px 12px rgba(8, 43, 73, 0.05); color: var(--ink);
+      box-sizing: border-box; max-width: 100%;
     }
-    .tarjeta h3 { color: var(--navy); font-family: var(--display); font-size: 1.8rem; margin: 0 0 1rem; }
+    .tarjeta h3 { color: var(--navy); font-family: var(--display); font-size: 1.8rem; margin: 0 0 1rem; overflow-wrap: break-word; word-break: break-word; }
     
     .proximamente-badge {
       display: inline-block; margin-top: 1.5rem; padding: 0.4rem 1rem;
@@ -352,6 +353,12 @@
       .program-copy h3 { font-size: 2rem; overflow-wrap: break-word; line-height: 1.1; }
       .approach { grid-template-columns: 1fr; }
       .roles { margin-top: 1rem; }
+      .tarjetas-grid { grid-template-columns: 1fr; gap: 1.2rem; margin-top: 2rem; }
+      .tarjeta { padding: 1.6rem 1.2rem; border-radius: 1.1rem; }
+      .tarjeta h3 { font-size: 1.45rem; line-height: 1.15; overflow-wrap: break-word; word-break: break-word; }
+      .tarjeta p { font-size: 0.92rem; overflow-wrap: break-word; word-break: break-word; }
+      .tarjeta .nav-cta { width: 100%; box-sizing: border-box; text-align: center; }
+      .role-selector div a { font-size: 0.75rem; padding: 0.45rem 0.8rem; }
       .site-footer { grid-template-columns: 1fr; text-align: center; gap: 1.5rem; justify-items: center; }
       .site-footer a, .copyright { grid-column: 1 / -1; }
     }

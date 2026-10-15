@@ -14,7 +14,8 @@
       --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; }
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; width: 100%; }
     
     /* HEADER */
     .site-header { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; height: 5.5rem; padding: 0.8rem clamp(1.2rem, 4vw, 4.5rem); background: rgba(255, 253, 248, 0.98); box-shadow: 0 1px 0 var(--line); }
@@ -27,27 +28,27 @@
     .nav-cta:hover { color: white; background: var(--navy); }
     
     /* DISEÑO DE SUBPÁGINA Y TEXTOS */
-    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; }
+    .subpage-content { max-width: 800px; margin: 0 auto; padding: 10rem clamp(1.2rem, 5vw, 2rem) 5rem; min-height: 70vh; box-sizing: border-box; }
     .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
     .back-link:hover { text-decoration: underline; }
     
-    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; }
-    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.2rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; overflow-wrap: break-word; word-break: break-word; }
+    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; overflow-wrap: break-word; word-break: break-word; }
     
-    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); }
+    .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); overflow-wrap: break-word; word-break: break-word; }
     
     /* LISTAS PERSONALIZADAS */
     .feature-list { list-style: none; padding: 0; margin: 2rem 0; }
-    .feature-list li { position: relative; padding-left: 2rem; margin-bottom: 1.5rem; font-size: 1.05rem; }
+    .feature-list li { position: relative; padding-left: 2rem; margin-bottom: 1.5rem; font-size: 1.05rem; overflow-wrap: break-word; word-break: break-word; }
     .feature-list li::before { content: "→"; position: absolute; left: 0; color: var(--sky-dark); font-weight: bold; }
-    .feature-list strong { color: var(--navy); font-size: 1.1rem; display: block; margin-bottom: 0.2rem; }
+    .feature-list strong { color: var(--navy); font-size: 1.1rem; display: block; margin-bottom: 0.2rem; overflow-wrap: break-word; word-break: break-word; }
 
     /* IMÁGENES */
     .content-image { width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; box-shadow: 0 8px 24px rgba(8, 43, 73, 0.1); border: 1px solid var(--line); }
     
     /* CAJA DE CIERRE */
-    .closing-box { background: var(--cream); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--sky-dark); margin-top: 4rem; }
-    .closing-box p { margin: 0; font-weight: 600; color: var(--navy); }
+    .closing-box { background: var(--cream); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--sky-dark); margin-top: 4rem; box-sizing: border-box; max-width: 100%; overflow-wrap: break-word; word-break: break-word; }
+    .closing-box p { margin: 0; font-weight: 600; color: var(--navy); overflow-wrap: break-word; word-break: break-word; }
 
     /* FOOTER */
     .site-footer { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem clamp(1.2rem, 4vw, 4.5rem); color: var(--paper); background: var(--navy); font-size: 0.72rem; margin-top: 4rem; }
@@ -58,8 +59,10 @@
     .copyright { color: rgba(255, 253, 248, 0.5); }
     
     @media (max-width: 720px) {
+      .subpage-content { padding: 7.5rem 1.2rem 4rem; }
       .site-footer { grid-template-columns: 1fr; text-align: center; justify-items: center; }
       .brand-copy small { display: none; }
+      .closing-box { padding: 1.4rem 1.1rem; }
     }
   </style>
 </head>
