@@ -64,6 +64,65 @@
       .brand-copy small { display: none; }
       .closing-box { padding: 1.4rem 1.1rem; }
     }
+
+    /* ESTILOS SECCIÓN CULTURA Y CONVIVENCIA (TARJETAS TAILWIND) */
+    .mt-8 { margin-top: 2rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .ml-1 { margin-left: 0.25rem; }
+    .p-5 { padding: 1.25rem; }
+    .p-6 { padding: 1.5rem; }
+    .bg-neutral-50 { background-color: #f8fafc; }
+    .bg-white { background-color: #ffffff; }
+    .border { border-width: 1px; border-style: solid; }
+    .border-neutral-200 { border-color: #e2e8f0; }
+    .border-neutral-100 { border-color: #f1f5f9; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-full { border-radius: 9999px; }
+    .shadow-sm { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06); }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .h-10 { height: 2.5rem; }
+    .w-10 { width: 2.5rem; }
+    .h-3 { height: 0.75rem; }
+    .w-3 { width: 0.75rem; }
+    .bg-blue-100 { background-color: #dbeafe; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-blue-600 { color: #2563eb; }
+    .text-indigo-600 { color: #4f46e5; }
+    .bg-emerald-500 { background-color: #10b981; }
+    .bg-amber-400 { background-color: #fbbf24; }
+    .bg-rose-500 { background-color: #f43f5e; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .subpage-content .mt-8 h3, .subpage-content .mt-8 h4 { margin: 0; }
+    .subpage-content .mt-8 p { margin-bottom: 0; }
+    .subpage-content .text-xs { font-size: 0.78rem; line-height: 1.6; }
+    .subpage-content .text-sm { font-size: 0.88rem; }
+    .text-base { font-size: 1rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-neutral-900 { color: #0f172a; }
+    .text-neutral-800 { color: #1e293b; }
+    .subpage-content .text-neutral-600 { color: #475569; }
+    .subpage-content .text-neutral-500 { color: #64748b; }
+    .leading-relaxed { line-height: 1.625; }
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    @media (min-width: 640px) {
+      .sm\:p-8 { padding: 2rem; }
+    }
+    @media (min-width: 768px) {
+      .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -152,6 +211,62 @@
     El jugador debe mantener su atención plena en la cancha, sin engancharse con los gritos o reacciones de la tribuna. Además, cuidar las instalaciones de nuestra institución exige llegar a horario, usar la indumentaria correspondiente y jamás descargar la frustración dañando los materiales del club.
   </li>
 </ul>
+
+<!-- Sección: Cultura y Convivencia Deportiva (ADN Ciudad) -->
+<div class="mt-8 bg-neutral-50 border border-neutral-200 rounded-2xl p-6 sm:p-8">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700 font-bold text-lg">
+      🤝
+    </span>
+    <div>
+      <h3 class="text-xl font-bold text-neutral-900">Nuestras Reglas de Juego: El ADN Ciudad</h3>
+      <p class="text-sm text-neutral-500">Cómo cuidamos el clima de equipo y entrenamos la cabeza en cada práctica</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <!-- Tarjeta 1: Semáforo en Cancha -->
+    <div class="bg-white p-5 rounded-xl border border-neutral-100 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
+          <span class="h-3 w-3 rounded-full bg-amber-400"></span>
+          <span class="h-3 w-3 rounded-full bg-rose-500"></span>
+          <h4 class="font-semibold text-neutral-800 text-base ml-1">El Semáforo en Cancha</h4>
+        </div>
+        <p class="text-xs text-neutral-600 leading-relaxed">
+          Verde para sumar, esforzarse y felicitar al compañero; amarillo para respirar y frenar cuando algo sale mal; y rojo como una pausa para resetear la cabeza y volver a entrar listos para jugar.
+        </p>
+      </div>
+    </div>
+
+    <!-- Tarjeta 2: La Palabra Ancla -->
+    <div class="bg-white p-5 rounded-xl border border-neutral-100 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-2 text-blue-600">
+          <span class="text-base">⚓</span>
+          <h4 class="font-semibold text-neutral-800 text-base">La Palabra Ancla</h4>
+        </div>
+        <p class="text-xs text-neutral-600 leading-relaxed">
+          Cuando el partido se pone difícil o suben las pulsaciones, usamos nuestra señal de equipo para frenar la bronca, respirar juntos y enfocarnos únicamente en la próxima jugada.
+        </p>
+      </div>
+    </div>
+
+    <!-- Tarjeta 3: Familias en la Tribuna -->
+    <div class="bg-white p-5 rounded-xl border border-neutral-100 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-2 text-indigo-600">
+          <span class="text-base">🚗</span>
+          <h4 class="font-semibold text-neutral-800 text-base">El Auto de Vuelta</h4>
+        </div>
+        <p class="text-xs text-neutral-600 leading-relaxed">
+          Las familias son nuestra base segura. Apoyamos sin dar indicaciones tácticas desde afuera y cambiamos el «¿cuánto salieron?» por un simple «¿cómo la pasaste hoy?».
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- CIERRE -->
 <div class="closing-box">

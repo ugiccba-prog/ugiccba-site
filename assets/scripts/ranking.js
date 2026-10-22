@@ -91,9 +91,13 @@
     caja.innerHTML = aviso('Cargando…');
 
     pedirTop(juego).then(function (datos) {
-      if (!datos || datos.ok === false) return caja.innerHTML = aviso('No se pudo leer la tabla.');
+      if (!datos || datos.ok === false) {
+        caja.innerHTML = aviso('No se pudo leer la tabla.');
+        return;
+      }
       if (!datos.top || !datos.top.length) {
-        return caja.innerHTML = aviso('Todavía no hay resultados cargados para este módulo. El primero que lo juegue abre la tabla.');
+        caja.innerHTML = aviso('Todavía no hay resultados cargados para este módulo. El primero que lo juegue abre la tabla.');
+        return;
       }
       caja.innerHTML = tabla(juego, datos.top);
     }).catch(function (err) {
