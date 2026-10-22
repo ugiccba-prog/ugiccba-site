@@ -23,7 +23,8 @@
       --navy: #082b49; --navy-soft: #143d5b; --cream: #f5f1e8; --paper: #fffdf8;
       --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
       --radius: 1.5rem;
-      --display: "Bodoni 72", Didot, serif; --sans: "Avenir Next", Avenir, sans-serif;
+      --display: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
     *, *::before, *::after { box-sizing: border-box; }
@@ -49,8 +50,30 @@
     
     .main-nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2rem); }
     .main-nav a { position: relative; font-size: 0.78rem; font-weight: 600; text-decoration: none; color: inherit; }
-    .nav-cta { padding: 0.65rem 1.1rem; border: 1px solid currentColor; border-radius: 999px; transition: 0.3s; }
-    .nav-cta:hover { color: white; background: var(--navy); }
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.35rem;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--sans);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none !important;
+      letter-spacing: 0.01em;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(8, 43, 73, 0.08);
+    }
+    .nav-cta:hover {
+      color: white;
+      background: var(--navy);
+      text-decoration: none !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(8, 43, 73, 0.16);
+    }
+    h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.025em; font-weight: 800; }
 
     .menu-toggle { display: none; }
     @media (max-width: 1150px) {
@@ -64,7 +87,7 @@
     /* HERO PORTAL */
     .hero-portal { background: var(--sky); padding: 10rem 7vw 5rem; text-align: center; }
     .hero-portal .eyebrow { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; font-weight: bold; color: var(--navy); margin-bottom: 0.75rem; }
-    .hero-portal h1 { font-family: var(--display); font-size: clamp(2.8rem, 6.5vw, 5.5rem); margin: 0; line-height: 1.05; color: var(--navy); }
+    .hero-portal h1 { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; font-size: clamp(2.8rem, 6.5vw, 5.2rem); margin: 0; line-height: 1.05; color: var(--navy); }
     .hero-portal .bajada { max-width: 720px; margin: 1.4rem auto 0; font-size: 1.15rem; color: var(--navy-soft); line-height: 1.5; }
     
     .container { max-width: 1080px; margin: 0 auto; padding: 4rem 20px 6rem; }
@@ -96,7 +119,7 @@
 
     .guide-grid { display: grid; grid-template-columns: 1.25fr 0.95fr; gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
     .guide-content .kicker { color: var(--sky-dark); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 0.5rem; }
-    .guide-content h2 { font-family: var(--display); font-size: clamp(2.4rem, 4.5vw, 3.8rem); margin: 0 0 0.6rem; line-height: 1.05; color: var(--navy); }
+    .guide-content h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2.4rem, 4.5vw, 3.8rem); margin: 0 0 0.6rem; line-height: 1.05; color: var(--navy); }
     .guide-content .subtitulo { font-size: 1.15rem; font-weight: 600; color: var(--navy-soft); margin: 0 0 1.2rem; line-height: 1.4; }
     .guide-content p { color: var(--ink); margin: 0 0 1.4rem; font-size: 1rem; }
 
@@ -142,7 +165,7 @@
     .app-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(8,43,73,0.09); }
     .app-info { padding: clamp(2rem, 5vw, 3.5rem); display: flex; flex-direction: column; justify-content: center; }
     .app-info .modulo-kicker { color: var(--sky-dark); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 0.5rem; }
-    .app-info h2 { font-family: var(--display); font-size: clamp(2rem, 3.2vw, 3rem); margin: 0.2rem 0 1rem; line-height: 1.1; color: var(--navy); }
+    .app-info h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2rem, 3.2vw, 3rem); margin: 0.2rem 0 1rem; line-height: 1.1; color: var(--navy); }
     .app-info p { margin: 0 0 1.2rem; color: var(--ink); font-size: 1rem; }
     
     .info-box { background: #f6f9fb; border-radius: 1rem; padding: 1.1rem 1.3rem; font-size: 0.9rem; margin-top: 0.5rem; border: 1px solid rgba(8,43,73,0.06); }
@@ -169,7 +192,7 @@
       padding: clamp(2rem, 5vw, 3.5rem); margin: 4.5rem 0;
       box-shadow: 0 8px 25px rgba(8,43,73,0.05);
     }
-    .capitulos-section h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); color: var(--navy); margin: 0 0 0.5rem; text-align: center; }
+    .capitulos-section h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2rem, 3.5vw, 2.8rem); color: var(--navy); margin: 0 0 0.5rem; text-align: center; }
     .capitulos-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 2.5rem; }
     
     .capitulos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.3rem; }
@@ -189,7 +212,7 @@
 
     /* SECCIÓN PLANTILLAS IMPRIMIBLES */
     .plantillas-section { margin-top: 5rem; }
-    .plantillas-section h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.4rem; color: var(--navy); text-align: center; }
+    .plantillas-section h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.4rem; color: var(--navy); text-align: center; }
     .plantillas-section .bajada { color: var(--muted); text-align: center; max-width: 650px; margin: 0 auto 3rem; font-size: 1.05rem; }
     
     .plantillas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem; }
@@ -211,7 +234,7 @@
       color: white; border-radius: var(--radius); padding: 3.5rem clamp(1.5rem, 5vw, 3.5rem);
       text-align: center; margin-top: 5rem;
     }
-    .contact-banner h2 { font-family: var(--display); font-size: clamp(2rem, 3.5vw, 2.8rem); margin: 0 0 1rem; }
+    .contact-banner h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2rem, 3.5vw, 2.8rem); margin: 0 0 1rem; }
     .contact-banner p { max-width: 600px; margin: 0 auto 2rem; opacity: 0.9; font-size: 1.05rem; }
     .btn-white { background: white; color: var(--navy); border: none; }
     .btn-white:hover { background: var(--sky-light); transform: translateY(-2px); }
@@ -242,7 +265,7 @@
       color: var(--sky-dark); text-align: center; margin-bottom: 0.5rem; font-family: var(--sans);
     }
     .quiz-section h2 {
-      font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3.2rem); color: var(--navy);
+      font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2.2rem, 4vw, 3.2rem); color: var(--navy);
       margin: 0 0 0.5rem; text-align: center; line-height: 1.1;
     }
     .quiz-section .bajada {
@@ -332,7 +355,7 @@
       text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.78rem; font-weight: 800;
       color: var(--sky-dark); margin-bottom: 0.5rem; display: block; font-family: var(--sans);
     }
-    .workshop-form-card h2 { font-family: var(--display); font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 0.6rem; color: var(--navy); line-height: 1.15; overflow-wrap: break-word; word-break: break-word; }
+    .workshop-form-card h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 0.6rem; color: var(--navy); line-height: 1.15; overflow-wrap: break-word; word-break: break-word; }
     .workshop-form-card .bajada { max-width: 660px; margin: 0 auto 2.5rem; color: var(--muted); font-size: 1.05rem; line-height: 1.5; font-family: var(--sans); }
     
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; text-align: left; }
@@ -412,6 +435,10 @@
       .contact-banner { padding: 2.5rem 1.2rem; margin-top: 3.5rem; border-radius: 1.1rem; }
     }
   </style>
+  <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -477,15 +504,15 @@
             </p>
 
             <div class="guide-chips">
-              <span class="guide-chip">📘 10 Capítulos</span>
-              <span class="guide-chip">⚡ +25 Ejercicios Prácticos</span>
-              <span class="guide-chip">📋 10 Plantillas Imprimibles</span>
-              <span class="guide-chip">⏱️ Plan de Acción 30 Días</span>
+              <span class="guide-chip">10 Capítulos</span>
+              <span class="guide-chip">+25 Ejercicios Prácticos</span>
+              <span class="guide-chip">10 Plantillas Imprimibles</span>
+              <span class="guide-chip">Plan de Acción 30 Días</span>
             </div>
 
             <div class="guide-actions">
               <a href="../assets/docs/El-Otro-Equipo-Guia-Familias-UGI.pdf" download="El-Otro-Equipo-Guia-Familias-UGI.pdf" class="btn-download-pdf">
-                <span>📥 Descargar Guía Oficial en PDF</span>
+                <span>Descargar Guía Oficial en PDF</span>
                 <small style="opacity: 0.8; font-size: 0.75rem;">(4.7 MB)</small>
               </a>
               <a href="#capitulos-detalle" style="color: var(--navy); font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.5rem 0.8rem;">
@@ -743,7 +770,7 @@
               CALCULAR MI DEVOLUCIÓN FORMATIVA
             </button>
             <p id="quiz-alert" style="color: #c62828; font-size: 0.92rem; margin-top: 1rem; display: none; font-weight: 700; font-family: var(--sans);">
-              ⚠️ Por favor respondé las 5 preguntas antes de calcular tu diagnóstico.
+              Por favor respondé las 5 preguntas antes de calcular tu diagnóstico.
             </p>
           </div>
 

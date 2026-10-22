@@ -10,11 +10,12 @@
       --sky: #59bde9; --sky-light: #a9def1; --sky-dark: #2a8fc1;
       --navy: #082b49; --cream: #f5f1e8; --paper: #fffdf8;
       --ink: #102b3c; --muted: #60727d; --line: rgba(8, 43, 73, 0.18);
-      --display: "Bodoni 72", Didot, "Iowan Old Style", Georgia, serif;
-      --sans: "Avenir Next", Avenir, "Century Gothic", sans-serif;
+      --display: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+    h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.025em; }
     body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; width: 100%; }
     
     /* HEADER */
@@ -32,8 +33,8 @@
     .back-link { display: inline-block; margin-bottom: 2rem; color: var(--sky-dark); text-decoration: none; font-weight: 600; }
     .back-link:hover { text-decoration: underline; }
     
-    .subpage-content h1 { font-family: var(--display); font-size: clamp(2.2rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; overflow-wrap: break-word; word-break: break-word; }
-    .subpage-content h2 { font-family: var(--display); font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; overflow-wrap: break-word; word-break: break-word; }
+    .subpage-content h1 { font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; font-size: clamp(2.2rem, 5vw, 4rem); color: var(--navy); margin-bottom: 0.5rem; line-height: 1.1; overflow-wrap: break-word; word-break: break-word; }
+    .subpage-content h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; font-size: 2rem; color: var(--sky-dark); margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; overflow-wrap: break-word; word-break: break-word; }
     
     .subpage-content p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--ink); overflow-wrap: break-word; word-break: break-word; }
     
@@ -124,6 +125,10 @@
       .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
   </style>
+  <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="site-header">

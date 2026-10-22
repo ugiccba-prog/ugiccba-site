@@ -634,7 +634,7 @@
       var pend = UGI.pendientes();
       $('estado-envio').textContent = r.ok
         ? '✓ Resultado guardado en la planilla'
-        : '⚠ Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
+        : 'Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
     });
   }
 

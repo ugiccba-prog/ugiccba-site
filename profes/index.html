@@ -28,7 +28,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--fondo-claro);
             color: var(--azul-ccba);
             margin: 0;
@@ -537,6 +537,10 @@
             }
         }
     </style>
+  <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -614,11 +618,11 @@
                 <input type="text" id="profe-nota" class="nota-input" placeholder="Observación breve de la práctica (opcional)...">
             </div>
 
-            <button class="btn-registrar" onclick="registrarUso()">✔ Registrar sesión en mi bitácora</button>
+            <button class="btn-registrar" onclick="registrarUso()">Registrar sesión en mi bitácora</button>
             <div id="status-msg" class="status-msg"></div>
 
             <div class="historial-section">
-                <span class="section-label">📋 Mi control personal de sesiones (en este teléfono)</span>
+                <span class="section-label">Mi control personal de sesiones (en este teléfono)</span>
                 <div id="lista-historial-profe"></div>
             </div>
         </div>
@@ -979,7 +983,7 @@
             localStorage.setItem('ugi_acceso_autorizado', 'si');
             mostrarApp();
         } else {
-            document.getElementById('error-login').textContent = "❌ Clave incorrecta. Pedila a la coordinación de la UGI.";
+            document.getElementById('error-login').textContent = "Clave incorrecta. Pedila a la coordinación de la UGI.";
         }
     }
 
@@ -1010,11 +1014,11 @@
         document.getElementById('panel-respuesta').innerHTML = `
             <div class="respuesta-header">
                 <h2 class="respuesta-titulo">${situacionActual}: ${data.subtitulo} (${indiceVariante + 1}/${lista.length})</h2>
-                <button class="btn-rotar" onclick="rotarVariante()">🔄 Otra variante (${indiceVariante + 1}/${lista.length})</button>
+                <button class="btn-rotar" onclick="rotarVariante()">Otra variante (${indiceVariante + 1}/${lista.length})</button>
             </div>
             <div class="paso"><strong>1. Acción inmediata del profe:</strong> ${data.queHacer}</div>
             <div class="paso"><strong>2. Variante cognitiva o conductual:</strong> ${data.ajuste}</div>
-            <div class="frase-clave">💬 Qué decir en cancha: ${data.frase}</div>
+            <div class="frase-clave">Qué decir en cancha: ${data.frase}</div>
         `;
     }
 
@@ -1035,7 +1039,7 @@
 
         if (!nombre || !categoria) {
             msg.style.color = "#c0392b";
-            msg.textContent = "⚠️ Completá tu nombre y deporte o actividad arriba antes de registrar.";
+            msg.textContent = "Completá tu nombre y deporte o actividad arriba antes de registrar.";
             return;
         }
 
@@ -1062,7 +1066,7 @@
         renderHistorialProfe();
 
         msg.style.color = "#38b030";
-        msg.textContent = "⏳ Guardando sesión...";
+        msg.textContent = "Guardando sesión...";
 
         if (GOOGLE_SCRIPT_URL) {
             try {
@@ -1072,10 +1076,10 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(registro)
                 });
-                msg.textContent = "✅ ¡Sesión registrada en tu bitácora y enviada a la UGI!";
+                msg.textContent = "¡Sesión registrada en tu bitácora y enviada a la UGI!";
             } catch (e) {
                 console.error(e);
-                msg.textContent = "✅ Guardado en tu teléfono (sin conexión a internet).";
+                msg.textContent = "Guardado en tu teléfono (sin conexión a internet).";
             }
         }
 
@@ -1098,7 +1102,7 @@
             <div class="log-card">
                 <div>
                     <strong>${item.fecha}</strong> • ${item.categoria}<br>
-                    <span style="color:#4a5d80;">Logros: ${item.checklist} ${item.nota ? ' | 📝 ' + item.nota : ''}</span>
+                    <span style="color:#4a5d80;">Logros: ${item.checklist} ${item.nota ? ' | ' + item.nota : ''}</span>
                 </div>
                 <span class="log-tag">${item.foco}</span>
             </div>
@@ -1159,7 +1163,7 @@
             <div class="log-card">
                 <div>
                     <strong>${item.profe}</strong> (${item.categoria}) — <small>${item.fecha}</small><br>
-                    <span style="color:#4a5d80;">${item.checklist} ${item.nota ? ' | 📝 ' + item.nota : ''}</span>
+                    <span style="color:#4a5d80;">${item.checklist} ${item.nota ? ' | ' + item.nota : ''}</span>
                 </div>
                 <span class="log-tag">${item.foco}</span>
             </div>
