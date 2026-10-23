@@ -287,22 +287,49 @@
 
     /* RESPONSIVE AJUSTADO PARA NOTEBOOKS (1150px) */
     @media (max-width: 1150px) {
+      /* MENÚ MOBILE ------------------------------------------------------- */
+      /* El botón (hamburguesa / X) queda siempre por encima del menú abierto */
       .menu-toggle {
-        z-index: 2; display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center;
+        position: relative; z-index: 10000;
+        display: grid; gap: 0.4rem; width: 3rem; height: 3rem; place-content: center;
         padding: 0; color: var(--navy); background: transparent; border: 1px solid currentColor; border-radius: 50%;
+        cursor: pointer;
       }
       .menu-toggle span:not(.sr-only) { display: block; width: 1.2rem; height: 1px; background: currentColor; transition: transform 180ms ease; }
-      .menu-toggle[aria-expanded="true"] span:nth-child(2) { transform: translateY(0.22rem) rotate(45deg); }
-      .menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-0.22rem) rotate(-45deg); }
+      .menu-toggle[aria-expanded="true"] span:nth-last-child(2) { transform: translateY(0.22rem) rotate(45deg); }
+      .menu-toggle[aria-expanded="true"] span:last-child { transform: translateY(-0.22rem) rotate(-45deg); }
+      .menu-toggle[aria-expanded="true"] { color: var(--paper); }
+      
+      /* Con el header "scrolled", el backdrop-filter convertía al header en el
+         contenedor del menú fixed: el menú quedaba del alto del header y los
+         links se encimaban. Mientras el menú está abierto lo desactivamos. */
+      .site-header.menu-open { background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      
       .main-nav {
-        position: fixed; inset: 0; flex-direction: column; justify-content: center; gap: 1.5rem;
-        color: var(--paper); background: var(--navy); opacity: 0; visibility: hidden;
+        position: fixed; inset: 0; width: 100%;
+        height: 100vh; height: 100dvh; /* dvh evita saltos con la barra del navegador */
+        z-index: 9999;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: flex-start; /* el centrado lo hacen los margin:auto de abajo */
+        gap: 1.25rem; /* separación fija: los links nunca se superponen */
+        padding: 6rem 1.5rem 2rem; /* arriba deja lugar para el logo y la X */
+        overflow-y: auto; overscroll-behavior: contain; /* en celus chicos scrollea en vez de encimar */
+        color: var(--paper); background-color: var(--navy); /* sólido, sin transparencias */
+        opacity: 0; visibility: hidden;
         transform: translateY(-1rem); transition: opacity 220ms ease, transform 220ms ease, visibility 220ms;
       }
+      /* Centrado vertical que no corta el primer link si no entra todo en pantalla */
+      .main-nav > :first-child { margin-top: auto; }
+      .main-nav > :last-child { margin-bottom: auto; }
       .main-nav.open { opacity: 1; visibility: visible; transform: translateY(0); }
-      .main-nav a { font-family: var(--display); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; color: var(--paper); }
-      .nav-cta { font-family: var(--sans) !important; font-size: 0.8rem !important; }
-      .menu-toggle[aria-expanded="true"] { color: var(--paper); }
+      .main-nav a {
+        font-family: var(--display); font-size: clamp(1.35rem, 6vw, 1.75rem); font-weight: 700;
+        letter-spacing: -0.02em; line-height: 1.2; text-align: center;
+        color: var(--paper) !important; /* pisa colores inline (ej. navy) que quedaban invisibles */
+        padding: 0.5rem 1rem; /* área de toque más amplia */
+      }
+      .main-nav a:not(.nav-cta)::after { display: none; }
+      .main-nav .nav-cta { margin-top: 0.75rem; font-family: var(--sans); font-size: 0.9rem; padding: 0.8rem 1.8rem; box-shadow: none; }
       .hero { grid-template-columns: 1fr; gap: 5rem; padding-top: 9rem; }
       .hero-copy { padding-right: 0; }
       .hero-visual { height: 38rem; }
@@ -642,22 +669,20 @@
       header?.classList.toggle("scrolled", window.scrollY > 24);
     };
 
-    const closeMenu = () => {
-      menuButton?.setAttribute("aria-expanded", "false");
-      navigation?.classList.remove("open");
-      document.body.style.overflow = "";
-      if (menuLabel) menuLabel.textContent = "Abrir menú";
-    };
-
-    menuButton?.addEventListener("click", () => {
-      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-      menuButton.setAttribute("aria-expanded", String(!isOpen));
-      navigation?.classList.toggle("open", !isOpen);
-      document.body.style.overflow = isOpen ? "" : "hidden";
-      if (menuLabel) menuLabel.textContent = isOpen ? "Cerrar menú" : "Abrir menú";
-    });
-
-    navigation?.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+    if (menuButton && navigation && header) {
+      const setMenu = (open) => {
+        menuButton.setAttribute("aria-expanded", String(open));
+        if (menuLabel) menuLabel.textContent = open ? "Cerrar menú" : "Abrir menú";
+        navigation.classList.toggle("open", open);
+        header.classList.toggle("menu-open", open);
+        document.body.style.overflow = open ? "hidden" : "";
+      };
+      menuButton.addEventListener("click", () => {
+        setMenu(menuButton.getAttribute("aria-expanded") !== "true");
+      });
+      navigation.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setMenu(false)));
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+    }
     window.addEventListener("scroll", updateHeader, { passive: true });
     updateHeader();
 
