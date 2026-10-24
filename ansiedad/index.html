@@ -2,11 +2,15 @@
 <html lang="es-AR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>UGI · Gimnasio Mental — Zona de Calma y Enfoque</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Zona de Calma y Enfoque UGI — Herramientas interactivas de regulación emocional, respiración 4-2-6, anclaje sensorial 5-4-3-2-1 y agenda visual DUA para deportistas del Club Ciudad de Buenos Aires.">
+  <meta name="theme-color" content="#060d1a">
+  <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+  <title>Zona de Calma y Enfoque | Gimnasio Mental UGI</title>
+  <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-main: #060d1a;
@@ -31,7 +35,7 @@
     }
 
     body {
-      font-family: 'Open Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--bg-main);
       background-image: radial-gradient(circle at 50% 0%, #0d2546 0%, var(--bg-main) 70%);
       color: var(--text-light);
@@ -41,7 +45,7 @@
     }
 
     h1, h2, h3, h4, .font-heading {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
     }
 
     /* HEADER INSTITUCIONAL */
@@ -67,7 +71,7 @@
     .brand-badge {
       background: linear-gradient(135deg, var(--blue-ccba), var(--blue-dark));
       color: #fff;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-weight: 800;
       font-size: 0.85rem;
       padding: 6px 10px;
@@ -157,7 +161,7 @@
       color: var(--text-muted);
       padding: 10px 6px;
       border-radius: 12px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-size: 0.72rem;
       font-weight: 700;
       text-align: center;
@@ -220,7 +224,7 @@
       display: inline-block;
       background: rgba(0, 196, 140, 0.15);
       color: var(--green-ugi);
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-weight: 700;
       font-size: 0.72rem;
       padding: 4px 10px;
@@ -277,7 +281,7 @@
 
     .sol-tag {
       display: inline-block;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -412,7 +416,7 @@
     }
 
     .breath-phase {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-weight: 800;
       font-size: 0.88rem;
       letter-spacing: 0.5px;
@@ -421,7 +425,7 @@
     .breath-timer {
       font-size: 1.45rem;
       font-weight: 800;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
     }
 
     .btn-main {
@@ -430,7 +434,7 @@
       border: none;
       padding: 13px 24px;
       border-radius: 12px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-weight: 700;
       font-size: 0.9rem;
       cursor: pointer;
@@ -483,7 +487,7 @@
       border-radius: 10px;
       background: rgba(0, 168, 232, 0.15);
       color: var(--blue-ccba);
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-weight: 800;
       font-size: 1.15rem;
       display: flex;
@@ -686,7 +690,7 @@
 
     .stats-bar strong {
       color: var(--green-ugi);
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em;
       font-size: 0.95rem;
     }
 
@@ -696,6 +700,17 @@
       color: var(--text-muted);
       margin-top: 28px;
       padding: 0 16px;
+    }
+
+    @media (max-width: 480px) {
+      header { padding: 12px 14px; }
+      .brand-title { font-size: 0.88rem; }
+      .tabs { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .tab-btn { flex-direction: row; justify-content: center; gap: 8px; padding: 10px 8px; font-size: 0.78rem; }
+      .thermo-options { grid-template-columns: 1fr; gap: 8px; }
+      .thermo-card { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; }
+      .thermo-card .emoji { margin-bottom: 0; font-size: 1.6rem; flex-shrink: 0; }
+      .grounding-chips { padding-left: 0; margin-top: 10px; }
     }
   </style>
 </head>
@@ -709,7 +724,7 @@
         <span class="brand-sub">Club Ciudad de Buenos Aires</span>
       </div>
     </div>
-    <a href="index.html" class="back-link">← Inicio</a>
+    <a href="../pages/jugadores.html" class="back-link">← Portal Jugadores</a>
   </header>
 
   <main class="container">
@@ -903,27 +918,27 @@
 
         <div class="problem-grid">
           <button class="problem-btn" onclick="showProblemSolutions(0, this)">
-            <span>😟 1. Miedo a equivocarme o fallar un pase/tiro</span>
+            <span>1. Miedo a equivocarme o fallar un pase/tiro</span>
             <span>▾</span>
           </button>
           <button class="problem-btn" onclick="showProblemSolutions(1, this)">
-            <span>👀 2. Nervios por la mirada o gritos de afuera</span>
+            <span>2. Nervios por la mirada o gritos de afuera</span>
             <span>▾</span>
           </button>
           <button class="problem-btn" onclick="showProblemSolutions(2, this)">
-            <span>😤 3. Bronca con el árbitro, un rival o un fallo</span>
+            <span>3. Bronca con el árbitro, un rival o un fallo</span>
             <span>▾</span>
           </button>
           <button class="problem-btn" onclick="showProblemSolutions(3, this)">
-            <span>⏳ 4. Ansiedad por si voy a jugar pocos minutos</span>
+            <span>4. Ansiedad por si voy a jugar pocos minutos</span>
             <span>▾</span>
           </button>
           <button class="problem-btn" onclick="showProblemSolutions(4, this)">
-            <span>🔊 5. Mucho ruido, gritos o sobrecarga en cancha</span>
+            <span>5. Mucho ruido, gritos o sobrecarga en cancha</span>
             <span>▾</span>
           </button>
           <button class="problem-btn" onclick="showProblemSolutions(5, this)">
-            <span>🧩 6. Me frustra no entender o que no salga un ejercicio</span>
+            <span>6. Me frustra no entender o que no salga un ejercicio</span>
             <span>▾</span>
           </button>
         </div>
@@ -972,7 +987,7 @@
             <div class="agenda-tips">
               <div><span>Opción A:</span> Aflojar hombros y mandíbula mientras troto suave.</div>
               <div><span>Opción B:</span> Ponerme cerca de un compañero de referencia (tutor par).</div>
-              <div><span>Opción C:</span> Enfocame solo en el primer juego de movilidad sin pensar en el partido.</div>
+              <div><span>Opción C:</span> Enfocarme solo en el primer juego de movilidad sin pensar en el partido.</div>
             </div>
           </div>
 
@@ -1071,7 +1086,7 @@
     // 1. BANCO DE SOLUCIONES PARA FUEGO, VAPOR Y AGUA
     const stateSolutionsData = {
       fuego: {
-        banner: '🔥 <strong>Exceso de Fuego detectado:</strong> Tu cuerpo está en modo alerta y va más rápido que tus decisiones. Elegí 1 o 2 herramientas para sumar Agua:',
+        banner: '<strong>Exceso de Fuego detectado:</strong> Tu cuerpo está en modo alerta y va más rápido que tus decisiones. Elegí 1 o 2 herramientas para sumar Agua:',
         color: '#ef476f',
         items: [
           {
@@ -1097,7 +1112,7 @@
         ]
       },
       vapor: {
-        banner: '💨 <strong>¡Estás en Estado Vapor!</strong> Energía alta y cabeza fría. Elegí cómo sostener este foco durante el partido:',
+        banner: '<strong>¡Estás en Estado Vapor!</strong> Energía alta y cabeza fría. Elegí cómo sostener este foco durante el partido:',
         color: '#00c48c',
         items: [
           {
@@ -1118,7 +1133,7 @@
         ]
       },
       agua: {
-        banner: '💧 <strong>Exceso de Agua detectado:</strong> Los nervios o el miedo a fallar te están apagando el cuerpo. Elegí cómo sumar Fuego:',
+        banner: '<strong>Exceso de Agua detectado:</strong> Los nervios o el miedo a fallar te están apagando el cuerpo. Elegí cómo sumar Fuego:',
         color: '#00a8e8',
         items: [
           {
