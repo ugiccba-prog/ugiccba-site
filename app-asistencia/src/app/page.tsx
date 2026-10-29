@@ -94,13 +94,23 @@ export default function AsistenciaApp() {
   const [registrosAdmin, setRegistrosAdmin] = useState<any[]>([]);
   const [cargandoAdmin, setCargandoAdmin] = useState(false);
 
-  // Fecha de hoy (local) calculada en el cliente, no durante el prerender
+  // Fecha de hoy (local) y sesión guardada en el celular (localStorage)
   useEffect(() => {
     const d = new Date();
     const hoy = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
     setFecha(hoy);
     setFechaDesde(hoy);
     setFechaHasta(hoy);
+
+    try {
+      const deporteGuardado = localStorage.getItem('ugi_deporte_logueado');
+      if (deporteGuardado && DEPORTES_OFICIALES.some((dep) => dep.nombre === deporteGuardado)) {
+        setDeporteSeleccionado(deporteGuardado);
+        setVista('profe');
+      }
+    } catch {
+      // Ignorar si localStorage no está disponible
+    }
   }, []);
 
   // Cargar grupos
@@ -242,12 +252,28 @@ export default function AsistenciaApp() {
     const pinEsperado = !error && data?.pin ? String(data.pin).trim() : infoDeporte?.pinDefault;
 
     if (pinIngresado === pinEsperado || pinIngresado === CLAVE_ADMIN) {
+      try {
+        localStorage.setItem('ugi_deporte_logueado', deporteSeleccionado);
+      } catch {
+        // Ignorar si localStorage no está disponible
+      }
       setInputPinDeporte('');
       setModoCategoria('ninguno');
       setVista('profe');
     } else {
       alert('PIN incorrecto para ' + deporteSeleccionado);
     }
+  };
+
+  const cerrarSesionDeporte = () => {
+    try {
+      localStorage.removeItem('ugi_deporte_logueado');
+    } catch {
+      // Ignorar si localStorage no está disponible
+    }
+    setInputPinDeporte('');
+    setModoCategoria('ninguno');
+    setVista('login_deporte');
   };
 
   // Crear o Editar Categoría
@@ -761,10 +787,7 @@ export default function AsistenciaApp() {
               </label>
               <button
                 type="button"
-                onClick={() => {
-                  setInputPinDeporte('');
-                  setVista('login_deporte');
-                }}
+                onClick={cerrarSesionDeporte}
                 className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-semibold"
               >
                 <ArrowLeft size={12} /> Cambiar deporte / Salir
