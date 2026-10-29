@@ -90,12 +90,15 @@ export default function AsistenciaApp() {
   const [fecha, setFecha] = useState<string>('');
   const [cargando, setCargando] = useState(false);
 
-  // Estados Vista Admin / Coordinador (Excel Maestro y Por Deporte)
+  // Estados Vista Admin / Coordinador (Excel Maestro, Por Deporte y Google Sheets en Vivo)
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [filtroDeporteAdmin, setFiltroDeporteAdmin] = useState<string>('TODOS');
   const [registrosAdmin, setRegistrosAdmin] = useState<any[]>([]);
   const [cargandoAdmin, setCargandoAdmin] = useState(false);
+  const [googleScriptUrl, setGoogleScriptUrl] = useState('');
+  const [sheetUrlsPorDeporte, setSheetUrlsPorDeporte] = useState<Record<string, string>>({});
+  const [sincronizandoSheet, setSincronizandoSheet] = useState(false);
 
   // Fecha de hoy (local) y sesión guardada en el celular (localStorage)
   useEffect(() => {
@@ -106,6 +109,11 @@ export default function AsistenciaApp() {
     setFechaHasta(hoy);
 
     try {
+      const urlGuardada = localStorage.getItem('ugi_google_script_url');
+      if (urlGuardada) setGoogleScriptUrl(urlGuardada);
+      const sheetsGuardados = localStorage.getItem('ugi_sheet_urls');
+      if (sheetsGuardados) setSheetUrlsPorDeporte(JSON.parse(sheetsGuardados));
+
       const deporteGuardado = localStorage.getItem('ugi_deporte_logueado');
       const rolGuardado = localStorage.getItem('ugi_rol_logueado');
       if (deporteGuardado && DEPORTES_OFICIALES.some((dep) => dep.nombre === deporteGuardado)) {
@@ -121,6 +129,27 @@ export default function AsistenciaApp() {
     } catch {
       // Ignorar si localStorage no está disponible
     }
+
+    // Traer URLs de Google Sheets guardadas en Supabase (si existen en deportes_auth)
+    supabase
+      .from('deportes_auth')
+      .select('deporte, sheet_url, script_url')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const mapa: Record<string, string> = {};
+          let scriptRemoto = '';
+          data.forEach((row: any) => {
+            if (row.deporte && row.sheet_url) mapa[row.deporte] = row.sheet_url;
+            if (row.script_url) scriptRemoto = row.script_url;
+          });
+          if (Object.keys(mapa).length > 0) {
+            setSheetUrlsPorDeporte((prev) => ({ ...prev, ...mapa }));
+          }
+          if (scriptRemoto) {
+            setGoogleScriptUrl(scriptRemoto);
+          }
+        }
+      });
   }, []);
 
   // Cargar grupos
@@ -391,7 +420,7 @@ export default function AsistenciaApp() {
     }));
   };
 
-  // Guardar Asistencia
+  // Guardar Asistencia (y actualizar automáticamente el Google Sheet del Deporte en vivo)
   const guardarAsistencias = async () => {
     if (alumnos.length === 0) return;
     setCargando(true);
@@ -410,6 +439,8 @@ export default function AsistenciaApp() {
     if (error) {
       alert('Error al guardar: ' + error.message);
     } else {
+      // Disparamos en segundo plano la actualización del Google Sheet de este deporte
+      sincronizarGoogleSheetDeporte(deporteSeleccionado, false);
       alert('¡Asistencia guardada correctamente!');
     }
   };
@@ -650,6 +681,181 @@ export default function AsistenciaApp() {
     );
   };
 
+  // Sincronizar en vivo el Google Sheet exclusivo de un Deporte / Colonia
+  const sincronizarGoogleSheetDeporte = async (nombreDeporte: string, mostrarAlerta = true) => {
+    const urlDestino = googleScriptUrl.trim();
+    if (!urlDestino) {
+      if (mostrarAlerta) {
+        alert(
+          'Primero pegá la URL /exec de tu Google Apps Script en el Panel Maestro UGI para activar Google Sheets en vivo.'
+        );
+      }
+      return;
+    }
+
+    setSincronizandoSheet(true);
+    try {
+      const { data: gruposDeporte } = await supabase
+        .from('grupos')
+        .select('*')
+        .eq('nombre', nombreDeporte)
+        .order('categoria');
+
+      const idsGrupos = (gruposDeporte || []).map((g) => g.id);
+      const esColoniaDeporte =
+        DEPORTES_OFICIALES.find((d) => d.nombre === nombreDeporte)?.tipo === 'colonia';
+
+      let alumnosDeporte: any[] = [];
+      if (idsGrupos.length > 0) {
+        const { data: als } = await supabase
+          .from('alumnos')
+          .select('*')
+          .in('grupo_id', idsGrupos)
+          .eq('activo', true)
+          .order('apellido');
+        alumnosDeporte = als || [];
+      }
+
+      const idsAlumnos = alumnosDeporte.map((a) => a.id);
+      let asistenciasHist: any[] = [];
+      if (idsAlumnos.length > 0) {
+        const { data: asistData } = await supabase
+          .from('asistencias')
+          .select('*')
+          .in('alumno_id', idsAlumnos)
+          .order('fecha', { ascending: true });
+        asistenciasHist = asistData || [];
+      }
+
+      const fechasUnicas = Array.from(new Set(asistenciasHist.map((a) => a.fecha))).sort();
+      const mapaGrupoPorId = new Map((gruposDeporte || []).map((g) => [g.id, g]));
+
+      const construirMatrizAlumnos = (listaAlumnos: any[]) =>
+        listaAlumnos.map((al) => {
+          const gr = mapaGrupoPorId.get(al.grupo_id);
+          const regsAlumno = asistenciasHist.filter((a) => a.alumno_id === al.id);
+          const presentes = regsAlumno.filter((a) => a.estado === 'presente').length;
+          const tardes = regsAlumno.filter((a) => a.estado === 'tarde').length;
+          const ausentes = regsAlumno.filter((a) => a.estado === 'ausente').length;
+          const almuerzos = regsAlumno.filter((a) => a.almuerzo).length;
+          const totalDias = regsAlumno.length;
+          const pctAsistencia =
+            totalDias > 0 ? `${Math.round(((presentes + tardes) / totalDias) * 100)}%` : '-';
+
+          const fila: Record<string, any> = {
+            Deporte_Actividad: nombreDeporte,
+            Categoría_Grupo: gr?.categoria || '',
+            Alumno: `${al.apellido}, ${al.nombre}`,
+            Asistencia_Pct: pctAsistencia,
+            Presentes: presentes,
+            Tardes: tardes,
+            Ausentes: ausentes,
+          };
+
+          if (esColoniaDeporte) {
+            fila.Total_Almuerzos = almuerzos;
+          }
+
+          fechasUnicas.forEach((f) => {
+            const reg = regsAlumno.find((r) => r.fecha === f);
+            if (!reg) {
+              fila[f] = '-';
+            } else {
+              const letra =
+                reg.estado === 'presente' ? 'P' : reg.estado === 'tarde' ? 'T' : 'A';
+              fila[f] =
+                esColoniaDeporte && reg.almuerzo ? `${letra} (Almuerza)` : letra;
+            }
+          });
+
+          return fila;
+        });
+
+      const resumenGrupos = (gruposDeporte || []).map((gr) => {
+        const alsGrupo = alumnosDeporte.filter((a) => a.grupo_id === gr.id);
+        const idsAlsGrupo = new Set(alsGrupo.map((a) => a.id));
+        const regsGrupo = asistenciasHist.filter((r) => idsAlsGrupo.has(r.alumno_id));
+        return {
+          Deporte_Actividad: nombreDeporte,
+          Categoría_Grupo: gr.categoria,
+          Alumnos_Activos: alsGrupo.length,
+          Presentes: regsGrupo.filter((r) => r.estado === 'presente').length,
+          Tardes: regsGrupo.filter((r) => r.estado === 'tarde').length,
+          Ausentes: regsGrupo.filter((r) => r.estado === 'ausente').length,
+          Almuerzos_Acumulados: esColoniaDeporte
+            ? regsGrupo.filter((r) => r.almuerzo).length
+            : 'N/A',
+        };
+      });
+
+      const mapaAlumnoPorId = new Map(alumnosDeporte.map((a) => [a.id, a]));
+      const detalleDiario = [...asistenciasHist]
+        .sort((a, b) => b.fecha.localeCompare(a.fecha))
+        .map((r) => {
+          const al = mapaAlumnoPorId.get(r.alumno_id);
+          const gr = al ? mapaGrupoPorId.get(al.grupo_id) : undefined;
+          return {
+            Fecha: r.fecha,
+            Deporte_Actividad: nombreDeporte,
+            Categoría_Grupo: gr?.categoria || '',
+            Alumno: al ? `${al.apellido}, ${al.nombre}` : '',
+            Estado: String(r.estado).toUpperCase(),
+            Almuerzo: esColoniaDeporte ? (r.almuerzo ? 'SÍ' : 'NO') : 'N/A',
+          };
+        });
+
+      const hojasPorGrupo = (gruposDeporte || []).map((gr, idx) => {
+        const alsGrupo = alumnosDeporte.filter((a) => a.grupo_id === gr.id);
+        const nombreLimpio = gr.categoria
+          .replace(/[\\/?*[\]:]/g, ' ')
+          .trim()
+          .slice(0, 25);
+        return {
+          nombreHoja: nombreLimpio || `Grupo_${idx + 1}`,
+          filas: construirMatrizAlumnos(alsGrupo),
+        };
+      });
+
+      const resp = await fetch(urlDestino, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          deporte: nombreDeporte,
+          matrizGeneral: construirMatrizAlumnos(alumnosDeporte),
+          resumenGrupos,
+          detalleDiario,
+          hojasPorGrupo,
+        }),
+      });
+
+      const resJson = await resp.json();
+      if (resJson && resJson.sheetUrl) {
+        setSheetUrlsPorDeporte((prev) => {
+          const nuevo = { ...prev, [nombreDeporte]: resJson.sheetUrl };
+          try {
+            localStorage.setItem('ugi_sheet_urls', JSON.stringify(nuevo));
+          } catch {}
+          return nuevo;
+        });
+
+        await supabase
+          .from('deportes_auth')
+          .update({ sheet_url: resJson.sheetUrl, script_url: urlDestino })
+          .eq('deporte', nombreDeporte);
+
+        if (mostrarAlerta) {
+          alert(`¡Google Sheet de ${nombreDeporte} actualizado en vivo!`);
+        }
+      }
+    } catch {
+      if (mostrarAlerta) {
+        alert('Se envió la actualización al Google Sheet de ' + nombreDeporte);
+      }
+    } finally {
+      setSincronizandoSheet(false);
+    }
+  };
+
   // ==========================================
   // VISTA 0: ACCESO POR PIN DE DEPORTE (PROFES)
   // ==========================================
@@ -861,6 +1067,55 @@ export default function AsistenciaApp() {
             </button>
           </div>
 
+          {/* Configuración de Google Sheets en Vivo (1 Sheet privado por Deporte) */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-5">
+            <div className="text-xs font-bold text-emerald-900 mb-1">
+              Google Sheets en Vivo (1 Planilla Independiente por Deporte - Solo Lectura para Coordinadores)
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                placeholder="Pegá acá la URL /exec de tu Google Apps Script..."
+                value={googleScriptUrl}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setGoogleScriptUrl(val);
+                  try {
+                    localStorage.setItem('ugi_google_script_url', val);
+                  } catch {}
+                }}
+                className="flex-1 bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800"
+              />
+              {filtroDeporteAdmin !== 'TODOS' && (
+                <button
+                  type="button"
+                  onClick={() => sincronizarGoogleSheetDeporte(filtroDeporteAdmin, true)}
+                  disabled={sincronizandoSheet}
+                  className="bg-emerald-700 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-800"
+                >
+                  {sincronizandoSheet
+                    ? 'Sincronizando...'
+                    : `Crear/Actualizar Sheet de ${filtroDeporteAdmin}`}
+                </button>
+              )}
+            </div>
+            {Object.keys(sheetUrlsPorDeporte).length > 0 && (
+              <div className="mt-2 pt-2 border-t border-emerald-200 flex flex-wrap gap-2">
+                {Object.entries(sheetUrlsPorDeporte).map(([dep, url]) => (
+                  <a
+                    key={dep}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] bg-white border border-emerald-300 text-emerald-800 px-2.5 py-1 rounded font-semibold hover:bg-emerald-100"
+                  >
+                    📊 Abrir Sheet: {dep}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Resumen */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -1037,17 +1292,39 @@ export default function AsistenciaApp() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => descargarExcelActualizadoDeporte(deporteSeleccionado)}
-              disabled={descargandoVivo}
-              className="bg-emerald-600 disabled:bg-slate-300 text-white py-2.5 px-4 rounded-lg text-xs font-bold shadow-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5"
-            >
-              <Download size={15} />
-              {descargandoVivo
-                ? 'Generando Planilla...'
-                : `Excel Vivo Actualizado (${deporteSeleccionado})`}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {sheetUrlsPorDeporte[deporteSeleccionado] && (
+                <a
+                  href={sheetUrlsPorDeporte[deporteSeleccionado]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-700 text-white py-2.5 px-3.5 rounded-lg text-xs font-bold shadow-xs hover:bg-emerald-800 flex items-center justify-center gap-1.5"
+                >
+                  📊 Abrir Google Sheet en Vivo
+                </a>
+              )}
+              {googleScriptUrl && (
+                <button
+                  type="button"
+                  onClick={() => sincronizarGoogleSheetDeporte(deporteSeleccionado, true)}
+                  disabled={sincronizandoSheet}
+                  className="bg-indigo-600 disabled:bg-slate-300 text-white py-2.5 px-3 rounded-lg text-xs font-bold shadow-xs hover:bg-indigo-700"
+                >
+                  {sincronizandoSheet ? 'Sincronizando...' : 'Actualizar Google Sheet'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => descargarExcelActualizadoDeporte(deporteSeleccionado)}
+                disabled={descargandoVivo}
+                className="bg-emerald-600 disabled:bg-slate-300 text-white py-2.5 px-4 rounded-lg text-xs font-bold shadow-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5"
+              >
+                <Download size={15} />
+                {descargandoVivo
+                  ? 'Generando Planilla...'
+                  : `Descargar Excel (${deporteSeleccionado})`}
+              </button>
+            </div>
           </div>
 
           {/* Filtros del Coordinador */}
