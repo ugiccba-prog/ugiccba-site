@@ -1,33 +1,40 @@
 /**
  * ============================================================================
- * UGI CCBA — Sincronización Automática de Asistencias a Google Sheets por Deporte
+ * UGI CCBA — Planilla de Asistencia en Google Sheets por Deporte y Categoría
  * ============================================================================
- * ¿CÓMO RESUELVE LOS PERMISOS Y LA PRIVACIDAD ENTRE DEPORTES?
- * 1. Crea una carpeta "UGI - Asistencias en Vivo" en tu Google Drive.
- * 2. Adentro crea 1 ARCHIVO DE GOOGLE SHEETS SEPARADO POR CADA DEPORTE
- *    (ej: "Asistencia UGI - Colonia", "Asistencia UGI - Hockey sobre Patines", etc.).
- * 3. Configura cada archivo como "Cualquiera con el enlace: SOLO LECTURA (Lector)".
- *    - Los profes y coordinadores NO necesitan permiso de edición (nadie puede
- *      romper ni borrar celdas por accidente).
- *    - El único que escribe en la planilla es este script (con tu cuenta de UGI)
- *      cada vez que un profe toca "Guardar Asistencia" en la web.
- *    - Cada Coordinador recibe únicamente el link del Google Sheet de SU deporte,
- *      por lo que es imposible que vea las planillas de otros deportes.
+ * ¿CÓMO FUNCIONA?
+ * 1. Crea 1 Google Sheet independiente por cada Deporte / Colonia dentro de la
+ *    carpeta "UGI - Asistencias en Vivo".
+ * 2. Si el deporte ingresó su mail de Google en la app, el script comparte esa
+ *    planilla directamente con ese mail para que le aparezca en su propia
+ *    cuenta de Google Drive ("Compartidos conmigo") y le avisa por correo.
+ * 3. Adentro del Sheet se carga TODO automáticamente cada vez que toman lista:
+ *    - 1 pestaña por cada Categoría / Grupo con cada alumno, su % de asistencia,
+ *      presentes, tardes, ausentes, cada fecha día por día y una fila final con
+ *      el % de asistencia promedio de toda la categoría y el % de cada fecha.
+ *    - 1 pestaña "Resumen por Categoría" con el % de asistencia de cada grupo.
+ *    - 1 pestaña "Todos los Alumnos" con el padrón completo y sus porcentajes.
  *
- * PASOS PARA ACTIVARLO (1 sola vez, toma 1 minuto):
- * 1. Entrá a https://script.google.com y tocá "Nuevo proyecto".
- * 2. Borrá lo que haya y pegá todo este código.
- * 3. Arriba tocá "Implementar" -> "Nueva implementación".
- * 4. En "Seleccionar tipo" elegí "Aplicación web":
- *    - Ejecutar como: "Yo" (tu cuenta de Google UGI)
+ * PASOS PARA ACTIVARLO (1 sola vez):
+ * 1. Entrá a https://script.google.com y abrí tu proyecto (o creá uno nuevo).
+ * 2. Borrá lo que haya y pegá TODO este código. Guardá (Ctrl+S).
+ * 3. Tocá "Implementar" -> "Nueva implementación" (o "Gestionar implementaciones"
+ *    -> lápiz -> Versión: "Nueva versión").
+ * 4. Tipo: "Aplicación web"
+ *    - Ejecutar como: "Yo"
  *    - Quién tiene acceso: "Cualquier persona"
- * 5. Tocá "Implementar", autorizá los permisos de Google Drive/Sheets y copiá
- *    la URL que termina en /exec.
- * 6. Pegá esa URL /exec en el Panel Maestro UGI de la app (o en GOOGLE_SCRIPT_URL).
+ * 5. Copiá la URL que termina en /exec y pegala una única vez en la app.
  * ============================================================================
  */
 
 const NOMBRE_CARPETA_DRIVE = 'UGI - Asistencias en Vivo';
+
+function doGet() {
+  return respuestaJSON({
+    ok: true,
+    mensaje: 'Script de Asistencia UGI activo. Usá este link /exec en la app de asistencia.',
+  });
+}
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -35,43 +42,46 @@ function doPost(e) {
 
   try {
     const payload = JSON.parse(e.postData.contents);
-    const deporte = payload.deporte;
+    const deporte = (payload.deporte || '').trim();
+    const email = (payload.email || '').trim().toLowerCase();
+
     if (!deporte) {
       return respuestaJSON({ ok: false, error: 'Falta el nombre del deporte' });
     }
 
-    const ss = obtenerOCrearSheetDeporte(deporte);
+    const resultado = obtenerOCrearSheetDeporte(deporte, email);
+    const ss = resultado.ss;
+    const nombresHojasActivas = [];
 
-    // 1. Actualizar pestaña "Seguimiento Vivo" (Matriz Alumno x Fecha)
-    if (Array.isArray(payload.matrizGeneral)) {
-      escribirTablaEnHoja(ss, 'Seguimiento Vivo', payload.matrizGeneral);
+    // 1. Pestaña "Resumen por Categoría" con % por categoría
+    if (Array.isArray(payload.resumenCategorias)) {
+      escribirTablaEnHoja(ss, 'Resumen por Categoría', payload.resumenCategorias, true);
+      nombresHojasActivas.push('Resumen por Categoría');
     }
 
-    // 2. Actualizar pestaña "Resumen Grupos"
-    if (Array.isArray(payload.resumenGrupos)) {
-      escribirTablaEnHoja(ss, 'Resumen Grupos', payload.resumenGrupos);
-    }
-
-    // 3. Actualizar pestaña "Detalle Diario"
-    if (Array.isArray(payload.detalleDiario)) {
-      escribirTablaEnHoja(ss, 'Detalle Diario', payload.detalleDiario);
-    }
-
-    // 4. Actualizar una pestaña por cada Categoría / Grupo del deporte
+    // 2. Una pestaña por cada Categoría / Grupo con alumnos, % individual y % de la categoría
     if (Array.isArray(payload.hojasPorGrupo)) {
       payload.hojasPorGrupo.forEach(function (g) {
         if (g && g.nombreHoja && Array.isArray(g.filas)) {
-          escribirTablaEnHoja(ss, g.nombreHoja, g.filas);
+          escribirTablaEnHoja(ss, g.nombreHoja, g.filas, true);
+          nombresHojasActivas.push(g.nombreHoja);
         }
       });
     }
 
-    // Eliminar "Hoja 1" / "Sheet1" vacía por defecto si quedaron nuestras hojas
-    limpiarHojaPorDefecto(ss);
+    // 3. Pestaña general "Todos los Alumnos"
+    if (Array.isArray(payload.matrizGeneral)) {
+      escribirTablaEnHoja(ss, 'Todos los Alumnos', payload.matrizGeneral, true);
+      nombresHojasActivas.push('Todos los Alumnos');
+    }
+
+    // Limpiar hojas por defecto ("Hoja 1" / "Sheet1")
+    limpiarHojasSobrantes(ss, nombresHojasActivas);
 
     return respuestaJSON({
       ok: true,
       deporte: deporte,
+      emailCompartido: resultado.emailCompartido,
       sheetUrl: ss.getUrl(),
       updatedAt: new Date().toISOString(),
     });
@@ -90,51 +100,67 @@ function obtenerOCrearCarpeta() {
   return DriveApp.createFolder(NOMBRE_CARPETA_DRIVE);
 }
 
-function obtenerOCrearSheetDeporte(deporte) {
+function obtenerOCrearSheetDeporte(deporte, email) {
   const props = PropertiesService.getScriptProperties();
   const propKey = 'SHEET_ID_' + deporte;
-  const idGuardado = props.getProperty(propKey);
+  const propMailKey = 'SHEET_EMAIL_' + deporte;
+  let idGuardado = props.getProperty(propKey);
+  let ss = null;
 
   if (idGuardado) {
     try {
-      return SpreadsheetApp.openById(idGuardado);
+      ss = SpreadsheetApp.openById(idGuardado);
     } catch (e) {
-      // Si fue borrado de Drive, lo volvemos a crear abajo
+      ss = null;
     }
   }
 
-  const carpeta = obtenerOCrearCarpeta();
-  const nombreArchivo = 'Asistencia UGI - ' + deporte;
+  if (!ss) {
+    const carpeta = obtenerOCrearCarpeta();
+    const nombreArchivo = 'Asistencia UGI - ' + deporte;
+    const archivos = carpeta.getFilesByName(nombreArchivo);
 
-  // Buscar si ya existe en la carpeta
-  const archivos = carpeta.getFilesByName(nombreArchivo);
-  if (archivos.hasNext()) {
-    const archivoExistente = archivos.next();
-    props.setProperty(propKey, archivoExistente.getId());
-    return SpreadsheetApp.openById(archivoExistente.getId());
+    if (archivos.hasNext()) {
+      const existente = archivos.next();
+      ss = SpreadsheetApp.openById(existente.getId());
+    } else {
+      ss = SpreadsheetApp.create(nombreArchivo);
+      const archivoNuevo = DriveApp.getFileById(ss.getId());
+      archivoNuevo.moveTo(carpeta);
+      archivoNuevo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    }
+    props.setProperty(propKey, ss.getId());
   }
 
-  // Crear nuevo Google Sheet exclusivo para este Deporte
-  const nuevoSS = SpreadsheetApp.create(nombreArchivo);
-  const archivo = DriveApp.getFileById(nuevoSS.getId());
-  archivo.moveTo(carpeta);
+  // Si ingresaron un mail para el deporte, lo sumamos al archivo para que aparezca en su cuenta
+  let emailCompartido = props.getProperty(propMailKey) || '';
+  if (email && email.indexOf('@') > 0) {
+    try {
+      const archivo = DriveApp.getFileById(ss.getId());
+      archivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      if (email !== emailCompartido) {
+        ss.addEditor(email);
+        props.setProperty(propMailKey, email);
+        emailCompartido = email;
+      }
+    } catch (errMail) {
+      // Si el mail no tiene cuenta Google todavía, igual funciona con el link directo
+      emailCompartido = email;
+    }
+  }
 
-  // Permiso: Cualquiera con el link de este deporte puede VER (Solo Lectura)
-  archivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-  props.setProperty(propKey, nuevoSS.getId());
-  return nuevoSS;
+  return { ss: ss, emailCompartido: emailCompartido };
 }
 
-function escribirTablaEnHoja(ss, nombreHoja, filasObjetos) {
+function escribirTablaEnHoja(ss, nombreHoja, filasObjetos, resaltarUltimaFila) {
   let sheet = ss.getSheetByName(nombreHoja);
   if (!sheet) {
     sheet = ss.insertSheet(nombreHoja);
   }
-  sheet.clearContents();
+  sheet.clear();
 
   if (!filasObjetos || filasObjetos.length === 0) {
-    sheet.getRange(1, 1).setValue('Sin datos registrados aún');
+    sheet.getRange(1, 1).setValue('Sin alumnos o asistencias cargadas aún en esta categoría.');
     return;
   }
 
@@ -150,18 +176,30 @@ function escribirTablaEnHoja(ss, nombreHoja, filasObjetos) {
 
   sheet.getRange(1, 1, matriz.length, encabezados.length).setValues(matriz);
 
-  // Formato prolijo para el encabezado
+  // Encabezado azul oscuro UGI
   const rangoHeader = sheet.getRange(1, 1, 1, encabezados.length);
   rangoHeader.setFontWeight('bold');
-  rangoHeader.setBackground('#1e293b');
+  rangoHeader.setBackground('#082b49');
   rangoHeader.setFontColor('#ffffff');
   sheet.setFrozenRows(1);
+
+  // Destacar la fila final de Promedio / Totales de la Categoría si existe
+  if (resaltarUltimaFila && matriz.length > 2) {
+    const ultimaFilaTexto = String(matriz[matriz.length - 1][0] || '') + String(matriz[matriz.length - 1][1] || '');
+    if (ultimaFilaTexto.indexOf('PROMEDIO') !== -1 || ultimaFilaTexto.indexOf('TOTAL') !== -1) {
+      const rangoTotal = sheet.getRange(matriz.length, 1, 1, encabezados.length);
+      rangoTotal.setFontWeight('bold');
+      rangoTotal.setBackground('#e0f2fe');
+      rangoTotal.setFontColor('#082b49');
+    }
+  }
 }
 
-function limpiarHojaPorDefecto(ss) {
+function limpiarHojasSobrantes(ss, nombresActivos) {
   const hojas = ss.getSheets();
   if (hojas.length <= 1) return;
-  ['Hoja 1', 'Sheet1'].forEach(function (nombre) {
+  ['Hoja 1', 'Sheet1', 'Seguimiento Vivo', 'Resumen Grupos', 'Detalle Diario'].forEach(function (nombre) {
+    if (nombresActivos.indexOf(nombre) !== -1) return;
     const h = ss.getSheetByName(nombre);
     if (h && ss.getSheets().length > 1) {
       ss.deleteSheet(h);

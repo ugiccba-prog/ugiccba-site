@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.deportes_auth (
   deporte TEXT NOT NULL UNIQUE,
   pin TEXT NOT NULL,
   pin_coord TEXT,
+  email_sheet TEXT,
   sheet_url TEXT,
   script_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.deportes_auth (
 
 -- Si la tabla ya existía, aseguramos que tenga las columnas nuevas:
 ALTER TABLE public.deportes_auth ADD COLUMN IF NOT EXISTS pin_coord TEXT;
+ALTER TABLE public.deportes_auth ADD COLUMN IF NOT EXISTS email_sheet TEXT;
 ALTER TABLE public.deportes_auth ADD COLUMN IF NOT EXISTS sheet_url TEXT;
 ALTER TABLE public.deportes_auth ADD COLUMN IF NOT EXISTS script_url TEXT;
 
