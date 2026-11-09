@@ -843,25 +843,9 @@
       <p class="login-sub">Asistencia, evaluaciones y banco metodológico de cancha</p>
 
       <!-- BLOQUE SUPERIOR: SELECTOR DE DEPORTES -->
-      <div class="field">
-        <label for="login-deporte">1. Elegí un Deporte</label>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="login-deporte">1. Elegí tu Deporte</label>
         <select id="login-deporte"></select>
-      </div>
-
-      <div class="divider">o elegí Base Formativa</div>
-
-      <!-- BLOQUE INFERIOR: TARJETAS RÁPIDAS COLONIA Y COYFD -->
-      <div class="base-cards">
-        <button type="button" class="base-btn" id="btn-base-colonia" data-area="Colonia">
-          <span class="ico">☀️</span>
-          <span>COLONIA</span>
-          <small>Asistencia + Comedor</small>
-        </button>
-        <button type="button" class="base-btn" id="btn-base-coyfd" data-area="COYFD">
-          <span class="ico">🏃‍♂️</span>
-          <span>COYFD</span>
-          <small>Iniciación y Orientación</small>
-        </button>
       </div>
 
       <div class="grid2" style="margin-bottom:10px;">
@@ -875,7 +859,7 @@
         </div>
       </div>
       <p id="login-error" class="error" aria-live="polite"></p>
-      <button type="submit" class="btn">Entrar a Muni 360</button>
+      <button type="submit" class="btn">Entrar a Muni 360 Deportes</button>
 
       <div style="text-align:center; margin-top:16px; padding-top:14px; border-top:1px dashed #cbd5e1;">
         <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI()" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
@@ -884,6 +868,10 @@
         <div style="font-size:0.72rem; color:var(--muted); margin-top:5px;">
           Carga múltiples categorías, equipos (Tira A y B), asistencias históricas, evaluaciones completas y legajos UGI de muestra. No altera las planillas reales.
         </div>
+      </div>
+
+      <div style="margin-top:12px; padding-top:10px; border-top:1px solid #f1f5f9; font-size:0.78rem; color:var(--muted);">
+        ¿Buscás Base Formativa? <a href="../muni360cyc/" style="color:var(--blue); font-weight:800; text-decoration:none;">Ir a Colonia y COYFD &rarr;</a>
       </div>
     </form>
   </div>
@@ -1461,32 +1449,29 @@
     $('login-deporte').innerHTML =
       `<option value="">— Seleccionar Deporte —</option>` +
       deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('') +
-      `<option value="TODOS">🛡️ Dirección UGI (Todos los Deportes + Colonia + COYFD)</option>`;
+      `<option value="TODOS">🛡️ Dirección UGI (Todos los Deportes)</option>`;
 
-    $('sel-deporte').innerHTML = CATALOGO_MUNI360.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
+    $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
     let areaElegidaLogin = localStorage.getItem('muni360_area') || "Básquet Caballeros";
+    if (areaElegidaLogin === "Colonia" || areaElegidaLogin === "COYFD") areaElegidaLogin = "Básquet Caballeros";
     $('login-profe').value = localStorage.getItem('muni360_profe') || "";
 
     function marcarSeleccionLogin(nombreArea) {
       areaElegidaLogin = nombreArea;
-      const esColonia = nombreArea === "Colonia";
-      const esCoyfd   = nombreArea === "COYFD";
-      $('btn-base-colonia').classList.toggle('active', esColonia);
-      $('btn-base-coyfd').classList.toggle('active', esCoyfd);
-      if (esColonia || esCoyfd) {
-        $('login-deporte').value = "";
-      } else {
-        $('login-deporte').value = nombreArea;
-      }
+      if ($('btn-base-colonia')) $('btn-base-colonia').classList.toggle('active', nombreArea === "Colonia");
+      if ($('btn-base-coyfd'))   $('btn-base-coyfd').classList.toggle('active', nombreArea === "COYFD");
+      if ($('login-deporte'))    $('login-deporte').value = nombreArea;
       $('login-error').textContent = "";
     }
 
-    $('login-deporte').addEventListener('change', e => {
-      if (e.target.value) marcarSeleccionLogin(e.target.value);
-    });
-    $('btn-base-colonia').addEventListener('click', () => marcarSeleccionLogin("Colonia"));
-    $('btn-base-coyfd').addEventListener('click', () => marcarSeleccionLogin("COYFD"));
+    if ($('login-deporte')) {
+      $('login-deporte').addEventListener('change', e => {
+        if (e.target.value) marcarSeleccionLogin(e.target.value);
+      });
+    }
+    if ($('btn-base-colonia')) $('btn-base-colonia').addEventListener('click', () => marcarSeleccionLogin("Colonia"));
+    if ($('btn-base-coyfd'))   $('btn-base-coyfd').addEventListener('click', () => marcarSeleccionLogin("COYFD"));
 
     marcarSeleccionLogin(areaElegidaLogin);
 
@@ -1571,7 +1556,7 @@
 
     function iniciarSesion(datosSesion) {
       sesion = datosSesion;
-      areaActiva = (datosSesion.area && datosSesion.area !== "TODOS" && CATALOGO_MUNI360.some(x => x.nombre === datosSesion.area))
+      areaActiva = (datosSesion.area && datosSesion.area !== "TODOS" && deportesSolo.some(x => x.nombre === datosSesion.area))
         ? datosSesion.area
         : "Básquet Caballeros";
 
