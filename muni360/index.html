@@ -859,7 +859,7 @@
           🎭 Entrar con Modelo de Prueba (Reunión / Video)
         </button>
         <div style="font-size:0.72rem; color:var(--muted); margin-top:5px;">
-          Carga 7 deportistas con notas, asistencias, DNI de legajo y ficha DUA de muestra. No altera las planillas reales.
+          Carga múltiples categorías, equipos (Tira A y B), asistencias históricas, evaluaciones completas y legajos UGI de muestra. No altera las planillas reales.
         </div>
       </div>
     </form>
@@ -1394,9 +1394,18 @@
 
     function fechaLocal(diasAtras = 0) {
       const d = new Date();
-      d.setDate(d.getDate() - diasAtras);
+      d.setDate(d.getDate() - Math.abs(Number(diasAtras) || 0));
       d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
       return d.toISOString().slice(0, 10);
+    }
+
+    function normalizarFechaIso(f) {
+      const s = String(f || '').trim();
+      if (!s) return '';
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+      if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+      return s.slice(0, 10);
     }
 
     function toast(msg) {
@@ -1621,6 +1630,26 @@
         comunicacion: "Frases cortas de 1 o 2 pasos. Anticiparle 1 minuto antes cuando va a cambiar el ejercicio.",
         desborda: "Hipersensibilidad al silbato fuerte cerca y esperas largas en fila sin pelota.",
         regula: "Darle el rol de 'encargado de conos/pelotas' o 2 minutos de hidratación en Zona de Calma."
+      },
+      "Peralta, Valentino (🧩 DUA)": {
+        comunicacion: "Mostrar primero el gesto técnico de forma visual antes de explicar verbalmente.",
+        desborda: "Cambios bruscos de equipo sin aviso o gritos superpuestos en partido.",
+        regula: "Asignarle pareja fija de referencia al iniciar la entrada en calor."
+      },
+      "Peralta, Valentino": {
+        comunicacion: "Mostrar primero el gesto técnico de forma visual antes de explicar verbalmente.",
+        desborda: "Cambios bruscos de equipo sin aviso o gritos superpuestos en partido.",
+        regula: "Asignarle pareja fija de referencia al iniciar la entrada en calor."
+      },
+      "Álvarez, Sofía (🧩 DUA)": {
+        comunicacion: "Consignas breves con referencia de color de cono en cancha.",
+        desborda: "Tiempos muertos largos en fila.",
+        regula: "Permitirle iniciar la estación o llevar el conteo del grupo."
+      },
+      "Álvarez, Sofía": {
+        comunicacion: "Consignas breves con referencia de color de cono en cancha.",
+        desborda: "Tiempos muertos largos en fila.",
+        regula: "Permitirle iniciar la estación o llevar el conteo del grupo."
       }
     };
 
@@ -2969,24 +2998,39 @@
 
     function renderAnalisis() {
       const lista = plantelActualNombres();
-      const setLista = new Set(lista);
+      const setClavesLista = new Set(lista.map(j => claveNombreDni(j)));
+      const cat = $('sel-categoria').value;
+      const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
       const diasFiltro = Number($('sel-periodo').value || 0);
-      const fechaCorte = diasFiltro > 0 ? fechaLocal(-diasFiltro) : '';
+      const fechaCorte = diasFiltro > 0 ? fechaLocal(diasFiltro) : '';
 
-      const evals = (datosDeporte.evaluaciones || []).filter(e =>
-        setLista.has(e.jugador) && (!fechaCorte || String(e.fecha || '') >= fechaCorte)
-      );
-      const asistGrupo = (datosDeporte.asistencia || []).filter(a =>
-        setLista.has(a.jugador) && (!fechaCorte || String(a.fecha || '') >= fechaCorte)
-      );
+      const perteneceAlGrupo = item => {
+        if (!item) return false;
+        if (setClavesLista.has(claveNombreDni(item.jugador))) {
+          if (item.categoria && cat && item.categoria !== cat) return false;
+          if (item.equipo && eq && (item.equipo || 'General') !== eq) return false;
+          return true;
+        }
+        return false;
+      };
+
+      const dentroDePeriodo = item => {
+        if (!fechaCorte) return true;
+        const fIso = normalizarFechaIso(item.fecha);
+        return !fIso || fIso >= fechaCorte;
+      };
+
+      const evals = (datosDeporte.evaluaciones || []).filter(e => perteneceAlGrupo(e) && dentroDePeriodo(e));
+      const asistGrupo = (datosDeporte.asistencia || []).filter(a => perteneceAlGrupo(a) && dentroDePeriodo(a));
       const gestos = gestosActuales();
 
       let suma = 0, cant = 0;
       const promsGesto = gestos.map(g => {
-        const vals = evals.map(e => e.notas?.[g]).filter(n => n > 0);
-        suma += vals.reduce((a, b) => a + b, 0);
+        const vals = evals.map(e => Number(e.notas?.[g])).filter(n => n > 0);
+        const sG = vals.reduce((a, b) => a + b, 0);
+        suma += sG;
         cant += vals.length;
-        return { g, prom: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0 };
+        return { g, prom: vals.length ? sG / vals.length : 0 };
       });
 
       $('grafico-gestos').innerHTML = promsGesto.map(({ g, prom }) => {
@@ -3002,15 +3046,19 @@
       let totalPresGrupo = 0, totalRegsGrupo = 0;
 
       ultimaMatrizExport = lista.map(jugador => {
-        const evJ = evals.filter(e => e.jugador === jugador);
+        const kJ = claveNombreDni(jugador);
+        const evJ = evals.filter(e => claveNombreDni(e.jugador) === kJ);
         let s = 0, c = 0, peorG = '-', peorP = 11;
-        evJ.forEach(e => Object.entries(e.notas || {}).forEach(([g, n]) => {
-          s += n; c++;
-          if (n < peorP) { peorP = n; peorG = g; }
+        evJ.forEach(e => Object.entries(e.notas || {}).forEach(([g, rawN]) => {
+          const n = Number(rawN);
+          if (n > 0) {
+            s += n; c++;
+            if (n < peorP) { peorP = n; peorG = g; }
+          }
         }));
         const prom = c ? (s / c) : null;
 
-        const regs = asistGrupo.filter(a => a.jugador === jugador);
+        const regs = asistGrupo.filter(a => claveNombreDni(a.jugador) === kJ);
         const pres = regs.filter(a => String(a.estado).startsWith('P') || String(a.estado).startsWith('T')).length;
         totalPresGrupo += pres;
         totalRegsGrupo += regs.length;
@@ -3027,8 +3075,8 @@
         return {
           Deportista: nombreBaseDua(jugador),
           Promedio: prom !== null ? prom.toFixed(1) : '-',
-          ATrabajar: prom !== null && peorP <= 6 ? peorG : 'Parejo',
-          Asistencia: pct !== null ? pct + '%' : '-',
+          ATrabajar: prom !== null ? (peorP <= 6.5 ? `${peorG} (${peorP})` : 'Parejo · Sólido') : 'Sin evaluar',
+          Asistencia: pct !== null ? `${pct}% (${pres}/${regs.length})` : '-',
           Semaforo: rojas ? `🔴 ${rojas} / 🟡 ${amarillas}` : (amarillas ? `🟡 ${amarillas}` : '🟢 100%'),
           Estado: tienePlanActivo ? legData.estadoPlan.split('(')[0].trim() : (enAlerta ? '⚠ Seguimiento' : '✓ Óptimo'),
           enAlerta
@@ -3476,62 +3524,203 @@
       const cat = "Sub-12 Demo";
       const eq  = "A";
       const hoy = fechaLocal(0);
+      const f2  = fechaLocal(3);
+      const f3  = fechaLocal(7);
+      const f4  = fechaLocal(10);
+      const f5  = fechaLocal(14);
 
-      const demoData = {
+      function armarNotasBasquet(n1, n2, n3, n4, n5, n6, n7, n8, c1, c2, c3) {
+        return {
+          "Dribbling con ambas manos": n1,
+          "Mecánica de tiro": n2,
+          "Bandeja / finalización": n3,
+          "Pase": n4,
+          "Postura defensiva": n5,
+          "Rebote": n6,
+          "Juego sin pelota": n7,
+          "Toma de decisión": n8,
+          "Actitud y compromiso (Carácter)": c1,
+          "Respeto y convivencia (Conexión)": c2,
+          "Tolerancia al error y frustración (Confianza)": c3
+        };
+      }
+
+      const gruposBasquet = [
+        {
+          categoria: "Sub-12 Demo", equipo: "A",
+          jugadores: [
+            { jugador: "Acosta, Mateo (🧩 DUA)", dni: "48512390", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 7.5, 8, 8.5, 7.5, 7, 8, 7.5, 9.5, 9, 8) },
+            { jugador: "Benítez, Tomás",         dni: "48901234", asists: ["P | Sem:A", "P | Sem:V", "P | Sem:V", "T | Sem:A", "P | Sem:V"], notas: armarNotasBasquet(7, 6.5, 7, 6.5, 6, 6.5, 6, 6, 6.5, 6.5, 5.5) },
+            { jugador: "Domínguez, Lucas",       dni: "49102345", asists: ["A",         "P | Sem:V", "A",         "A",         "P | Sem:V"], notas: armarNotasBasquet(6.5, 6, 6.5, 7, 5.5, 6, 6, 6.5, 7, 7.5, 7) },
+            { jugador: "Fernández, Joaquín",     dni: "48765432", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8.5, 8, 8.5, 8, 8.5, 8, 8.5, 8.5, 9, 9, 8.5) },
+            { jugador: "Gómez, Bautista",        dni: "49321654", asists: ["T | Sem:R", "P | Sem:A", "A",         "P | Sem:V", "T | Sem:A"], notas: armarNotasBasquet(5.5, 5, 5.5, 5, 4.5, 5.5, 5, 5, 5, 5.5, 4.5) },
+            { jugador: "López, Santino",         dni: "48654987", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V", "A"],         notas: armarNotasBasquet(7.5, 7, 7.5, 8, 7, 7.5, 7, 7.5, 8.5, 8.5, 8) },
+            { jugador: "Martínez, Valentino",    dni: "49012876", asists: ["P | Sem:V", "P | Sem:V", "T | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 7.5, 7, 7.5, 8, 8.5, 7.5, 7.5, 8.5, 9, 8) },
+            { jugador: "Pereyra, Ramiro",        dni: "48811223", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 8, 7.5, 7, 7.5, 7, 7.5, 7, 8, 8.5, 8) }
+          ]
+        },
+        {
+          categoria: "Sub-12 Demo", equipo: "B",
+          jugadores: [
+            { jugador: "Peralta, Valentino (🧩 DUA)", dni: "49210334", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7, 7.5, 8, 7, 7, 7.5, 7, 9, 9, 8) },
+            { jugador: "Quiroga, Lautaro",            dni: "49334556", asists: ["P | Sem:V", "A",         "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7, 6.5, 7, 7, 6.5, 7, 6.5, 6.5, 8, 8, 7.5) },
+            { jugador: "Ríos, Benjamín",              dni: "49445667", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 8, 7.5, 8, 7.5, 8, 8, 7.5, 8.5, 8.5, 8) },
+            { jugador: "Sosa, Felipe",                dni: "49556778", asists: ["T | Sem:A", "P | Sem:A", "P | Sem:V", "A"],         notas: armarNotasBasquet(6, 5.5, 6, 6, 5.5, 6, 5.5, 5.5, 6, 6, 5) },
+            { jugador: "Torres, Ignacio",             dni: "49667889", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7.5, 7, 7.5, 8, 7.5, 7, 7.5, 8.5, 8, 8) },
+            { jugador: "Vega, Julián",                dni: "49778990", asists: ["P | Sem:V", "P | Sem:V", "T | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7, 7, 6.5, 7, 7, 6.5, 7, 7, 8, 8.5, 7.5) }
+          ]
+        },
+        {
+          categoria: "Sub-14", equipo: "A",
+          jugadores: [
+            { jugador: "Aguirre, Nicolás",  dni: "47112233", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8.5, 8, 8.5, 8.5, 8, 8.5, 8, 8.5, 9, 9, 8.5) },
+            { jugador: "Blanco, Thiago",    dni: "47223344", asists: ["P | Sem:V", "P | Sem:V", "A",         "P | Sem:V"], notas: armarNotasBasquet(7.5, 7.5, 8, 7.5, 7, 7.5, 7.5, 7, 8, 8.5, 8) },
+            { jugador: "Castro, Santiago",  dni: "47334455", asists: ["P | Sem:A", "T | Sem:A", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7, 6.5, 7, 6.5, 6, 7, 6.5, 6, 6.5, 6.5, 5.5) },
+            { jugador: "Díaz, Facundo",     dni: "47445566", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 8.5, 8, 8, 7.5, 8, 8, 8, 8.5, 9, 8.5) },
+            { jugador: "Herrera, Franco",   dni: "47556677", asists: ["A",         "A",         "P | Sem:V", "A"],         notas: armarNotasBasquet(6, 6, 6.5, 6, 5.5, 6, 5.5, 6, 6.5, 7, 6.5) },
+            { jugador: "Molina, Bruno",     dni: "47667788", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7, 7.5, 8, 8, 7.5, 7.5, 8, 9, 8.5, 8.5) }
+          ]
+        },
+        {
+          categoria: "Sub-14", equipo: "B",
+          jugadores: [
+            { jugador: "Morales, Simón",      dni: "47778899", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7, 7.5, 7, 7.5, 7, 7, 7.5, 8.5, 8.5, 8) },
+            { jugador: "Navarro, Juan Cruz",  dni: "47889900", asists: ["P | Sem:V", "T | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7, 6.5, 7, 7.5, 7, 6.5, 7, 7, 8, 8, 7.5) },
+            { jugador: "Ortiz, Agustín",      dni: "47990011", asists: ["P | Sem:V", "P | Sem:V", "A",         "P | Sem:V"], notas: armarNotasBasquet(6.5, 6.5, 6, 7, 6.5, 7, 6.5, 6.5, 7.5, 8, 7) },
+            { jugador: "Paz, Emiliano",       dni: "47001122", asists: ["T | Sem:R", "P | Sem:A", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(6, 5.5, 6, 5.5, 5, 6, 5.5, 5.5, 5.5, 6, 5) },
+            { jugador: "Romero, Ciro",        dni: "47123123", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 7.5, 8, 8, 7.5, 8, 7.5, 8, 9, 8.5, 8.5) },
+            { jugador: "Silva, Gonzalo",      dni: "47234234", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7.5, 7, 7.5, 7, 7.5, 7.5, 7, 8, 8.5, 8) }
+          ]
+        },
+        {
+          categoria: "Sub-16", equipo: "A",
+          jugadores: [
+            { jugador: "Alarcón, Matías",    dni: "45111222", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8.5, 8.5, 8, 8.5, 8, 8.5, 8.5, 8.5, 9, 9, 8.5) },
+            { jugador: "Cabrera, Francisco", dni: "45222333", asists: ["P | Sem:V", "P | Sem:V", "T | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 7.5, 8, 8, 7.5, 8, 7.5, 8, 8.5, 8.5, 8) },
+            { jugador: "Giménez, Tomás",     dni: "45333444", asists: ["P | Sem:A", "P | Sem:V", "A",         "P | Sem:A"], notas: armarNotasBasquet(7, 6.5, 7, 6.5, 6, 6.5, 6, 6.5, 6, 6.5, 5.5) },
+            { jugador: "Ledesma, Manuel",    dni: "45444555", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8, 8, 8.5, 7.5, 8, 8.5, 8, 8, 9, 8.5, 8.5) },
+            { jugador: "Medina, Octavio",    dni: "45555666", asists: ["P | Sem:V", "A",         "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(7.5, 7, 7.5, 7.5, 7, 7.5, 7, 7.5, 8, 8, 7.5) },
+            { jugador: "Suárez, Lorenzo",    dni: "45666777", asists: ["P | Sem:V", "P | Sem:V", "P | Sem:V", "P | Sem:V"], notas: armarNotasBasquet(8.5, 8, 8, 8.5, 8.5, 8, 8.5, 8, 9.5, 9, 9) }
+          ]
+        }
+      ];
+
+      const fechasDemo = [hoy, f2, f3, f4, f5];
+      const demoData = { padron: [], asistencia: [], evaluaciones: [], gestos: null, email: "ugi@ccba.com.ar" };
+
+      gruposBasquet.forEach(g => {
+        g.jugadores.forEach(j => {
+          demoData.padron.push({ categoria: g.categoria, equipo: g.equipo, jugador: j.jugador, dni: j.dni });
+          j.asists.forEach((est, idx) => {
+            demoData.asistencia.push({
+              fecha: fechasDemo[idx] || hoy,
+              categoria: g.categoria,
+              equipo: g.equipo,
+              jugador: j.jugador,
+              estado: est
+            });
+          });
+          demoData.evaluaciones.push({
+            fecha: hoy,
+            categoria: g.categoria,
+            equipo: g.equipo,
+            jugador: j.jugador,
+            notas: j.notas
+          });
+        });
+      });
+
+      const demoColonia = {
         padron: [
-          { categoria: cat, equipo: eq, jugador: "Acosta, Mateo (🧩 DUA)", dni: "48512390" },
-          { categoria: cat, equipo: eq, jugador: "Benítez, Tomás", dni: "48901234" },
-          { categoria: cat, equipo: eq, jugador: "Domínguez, Lucas", dni: "49102345" },
-          { categoria: cat, equipo: eq, jugador: "Fernández, Joaquín", dni: "48765432" },
-          { categoria: cat, equipo: eq, jugador: "Gómez, Bautista", dni: "49321654" },
-          { categoria: cat, equipo: eq, jugador: "López, Santino", dni: "48654987" },
-          { categoria: cat, equipo: eq, jugador: "Martínez, Valentino", dni: "49012876" }
+          { categoria: "Grupo 8 años", equipo: "General", jugador: "Acosta, Mateo (🧩 DUA)", dni: "48512390" },
+          { categoria: "Grupo 8 años", equipo: "General", jugador: "Fernández, Joaquín",     dni: "48765432" },
+          { categoria: "Grupo 8 años", equipo: "General", jugador: "Álvarez, Sofía (🧩 DUA)", dni: "49812345" },
+          { categoria: "Grupo 8 años", equipo: "General", jugador: "Rojas, Camila",          dni: "49823456" },
+          { categoria: "Grupo 10 años", equipo: "General", jugador: "Peralta, Valentino (🧩 DUA)", dni: "49210334" },
+          { categoria: "Grupo 10 años", equipo: "General", jugador: "López, Santino",         dni: "48654987" }
         ],
         asistencia: [
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Acosta, Mateo (🧩 DUA)", estado: "P | Sem:V" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Benítez, Tomás", estado: "P | Sem:A" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Domínguez, Lucas", estado: "A" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Fernández, Joaquín", estado: "P | Sem:V" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Gómez, Bautista", estado: "T | Sem:R" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "López, Santino", estado: "P | Sem:V" },
-          { fecha: hoy, categoria: cat, equipo: eq, jugador: "Martínez, Valentino", estado: "P | Sem:V" }
+          { fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Acosta, Mateo (🧩 DUA)", estado: "P | 🍴 Comida | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Fernández, Joaquín",     estado: "P | 🍴 Comida | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Álvarez, Sofía (🧩 DUA)", estado: "P | 🍴 Comida | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Rojas, Camila",          estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 10 años", equipo: "General", jugador: "Peralta, Valentino (🧩 DUA)", estado: "P | 🍴 Comida | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 10 años", equipo: "General", jugador: "López, Santino",         estado: "P | 🍴 Comida | Sem:V" }
         ],
         evaluaciones: [
           {
-            fecha: hoy, categoria: cat, equipo: eq, jugador: "Acosta, Mateo (🧩 DUA)",
-            notas: { "Dribbling con ambas manos": 8, "Pase": 8.5, "Toma de decisión": 7.5, "Actitud y compromiso (Carácter)": 9.5, "Respeto y convivencia (Conexión)": 9, "Tolerancia al error y frustración (Confianza)": 8 }
+            fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Acosta, Mateo (🧩 DUA)",
+            notas: { "Participación y entusiasmo": 9, "Respeto de consignas": 8, "Trabajo en equipo": 8.5, "Coordinación motriz": 8, "Adaptación al agua": 8.5, "Autonomía personal": 8, "Resolución de conflictos": 8, "Actitud y compromiso (Carácter)": 9, "Respeto y convivencia (Conexión)": 9, "Tolerancia al error y frustración (Confianza)": 8 }
           },
           {
-            fecha: hoy, categoria: cat, equipo: eq, jugador: "Benítez, Tomás",
-            notas: { "Dribbling con ambas manos": 7, "Pase": 6.5, "Toma de decisión": 6, "Actitud y compromiso (Carácter)": 6, "Respeto y convivencia (Conexión)": 6.5, "Tolerancia al error y frustración (Confianza)": 5 }
-          },
-          {
-            fecha: hoy, categoria: cat, equipo: eq, jugador: "Gómez, Bautista",
-            notas: { "Dribbling con ambas manos": 5.5, "Pase": 5, "Toma de decisión": 5, "Actitud y compromiso (Carácter)": 5, "Respeto y convivencia (Conexión)": 5.5, "Tolerancia al error y frustración (Confianza)": 4.5 }
-          },
-          {
-            fecha: hoy, categoria: cat, equipo: eq, jugador: "Fernández, Joaquín",
-            notas: { "Dribbling con ambas manos": 8.5, "Pase": 8, "Toma de decisión": 8.5, "Actitud y compromiso (Carácter)": 9, "Respeto y convivencia (Conexión)": 9, "Tolerancia al error y frustración (Confianza)": 8.5 }
+            fecha: hoy, categoria: "Grupo 8 años", equipo: "General", jugador: "Álvarez, Sofía (🧩 DUA)",
+            notas: { "Participación y entusiasmo": 8.5, "Respeto de consignas": 8, "Trabajo en equipo": 9, "Coordinación motriz": 8, "Adaptación al agua": 9, "Autonomía personal": 8.5, "Resolución de conflictos": 8.5, "Actitud y compromiso (Carácter)": 9, "Respeto y convivencia (Conexión)": 9, "Tolerancia al error y frustración (Confianza)": 8.5 }
           }
         ],
-        gestos: null,
-        email: "ugi@ccba.com.ar"
+        gestos: null, email: "ugi@ccba.com.ar"
+      };
+
+      const demoCoyfd = {
+        padron: [
+          { categoria: "Grupo 9-10 años", equipo: "General", jugador: "Benítez, Tomás",         dni: "48901234" },
+          { categoria: "Grupo 9-10 años", equipo: "General", jugador: "Gómez, Bautista",        dni: "49321654" },
+          { categoria: "Grupo 9-10 años", equipo: "General", jugador: "Martínez, Valentino",    dni: "49012876" },
+          { categoria: "Grupo 9-10 años", equipo: "General", jugador: "Ríos, Benjamín",         dni: "49445667" }
+        ],
+        asistencia: [
+          { fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Benítez, Tomás",      estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Gómez, Bautista",     estado: "P | Sem:A" },
+          { fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Martínez, Valentino", estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Ríos, Benjamín",      estado: "P | Sem:V" }
+        ],
+        evaluaciones: [
+          {
+            fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Benítez, Tomás",
+            notas: { "Coordinación óculo-manual": 8, "Coordinación óculo-pédica": 7.5, "Equilibrio y desplazamientos": 8, "Giro y salto": 7.5, "Cooperación en juego": 7, "Comprensión de reglas": 7.5, "Tolerancia al contacto": 6.5, "Actitud y compromiso (Carácter)": 7.5, "Respeto y convivencia (Conexión)": 7.5, "Tolerancia al error y frustración (Confianza)": 6.5 }
+          },
+          {
+            fecha: hoy, categoria: "Grupo 9-10 años", equipo: "General", jugador: "Gómez, Bautista",
+            notas: { "Coordinación óculo-manual": 6.5, "Coordinación óculo-pédica": 6, "Equilibrio y desplazamientos": 6.5, "Giro y salto": 6, "Cooperación en juego": 5.5, "Comprensión de reglas": 6, "Tolerancia al contacto": 5, "Actitud y compromiso (Carácter)": 5.5, "Respeto y convivencia (Conexión)": 6, "Tolerancia al error y frustración (Confianza)": 5 }
+          }
+        ],
+        gestos: null, email: "ugi@ccba.com.ar"
+      };
+
+      const demoHockey = {
+        padron: [
+          { categoria: "Sub-12", equipo: "A", jugador: "Álvarez, Sofía (🧩 DUA)", dni: "49812345" },
+          { categoria: "Sub-12", equipo: "A", jugador: "Rojas, Camila",          dni: "49823456" },
+          { categoria: "Sub-12", equipo: "A", jugador: "Cáceres, Martina (Arq)", dni: "49834567" },
+          { categoria: "Sub-12", equipo: "B", jugador: "Ibáñez, Delfina",        dni: "49845678" },
+          { categoria: "Sub-12", equipo: "B", jugador: "Luna, Victoria",         dni: "49856789" }
+        ],
+        asistencia: [
+          { fecha: hoy, categoria: "Sub-12", equipo: "A", jugador: "Álvarez, Sofía (🧩 DUA)", estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Sub-12", equipo: "A", jugador: "Rojas, Camila",          estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Sub-12", equipo: "A", jugador: "Cáceres, Martina (Arq)", estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Sub-12", equipo: "B", jugador: "Ibáñez, Delfina",        estado: "P | Sem:V" },
+          { fecha: hoy, categoria: "Sub-12", equipo: "B", jugador: "Luna, Victoria",         estado: "T | Sem:A" }
+        ],
+        evaluaciones: [
+          {
+            fecha: hoy, categoria: "Sub-12", equipo: "A", jugador: "Álvarez, Sofía (🧩 DUA)",
+            notas: { "Conducción (derecha y revés)": 8, "Pase (push / slap)": 8, "Recepción": 8.5, "Barrida / hit": 7.5, "Tackle y marca": 7.5, "Ubicación en cancha": 8, "Toma de decisión": 8, "Actitud y compromiso (Carácter)": 9, "Respeto y convivencia (Conexión)": 9, "Tolerancia al error y frustración (Confianza)": 8.5 }
+          },
+          {
+            fecha: hoy, categoria: "Sub-12", equipo: "A", jugador: "Rojas, Camila",
+            notas: { "Conducción (derecha y revés)": 7.5, "Pase (push / slap)": 7, "Recepción": 7.5, "Barrida / hit": 7, "Tackle y marca": 7, "Ubicación en cancha": 7.5, "Toma de decisión": 7, "Actitud y compromiso (Carácter)": 8.5, "Respeto y convivencia (Conexión)": 8.5, "Tolerancia al error y frustración (Confianza)": 8 }
+          }
+        ],
+        gestos: null, email: "ugi@ccba.com.ar"
       };
 
       localStorage.setItem('muni360_modo_demo', '1');
+      localStorage.setItem('muni360_ult_cat_' + dep, cat);
+      localStorage.setItem('muni360_ult_eq_' + dep, eq);
       localStorage.setItem('muni360_cache_' + dep, JSON.stringify(demoData));
-      localStorage.setItem('muni360_cache_Colonia', JSON.stringify({
-        padron: [
-          { categoria: "Grupo 8 años", equipo: "General", jugador: "Acosta, Mateo (🧩 DUA)", dni: "48512390" }
-        ],
-        asistencia: [], evaluaciones: [], gestos: null, email: "ugi@ccba.com.ar"
-      }));
-      localStorage.setItem('muni360_cache_COYFD', JSON.stringify({
-        padron: [
-          { categoria: "Grupo 9-10 años", equipo: "General", jugador: "Benítez, Tomás", dni: "48901234" }
-        ],
-        asistencia: [], evaluaciones: [], gestos: null, email: "ugi@ccba.com.ar"
-      }));
+      localStorage.setItem('muni360_cache_Colonia', JSON.stringify(demoColonia));
+      localStorage.setItem('muni360_cache_COYFD', JSON.stringify(demoCoyfd));
+      localStorage.setItem('muni360_cache_Hockey sobre Césped Damas', JSON.stringify(demoHockey));
 
       const legajoMateo = {
         estadoPlan: "🟡 Plan A Activo (Acompañamiento 90 días)",
@@ -3547,7 +3736,7 @@
           },
           {
             id: "ev_demo_2",
-            fecha: fechaLocal(-14),
+            fecha: fechaLocal(14),
             tipo: "🔄 Cambio de deporte / categoría",
             detalle: "Pase articulado desde COYFD hacia Básquet Caballeros Sub-12 luego de completar etapa de iniciación polideportiva.",
             autor: "Coordinación UGI"
@@ -3570,7 +3759,7 @@
           },
           {
             id: "ev_demo_4",
-            fecha: fechaLocal(-20),
+            fecha: fechaLocal(20),
             tipo: "📝 Nota general de Coordinación",
             detalle: "Articulación con profes de COYFD: muy buena integración con sus compañeros de categoría.",
             autor: "Coordinación UGI"
@@ -3579,11 +3768,55 @@
         actualizadoPor: "Juan Machado",
         actualizadoFecha: hoy
       };
+      const legajoBautista = {
+        estadoPlan: "🟠 Plan B Activo (Participación Condicionada 60 días)",
+        actividadesSimultaneas: ["COYFD", "Básquet Caballeros"],
+        paseInterno: "En seguimiento conjunto entre Coordinación de Básquet y UGI.",
+        bitacora: [
+          {
+            id: "ev_demo_5",
+            fecha: hoy,
+            tipo: "🤝 Acuerdo PAI / Seguimiento UGI",
+            detalle: "Se firmó acta de compromiso formativo (Plan B 60 días) con la familia y el entrenador. Uso de pausa preventiva en Zona de Calma ante enojo.",
+            autor: "Juan Machado"
+          },
+          {
+            id: "ev_demo_6",
+            fecha: fechaLocal(10),
+            tipo: "🚦 Situación conductual / Episodio en cancha",
+            detalle: "Reacción impulsiva ante cobro arbitral en partido amistoso. Se realizó conversación reparadora con el grupo.",
+            autor: "Coordinación Básquet"
+          }
+        ],
+        actualizadoPor: "Juan Machado",
+        actualizadoFecha: hoy
+      };
+      const legajoValentinoP = {
+        estadoPlan: "🧩 Ciudad Integrado / Doble pertenencia",
+        actividadesSimultaneas: ["Colonia", "Ciudad Integrado", "Básquet Caballeros"],
+        paseInterno: "Participa en Ciudad Integrado y entrena con Sub-12 Tira B dos veces por semana.",
+        bitacora: [
+          {
+            id: "ev_demo_7",
+            fecha: fechaLocal(5),
+            tipo: "🟢 Tarjeta Verde Digital",
+            detalle: "Compañerismo y respaldo a un compañero — Excelente integración grupal en el cierre del entrenamiento.",
+            autor: "Juan Machado"
+          }
+        ],
+        actualizadoPor: "Juan Machado",
+        actualizadoFecha: hoy
+      };
+
       const mapaLegajosDemo = leerMapaLegajosV2();
       mapaLegajosDemo["48512390"] = legajoMateo;
       mapaLegajosDemo[claveNombreDni("Acosta, Mateo")] = legajoMateo;
       mapaLegajosDemo["48901234"] = legajoTomas;
       mapaLegajosDemo[claveNombreDni("Benítez, Tomás")] = legajoTomas;
+      mapaLegajosDemo["49321654"] = legajoBautista;
+      mapaLegajosDemo[claveNombreDni("Gómez, Bautista")] = legajoBautista;
+      mapaLegajosDemo["49210334"] = legajoValentinoP;
+      mapaLegajosDemo[claveNombreDni("Peralta, Valentino")] = legajoValentinoP;
       localStorage.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapaLegajosDemo));
 
       const sesionDemo = {
@@ -3599,6 +3832,7 @@
       localStorage.removeItem('muni360_cache_Básquet Caballeros');
       localStorage.removeItem('muni360_cache_Colonia');
       localStorage.removeItem('muni360_cache_COYFD');
+      localStorage.removeItem('muni360_cache_Hockey sobre Césped Damas');
       localStorage.removeItem('muni360_sesion_activa');
       sesion = null;
       $('login-pass').value = "";
