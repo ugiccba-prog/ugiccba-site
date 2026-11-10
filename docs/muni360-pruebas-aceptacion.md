@@ -26,7 +26,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
 | G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Pendiente |
-| G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Pendiente |
+| G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Parcial real: servidor rechaza; interfaz corregida, repetir en Google |
 | D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Parcial real: Padrón oculto y nota privada ausente en Cambios; apoyo DUA pendiente |
 | D02 | Dirección abre legajo y agrega una nota. | Nota compartida entre sesiones autorizadas, autor real y fecha; no sólo memoria local. | Pendiente |
 | D03 | Intentar modificar una nota histórica. | Se conserva; se pide una rectificación como evento nuevo. | Pendiente |
@@ -98,3 +98,6 @@ Para el ensayo real de recuperación, ejecutar ensayarRespaldoYRecuperacionUGI d
 
 ## Corrección de refresco del padrón
 Se reprodujo que una caché vacía mostraba temporalmente cero jugadores al refrescar, aunque existiera un snapshot confirmado. También se reprodujo una respuesta anterior que reemplazaba una más reciente. Se agregaron pruebas de espera y falla de red, respuestas fuera de orden, cambio de sesión y separación entre actividades. La evaluación pendiente conserva dos notas de 6,5 y se confirma al revisar el nuevo padrón. Falta repetir el recorrido completo en Google después de publicar la corrección.
+
+## Modo Consulta
+Se comprobó el rechazo de escritura por el servidor. La interfaz permitía generar un pendiente improcedente: se bloquearon los controles de escritura, los borradores automáticos y el alta local de operaciones para Consulta. La navegación, lectura y selección de fecha o grupo permanecen disponibles. Falta repetir la comprobación real con la versión corregida.

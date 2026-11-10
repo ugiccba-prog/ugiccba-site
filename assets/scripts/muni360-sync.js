@@ -57,6 +57,7 @@
     persist() { this.storage.setItem(this.storageKey, JSON.stringify(this.queue)); }
     status(message) { this.onStatus({ count: this.queue.length, message, blocked: this.queue.find(x => x.error) || null }); }
     async enqueue(payload) {
+      if(this.session.rol==='Consulta')throw new ApiError('Tu acceso es de consulta.','PERMISOS');
       if (this.stopped) throw new ApiError('Volvé a ingresar.', 'SESION');
       const snapshot = this.snapshots[payload.deporte];
       if (!snapshot) throw new ApiError('Primero conectá y actualizá esta actividad.', 'SIN_DATOS');

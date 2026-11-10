@@ -896,6 +896,7 @@
     <!-- PESTAÑAS UNIFICADAS -->
     <div class="toolbar-cancha"><button type="button" class="btn-sec" id="modo-cancha">Modo cancha</button><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
+    <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
     <div class="tabs" id="nav-tabs" role="tablist"><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
       <button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true">
@@ -1477,8 +1478,24 @@
         await syncClient.discardFirst(); $('dua-modal').classList.add('hidden'); await syncClient.flush(); if (!syncClient.queue.length) await cargarAreaActiva();
       };
     }
+    const controlesConsulta=new WeakMap();
+    const selectorEscrituraConsulta='#lista-asist button[data-e],#lista-asist button[data-sem],#lista-asist button[data-action="comida"],#contenedor-gestos input,#contenedor-gestos .step-btn,#sel-clima-clase,#sel-puntos-ciudad,#btn-todos-p,#btn-todos-comida,#btn-guardar-asist,#btn-guardar-eval,#btn-tarjeta-verde,#btn-confirmar-verde,#btn-registrar-ugi,#form-padron input,#form-padron button,#form-padron select,#form-padron textarea,#btn-sumar-gesto,#btn-dua-save,#btn-dua-del,#btn-guardar-legajo,#btn-agregar-evento-legajo,[id^="btn-reset-"]';
+    function esSoloConsulta(){return sesion?.rol==='Consulta';}
+    function aplicarModoConsulta(){
+      const readonly=esSoloConsulta();
+      $('modo-consulta-aviso').classList.toggle('hidden',!readonly);
+      document.querySelectorAll(selectorEscrituraConsulta).forEach(el=>{
+        if(readonly){if(!controlesConsulta.has(el))controlesConsulta.set(el,el.disabled);el.disabled=true;}
+        else if(controlesConsulta.has(el)){el.disabled=controlesConsulta.get(el);controlesConsulta.delete(el);}
+      });
+    }
+    document.addEventListener('click',e=>{
+      if(esSoloConsulta()&&e.target.closest(selectorEscrituraConsulta)){e.preventDefault();e.stopImmediatePropagation();toast('Tu acceso es de consulta.');}
+    },true);
+    if(typeof MutationObserver!=='undefined')new MutationObserver(()=>aplicarModoConsulta()).observe($('app-screen'),{childList:true,subtree:true});
     let guardandoOperacion=false;
     async function enviarOperacion(payload) {
+      if(esSoloConsulta()){toast('Tu acceso es de consulta.');return false;}
       if(guardandoOperacion){toast('Hay una carga en curso. Esperá la confirmación.');return false;}
       guardandoOperacion=true;
       const controls=[...document.querySelectorAll('#app-screen button,#app-screen input,#app-screen select,#app-screen textarea')].map(el=>[el,el.disabled]);
@@ -1652,6 +1669,7 @@
 
     function actualizarCabeceraYPestanas() {
       const cfg = cfgActual();
+      aplicarModoConsulta();
       $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre}) · Todos los equipos habilitados`;
       $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('auto-sheets').classList.toggle('hidden',!sesion.canManageUsers);
@@ -3565,6 +3583,7 @@
       };
     }
     function markDraft(){
+      if(esSoloConsulta())return;
       draftContext={cat:$('sel-categoria').value,eq:$('sel-equipo').value,date:$('input-fecha').value,deporte:areaActiva};
       if(!syncClient){$('draft-status').textContent='Hay cambios de asistencia sin guardar.';return;}
       const saved={...draftContext,uid:storageScope,asistencia:asistTempDep,semaforo:semTempDep,comida:comidaTempDep,clima:$('sel-clima-clase').value,puntos:$('sel-puntos-ciudad').value};
