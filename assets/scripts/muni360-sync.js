@@ -22,7 +22,7 @@
       this.url = url; this.fetch = fetcher; this.storage = storage; this.session = session; this.onStatus = onStatus; this.id = id; this.getToken = getToken; this.transport = transport;
       this.storageKey = 'muni360_v2_pending_' + session.usuario;
       this.queue = JSON.parse(storage.getItem(this.storageKey) || '[]');
-      this.snapshots = {}; this.running = null; this.stopped = false;
+      this.snapshots = {}; this.readVersions = {}; this.running = null; this.stopped = false;
       this.lock = lock || (fn => {
         if (typeof navigator !== 'undefined' && navigator.locks) return navigator.locks.request(this.storageKey, fn);
         throw new ApiError('Este navegador no permite guardar pendientes de forma segura entre pestañas. Actualizalo.', 'NAVEGADOR');
@@ -48,8 +48,10 @@
       return result;
     }
     async read(deporte, temporada) {
+      const sequence=temporada?null:(this.readVersions[deporte]||0)+1;
+      if(!temporada)this.readVersions[deporte]=sequence;
       const result = await this.request(null, { deporte, ...(temporada ? { temporada } : {}) });
-      if (!temporada) this.snapshots[deporte] = result;
+      if (!temporada && !this.stopped && this.readVersions[deporte]===sequence) this.snapshots[deporte] = result;
       return result;
     }
     persist() { this.storage.setItem(this.storageKey, JSON.stringify(this.queue)); }

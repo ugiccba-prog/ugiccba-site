@@ -65,3 +65,14 @@ test('recuperación: copias privadas coinciden, excluyen cambios posteriores y a
  assert.equal(JSON.stringify(e.books.get('private')),before);assert.equal(triggers.length,1);assert.ok(e.props.has('UGI_RECUPERACION_VERIFICADA'));
  e.ctx.ensayarRespaldoYRecuperacionUGI();assert.equal(triggers.length,1);
 });
+
+test('evaluación pendiente: cambio de padrón y revisión conservan ambos puntajes decimales y los jugadores',async()=>{
+ const e=environment();e.seed();const a=browser(e,e.teacher);await a.client.read('Tenis');
+ e.write(e.owner,{tipo:'ALTA_PADRON',categoria:'Sub 12',equipo:'A',jugadores:[{jugador:'Otra persona'}]});
+ const notas={'Frenado y cambios de dirección':6.5,'Tiro al arco':6.5};
+ assert.equal(await a.client.enqueue({tipo:'EVALUACION',deporte:'Tenis',categoria:'Sub 12',equipo:'A',fecha:'2026-11-10',jugador:'Persona de prueba',notas}),false);
+ assert.equal(a.client.queue[0].code,'CONFLICTO');assert.deepEqual(a.client.queue[0].payload.notas,notas);
+ await a.client.reviewAndRetry();assert.equal(a.client.queue.length,0);
+ const confirmed=e.read();assert.equal(confirmed.padron.length,2);assert.equal(confirmed.evaluaciones.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(confirmed.evaluaciones[0].notas)),notas);
+});

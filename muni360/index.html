@@ -2344,29 +2344,36 @@
     $('dua-plan-des').addEventListener('change', renderPlanificadorDua);
 
 
+    let secuenciaCargaArea=0;
     async function cargarAreaActiva() {
       if(draftContext)return toast('Hay una asistencia en edición. Esperá el guardado o pulsá Guardar asistencia antes de actualizar.');
       window._asistKeyActual=null;
-      const d=areaActiva;
+      const d=areaActiva,secuencia=++secuenciaCargaArea;
       if (almacen.getItem('muni360_modo_demo') === '1') {
         datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
         renderFiltrosDeporte(); renderVistaActiva();
         $('estado-txt').textContent='🎬 DEMOSTRACIÓN · Datos ficticios · Sin envíos a Google'; return;
       }
-      if (syncClient?.queue.length) { datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}}; renderFiltrosDeporte(); renderVistaActiva(); syncClient.status('Enviá o revisá los pendientes antes de actualizar.'); return; }
-      datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
-      renderFiltrosDeporte(); renderVistaActiva();
+      const client=syncClient,uid=sesion?.usuario;
+      let cached=null;try{cached=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null');}catch(_){}
+      // Prefer this authenticated client's confirmed snapshot over browser cache.
+      const previous=client?.snapshots?.[d]||cached;
+      if(previous&&Array.isArray(previous.padron)&&Array.isArray(previous.asistencia)&&Array.isArray(previous.evaluaciones)){
+        datosDeporte=previous;renderFiltrosDeporte();renderVistaActiva();
+      }else{
+        datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};renderFiltrosDeporte();renderVistaActiva();
+      }
+      if(client?.queue.length){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
       $('estado-txt').textContent='Conectando con Google...';
       try {
-        const client=syncClient,uid=sesion?.usuario;
         const j=await client.read(d);
-        if (client!==syncClient || uid!==sesion?.usuario || d!==areaActiva) return;
-        datosDeporte=j; almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
+        if (client!==syncClient || uid!==sesion?.usuario || d!==areaActiva || secuencia!==secuenciaCargaArea) return;
+        client.snapshots[d]=j; datosDeporte=j; almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
         window._asistKeyActual=null; renderFiltrosDeporte(); renderVistaActiva(); renderHistorialUgiLocal();
         $('estado-txt').textContent=j.sheetsStatus==='pending'?'✓ Guardado en Sheets privado · Vistas de actividad pendientes':'✓ Guardado en Sheets · Vistas actualizadas'; $('estado-acciones').innerHTML='';
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(a.fecha.slice(0,10))} · ${esc(a.modo)}</option>`).join('');
         $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
-      } catch(e) { $('estado-txt').textContent='⚠ '+e.message; }
+      } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
     }
 
     function categoriasDep() {

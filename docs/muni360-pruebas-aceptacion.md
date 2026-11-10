@@ -19,7 +19,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G01 | Abrir sin sesión y consultar el endpoint por GET. | Sólo estado general; ningún padrón, ficha o token. | Verificado por HTTP |
 | G02 | Ingresar con una cuenta nueva de Google. | Acceso pendiente; no recibe datos de una actividad. | Pendiente |
 | G03 | Aprobar desde la cuenta propietaria. | El profe entra al revisar acceso; alta de permiso con autor, antes y después. | Parcial: ingreso aprobado; historial de permiso pendiente |
-| G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Pendiente |
+| G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Confirmado por usuario: enlace directo rechazado; sin lista de usuarios |
 | G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Pendiente |
 | G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
 | G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Pendiente |
@@ -27,7 +27,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
 | G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Pendiente |
 | G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Pendiente |
-| D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Pendiente |
+| D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Parcial real: Padrón oculto y nota privada ausente en Cambios; apoyo DUA pendiente |
 | D02 | Dirección abre legajo y agrega una nota. | Nota compartida entre sesiones autorizadas, autor real y fecha; no sólo memoria local. | Pendiente |
 | D03 | Intentar modificar una nota histórica. | Se conserva; se pide una rectificación como evento nuevo. | Pendiente |
 | D04 | Profe registra una tarjeta verde. | Evento propio en la bitácora; no recibe otras notas privadas en respuesta o auditoría. | Pendiente |
@@ -50,7 +50,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | A10 | Salir con pendientes y entrar con otra cuenta. | No ve ni envía pendientes de la cuenta anterior. | Pendiente |
 | A11 | Cambiar grupo o fecha con asistencia sin guardar. | Advertencia; cancelar mantiene el contexto y los cambios. | Pendiente |
 | E01 | Evaluar una variable, decimales y notas fuera de 1–10. | Sólo valores válidos; sin promedio técnico/formativo mezclado. | Pendiente |
-| E02 | Guardar evaluación y volver a abrirla. | Mismos valores; autor y cambio presentes en historial. | Pendiente |
+| E02 | Guardar evaluación y volver a abrirla. | Mismos valores; autor y cambio presentes en historial. | Parcial real: evaluación decimal recuperada tras conflicto; reapertura en ambas cuentas pendiente |
 | E03 | Consultar análisis sin datos y con pocos datos. | Sin divisiones por cero; sin convertir ausencia de observación en buen resultado. | Pendiente |
 | E04 | Exportar XLSX con permiso y sin permiso. | Archivo correcto para autorizado; bloqueo para quien no puede exportar. | Pendiente |
 | H01 | Consultar Cambios como profe y como Dirección. | Alcance correcto, autor, fecha y antes/después de cada operación. | Parcial: autor en Sheets; alcance completo pendiente |
@@ -95,3 +95,6 @@ Para el ensayo real de recuperación, ejecutar ensayarRespaldoYRecuperacionUGI d
 - Suspensión real: una sesión abierta recibió el rechazo por acceso suspendido. Después de reactivar y revisar el pendiente, el usuario confirmó la recuperación.
 - Conflicto real: dos dispositivos enviaron valores distintos desde la misma revisión; el segundo quedó bloqueado y mostró el valor confirmado por el primero al consultar los datos actuales. No se da por probado el cierre del pendiente hasta su confirmación.
 - La suite automatizada aprobó 70 casos tanto en la PC de trabajo como en la PC de continuidad. Esto no sustituye los casos reales que permanecen pendientes.
+
+## Corrección de refresco del padrón
+Se reprodujo que una caché vacía mostraba temporalmente cero jugadores al refrescar, aunque existiera un snapshot confirmado. También se reprodujo una respuesta anterior que reemplazaba una más reciente. Se agregaron pruebas de espera y falla de red, respuestas fuera de orden, cambio de sesión y separación entre actividades. La evaluación pendiente conserva dos notas de 6,5 y se confirma al revisar el nuevo padrón. Falta repetir el recorrido completo en Google después de publicar la corrección.
