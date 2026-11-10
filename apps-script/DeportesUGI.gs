@@ -129,3 +129,41 @@ function automaticSyncUGI(c,name,result){
   catch(_){result.sheetsStatus='pending';}
   return result;
 }
+
+function ensayarRespaldoYRecuperacionUGI(){
+  var ss=SpreadsheetApp.getActiveSpreadsheet(),c=configUGI(),p=PropertiesService.getScriptProperties();
+  if(!ss||ss.getId()!==c.id||!/^Muni360 - Ensayo de temporada - /.test(ss.getName()))throw new Error('Ejecutar solo desde la planilla nueva de ensayo.');
+  var source=DriveApp.getFileById(c.id),parent=DriveApp.getFolderById(p.getProperty('UGI_BACKUP_FOLDER_ID'));
+  privateResourceUGI(source);privateResourceUGI(parent);
+  var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new Error('Hay otra carga en curso. Reintentar luego.');
+  var result,folder;
+  try{
+    folder=parent.createFolder('Verificacion recuperacion '+new Date().toISOString().replace(/[:.]/g,'-'));privateResourceUGI(folder);
+    var checkpoint=source.makeCopy('Checkpoint privado de ensayo',folder);privateResourceUGI(checkpoint);
+    var restored=checkpoint.makeCopy('Recuperacion de prueba',folder);privateResourceUGI(restored);
+    function fingerprint(id){
+      var names=metadataUGI(id).map(function(t){return t.title;}).sort(),tables=readTablesUGI(id,names);
+      return {hash:sha(tables),pestanas:names.length,filas:names.reduce(function(n,k){return n+(tables[k]||[]).length;},0)};
+    }
+    var expected=fingerprint(checkpoint.getId()),first=fingerprint(restored.getId());
+    if(first.hash!==expected.hash)throw new Error('La recuperacion no coincide con el checkpoint. No se activa el respaldo diario.');
+    // A later change goes only to a disposable restored COPY.
+    var marker='Prueba_'+randomUUID().slice(0,8),table={};table[marker]=[['Ensayo'],['Cambio posterior al checkpoint']];
+    writeTablesUGI(restored.getId(),table);
+    if(fingerprint(restored.getId()).hash===expected.hash)throw new Error('No se detecto el cambio posterior simulado.');
+    if(fingerprint(checkpoint.getId()).hash!==expected.hash)throw new Error('El checkpoint fue alterado.');
+    var recoveredAgain=checkpoint.makeCopy('Recuperacion al punto del checkpoint',folder);privateResourceUGI(recoveredAgain);
+    var finalCheck=fingerprint(recoveredAgain.getId());
+    if(finalCheck.hash!==expected.hash)throw new Error('La segunda recuperacion no coincide.');
+    result={ok:true,fecha:new Date().toISOString(),pestanas:expected.pestanas,filas:expected.filas,recuperacionExacta:true,cambioPosteriorExcluido:true,carpeta:'https://drive.google.com/drive/folders/'+folder.getId(),checkpoint:checkpoint.getId(),restauracion:recoveredAgain.getId()};
+    p.setProperty('UGI_RECUPERACION_VERIFICADA',JSON.stringify(result));
+  }finally{lock.releaseLock();}
+  // Use the regular backup path too, including its daily duplicate protection.
+  var firstBackup=realizarBackupSemanal(),secondBackup=realizarBackupSemanal();
+  if(!firstBackup.ok||!secondBackup.ok||firstBackup.id!==secondBackup.id)throw new Error('El respaldo diario no confirmo su proteccion contra duplicados.');
+  var handler='realizarBackupSemanal',existing=ScriptApp.getProjectTriggers().filter(function(t){return t.getHandlerFunction()===handler;});
+  if(!existing.length)ScriptApp.newTrigger(handler).timeBased().everyDays(1).atHour(2).inTimezone(TZ_UGI).create();
+  result.respaldoDiarioProgramado=true;result.respaldoSinDuplicado=true;
+  console.log('RESPALDO_Y_RECUPERACION_VERIFICADOS '+JSON.stringify({ok:result.ok,pestanas:result.pestanas,filas:result.filas,recuperacionExacta:result.recuperacionExacta,cambioPosteriorExcluido:result.cambioPosteriorExcluido,respaldoSinDuplicado:true,respaldoDiarioProgramado:true,carpeta:result.carpeta}));
+  return result;
+}

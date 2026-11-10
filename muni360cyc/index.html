@@ -1531,7 +1531,7 @@
       }
       await cargarAreaActiva(); toast(`${count} ficha(s) recuperadas. Los originales siguen en este dispositivo.`);
     }
-    window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.length) await cargarAreaActiva(); } });
+    window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.length) { if(draftContext)markDraft(); else await cargarAreaActiva(); } } });
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&draftContext&&!guardandoOperacion&&!syncClient?.queue.length)guardarAsistenciaActual().catch(()=>{});});
     window.addEventListener('beforeunload', e => { if (syncClient?.queue.length || draftContext) { e.preventDefault(); e.returnValue = ''; } });
     setInterval(() => {
