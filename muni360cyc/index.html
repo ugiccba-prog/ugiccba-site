@@ -905,7 +905,7 @@
   <main id="app-screen" class="container hidden">
 
     <!-- PESTAÑAS UNIFICADAS -->
-    <div class="toolbar-cancha"><button type="button" class="btn-sec" id="modo-cancha">Modo cancha</button><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button>
+    <div class="toolbar-cancha"><button type="button" class="btn-sec" id="modo-cancha">Modo cancha</button><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
     <div id="draft-status" class="draft-status" role="status"></div>
     <div class="tabs" id="nav-tabs" role="tablist"><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
@@ -1659,6 +1659,7 @@
       const cfg = cfgActual();
       $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre}) · Todos los equipos habilitados`;
       $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
+      $('auto-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || almacen.getItem('muni360_modo_demo')==='1'));
       $('link-admin-ugi').href='../admin/'+(almacen.getItem('muni360_modo_demo')==='1'?'?demo=1':'');
       const puedePadron = esCoordOAdmin();
@@ -3580,7 +3581,24 @@
       if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
       try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(new Date(e.fecha).toLocaleString('es-AR'))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
     }
-    $('sync-sheets').onclick=async()=>{const button=$('sync-sheets');button.disabled=true;try{await MuniGoogle.call('/api/sheets/sync',{deporte:areaActiva});await cargarAreaActiva();toast('Vistas de Sheets actualizadas.');}catch(e){toast(e.message);}finally{button.disabled=false;}};
+    $('sync-sheets').onclick=async()=>{
+      if(syncClient?.queue.length)return toast('Hay cargas sin confirmar. Revisá los pendientes antes de actualizar Sheets.');
+      const button=$('sync-sheets'),deporte=areaActiva;button.disabled=true;button.textContent='Actualizando y verificando…';
+      try{
+        const result=await MuniGoogle.syncSheets(deporte);
+        if(areaActiva===deporte)$('estado-txt').textContent='Sheets verificado · '+deporte+' · versión '+result.version;
+        toast('Sheets verificado: '+deporte+' · versión '+result.version);
+      }catch(e){toast(e.message);}finally{button.disabled=false;button.textContent='Actualizar vistas de Sheets';}
+    };
+    $('auto-sheets').onclick=async()=>{
+      const button=$('auto-sheets');button.disabled=true;
+      try{
+        const result=await MuniGoogle.call('/api/sheets/automation');
+        if(result.enabled!==true)throw Error('No se confirmó la sincronización automática.');
+        button.textContent='Sincronización automática activada';
+        toast('Sheets se actualizará al guardar. Los pendientes se reintentan cada 15 minutos.');
+      }catch(e){toast(e.message);button.disabled=false;}
+    };
     $('actualizar-auditoria').onclick=renderAuditoria;
     $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.antes,null,2))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.despues,null,2))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
     $('importar-sheets').onclick=async()=>{

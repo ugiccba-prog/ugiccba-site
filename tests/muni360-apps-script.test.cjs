@@ -126,3 +126,31 @@ test('GAS: alta e edición de legajo concurrentes no pisan la corrección de DNI
     assert.equal(e.write(e.owner,change(first,'11112222')).ok,true);assert.equal(e.post(e.owner,'/api/operations',old).codigo,'CONFLICTO');assert.equal(e.read().padron[0].dni,'11112222');
   }
 });
+
+test('GAS: botón de sincronización verifica destino, versión y datos; cambios de ambas cuentas llegan a Sheets',()=>{
+  const e=environment();e.seed();e.write(e.teacher,attendance);
+  const r=e.post(e.owner,'/api/sheets/sync',{deporte:'Tenis'});
+  assert.equal(r.ok,true);assert.equal(r.verified,true);assert.equal(r.actividad,'Tenis');assert.equal(r.version,e.read().version);
+  assert.equal(e.read().sheetsStatus,'synced');
+  assert.ok(JSON.stringify(e.books.get('tenis-public')).includes('teacher'));
+  assert.equal(e.post(e.teacher,'/api/sheets/sync',{deporte:'Tenis'}).codigo,'PERMISOS');
+});
+test('GAS: una vista que no conserva la escritura no se confirma como actualizada',()=>{
+  const e=environment();e.seed();e.ctx.syncActivityUGI(e.ctx.configUGI(),'Tenis');e.write(e.teacher,attendance);
+  const update=e.ctx.Sheets.Spreadsheets.batchUpdate;
+  e.ctx.Sheets.Spreadsheets.batchUpdate=(body,id)=>id==='tenis-public'?{}:update(body,id);
+  assert.equal(e.post(e.owner,'/api/sheets/sync',{deporte:'Tenis'}).codigo,'SINCRONIZACION');
+  assert.equal(e.read().sheetsStatus,'pending');
+});
+test('GAS: automatización sólo del propietario, activación idempotente y reintento sin perder guardados',()=>{
+  const e=environment(),triggers=[];
+  e.ctx.ScriptApp={getProjectTriggers:()=>triggers,newTrigger:handler=>({timeBased(){return this;},everyMinutes(n){assert.equal(n,15);return this;},create(){triggers.push({getHandlerFunction:()=>handler});}})};
+  assert.equal(e.post(e.teacher,'/api/sheets/automation').codigo,'PERMISOS');
+  assert.equal(e.post(e.owner,'/api/sheets/automation').enabled,true);
+  assert.equal(e.post(e.owner,'/api/sheets/automation').enabled,true);assert.equal(triggers.length,1);
+  assert.equal(e.seed().sheetsStatus,'synced');
+  assert.equal(e.write(e.teacher,attendance).sheetsStatus,'synced');assert.equal(e.read().sheetsStatus,'synced');
+  e.faults.write='tenis-public';const r=e.write(e.teacher,{...attendance,datos:{'Persona de prueba':'A | Sem:R'}});
+  assert.equal(r.ok,true);assert.equal(r.sheetsStatus,'pending');assert.equal(e.read().asistencia[0].estado,'A | Sem:R');
+  e.faults.write=false;assert.equal(e.ctx.sincronizarPendientesUGI().ok,true);assert.equal(e.read().sheetsStatus,'synced');
+});

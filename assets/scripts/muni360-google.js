@@ -21,8 +21,13 @@
     if(data.backendVersion!=='apps-script-3.0.0')throw Error('La versión de Apps Script todavía no coincide con esta app.');
     if(!response.ok||!data.ok){const e=Error(data.error||'No se pudo completar la operación.');e.code=data.codigo;throw e;}return data;
   }
+  async function syncSheets(deporte){
+    const result=await call('/api/sheets/sync',{deporte});
+    if(result.verified!==true||result.actividad!==deporte||!Number.isInteger(result.version)||result.version<0)throw Error('Sheets no confirmó la actividad y versión solicitadas. Volvé a intentar.');
+    return result;
+  }
   async function login(){await initialize();const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});return sdk.signInWithPopup(auth,provider);}
   async function logout(){if(auth)await sdk.signOut(auth);}
   function observe(fn){callbacks.add(fn);initialize().catch(e=>fn(null,e));return ()=>callbacks.delete(fn);}
-  root.MuniGoogle={configured,initialize,getToken,call,login,logout,observe};
+  root.MuniGoogle={configured,initialize,getToken,call,syncSheets,login,logout,observe};
 })(window);

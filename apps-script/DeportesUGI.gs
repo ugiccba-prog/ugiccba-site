@@ -23,7 +23,15 @@ function syncActivityUGI(c,name){
   // canonical state, receipts and audits NEVER use this non-atomic projection mode.
   var status=tables.EstadoSync;delete tables.EstadoSync;tables.EstadoSync=status;
   writeTablesUGI(c.map[name],tables,meta,null,previous,true);
+  // Confirm actual destination values before marking this version as projected.
+  var actual=readTablesUGI(c.map[name],Object.keys(tables));
+  Object.keys(tables).forEach(function(title){
+    var expected=tables[title],cols=Math.max.apply(null,expected.map(function(r){return r.length;}));
+    function normalized(rows){return rows.map(function(row){return Array.from({length:cols},function(_,i){return String(row[i]==null?'':row[i]);});});}
+    if(JSON.stringify(normalized(expected))!==JSON.stringify(normalized(actual[title]||[])))throw new AccessError('SINCRONIZACION','Sheets no confirmó la tabla '+title+'. El original sigue guardado.');
+  });
   a.meta.projectedVersion=a.meta.version;var update={};update[prefixUGI(name)+'Meta']=[['Control JSON'],[JSON.stringify(a.meta)]];writeTablesUGI(c.id,update);
+  return {ok:true,verified:true,actividad:name,version:a.meta.version,spreadsheetUrl:'https://docs.google.com/spreadsheets/d/'+c.map[name]+'/edit'};
 }
 function sincronizarPendientesUGI(){
   var c=configUGI(),props=PropertiesService.getScriptProperties(),areas=Object.keys(c.map),start=Number(props.getProperty('UGI_SYNC_CURSOR')||0)%areas.length,deadline=Date.now()+90000,done=0;
@@ -107,4 +115,17 @@ function crearRecursosDeEnsayoUGI(){
     var result={ok:true,actividades:Object.keys(map).length,siguiente:'Configurar Google Authentication Spark antes de habilitar usuarios.'};
     console.log('RECURSOS_ENSAYO_LISTOS '+JSON.stringify(result));return result;
   }finally{lock.releaseLock();}
+}
+
+function activarSincronizacionAutomaticaUGI(){
+  var handler='sincronizarPendientesUGI',triggers=ScriptApp.getProjectTriggers().filter(function(t){return t.getHandlerFunction()===handler;});
+  if(!triggers.length)ScriptApp.newTrigger(handler).timeBased().everyMinutes(15).create();
+  PropertiesService.getScriptProperties().setProperty('UGI_SYNC_ON_SAVE','true');
+  return {ok:true,enabled:true,retryMinutes:15};
+}
+function automaticSyncUGI(c,name,result){
+  if(PropertiesService.getScriptProperties().getProperty('UGI_SYNC_ON_SAVE')!=='true')return result;
+  try{syncActivityUGI(c,name);result.sheetsStatus='synced';}
+  catch(_){result.sheetsStatus='pending';}
+  return result;
 }

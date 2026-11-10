@@ -79,7 +79,7 @@ function executeUGI(c,d,actor){
   a.receipts.push([d.requestId,actor.id,hash,JSON.stringify(result)]);
   commitOperationUGI(c,d.deporte,a,d);
   // Shared planillas are projections. Their failure never invalidates a committed change.
-  return result;
+  return automaticSyncUGI(c,d.deporte,result);
 }
 function doPost(e){
   var lock=LockService.getScriptLock(),locked=false;
@@ -88,7 +88,7 @@ function doPost(e){
     var d;try{d=JSON.parse(raw);}catch(_){throw new AccessError('VALIDACION','JSON inválido.');}
     if(!d||typeof d!=='object'||Array.isArray(d))throw new AccessError('VALIDACION','Solicitud inválida.');
     var c=configUGI(),identity=identityUGI(c,d.idToken),path=d.path;delete d.idToken;delete d.path;
-    if(!['/api/me','/api/users/list','/api/users/update','/api/users/history','/api/sheets/staging','/api/sheets/sync','/api/operations'].includes(path))throw new AccessError('RUTA','Ruta inexistente.');
+    if(!['/api/me','/api/users/list','/api/users/update','/api/users/history','/api/sheets/staging','/api/sheets/sync','/api/sheets/automation','/api/operations'].includes(path))throw new AccessError('RUTA','Ruta inexistente.');
     if(!lock.tryLock(5000))throw new AccessError('RED','Hay otra carga en curso. Esperá unos segundos y reintentá.');locked=true;
     var users=loadUsersUGI(c),u=ensureUserUGI(c,identity,users,path==='/api/me');
     if(path==='/api/me')return responseUGI(meUGI(c,u));
@@ -103,9 +103,13 @@ function doPost(e){
       var old=copy(target);Object.assign(target,access,{version:randomUUID(),revision:target.revision+1});
       var id=randomUUID();users.history[id]={id:id,fecha:new Date().toISOString(),actor:actor.id,autor:actor.nombre,target:target.email,antes:old,despues:copy(target)};writeTablesUGI(c.id,userTablesUGI(users));return responseUGI({ok:true,user:target,authorizationUpdated:true});
     }
+    if(path==='/api/sheets/automation'){
+      if(identity.uid!==c.owner)throw new AccessError('PERMISOS','Sólo la cuenta propietaria activa la sincronización automática.');
+      return responseUGI(activarSincronizacionAutomaticaUGI());
+    }
     if(path==='/api/sheets/sync'){
       if(identity.uid!==c.owner)throw new AccessError('PERMISOS','Sólo Dirección propietaria actualiza las vistas manualmente.');
-      authorize(actor,{tipo:'LECTURA',deporte:d.deporte});syncActivityUGI(c,d.deporte);return responseUGI({ok:true});
+      authorize(actor,{tipo:'LECTURA',deporte:d.deporte});return responseUGI(syncActivityUGI(c,d.deporte));
     }
     if(path==='/api/sheets/staging'){
       authorize(actor,{tipo:'ALTA_PADRON',deporte:d.deporte});var t=readTablesUGI(c.map[d.deporte],['CargaPadron']);var rows=rowsUGI(t,'CargaPadron');if(rows.length>500)throw new AccessError('VALIDACION','Revisá la carga en grupos de hasta 500 filas.');return responseUGI({ok:true,rows:rows.filter(function(r){return r[0]&&r[1]&&r[2];}).map(function(r){return {categoria:String(r[0]),equipo:String(r[1]),jugador:String(r[2])};})});

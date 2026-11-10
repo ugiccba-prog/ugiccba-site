@@ -15,3 +15,9 @@ Si el nombre no corresponde a un ensayo, la planilla esta compartida, hay otro o
 El manifiesto incluye el alcance userinfo.email para verificar la cuenta ejecutora, ademas de los servicios de planillas, Drive, solicitudes externas y activadores. Las propiedades y claves privadas quedan en el proyecto de Google y no se copian al repositorio.
 
 Despues de esta preparacion siguen la configuracion de Authentication en Spark, la vinculacion del propietario y los ensayos reales de aceptacion. Crear los recursos no significa que el acceso con Google y los guardados ya esten aprobados en produccion.
+
+
+## Verificar y activar las vistas desde la app
+El botón Actualizar vistas de Sheets ahora vuelve a leer las tablas del destino antes de confirmar la actividad y su versión. Si la lectura no coincide, el original permanece guardado y la vista sigue pendiente. El botón no recarga el formulario ni descarta una asistencia que se esté editando.
+
+La cuenta propietaria puede pulsar Activar sincronización automática. Esa acción instala, sin duplicarlo, un activador de reintento cada 15 minutos y habilita la actualización verificada después de cada nuevo guardado. Una caída de la vista no invalida el original confirmado: el resultado queda pendiente para el reintento. No instala respaldos ni activa facturación. Probar con una cuenta de profe y verificar la autoría antes de usar datos reales.
