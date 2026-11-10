@@ -23,8 +23,8 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Pendiente |
 | G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
 | G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Pendiente |
-| G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Pendiente |
-| G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Pendiente |
+| G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
+| G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
 | G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Pendiente |
 | G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Pendiente |
 | D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Pendiente |
@@ -42,9 +42,9 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | A02 | Guardar P/A/T, semáforos y comida en Colonia. | Datos correctos al recargar; comida sólo según la selección realizada. | Parcial: asistencia y semáforo; comida pendiente |
 | A03 | Guardar fecha inválida o un alumno fuera del grupo. | Rechazo sin cambiar datos/versiones. | Pendiente |
 | A04 | Doble toque rápido en Guardar. | Una operación en curso; sin dos eventos involuntarios. | Pendiente |
-| A05 | Dos profes abren la misma fecha y guardan versiones distintas. | Se confirma la primera; la segunda requiere comparar y revisar. | Pendiente |
+| A05 | Dos profes abren la misma fecha y guardan versiones distintas. | Se confirma la primera; la segunda requiere comparar y revisar. | Parcial real: conflicto bloqueado y dato anterior visible; cierre del pendiente por confirmar |
 | A06 | Cambiar el padrón después de que otro profe abrió su lista. | La lista vieja se bloquea por cambio de plantel. | Pendiente |
-| A07 | Cortar red antes de guardar y recargar la página. | Pendiente por cuenta recuperable; no muestra guardado confirmado. | Pendiente |
+| A07 | Cortar red antes de guardar y recargar la página. | Pendiente por cuenta recuperable; no muestra guardado confirmado. | Parcial real: corte y reconexión automática confirmados; recarga sin red pendiente |
 | A08 | Cortar respuesta después de llegar a Google y reintentar. | Un recibo y un cambio; no duplica el registro. | Pendiente |
 | A09 | Respuesta perdida de una sesión UGI y usar Revisar pendiente. | Detecta que ya estaba guardada antes de generar otra operación. | Pendiente |
 | A10 | Salir con pendientes y entrar con otra cuenta. | No ve ni envía pendientes de la cuenta anterior. | Pendiente |
@@ -65,9 +65,9 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | T02 | Archivar con padrón vacío nuevo y revisar una ficha anterior. | Copia histórica y legajos preservados según acceso. | Pendiente |
 | T03 | Intentar archivar con pendientes o enviar un pendiente de temporada vieja. | Se bloquea; no mezcla ciclos. | Pendiente |
 | T04 | Interrumpir un cierre de temporada. | Todo aplicado o todo intacto; recuperar el mismo recibo si se perdió la respuesta. | Pendiente |
-| B01 | Crear respaldo dos veces el mismo día. | Una copia confirmada; sin crecimiento duplicado por reintento normal. | Pendiente |
+| B01 | Crear respaldo dos veces el mismo día. | Una copia confirmada; sin crecimiento duplicado por reintento normal. | Verificado en Google: copia diaria sin duplicado |
 | B02 | Probar carpeta compartida, sin permisos o Drive sin espacio. | No declara respaldo correcto; conserva originales. | Pendiente |
-| B03 | Restaurar en una copia y comparar registros posteriores al respaldo. | Recuperación documentada y conciliación; no se prometen datos posteriores a la copia. | Pendiente |
+| B03 | Restaurar en una copia y comparar registros posteriores al respaldo. | Recuperación documentada y conciliación; no se prometen datos posteriores a la copia. | Verificado en Google: recuperación exacta y cambio posterior excluido |
 | B04 | Verificar activadores durante varios días. | Ejecuciones verificables, vistas al día y respaldo real; no sólo activador creado. | Pendiente |
 | V01 | Simular el pico real de profes y planteles. | Medir latencia mediana/p95, errores y cuotas; sin pérdida ni duplicación. | Pendiente |
 | V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Pendiente |
@@ -84,6 +84,14 @@ La presentación debe mostrar: login de Google → acceso pendiente → aprobaci
 
 ## Autoguardado y actualización de vistas
 
-El usuario confirmó el autoguardado y la llegada a Sheets primero con Dirección y luego con Profe, sin pulsar Guardar ni Actualizar vistas. Esto no completa los ensayos reales de corte de red, conflicto, suspensión ni recuperación. Sus pruebas automatizadas constan en tests/muni360-resilience.test.cjs.
+El usuario confirmó el autoguardado y la llegada a Sheets primero con Dirección y luego con Profe, sin pulsar Guardar ni Actualizar vistas. Posteriormente se confirmó el corte de red con reconexión automática, el bloqueo por suspensión, la revisión tras reactivar y la detección de conflictos entre dispositivos. La recuperación se verificó en Google. Las variantes pendientes se mantienen indicadas en la matriz. Sus pruebas automatizadas constan en tests/muni360-resilience.test.cjs.
 
 Para el ensayo real de recuperación, ejecutar ensayarRespaldoYRecuperacionUGI desde el editor del proyecto vinculado a la planilla nueva de ensayo. La función crea un checkpoint y copias privadas de recuperación, compara todas las tablas, introduce un cambio posterior únicamente en una copia y verifica otra recuperación al punto original. Luego comprueba la deduplicación del respaldo diario y programa una ejecución diaria a las 2 h de Buenos Aires. Conservar el registro RESPALDO_Y_RECUPERACION_VERIFICADOS. Crear el activador no verifica sus futuras ejecuciones: B04 sigue pendiente hasta observarlas. Nunca restaura sobre el original.
+
+## Registro de verificación del 10 de noviembre de 2026
+
+- Ejecución real de respaldo: recuperación exacta de 11 pestañas y 60 filas, exclusión del cambio posterior simulado, copia diaria sin duplicado y activador diario programado. Evidencia: registro de ejecución aportado por el usuario. Las ejecuciones futuras siguen pendientes de observación.
+- Corte real de conexión: la app indicó carga pendiente y al reconectar actualizó Sheets sin botones, según confirmación del usuario. No se probó aún recargar la página estando desconectado.
+- Suspensión real: una sesión abierta recibió el rechazo por acceso suspendido. Después de reactivar y revisar el pendiente, el usuario confirmó la recuperación.
+- Conflicto real: dos dispositivos enviaron valores distintos desde la misma revisión; el segundo quedó bloqueado y mostró el valor confirmado por el primero al consultar los datos actuales. No se da por probado el cierre del pendiente hasta su confirmación.
+- La suite automatizada aprobó 70 casos tanto en la PC de trabajo como en la PC de continuidad. Esto no sustituye los casos reales que permanecen pendientes.
