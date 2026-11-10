@@ -8,7 +8,7 @@ La integración de esta conversación sólo pudo leer: crear una rama devolvió 
 4. No subir `.git`, credenciales ni archivos de entorno. La configuración pública se completa en `muni360-config.js`; las propiedades privadas van sólo al proyecto Apps Script.
 5. Abrir una terminal en la raíz del repositorio, con Node 22, y ejecutar `npm run test:muni360`. Las pruebas incluidas no necesitan instalar dependencias externas.
 6. Revisar los archivos cambiados. Los backends de juegos cognitivos y selectividad no se modifican ni se instalan en el proyecto nuevo de Muni360.
-7. Hacer un commit y subir esa rama. Abrir un PR como borrador con resumen de los cambios, las 54 pruebas locales y los ensayos reales todavía pendientes. Usar `docs/muni360-revision.md` como evidencia.
+7. Hacer un commit y subir esa rama. Abrir un PR como borrador con resumen de los cambios, las 55 pruebas locales y los ensayos reales todavía pendientes. Usar `docs/muni360-revision.md` como evidencia.
 8. Configurar el Apps Script de ensayo con la guía `muni360-operacion.md`. Subir archivos al repositorio no actualiza automáticamente una implementación de Apps Script.
 9. Mantener el PR como borrador hasta que pasen los casos críticos reales. Registrar la versión de Apps Script, la URL `/exec`, el commit del sitio y la copia de respaldo usada.
 10. Publicar sólo después de revisar esa evidencia. El dominio de prueba debe estar autorizado en Firebase antes del login real.

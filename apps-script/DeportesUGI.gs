@@ -84,3 +84,27 @@ function sincronizarActividadDesdeEditorUGI(){
   var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new AccessError('RED','Hay otra carga en curso.');
   try{syncActivityUGI(c,name);return {ok:true,actividad:name};}finally{lock.releaseLock();}
 }
+
+// Run once from the editor of a newly created, privately owned trial spreadsheet.
+function crearRecursosDeEnsayoUGI(){
+  var ss=SpreadsheetApp.getActiveSpreadsheet();
+  if(!ss||!/^Muni360 - Ensayo de temporada - /.test(ss.getName()))throw new AccessError('CONFIGURACION','Esta funcion solo se usa en la planilla nueva de ensayo.');
+  privateResourceUGI(DriveApp.getFileById(ss.getId()));
+  Sheets.Spreadsheets.get(ss.getId(),{fields:'spreadsheetId'});
+  var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new AccessError('RED','Hay otra preparacion en curso.');
+  try{
+    var p=PropertiesService.getScriptProperties(),current=p.getProperty('UGI_DATA_SHEET_ID');
+    if(current&&current!==ss.getId())throw new AccessError('CONFIGURACION','Ya hay otro original configurado. No se reemplaza.');
+    ss.setSpreadsheetTimeZone(TZ_UGI);p.setProperty('UGI_DATA_SHEET_ID',ss.getId());
+    if(!p.getProperty('UGI_ID_SECRET'))p.setProperty('UGI_ID_SECRET',randomUUID()+randomUUID());
+    var folderId=p.getProperty('UGI_BACKUP_FOLDER_ID');
+    if(!folderId){var folder=DriveApp.createFolder('Muni360 - Respaldos - Ensayo');folderId=folder.getId();p.setProperty('UGI_BACKUP_FOLDER_ID',folderId);}
+    privateResourceUGI(DriveApp.getFolderById(folderId));
+    var map=JSON.parse(p.getProperty('UGI_SHEET_MAP')||'{}');
+    ['Hockey sobre Patines Caballeros','Colonia'].forEach(function(name){
+      if(!map[name]){var view=SpreadsheetApp.create('Muni360 - Ensayo - '+name);view.setSpreadsheetTimeZone(TZ_UGI);map[name]=view.getId();p.setProperty('UGI_SHEET_MAP',JSON.stringify(map));}
+    });
+    var result={ok:true,actividades:Object.keys(map).length,siguiente:'Configurar Google Authentication Spark antes de habilitar usuarios.'};
+    console.log('RECURSOS_ENSAYO_LISTOS '+JSON.stringify(result));return result;
+  }finally{lock.releaseLock();}
+}

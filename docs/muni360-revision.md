@@ -4,9 +4,9 @@
 
 ## Resultado y límite de la revisión
 
-Se preparó un candidato coherente de Apps Script, Firebase Authentication en Spark y Sheets. Los dos portales y el panel de permisos usan el mismo backend. Pasaron **54 pruebas automatizadas locales** y una recorrida de navegador en Deportes y Colonia/COYFD: arranque de demo, modo cancha, ficha de evaluación, guardado ficticio, análisis, padrón, salida y panel de permisos.
+Se preparó un candidato coherente de Apps Script, Firebase Authentication en Spark y Sheets. Los dos portales y el panel de permisos usan el mismo backend. Pasaron **55 pruebas automatizadas locales** y una recorrida de navegador en Deportes y Colonia/COYFD: arranque de demo, modo cancha, ficha de evaluación, guardado ficticio, análisis, padrón, salida y panel de permisos.
 
-De las 54 pruebas, **22 corresponden al candidato Apps Script y su transporte/importación**. Las otras 32 incluyen una prueba de portabilidad Windows/Linux y conservan regresiones del cliente, los portales y las alternativas anteriores; parte de ellas valida la propuesta Firestore que ya no se recomienda desplegar. No se las presenta como 54 ensayos independientes de producción.
+De las 55 pruebas, **23 corresponden al candidato Apps Script y su transporte/importación**. Las otras 32 incluyen una prueba de portabilidad Windows/Linux y conservan regresiones del cliente, los portales y las alternativas anteriores; parte de ellas valida la propuesta Firestore que ya no se recomienda desplegar. No se las presenta como 55 ensayos independientes de producción.
 
 Los servicios de Google se simulan en las pruebas: validación de identidad, respuestas de Sheets, atomicidad, errores, pérdida de respuesta y Drive. **No se ha configurado ni ejecutado este código en el proyecto real de Google.** No están medidos aún su CORS/redirección real, latencia, rendimiento simultáneo ni consumo diario real de cuotas. La prueba de 500 personas y 6.000 asistencias demuestra comportamiento y volumen local; no certifica capacidad de Apps Script.
 
