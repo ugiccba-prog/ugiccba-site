@@ -1436,7 +1436,7 @@
 
     // Caché privada de esta pestaña; la cola durable se separa por cuenta autenticada.
     let syncClient = null;
-    let draftContext=null;
+    let draftContext=null,autosaveTimer=null;
     let storageScope = 'sin-sesion';
     const almacen = {
       getItem(k) { return sessionStorage.getItem('ugi-v2:' + storageScope + ':' + k); },
@@ -1521,6 +1521,7 @@
       await cargarAreaActiva(); toast(`${count} ficha(s) recuperadas. Los originales siguen en este dispositivo.`);
     }
     window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.length) await cargarAreaActiva(); } });
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&draftContext&&!guardandoOperacion&&!syncClient?.queue.length)guardarAsistenciaActual().catch(()=>{});});
     window.addEventListener('beforeunload', e => { if (syncClient?.queue.length || draftContext) { e.preventDefault(); e.returnValue = ''; } });
     setInterval(() => {
       if (syncClient && sesion?.expiresAt<=Date.now()) {
@@ -2344,6 +2345,7 @@
 
 
     async function cargarAreaActiva() {
+      if(draftContext)return toast('Hay una asistencia en edición. Esperá el guardado o pulsá Guardar asistencia antes de actualizar.');
       window._asistKeyActual=null;
       const d=areaActiva;
       if (almacen.getItem('muni360_modo_demo') === '1') {
@@ -2363,7 +2365,7 @@
         window._asistKeyActual=null; renderFiltrosDeporte(); renderVistaActiva(); renderHistorialUgiLocal();
         $('estado-txt').textContent=j.sheetsStatus==='pending'?'✓ Guardado en Sheets privado · Vistas de actividad pendientes':'✓ Guardado en Sheets · Vistas actualizadas'; $('estado-acciones').innerHTML='';
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(a.fecha.slice(0,10))} · ${esc(a.modo)}</option>`).join('');
-        $('comparacion-temporada').textContent='';
+        $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
       } catch(e) { $('estado-txt').textContent='⚠ '+e.message; }
     }
 
@@ -2638,7 +2640,8 @@
     });
 
 
-    $('btn-guardar-asist').addEventListener('click', async () => {
+    async function guardarAsistenciaActual() {
+      clearTimeout(autosaveTimer);
       const lista=plantelActualNombres(); if (!lista.length) return;
       const fecha=$('input-fecha').value, cat=$('sel-categoria').value, eq=$('sel-equipo').value||'General', cfg=cfgActual();
       const registro={}; lista.forEach(j=>{const est=asistTempDep[j]||'N';registro[j]=est+((cfg.tieneComida && ['P','T'].includes(est) && comidaTempDep[j])?' | 🍴 Comida':'')+' | Sem:'+(semTempDep[j]||'N');});
@@ -2650,7 +2653,11 @@
         Object.entries(registro).forEach(([jugador,estado])=>datosDeporte.asistencia.push({fecha,categoria:cat,equipo:eq,jugador,estado}));
         almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte)); renderVistaActiva();
       }
-    });
+      if(ok || syncClient?.queue.some(entry=>JSON.stringify(entry.payload.datos)===JSON.stringify(registro)&&entry.payload.deporte===payload.deporte&&entry.payload.categoria===cat&&entry.payload.equipo===eq&&entry.payload.fecha===fecha)){
+        draftContext=null;localStorage.removeItem(claveBorradorAsistencia());$('draft-status').textContent=ok?'Asistencia guardada.':'Asistencia pendiente de confirmación; se conserva en este dispositivo.';
+      }
+    }
+    $('btn-guardar-asist').addEventListener('click',()=>guardarAsistenciaActual());
 
     function tieneArqueroActual() {
       return Boolean(cfgActual().arquero);
@@ -3534,10 +3541,46 @@
 
 
 
-    function markDraft(){draftContext={cat:$('sel-categoria').value,eq:$('sel-equipo').value,date:$('input-fecha').value};$('draft-status').textContent='Hay cambios de asistencia sin guardar.';}
+    function claveBorradorAsistencia(){return 'muni360_asistencia_borrador:'+storageScope+':'+areaActiva;}
+    function borrarBorradorAsistencia(){clearTimeout(autosaveTimer);localStorage.removeItem(claveBorradorAsistencia());draftContext=null;$('draft-status').textContent='';}
+    function ofrecerBorradorAsistencia(){
+      if(draftContext||!syncClient||!localStorage.getItem(claveBorradorAsistencia()))return;
+      $('draft-status').innerHTML='Hay una asistencia recuperable en este dispositivo. <button type="button" class="btn-sec" id="recuperar-asistencia">Revisar borrador</button>';
+      $('recuperar-asistencia').onclick=()=>{
+        let saved;try{saved=JSON.parse(localStorage.getItem(claveBorradorAsistencia()));}catch(_){return toast('No se pudo leer el borrador.');}
+        if(!saved||saved.uid!==storageScope||saved.deporte!==areaActiva)return;
+        if(saved.cat!==$('sel-categoria').value||saved.eq!==$('sel-equipo').value||saved.date!==$('input-fecha').value)return toast('Para revisar el borrador, elegí '+saved.cat+' · '+saved.eq+' · '+saved.date+'.');
+        if(!confirm('Se restaurará el borrador local en el formulario. Revisá los datos antes de pulsar Guardar asistencia.'))return;
+        asistTempDep=saved.asistencia;semTempDep=saved.semaforo;comidaTempDep=saved.comida;
+        $('sel-clima-clase').value=saved.clima;$('sel-puntos-ciudad').value=saved.puntos;
+        draftContext={cat:saved.cat,eq:saved.eq,date:saved.date,deporte:saved.deporte};
+        renderAsistencia();$('draft-status').textContent='Borrador restaurado para revisar. Todavía no se envió a Google.';
+      };
+    }
+    function markDraft(){
+      draftContext={cat:$('sel-categoria').value,eq:$('sel-equipo').value,date:$('input-fecha').value,deporte:areaActiva};
+      if(!syncClient){$('draft-status').textContent='Hay cambios de asistencia sin guardar.';return;}
+      const saved={...draftContext,uid:storageScope,asistencia:asistTempDep,semaforo:semTempDep,comida:comidaTempDep,clima:$('sel-clima-clase').value,puntos:$('sel-puntos-ciudad').value};
+      try{localStorage.setItem(claveBorradorAsistencia(),JSON.stringify(saved));}
+      catch(_){$('draft-status').textContent='No hay espacio para el borrador. Guardá antes de salir.';return;}
+      $('draft-status').textContent='Borrador conservado en este dispositivo. Guardando automáticamente…';
+      clearTimeout(autosaveTimer);
+      const context=JSON.stringify(draftContext),uid=storageScope;
+      autosaveTimer=setTimeout(()=>{
+        if(!draftContext||JSON.stringify(draftContext)!==context||storageScope!==uid||areaActiva!==draftContext.deporte)return;
+        if(guardandoOperacion||syncClient?.queue.length){$('draft-status').textContent='Borrador conservado. Resolvé la carga pendiente y pulsá Guardar asistencia.';return;}
+        guardarAsistenciaActual().catch(e=>{$('draft-status').textContent=e.message;});
+      },3000);
+    }
     $('lista-asist').addEventListener('click',e=>{if(e.target.closest('button[data-e],button[data-sem],button[data-action]'))markDraft();});
     $('btn-todos-p').addEventListener('click',markDraft);$('btn-todos-comida').addEventListener('click',markDraft);
-    ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>$(id).addEventListener('change',e=>{if(!draftContext)return;if(!confirm('Hay cambios sin guardar. ¿Cambiar de grupo o fecha y descartarlos?')){e.stopImmediatePropagation();$('sel-categoria').value=draftContext.cat;$('sel-equipo').value=draftContext.eq;$('input-fecha').value=draftContext.date;return;}draftContext=null;$('draft-status').textContent='';},true));
+    ['sel-clima-clase','sel-puntos-ciudad'].forEach(id=>$(id).addEventListener('change',markDraft));
+    $('sel-deporte').addEventListener('change',e=>{
+      if(!draftContext)return;
+      if(!confirm('Hay una asistencia sin confirmar. ¿Descartar el borrador antes de cambiar de actividad?')){e.stopImmediatePropagation();$('sel-deporte').value=draftContext.deporte;return;}
+      borrarBorradorAsistencia();
+    },true);
+    ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>$(id).addEventListener('change',e=>{if(!draftContext)return;if(!confirm('Hay cambios sin guardar. ¿Cambiar de grupo o fecha y descartarlos?')){e.stopImmediatePropagation();$('sel-categoria').value=draftContext.cat;$('sel-equipo').value=draftContext.eq;$('input-fecha').value=draftContext.date;return;}borrarBorradorAsistencia();},true));
     $('modo-cancha').onclick=()=>{const active=document.body.classList.toggle('modo-cancha');$('modo-cancha').textContent=active?'Vista completa':'Modo cancha';$('modo-cancha').setAttribute('aria-pressed',String(active));};
     async function renderAuditoria(){
       if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
