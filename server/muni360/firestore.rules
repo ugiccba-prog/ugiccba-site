@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // El navegador sólo accede a través de la API, que comprueba permisos vigentes.
+    match /muni360_users/{id} { allow read, write: if false; }
+    match /muni360_access_audit/{id} { allow read, write: if false; }
+    match /muni360_activities/{document=**} { allow read, write: if false; }
+    match /muni360_outbox/{id} { allow read, write: if false; }
+    match /muni360_sync_locks/{id} { allow read, write: if false; }
+  }
+}

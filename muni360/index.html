@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <!-- Librería oficial para lectura y descarga de planillas Excel (.xlsx) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="../assets/vendor/xlsx-0.20.3.full.min.js"></script>
   <style>
     :root {
       --navy: #0b2545;
@@ -828,6 +828,7 @@
       #kpis-asist-dia .kpi span { font-size: 0.58rem; }
     }
   </style>
+  <link rel="stylesheet" href="../assets/styles/muni360-cancha.css">
 </head>
 <body>
 
@@ -836,7 +837,7 @@
        ===================================================================== -->
   <div id="login-screen">
     <form id="login-form" class="login-card" novalidate>
-      <img src="escudo-ccba.png" onerror="this.src='../escudo-ccba.png'" alt="Escudo C.C.B.A." class="login-shield">
+      <img src="escudo-ccba.png" onerror="this.onerror=null;this.src='../escudo-ccba.png'" alt="Escudo C.C.B.A." class="login-shield">
       <div class="login-club-name">Club Ciudad de Buenos Aires</div>
       <div><span class="login-ugi-subtitle">Unidad de Gestión Integral</span></div>
       <h1>MUNI 360</h1>
@@ -845,24 +846,16 @@
       <!-- BLOQUE SUPERIOR: SELECTOR DE DEPORTES -->
       <div class="field" style="margin-bottom:12px;">
         <label for="login-deporte">1. Elegí tu Deporte</label>
-        <select id="login-deporte"></select>
+        <select id="login-deporte" hidden aria-hidden="true"></select>
       </div>
 
-      <div class="grid2" style="margin-bottom:10px;">
-        <div class="field" style="margin:0;">
-          <label for="login-profe">2. Tu Nombre y Apellido</label>
-          <input type="text" id="login-profe" placeholder="Ej: Martín Gómez" required>
-        </div>
-        <div class="field" style="margin:0;">
-          <label for="login-pass">3. Contraseña</label>
-          <input type="password" id="login-pass" placeholder="Clave..." autocomplete="current-password" required>
-        </div>
-      </div>
+      <input type="hidden" id="login-profe"><input type="hidden" id="login-pass">
+      <p class="google-status">Ingresá con tu cuenta de Google. Dirección UGI habilita tus actividades. Los profes pueden cubrir todos sus equipos.</p>
       <p id="login-error" class="error" aria-live="polite"></p>
-      <button type="submit" class="btn">Entrar a Muni 360 Deportes</button>
-
+      <button type="submit" id="google-login">Continuar con Google</button>
+      <button type="button" id="revisar-acceso" class="btn-sec" style="margin-top:10px">Ya me autorizaron · Revisar acceso</button>
       <div style="text-align:center; margin-top:16px; padding-top:14px; border-top:1px dashed #cbd5e1;">
-        <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI()" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
+        <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI('demo1234')" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
           🎭 Entrar con Modelo de Prueba (Reunión / Video)
         </button>
         <div style="font-size:0.72rem; color:var(--muted); margin-top:5px;">
@@ -881,7 +874,7 @@
        ===================================================================== -->
   <header id="app-header" class="hidden">
     <div class="brand">
-      <img src="../escudo-ccba.png" onerror="this.src='escudo-ccba.png'" alt="C.C.B.A.">
+      <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='escudo-ccba.png'" alt="C.C.B.A.">
       <div>
         <h2>MUNI 360 · Gestión Deportiva y Formativa</h2>
         <small id="header-sub"></small>
@@ -901,7 +894,10 @@
   <main id="app-screen" class="container hidden">
 
     <!-- PESTAÑAS UNIFICADAS -->
-    <div class="tabs" id="nav-tabs" role="tablist">
+    <div class="toolbar-cancha"><button type="button" class="btn-sec" id="modo-cancha">Modo cancha</button><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button>
+      <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
+    <div id="draft-status" class="draft-status" role="status"></div>
+    <div class="tabs" id="nav-tabs" role="tablist"><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
       <button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true">
         <span>📋 Asistencia</span>
       </button>
@@ -970,7 +966,7 @@
         <div class="spread">
           <div>
             <h3 id="titulo-lista-asist">Lista de asistencia</h3>
-            <p class="hint" style="margin:0;" id="sub-lista-asist">P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p>
+            <p class="hint" style="margin:0;" id="sub-lista-asist">— = Sin registrar / sin observar · P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn-sec" id="btn-todos-p">Todos Presentes (P)</button>
@@ -990,6 +986,7 @@
               <div>
                 <label for="sel-puntos-ciudad">🏆 Termómetro Puntos Ciudad hoy</label>
                 <select id="sel-puntos-ciudad" style="min-height:40px; font-size:0.86rem;">
+                  <option value="">Sin registrar</option>
                   <option value="+5">⭐ Cumplieron meta grupal (+5 Puntos Ciudad)</option>
                   <option value="+10">🟢 Meta + Tarjeta Verde grupal (+10 Puntos)</option>
                   <option value="0">➖ Sin puntos extra hoy (0)</option>
@@ -998,6 +995,7 @@
               <div>
                 <label for="sel-clima-clase">🌡️ Clima general de la clase</label>
                 <select id="sel-clima-clase" style="min-height:40px; font-size:0.86rem;">
+                  <option value="N">Sin observar</option>
                   <option value="Vapor">💨 Estado Vapor (Enfocados / Óptimo)</option>
                   <option value="Fuego">🔥 Exceso de Fuego (Pasados de rosca / Roce)</option>
                   <option value="Agua">💧 Exceso de Agua (Dispersos / Baja energía)</option>
@@ -1007,7 +1005,7 @@
           </div>
         </details>
 
-        <button type="button" class="btn ok" id="btn-guardar-asist" style="margin-top:12px;">Guardar asistencia y sincronizar Sheet</button>
+        <button type="button" class="btn ok" id="btn-guardar-asist" style="margin-top:12px;">Guardar asistencia</button>
       </div>
     </section>
 
@@ -1128,8 +1126,9 @@
         </div>
       </div>
 
+      <div class="card"><label for="sel-archivo">Temporadas anteriores</label><select id="sel-archivo"><option value="">Sin archivos disponibles</option></select><div id="comparacion-temporada" role="status"></div></div>
       <div class="kpis">
-        <div class="kpi"><span id="lbl-kpi1">Promedio</span><b id="kpi-promedio">-</b><span id="sub-kpi1">sobre 10</span></div>
+        <div class="kpi"><span id="lbl-kpi1">Técnica</span><b id="kpi-promedio">-</b><span id="sub-kpi1">sobre 10</span></div><div class="kpi"><span>Formación y convivencia</span><b id="kpi-formativo">-</b><span>sobre 10 · separado de técnica</span></div>
         <div class="kpi kpi-ok"><span>Asistencia</span><b id="kpi-asistencia">-</b><span>presentismo</span></div>
         <div class="kpi kpi-warn"><span>Alertas (&lt;70%)</span><b id="kpi-alertas">0</b><span>seguimiento</span></div>
       </div>
@@ -1142,12 +1141,12 @@
 
       <div class="card">
         <h3>Matriz individual del grupo</h3>
-        <p class="hint">Alerta automática para activar Plan A si baja de 70% de asistencia, promedio &lt; 6.0 o acumula amarillas/rojas.</p>
+        <p class="hint">Indicadores para revisar con el equipo. No activan planes ni sanciones automáticamente. Sin observar no equivale a verde.</p>
         <div style="overflow-x:auto;">
           <table>
             <thead>
               <tr id="thead-matriz">
-                <th>Deportista</th><th>Prom.</th><th>A trabajar / Perfil</th><th>Asist.</th><th>Estado</th>
+                <th>Deportista</th><th>Técnica</th><th>Formación</th><th>A trabajar / Perfil</th><th>Asist.</th><th>Estado</th>
               </tr>
             </thead>
             <tbody id="tabla-matriz"></tbody>
@@ -1166,7 +1165,7 @@
         <div class="spread">
           <div>
             <h3>1. Subir listado desde Excel (.xlsx) o CSV</h3>
-            <p class="hint" style="margin:0;">Detecta automáticamente las columnas Apellido, Nombre, Grupo/Categoría y DNI (opcional).</p>
+            <p class="hint" style="margin:0;">Usá encabezados Apellido y Nombre, o Jugador; DNI es opcional. Se lee la primera hoja. Elegí abajo el grupo de destino. Máximo 500 filas y 2 MB.</p>
           </div>
           <input type="file" id="input-excel-file" accept=".xlsx,.xls,.csv" style="max-width:240px; font-size:0.78rem;">
         </div>
@@ -1194,12 +1193,15 @@
       </form>
 
       <div class="card">
+        <button type="button" class="btn-sec" id="importar-sheets">Revisar carga de padrón desde Sheets</button>
+        <button type="button" class="btn-sec" id="recuperar-fichas-locales">Recuperar fichas antiguas de este dispositivo</button>
         <h3>3. Plantel actual, Legajo Privado (DNI) y Pasaportes DUA (<span id="count-plantel">0</span>)</h3>
-        <p class="hint">El DNI y el Legajo Privado solo son visibles acá para Coordinación y Dirección UGI (nunca en la vista de cancha).</p>
+        <p class="hint">El DNI y la bitácora privada requieren permisos especiales de Dirección y no aparecen en cancha.</p>
         <div id="lista-padron"></div>
       </div>
 
       <div class="card" id="card-variables-deporte">
+        <p id="backup-status" class="hint"></p>
         <h3>4. Variables a evaluar en <span id="gestos-dep"></span></h3>
         <p class="hint">Las marcadas como "4C UGI" son transversales a todo el club.</p>
         <div id="lista-gestos-config"></div>
@@ -1226,7 +1228,7 @@
           <div style="padding:12px; background:#fff; border:1px solid #fed7aa; border-radius:8px;">
             <div style="font-weight:700; font-size:0.92rem; color:#9a3412;">🔄 Pasar de temporada (<span class="txt-area-activa"></span>)</div>
             <p style="font-size:0.8rem; color:var(--muted); margin:4px 0 10px;">
-              Reinicia a cero el historial de asistencias y evaluaciones. <strong>Mantiene intacto el padrón y los DNI de los deportistas</strong> para iniciar el nuevo ciclo.
+              Archiva el historial de asistencias y evaluaciones antes de iniciar el nuevo ciclo. <strong>Mantiene intacto el padrón y los DNI de los deportistas</strong> para iniciar el nuevo ciclo.
             </p>
             <button type="button" class="btn" id="btn-reset-temporada-deporte" style="background:#ea580c; color:#fff; font-size:0.84rem; padding:8px 14px; min-height:38px;">
               🔄 Pasar de temporada en <span class="txt-area-activa"></span>
@@ -1234,12 +1236,12 @@
           </div>
 
           <div style="padding:12px; background:#fff; border:1px solid #fca5a5; border-radius:8px;">
-            <div style="font-weight:700; font-size:0.92rem; color:var(--bad);">🗑️ Borrar todo (<span class="txt-area-activa"></span>)</div>
+            <div style="font-weight:700; font-size:0.92rem; color:var(--bad);">🗑️ Archivar y vaciar padrón (<span class="txt-area-activa"></span>)</div>
             <p style="font-size:0.8rem; color:var(--muted); margin:4px 0 10px;">
-              Vacía por completo el <strong>padrón, asistencias y evaluaciones</strong> de esta actividad. La planilla quedará limpia desde cero.
+              Conserva copias consultables del <strong>padrón, asistencias y evaluaciones</strong> antes de vaciar el ciclo actual. Los legajos se mantienen.
             </p>
             <button type="button" class="btn" id="btn-reset-todo-deporte" style="background:var(--bad); color:#fff; font-size:0.84rem; padding:8px 14px; min-height:38px;">
-              🗑️ Borrar todo en <span class="txt-area-activa"></span>
+              🗑️ Archivar y vaciar padrón en <span class="txt-area-activa"></span>
             </button>
           </div>
 
@@ -1248,14 +1250,14 @@
               🛡️ Operaciones Globales (Dirección UGI · Todo el Club)
             </div>
             <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">
-              Aplica a las 25 actividades del club de manera simultánea.
+              Archiva las actividades una por una y se detiene si encuentra un error. Informa cuáles se completaron.
             </p>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button type="button" class="btn" id="btn-reset-temporada-general" style="background:#2563eb; color:#fff; font-size:0.84rem; padding:8px 14px; min-height:38px; flex:1;">
                 🔄 Pasar de temporada TODO el club (Conserva padrones)
               </button>
               <button type="button" class="btn" id="btn-reset-todo-general" style="background:#991b1b; color:#fff; font-size:0.84rem; padding:8px 14px; min-height:38px; flex:1;">
-                🚨 Borrar TODO el club (Todas las planillas a cero)
+                🚨 Archivar TODO el club e iniciar padrones vacíos
               </button>
             </div>
           </div>
@@ -1264,6 +1266,7 @@
 
     </section>
 
+    <section id="tab-auditoria" class="hidden"><div class="card"><h3>Historial de cambios</h3><p class="hint">Cada cambio de la app conserva autor, fecha y valores anteriores y nuevos. Un profe consulta sus propios cambios; Dirección consulta el historial autorizado.</p><button type="button" class="btn-sec" id="actualizar-auditoria">Actualizar</button><div id="audit-list"></div></div></section>
   </main>
 
   <!-- MODAL EMERGENTE PASAPORTE DUA / LEGAJO PRIVADO DNI / TARJETA VERDE -->
@@ -1273,12 +1276,15 @@
 
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
+  <script src="../assets/scripts/muni360-config.js"></script>
+  <script src="../assets/scripts/muni360-google.js"></script>
+  <script src="../assets/scripts/muni360-sync.js"></script>
+  <script src="../assets/scripts/muni360-import.js"></script>
   <script>
     // =========================================================================
     // 1. CONFIGURACIÓN MAESTRA MUNI 360 (100% GOOGLE SHEETS · SIN SUPABASE NI CLAVES EXPUESTAS)
     // =========================================================================
-    const URL_SCRIPT_DEPORTES   = "https://script.google.com/macros/s/AKfycbz0VhNzdHKgFfrbHvuCJtLqrLRz9BWKxYxKjQ5CdCNQDiMd38edOmTDnGyTm8OBDeZ6/exec";
-    const URL_SCRIPT_PROFES_UGI = "https://script.google.com/macros/s/AKfycbxH7kZSoKxiHTReWUfhBCN9KOT8Vf7ElFXAiXsxvPwKohi76NciLJzL5diyEMS3oesWYA/exec";
+    const URL_API_MUNI=window.MUNI_CONFIG?.apiBaseUrl||'';
 
     // Variables transversales UGI (Las 4C + Convivencia)
     const GESTOS_COMUNES_UGI = [
@@ -1427,6 +1433,103 @@
       toast._t = setTimeout(() => t.classList.add('hidden'), 2800);
     }
 
+
+    // Caché privada de esta pestaña; la cola durable se separa por cuenta autenticada.
+    let syncClient = null;
+    let draftContext=null;
+    let storageScope = 'sin-sesion';
+    const almacen = {
+      getItem(k) { return sessionStorage.getItem('ugi-v2:' + storageScope + ':' + k); },
+      setItem(k,v) { sessionStorage.setItem('ugi-v2:' + storageScope + ':' + k, v); },
+      removeItem(k) { sessionStorage.removeItem('ugi-v2:' + storageScope + ':' + k); }
+    };
+    function limpiarCachePrivada() {
+      Object.keys(sessionStorage).filter(k => k.startsWith('ugi-v2:')).forEach(k => sessionStorage.removeItem(k));
+    }
+    function fichaServidor(jugador) {
+      const cat = $('sel-categoria').value, eq = $('sel-equipo').value || 'General';
+      const p = (datosDeporte.padron || []).find(p => p.jugador === jugador && p.categoria === cat && (p.equipo || 'General') === eq);
+      return p ? (datosDeporte.fichas || {})[p.id] || {} : {};
+    }
+    function estadoSincronizacion(s) {
+      if (!sesion || almacen.getItem('muni360_modo_demo') === '1') return;
+      $('estado-txt').textContent = s.count ? `⚠ ${s.count} carga(s) pendiente(s). ${s.message}` : `✓ ${s.message}`;
+      $('estado-acciones').innerHTML = s.count ? '<button type="button" class="btn-sec" id="reintentar-sync">Reintentar</button><button type="button" class="btn-sec" id="revisar-sync">Revisar pendiente</button>' : '<button type="button" class="btn-sec" id="actualizar-sync">Actualizar datos confirmados</button>';
+      if ($('actualizar-sync')) $('actualizar-sync').onclick=()=>cargarAreaActiva();
+      if ($('reintentar-sync')) $('reintentar-sync').onclick = () => syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
+      if ($('revisar-sync')) $('revisar-sync').onclick = revisarPendiente;
+    }
+    async function revisarPendiente() {
+      const entry = syncClient?.queue[0]; if (!entry) return;
+      const p = entry.payload;
+      $('dua-modal-body').innerHTML = `<h3>Carga pendiente</h3><p>${esc(p.tipo)} · ${esc(p.deporte)} · ${esc(p.categoria || '')} · ${esc(p.equipo || '')} · ${esc(p.fecha || '')}</p><p>${esc(entry.error || 'Esperando confirmación')}</p><pre style="white-space:pre-wrap;max-height:240px;overflow:auto">${esc(JSON.stringify({...p, token: undefined}, null, 2))}</pre><p>Revisá los datos actuales antes de reemplazar. Una carga de otra temporada no se reenvía.</p><button type="button" class="btn-sec" id="cerrar-pendiente">Cerrar</button><button type="button" class="btn-sec" id="actualizar-pendiente">Ver datos actuales</button><button type="button" class="btn" id="confirmar-pendiente">Reenviar después de revisar</button><button type="button" class="btn-sec" id="descartar-pendiente">Descartar esta carga</button>`;
+      $('dua-modal').classList.remove('hidden');
+      $('cerrar-pendiente').onclick = () => $('dua-modal').classList.add('hidden');
+      $('actualizar-pendiente').onclick = async () => {
+        try { const actual = await syncClient.read(p.deporte); const pre = document.createElement('pre'); pre.style.cssText='white-space:pre-wrap;max-height:240px;overflow:auto'; pre.textContent=JSON.stringify(p.tipo === 'LEGAJO' || p.tipo === 'DUA' ? actual.fichas : p.tipo === 'ASISTENCIA' ? actual.asistencia.filter(r=>r.fecha===p.fecha && r.categoria===p.categoria && r.equipo===p.equipo) : p.tipo === 'EVALUACION' ? actual.evaluaciones.filter(r=>r.fecha===p.fecha && r.categoria===p.categoria && r.equipo===p.equipo && r.jugador===p.jugador) : actual.padron, null, 2); $('dua-modal-body').append(pre); } catch(e) { toast(e.message); }
+      };
+      $('confirmar-pendiente').onclick = async () => {
+        if (!confirm('¿Revisaste los datos actuales y querés reenviar esta carga?')) return;
+        try { await syncClient.reviewAndRetry(); $('dua-modal').classList.add('hidden'); if (!syncClient.queue.length) await cargarAreaActiva(); } catch(e) { toast(e.message); }
+      };
+      $('descartar-pendiente').onclick = async () => {
+        if (!confirm('¿Eliminar este pendiente del dispositivo? Si la carga ya llegó a Google, los datos guardados se conservan.')) return;
+        await syncClient.discardFirst(); $('dua-modal').classList.add('hidden'); await syncClient.flush(); if (!syncClient.queue.length) await cargarAreaActiva();
+      };
+    }
+    let guardandoOperacion=false;
+    async function enviarOperacion(payload) {
+      if(guardandoOperacion){toast('Hay una carga en curso. Esperá la confirmación.');return false;}
+      guardandoOperacion=true;
+      const controls=[...document.querySelectorAll('#app-screen button,#app-screen input,#app-screen select,#app-screen textarea')].map(el=>[el,el.disabled]);
+      controls.forEach(([el])=>el.disabled=true);
+      try{
+      if (almacen.getItem('muni360_modo_demo') === '1') {
+        if (payload.tipo==='ALTA_PADRON') payload.jugadores.forEach(j=>{const old=datosDeporte.padron.find(p=>p.jugador===j.jugador && p.categoria===payload.categoria && p.equipo===payload.equipo); if(old) {if(Object.prototype.hasOwnProperty.call(j,'dni'))old.dni=j.dni||'';} else datosDeporte.padron.push({id:'demo-'+crypto.randomUUID(),jugador:j.jugador,dni:j.dni||'',categoria:payload.categoria,equipo:payload.equipo});});
+        if (payload.tipo==='BAJA_PADRON') datosDeporte.padron=datosDeporte.padron.filter(p=>!(p.jugador===payload.jugador && p.categoria===payload.categoria && p.equipo===payload.equipo));
+        if (payload.tipo==='RESET_DATOS') {datosDeporte.asistencia=[];datosDeporte.evaluaciones=[];if(payload.modo==='TODO')datosDeporte.padron=[];}
+        if (payload.tipo==='RECONOCIMIENTO') {const m=leerMapaLegajosV2(),k=claveNombreDni(payload.jugador),f=obtenerLegajoUnificado(payload.jugador,obtenerDni(payload.jugador));f.bitacora.unshift({id:'demo-'+Date.now(),fecha:payload.fecha,tipo:'🟢 Tarjeta Verde Digital',detalle:payload.motivo,autor:'Demostración'});m[k]=f;almacen.setItem('muni360_legajos_ugi_v2',JSON.stringify(m));}
+        almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+        toast('Cambio de demostración: no se envió a Google'); return true;
+      }
+      try {
+        if (!syncClient) throw new Error('Ingresá con tu cuenta.');
+        if (['DUA','LEGAJO','RECONOCIMIENTO'].includes(payload.tipo)) { const p=(datosDeporte.padron||[]).find(p=>p.jugador===payload.jugador && p.categoria===payload.categoria && p.equipo===payload.equipo); if (!p?.id) throw new Error('Actualizá el padrón para obtener la identidad del deportista.'); payload.subjectId=p.id; }
+        const ok = await syncClient.enqueue(payload);
+        if (!ok) { toast('Carga pendiente: todavía no está confirmada por Google.'); return false; }
+        toast('✓ Guardado en la planilla privada. El estado de las vistas aparece arriba.');
+        return true;
+      } catch(e) { toast(e.message); $('estado-txt').textContent = '⚠ ' + e.message; return false; }
+      }finally{guardandoOperacion=false;controls.forEach(([el,disabled])=>el.disabled=disabled);}
+    }
+    async function recuperarFichasLocales() {
+      if (!esCoordOAdmin() || !syncClient || syncClient.queue.length) return toast('Conectá y enviá los pendientes antes de recuperar fichas.');
+      let legacyDua, legacyLeg;
+      try { legacyDua = JSON.parse(window.localStorage.getItem('muni360_dua_' + areaActiva) || '{}'); legacyLeg = JSON.parse(window.localStorage.getItem('muni360_legajos_ugi_v2') || '{}'); } catch(_) { return toast('No se pudieron leer las fichas antiguas.'); }
+      const candidates = (datosDeporte.padron || []).filter(p => legacyDua[p.jugador] || legacyDua[nombreBaseDua(p.jugador)] || legacyLeg[p.dni] || legacyLeg[claveNombreDni(p.jugador)]);
+      if (!candidates.length) return toast('No hay fichas antiguas para este padrón en este dispositivo.');
+      if (!confirm(`Hay ${candidates.length} deportistas con fichas locales. Se recuperarán sólo fichas que aún no existan en Google. Revisá que correspondan a personas reales; no recuperes datos de demostración. ¿Continuar?`)) return;
+      let count=0;
+      for (const p of candidates) {
+        const current = (datosDeporte.fichas || {})[p.id] || {};
+        const dua = legacyDua[p.jugador] || legacyDua[nombreBaseDua(p.jugador)];
+        const legajo = legacyLeg[p.dni] || legacyLeg[claveNombreDni(p.jugador)];
+        const base={deporte:areaActiva,categoria:p.categoria,equipo:p.equipo,jugador:p.jugador};
+        if (dua && !Object.values(current.dua || {}).some(Boolean)) { if (!await enviarOperacion({...base,tipo:'DUA',ficha:dua})) return; count++; }
+        if (legajo && !Object.keys(current.legajo || {}).length) { if (!await enviarOperacion({...base,tipo:'LEGAJO',ficha:{...legajo,bitacora:legajo.bitacora || []}})) return; count++; }
+      }
+      await cargarAreaActiva(); toast(`${count} ficha(s) recuperadas. Los originales siguen en este dispositivo.`);
+    }
+    window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.length) await cargarAreaActiva(); } });
+    window.addEventListener('beforeunload', e => { if (syncClient?.queue.length || draftContext) { e.preventDefault(); e.returnValue = ''; } });
+    setInterval(() => {
+      if (syncClient && sesion?.expiresAt<=Date.now()) {
+        syncClient.stop(); syncClient=null; sesion=null; sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
+        datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}}; $('dua-modal-body').textContent=''; $('dua-modal').classList.add('hidden');
+        ['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden')); $('login-screen').classList.remove('hidden'); $('login-error').textContent='La sesión venció. Ingresá otra vez; los pendientes se conservan para tu cuenta.';
+      } else if (syncClient && navigator.onLine) syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
+    }, 30000);
+
     let sesion = null;
     let areaActiva = "Básquet Caballeros";
     let tabActual = "asistencia";
@@ -1449,13 +1552,13 @@
     $('login-deporte').innerHTML =
       `<option value="">— Seleccionar Deporte —</option>` +
       deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('') +
-      `<option value="TODOS">🛡️ Dirección UGI (Todos los Deportes)</option>`;
+      '';
 
     $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
-    let areaElegidaLogin = localStorage.getItem('muni360_area') || "Básquet Caballeros";
+    let areaElegidaLogin = almacen.getItem('muni360_area') || "Básquet Caballeros";
     if (areaElegidaLogin === "Colonia" || areaElegidaLogin === "COYFD") areaElegidaLogin = "Básquet Caballeros";
-    $('login-profe').value = localStorage.getItem('muni360_profe') || "";
+    $('login-profe').value = almacen.getItem('muni360_profe') || "";
 
     function marcarSeleccionLogin(nombreArea) {
       areaElegidaLogin = nombreArea;
@@ -1475,94 +1578,45 @@
 
     marcarSeleccionLogin(areaElegidaLogin);
 
-    $('login-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const profe = $('login-profe').value.trim();
-      const clave = $('login-pass').value.trim();
 
-      // Atajo instantáneo para modo demo
-      if (clave.toLowerCase() === 'demo1234' || clave.toLowerCase() === 'demo') {
-        cargarDemoVideoUGI('demo1234');
-        return;
-      }
 
-      if (!areaElegidaLogin) {
-        $('login-error').textContent = "Elegí primero un Deporte, Colonia o COYFD.";
-        return;
-      }
-      if (!profe) {
-        $('login-error').textContent = "Ingresá tu nombre y apellido.";
-        return;
-      }
-      if (!clave) {
-        $('login-error').textContent = "Ingresá la contraseña de acceso.";
-        return;
-      }
-
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      $('login-error').textContent = "Validando acceso seguro...";
-
-      const targetArea = (areaElegidaLogin === "TODOS" || !areaElegidaLogin) ? "Básquet Caballeros" : areaElegidaLogin;
-
+    let authLoad=0;
+    async function cargarPerfilGoogle() {
+      const attempt=++authLoad;
+      $('login-error').textContent='Comprobando autorización de UGI...';
       try {
-        const res = await fetch(URL_SCRIPT_DEPORTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            tipo: 'LOGIN',
-            deporte: targetArea,
-            clave: clave
-          })
-        });
-        const data = await res.json();
-        if (data && data.ok) {
-          localStorage.removeItem('muni360_modo_demo');
-          iniciarSesion({
-            area: targetArea,
-            esAdminTotal: Boolean(data.esAdminTotal),
-            rol: data.rol || "Profe",
-            profeNombre: profe,
-            token: data.token || ""
-          });
-        } else {
-          $('login-error').textContent = (data && data.error) ? data.error : "Contraseña incorrecta. Usá 'muni360' (Dirección UGI), 'coordugi' (Coordinación) o 'profeugi' (Profes).";
-        }
-      } catch (err) {
-        // Soporte offline con claves estándar de respaldo si no hay internet o el servidor aún no se actualizó
-        console.warn('Servidor offline o bloqueado, validando clave localmente:', err);
-        const c = clave.toLowerCase();
-        if (c === 'muni360' || c === 'ugi2026' || c === 'argon2026') {
-          localStorage.removeItem('muni360_modo_demo');
-          iniciarSesion({ area: targetArea, esAdminTotal: true, rol: "Dirección UGI", profeNombre: profe });
-          toast("✓ Ingreso concedido (Dirección UGI · Modo seguro)");
-          return;
-        } else if (c === 'coordugi' || c.endsWith('coord')) {
-          localStorage.removeItem('muni360_modo_demo');
-          iniciarSesion({ area: targetArea, esAdminTotal: false, rol: "Coordinación", profeNombre: profe });
-          toast("✓ Ingreso concedido (Coordinación · Modo seguro)");
-          return;
-        } else if (c === 'profeugi' || c.endsWith('muni')) {
-          localStorage.removeItem('muni360_modo_demo');
-          iniciarSesion({ area: targetArea, esAdminTotal: false, rol: "Profe", profeNombre: profe });
-          toast("✓ Ingreso concedido (Profe · Modo seguro)");
-          return;
-        }
-        $('login-error').textContent = "Contraseña no válida o sin conexión. Claves válidas: 'muni360' (Dirección UGI), 'coordugi' (Coordinación), 'profeugi' (Profes).";
-      } finally {
-        btn.disabled = false;
-      }
+        const data=await MuniGoogle.call('/api/me');if(attempt!==authLoad)return;
+        const p=data.profile;
+        if(p.status!=='activo') { $('login-error').textContent=p.status==='pendiente'?'Tu acceso está pendiente de aprobación por Dirección UGI.':p.status==='vencido'?'Tu autorización venció. Dirección puede renovarla.':'Tu acceso está suspendido. Contactá a Dirección UGI.';return; }
+        const available=deportesSolo.filter(d=>p.areas.includes(d.nombre));
+        if(!available.length){$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;}
+        limpiarCachePrivada();storageScope=p.uid;
+        iniciarSesion({usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:p.rol==='Dirección UGI',expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:available[0].nombre});
+      }catch(e){$('login-error').textContent=e.message||'No se pudo verificar el acceso. Reintentá con conexión.';}
+    }
+    $('login-form').addEventListener('submit',async e=>{
+      e.preventDefault();const btn=$('google-login');btn.disabled=true;$('login-error').textContent='Abriendo Google...';
+      try{await MuniGoogle.login();}catch(e){$('login-error').textContent=e.code==='auth/popup-blocked'?'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.':e.code==='auth/popup-closed-by-user'?'Ingreso cancelado. Podés intentarlo otra vez.':e.message||'No se pudo abrir Google.';}finally{btn.disabled=false;}
     });
-
+    $('revisar-acceso').onclick=()=>cargarPerfilGoogle();
+    function permiso(nombre){return almacen.getItem('muni360_modo_demo')==='1'||!!sesion?.capabilities?.[nombre];}
     function iniciarSesion(datosSesion) {
+      if(syncClient)syncClient.stop();
       sesion = datosSesion;
+      if (almacen.getItem('muni360_modo_demo') !== '1') {
+        storageScope=datosSesion.usuario;
+        syncClient=new Muni360Sync.Client({url:URL_API_MUNI,fetch:window.fetch.bind(window),storage:window.localStorage,session:datosSesion,transport:'apps-script',getToken:()=>MuniGoogle.getToken(false,datosSesion.usuario),onStatus:estadoSincronizacion});
+        $('sel-deporte').innerHTML=deportesSolo.filter(d=>datosSesion.areas.includes(d.nombre)).map(d=>`<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
+        syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
+      }
+
       areaActiva = (datosSesion.area && datosSesion.area !== "TODOS" && deportesSolo.some(x => x.nombre === datosSesion.area))
         ? datosSesion.area
         : "Básquet Caballeros";
 
-      localStorage.setItem('muni360_area', datosSesion.esAdminTotal ? "TODOS" : areaActiva);
-      localStorage.setItem('muni360_profe', datosSesion.profeNombre || "Juan Machado");
-      localStorage.setItem('muni360_sesion_activa', JSON.stringify({ ...datosSesion, area: areaActiva }));
+      almacen.setItem('muni360_area', datosSesion.esAdminTotal ? "TODOS" : areaActiva);
+      almacen.setItem('muni360_profe', datosSesion.profeNombre || "Juan Machado");
+      almacen.setItem('muni360_sesion_activa', JSON.stringify({ ...datosSesion, area: areaActiva }));
 
       $('login-screen').classList.add('hidden');
       ['app-header', 'barra-estado', 'app-screen'].forEach(id => $(id).classList.remove('hidden'));
@@ -1579,31 +1633,32 @@
       renderHistorialUgiLocal();
     }
 
-    $('btn-salir').addEventListener('click', () => {
-      localStorage.removeItem('muni360_sesion_activa');
-      localStorage.removeItem('muni360_modo_demo');
-      sesion = null;
-      $('login-pass').value = "";
-      $('estado-acciones').innerHTML = "";
-      ['app-header', 'barra-estado', 'app-screen'].forEach(id => $(id).classList.add('hidden'));
-      $('login-screen').classList.remove('hidden');
+    $('btn-salir').addEventListener('click', async () => {
+      if (syncClient?.queue.length && !confirm('Hay cargas pendientes. Quedarán en este dispositivo para tu próxima sesión con la misma cuenta. ¿Salir?')) return;
+      if (syncClient) syncClient.stop();
+      authLoad++;try{await MuniGoogle.logout();}catch(_){}
+      syncClient=null; sesion=null; datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};
+      sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
+      $('dua-modal').classList.add('hidden'); $('dua-modal-body').textContent='';
+      ['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden')); $('login-screen').classList.remove('hidden');
     });
 
     function cfgActual() {
       return CATALOGO_MUNI360.find(x => x.nombre === areaActiva) || CATALOGO_MUNI360[0];
     }
 
-    function esCoordOAdmin() {
-      return sesion && sesion.rol !== "Profe" && (sesion.rol === "Coordinación" || sesion.rol === "Dirección UGI");
-    }
+    function esCoordOAdmin(){return !!sesion && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
     function actualizarCabeceraYPestanas() {
       const cfg = cfgActual();
-      $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre})`;
+      $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre}) · Todos los equipos habilitados`;
+      $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
+      $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || almacen.getItem('muni360_modo_demo')==='1'));
+      $('link-admin-ugi').href='../admin/'+(almacen.getItem('muni360_modo_demo')==='1'?'?demo=1':'');
       const puedePadron = esCoordOAdmin();
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
       $('nav-tabs').classList.toggle('cuatro', !puedePadron);
-      $('wrap-deporte-admin').classList.toggle('hidden', !(sesion && sesion.esAdminTotal && sesion.rol !== "Profe"));
+      $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
       $('filtros-colonia').classList.add('hidden');
@@ -1618,6 +1673,7 @@
     }
 
     $('sel-deporte').addEventListener('change', e => {
+      if (syncClient?.queue.length) { e.target.value=areaActiva; return toast('Enviá o revisá los pendientes antes de cambiar de actividad.'); }
       areaActiva = e.target.value;
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
@@ -1681,25 +1737,25 @@
 
     function leerMapaDua() {
       try {
-        const guardado = JSON.parse(localStorage.getItem('muni360_dua_' + areaActiva) || '{}');
-        return { ...DUA_DEFAULT, ...guardado };
-      } catch (_) { return { ...DUA_DEFAULT }; }
+        const guardado = JSON.parse(almacen.getItem('muni360_dua_' + areaActiva) || '{}');
+        return almacen.getItem('muni360_modo_demo') === '1' ? { ...DUA_DEFAULT, ...guardado } : guardado;
+      } catch (_) { return {}; }
     }
 
     function guardarMapaDua(mapa) {
-      localStorage.setItem('muni360_dua_' + areaActiva, JSON.stringify(mapa));
+      almacen.setItem('muni360_dua_' + areaActiva, JSON.stringify(mapa));
     }
 
     function obtenerFichaDua(jugador) {
-      const mapa = leerMapaDua();
-      return mapa[jugador] || mapa[nombreBaseDua(jugador)] || (String(jugador).includes('DUA') ? DUA_DEFAULT["Acosta, Mateo"] : null);
+      if (almacen.getItem('muni360_modo_demo') !== '1') { const f=fichaServidor(jugador).dua; return f && Object.values(f).some(Boolean) ? f : null; }
+      const mapa=leerMapaDua(); return mapa[jugador] || mapa[nombreBaseDua(jugador)] || null;
     }
 
     function leerMapaDni() {
       try {
-        const local = JSON.parse(localStorage.getItem('muni360_dni_' + areaActiva) || '{}');
+        const local = JSON.parse(almacen.getItem('muni360_dni_' + areaActiva) || '{}');
         const mapa = { ...local };
-        if (localStorage.getItem('muni360_modo_demo') === '1') {
+        if (almacen.getItem('muni360_modo_demo') === '1') {
           Object.entries(DUA_DNI_DEMO).forEach(([k, v]) => { if (!mapa[k]) mapa[k] = v; });
         }
         (datosDeporte.padron || []).forEach(p => {
@@ -1711,15 +1767,15 @@
 
     function guardarDniJugador(jugador, dniLimpio) {
       const k = claveNombreDni(jugador);
-      const local = JSON.parse(localStorage.getItem('muni360_dni_' + areaActiva) || '{}');
+      const local = JSON.parse(almacen.getItem('muni360_dni_' + areaActiva) || '{}');
       if (dniLimpio) local[k] = dniLimpio;
       else delete local[k];
-      localStorage.setItem('muni360_dni_' + areaActiva, JSON.stringify(local));
+      almacen.setItem('muni360_dni_' + areaActiva, JSON.stringify(local));
 
       (datosDeporte.padron || []).forEach(p => {
         if (claveNombreDni(p.jugador) === k) p.dni = dniLimpio;
       });
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
+      almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
     }
 
     function obtenerDni(jugador) {
@@ -1736,7 +1792,7 @@
         txt = match[1].trim();
         dni = match[2].replace(/\D/g, '');
       }
-      return { jugador: txt, dni };
+      return { jugador: txt, ...(dni?{dni}:{}) };
     }
 
     $('dua-modal').addEventListener('click', e => {
@@ -1772,13 +1828,14 @@
           <div>${esc(f.regula || 'Sin especificar')}</div>
         </div>
         <p class="hint" style="margin:6px 0 0; font-size:0.72rem; text-align:center;">
-          Perfil pedagógico de accesibilidad (Ley 25.326 · Sin diagnósticos clínicos).
+          Apoyos pedagógicos registrados por el equipo autorizado.
         </p>
       `;
       $('dua-modal').classList.remove('hidden');
     };
 
     window.editarPasaporteDUA = function (jugador) {
+      if (!permiso('editarDua')) return;
       const f = obtenerFichaDua(jugador) || { comunicacion: '', desborda: '', regula: '' };
       $('dua-modal-body').innerHTML = `
         <div class="spread" style="margin-bottom:10px;">
@@ -1804,30 +1861,15 @@
       `;
       $('dua-modal').classList.remove('hidden');
 
-      $('btn-dua-save').onclick = () => {
-        const com = $('dua-in-com').value.trim();
-        const des = $('dua-in-des').value.trim();
-        const reg = $('dua-in-reg').value.trim();
-        const mapa = leerMapaDua();
-        if (com || des || reg) {
-          mapa[jugador] = { comunicacion: com, desborda: des, regula: reg };
-          mapa[nombreBaseDua(jugador)] = { comunicacion: com, desborda: des, regula: reg };
+      async function guardarDua(ficha) {
+        if (!esCoordOAdmin()) return;
+        if (await enviarOperacion({tipo:'DUA',deporte:areaActiva,categoria:$('sel-categoria').value,equipo:$('sel-equipo').value||'General',jugador,ficha})) {
+          if (almacen.getItem('muni360_modo_demo')==='1') {const m=leerMapaDua(); m[jugador]=ficha; guardarMapaDua(m);} else await cargarAreaActiva();
+          $('dua-modal').classList.add('hidden'); renderVistaActiva();
         }
-        guardarMapaDua(mapa);
-        $('dua-modal').classList.add('hidden');
-        renderVistaActiva();
-        toast(`✓ Pasaporte DUA de ${nombreBaseDua(jugador)} actualizado`);
-      };
-
-      $('btn-dua-del').onclick = () => {
-        const mapa = leerMapaDua();
-        delete mapa[jugador];
-        delete mapa[nombreBaseDua(jugador)];
-        guardarMapaDua(mapa);
-        $('dua-modal').classList.add('hidden');
-        renderVistaActiva();
-        toast(`Ficha DUA quitada`);
-      };
+      }
+      $('btn-dua-save').onclick=()=>guardarDua({comunicacion:$('dua-in-com').value.trim(),desborda:$('dua-in-des').value.trim(),regula:$('dua-in-reg').value.trim()});
+      $('btn-dua-del').onclick=()=>{if(confirm('¿Quitar estos apoyos DUA?')) guardarDua({comunicacion:'',desborda:'',regula:''});};
     };
 
     function iconoActividadUgi(nombre) {
@@ -1862,7 +1904,7 @@
         if (act.nombre === areaActiva) {
           cache = datosDeporte;
         } else {
-          try { cache = JSON.parse(localStorage.getItem('muni360_cache_' + act.nombre) || 'null'); } catch (_) {}
+          try { cache = JSON.parse(almacen.getItem('muni360_cache_' + act.nombre) || 'null'); } catch (_) {}
         }
         if (!cache || !Array.isArray(cache.padron)) return;
         cache.padron.forEach(p => {
@@ -1883,7 +1925,7 @@
 
     function leerMapaLegajosV2() {
       try {
-        return JSON.parse(localStorage.getItem('muni360_legajos_ugi_v2') || '{}');
+        return JSON.parse(almacen.getItem('muni360_legajos_ugi_v2') || '{}');
       } catch (_) { return {}; }
     }
 
@@ -1891,12 +1933,12 @@
       const mapa = leerMapaLegajosV2();
       const kNom = claveNombreDni(jugador);
       const kDni = String(dni || obtenerDni(jugador) || '').replace(/\D/g, '');
-      const base = (kDni && mapa[kDni]) || mapa[kNom] || {};
+      const base = almacen.getItem('muni360_modo_demo') === '1' ? ((kDni && mapa[kDni]) || mapa[kNom] || {}) : (fichaServidor(jugador).legajo || {});
 
       let bitacora = Array.isArray(base.bitacora) ? [...base.bitacora] : [];
       if (!bitacora.length) {
         try {
-          const notasViejas = JSON.parse(localStorage.getItem('muni360_notas_legajo') || '{}');
+          const notasViejas = JSON.parse(almacen.getItem('muni360_notas_legajo') || '{}');
           const obsVieja = notasViejas[kDni] || notasViejas[kNom];
           if (obsVieja) {
             bitacora.push({
@@ -1919,7 +1961,12 @@
       };
     }
 
-    function guardarLegajoUnificado(jugador, dni, ficha) {
+    async function guardarLegajoUnificado(jugador, dni, ficha) {
+      if (almacen.getItem('muni360_modo_demo') !== '1') {
+        const ok=await enviarOperacion({tipo:'LEGAJO',deporte:areaActiva,categoria:$('sel-categoria').value,equipo:$('sel-equipo').value||'General',jugador,ficha});
+        if (ok) { guardarDniJugador(jugador,dni); const p=datosDeporte.padron.find(p=>p.jugador===jugador && p.categoria===$('sel-categoria').value && p.equipo===($('sel-equipo').value||'General')); datosDeporte.fichas=datosDeporte.fichas||{}; datosDeporte.fichas[p.id]={...(datosDeporte.fichas[p.id]||{}),legajo:ficha}; }
+        return ok;
+      }
       const mapa = leerMapaLegajosV2();
       const kNom = claveNombreDni(jugador);
       const kDni = String(dni || ficha.dni || '').replace(/\D/g, '');
@@ -1933,7 +1980,8 @@
       };
       mapa[kNom] = objGuardar;
       if (kDni) mapa[kDni] = objGuardar;
-      localStorage.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapa));
+      almacen.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapa));
+      return true;
     }
 
     function estiloBadgeEventoLegajo(tipo) {
@@ -1947,12 +1995,12 @@
     }
 
     window.abrirLegajoPrivadoUGI = function (jugador) {
-      if (!esCoordOAdmin()) return;
+      if (!permiso('verLegajo')) return;
       const dniActual = obtenerDni(jugador);
       const cat = $('sel-categoria').value;
       const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
 
-      const regsAsist = (datosDeporte.asistencia || []).filter(a => claveNombreDni(a.jugador) === claveNombreDni(jugador));
+      const regsAsist = (datosDeporte.asistencia || []).filter(a => claveNombreDni(a.jugador) === claveNombreDni(jugador) && /^[PAT]/.test(a.estado));
       const pres = regsAsist.filter(a => String(a.estado).startsWith('P') || String(a.estado).startsWith('T')).length;
       const pctAsist = regsAsist.length ? Math.round((pres / regsAsist.length) * 100) + '%' : 'S/D';
       const amarillas = regsAsist.filter(a => String(a.estado).includes('Sem:A')).length;
@@ -1961,7 +2009,8 @@
       const evalsJ = (datosDeporte.evaluaciones || []).filter(e => claveNombreDni(e.jugador) === claveNombreDni(jugador));
       let s = 0, c = 0;
       evalsJ.forEach(e => Object.values(e.notas || {}).forEach(n => { if (Number(n) > 0) { s += Number(n); c++; } }));
-      const promGral = c ? (s / c).toFixed(1) : 'S/D';
+      const promsLegajo=Muni360Sync.splitAverage(evalsJ,GESTOS_COMUNES_UGI);
+      const promGral=promsLegajo.tecnico===null?'S/D':promsLegajo.tecnico.toFixed(1);
 
       const ficha = obtenerLegajoUnificado(jugador, dniActual);
       let actManuales = new Set(ficha.actividadesSimultaneas);
@@ -1991,7 +2040,7 @@
       $('dua-modal-body').innerHTML = `
         <div class="spread" style="margin-bottom:10px;">
           <div>
-            <span class="login-pill" style="margin:0;">Legajo Único Transversal · UGI</span>
+            <span class="login-pill" style="margin:0;">Legajo compartido · Acceso por actividad</span>
             <h3 style="font-size:1.1rem; color:var(--navy); margin-top:4px;">🗂️ ${esc(nombreBaseDua(jugador))}</h3>
           </div>
           <button type="button" class="btn-sec" onclick="$('dua-modal').classList.add('hidden')">✕ Cerrar</button>
@@ -1999,8 +2048,8 @@
 
         <div class="grid2" style="margin-bottom:10px; align-items:end;">
           <div class="field" style="margin:0; background:#f8fafc; padding:8px 10px; border-radius:11px; border:1px solid #cbd5e1;">
-            <label for="legajo-input-dni">🪪 DNI (Clave única en todo el Club)</label>
-            <input type="text" id="legajo-input-dni" inputmode="numeric" placeholder="Sin puntos (ej: 48123456)" value="${esc(dniActual || ficha.dni)}" style="min-height:38px; font-weight:800;">
+            <label for="legajo-input-dni">🪪 DNI (dato privado de coordinación)</label>
+            <input type="text" id="legajo-input-dni" ${permiso('verDni')?'':'disabled'} inputmode="numeric" placeholder="Sin puntos (ej: 48123456)" value="${esc(dniActual || ficha.dni)}" style="min-height:38px; font-weight:800;">
           </div>
           <div class="field" style="margin:0; background:#f8fafc; padding:8px 10px; border-radius:11px; border:1px solid #cbd5e1;">
             <label for="legajo-estado-plan">🛡️ Estado Institucional UGI</label>
@@ -2012,7 +2061,7 @@
 
         <div class="legajo-grid">
           <div class="legajo-stat"><b>${pctAsist}</b><span>Asistencia (${regsAsist.length} cl.)</span></div>
-          <div class="legajo-stat"><b>${promGral}</b><span>Prom. Técnico/4C</span></div>
+          <div class="legajo-stat"><b>${promGral}</b><span>Técnica (formación se informa por separado)</span></div>
           <div class="legajo-stat"><b>🟡 ${amarillas} · 🔴 ${rojas}</b><span>Semáforo Acum.</span></div>
         </div>
 
@@ -2107,7 +2156,6 @@
                   </div>
                   <div style="display:flex; align-items:center; gap:6px;">
                     <small style="color:var(--muted); font-weight:700;">${esc(ev.autor || 'Coordinación UGI')}</small>
-                    <button type="button" class="bitacora-del" data-del-ev="${esc(ev.id)}" title="Eliminar entrada">✕</button>
                   </div>
                 </div>
                 <div style="color:#1e293b; line-height:1.35;">${esc(ev.detalle)}</div>
@@ -2116,11 +2164,10 @@
           : `<p class="hint" style="text-align:center; margin:6px 0;">Todavía no hay eventos cargados en la bitácora de este deportista.</p>`;
       }
 
-      function persistirEstadoActualModal() {
+      async function persistirEstadoActualModal() {
         const dniVal = $('legajo-input-dni').value.replace(/\D/g, '').trim();
-        guardarDniJugador(jugador, dniVal);
-        guardarLegajoUnificado(jugador, dniVal, {
-          dni: dniVal,
+        return await guardarLegajoUnificado(jugador, dniVal, {
+          ...(permiso('verDni')?{dni:dniVal}:{}),
           estadoPlan: $('legajo-estado-plan').value,
           actividadesSimultaneas: Array.from(actManuales),
           paseInterno: $('legajo-pase-interno').value.trim(),
@@ -2159,7 +2206,7 @@
         renderPillsYChips();
       });
 
-      $('btn-agregar-evento-legajo').onclick = () => {
+      $('btn-agregar-evento-legajo').onclick = async () => {
         const detalle = $('legajo-ev-detalle').value.trim();
         if (!detalle) {
           toast("Escribí el detalle o acuerdo antes de agregarlo");
@@ -2175,22 +2222,11 @@
         };
         bitacoraTemp.unshift(nuevoEv);
         $('legajo-ev-detalle').value = '';
-        persistirEstadoActualModal();
+        const confirmado = await persistirEstadoActualModal();
         renderBitacoraModal();
         renderVistaActiva();
-        toast("✓ Registro sumado a la bitácora del legajo");
+        if (confirmado) toast('✓ Registro confirmado en el legajo compartido');
       };
-
-      $('legajo-bitacora-lista').addEventListener('click', e => {
-        const btn = e.target.closest('button[data-del-ev]');
-        if (!btn) return;
-        const idBorrar = btn.dataset.delEv;
-        bitacoraTemp = bitacoraTemp.filter(x => x.id !== idBorrar);
-        persistirEstadoActualModal();
-        renderBitacoraModal();
-        renderVistaActiva();
-        toast("Entrada eliminada del historial");
-      });
 
       $('btn-guardar-legajo').onclick = async () => {
         const detallePendiente = $('legajo-ev-detalle').value.trim();
@@ -2205,28 +2241,9 @@
         }
 
         const nuevoDni = $('legajo-input-dni').value.replace(/\D/g, '').trim();
-        persistirEstadoActualModal();
+        const confirmado = await persistirEstadoActualModal();
 
-        $('dua-modal').classList.add('hidden');
-        renderVistaActiva();
-        toast(`✓ Legajo unificado de ${nombreBaseDua(jugador)} guardado`);
-
-        if (nuevoDni && localStorage.getItem('muni360_modo_demo') !== '1') {
-          try {
-            await fetch(URL_SCRIPT_DEPORTES, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                tipo: 'ALTA_PADRON',
-                token: sesion?.token || '',
-                deporte: areaActiva,
-                categoria: cat,
-                equipo: eq,
-                jugadores: [ { jugador, dni: nuevoDni } ]
-              })
-            });
-          } catch (_) {}
-        }
+        if (confirmado) { $('dua-modal').classList.add('hidden'); renderVistaActiva(); toast('✓ Legajo confirmado en Google'); }
       };
     };
 
@@ -2324,44 +2341,29 @@
     $('dua-plan-obj').addEventListener('change', renderPlanificadorDua);
     $('dua-plan-des').addEventListener('change', renderPlanificadorDua);
 
+
     async function cargarAreaActiva() {
-      window._asistKeyActual = null;
-      const d = areaActiva;
-      datosDeporte = JSON.parse(localStorage.getItem('muni360_cache_' + d) || 'null') || { padron: [], evaluaciones: [], asistencia: [], gestos: null, email: '' };
-      renderFiltrosDeporte();
-      renderVistaActiva();
-
-      if (localStorage.getItem('muni360_modo_demo') === '1') {
-        $('estado-txt').innerHTML = `🎬 <strong>MODO DEMO ACTIVO</strong> (Datos de muestra para video/reunión)`;
-        $('estado-acciones').innerHTML = `<button type="button" class="btn-sec" style="font-size:0.75rem; padding:3px 10px; background:#fff; color:#c62828; border-color:#e17c6b;" onclick="salirModoDemo()">✕ Salir de Demo</button>`;
-        return;
+      window._asistKeyActual=null;
+      const d=areaActiva;
+      if (almacen.getItem('muni360_modo_demo') === '1') {
+        datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
+        renderFiltrosDeporte(); renderVistaActiva();
+        $('estado-txt').textContent='🎬 DEMOSTRACIÓN · Datos ficticios · Sin envíos a Google'; return;
       }
-
-      $('estado-acciones').innerHTML = '';
-      $('estado-txt').textContent = `● Sincronizando con el Sheet de ${d}...`;
+      if (syncClient?.queue.length) { datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}}; renderFiltrosDeporte(); renderVistaActiva(); syncClient.status('Enviá o revisá los pendientes antes de actualizar.'); return; }
+      datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
+      renderFiltrosDeporte(); renderVistaActiva();
+      $('estado-txt').textContent='Conectando con Google...';
       try {
-        const r = await fetch(`${URL_SCRIPT_DEPORTES}?deporte=${encodeURIComponent(d)}&token=${encodeURIComponent(sesion?.token || '')}`);
-        const j = await r.json();
-        if (j && j.ok && d === areaActiva) {
-          datosDeporte = {
-            padron: j.padron || [],
-            evaluaciones: j.evaluaciones || [],
-            asistencia: j.asistencia || [],
-            gestos: (j.gestos && j.gestos.length) ? j.gestos : datosDeporte.gestos,
-            email: j.email || ''
-          };
-          localStorage.setItem('muni360_cache_' + d, JSON.stringify(datosDeporte));
-          $('estado-txt').textContent = `● Conectado en vivo al Sheet de ${d}`;
-          window._asistKeyActual = null;
-          renderFiltrosDeporte();
-          renderVistaActiva();
-        } else if (j && !j.ok && j.error && (j.error.includes('autorizada') || j.error.includes('vencida'))) {
-          $('estado-txt').textContent = `⚠ Sesión expirada. Volvé a ingresar tu clave.`;
-          toast('Tu sesión ha expirado por seguridad. Volvé a ingresar.');
-        }
-      } catch (_) {
-        $('estado-txt').textContent = `⚠ Modo offline: usando datos guardados en el dispositivo (${d})`;
-      }
+        const client=syncClient,uid=sesion?.usuario;
+        const j=await client.read(d);
+        if (client!==syncClient || uid!==sesion?.usuario || d!==areaActiva) return;
+        datosDeporte=j; almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
+        window._asistKeyActual=null; renderFiltrosDeporte(); renderVistaActiva(); renderHistorialUgiLocal();
+        $('estado-txt').textContent=j.sheetsStatus==='pending'?'✓ Guardado en Sheets privado · Vistas de actividad pendientes':'✓ Guardado en Sheets · Vistas actualizadas'; $('estado-acciones').innerHTML='';
+        $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(a.fecha.slice(0,10))} · ${esc(a.modo)}</option>`).join('');
+        $('comparacion-temporada').textContent='';
+      } catch(e) { $('estado-txt').textContent='⚠ '+e.message; }
     }
 
     function categoriasDep() {
@@ -2383,8 +2385,8 @@
     function guardarUltimaSeleccionGrupo() {
       const cat = $('sel-categoria').value;
       const eq  = $('sel-equipo').value || 'General';
-      if (cat) localStorage.setItem('muni360_ult_cat_' + areaActiva, cat);
-      if (eq)  localStorage.setItem('muni360_ult_eq_' + areaActiva, eq);
+      if (cat) almacen.setItem('muni360_ult_cat_' + areaActiva, cat);
+      if (eq)  almacen.setItem('muni360_ult_eq_' + areaActiva, eq);
     }
 
     function actualizarBarraContexto() {
@@ -2414,7 +2416,7 @@
 
     function renderFiltrosDeporte() {
       const cats = categoriasDep();
-      const ultCat = localStorage.getItem('muni360_ult_cat_' + areaActiva) || '';
+      const ultCat = almacen.getItem('muni360_ult_cat_' + areaActiva) || '';
       const prevCat = $('sel-categoria').value;
 
       $('sel-categoria').innerHTML = cats.length
@@ -2430,7 +2432,7 @@
       }
 
       const eqs = equiposDep($('sel-categoria').value);
-      const ultEq = localStorage.getItem('muni360_ult_eq_' + areaActiva) || '';
+      const ultEq = almacen.getItem('muni360_ult_eq_' + areaActiva) || '';
       const prevEq = $('sel-equipo').value;
 
       $('sel-equipo').innerHTML = eqs.length
@@ -2467,7 +2469,7 @@
 
     $('sel-categoria').addEventListener('change', () => {
       const eqs = equiposDep($('sel-categoria').value);
-      const ultEq = localStorage.getItem('muni360_ult_eq_' + areaActiva) || '';
+      const ultEq = almacen.getItem('muni360_ult_eq_' + areaActiva) || '';
       $('sel-equipo').innerHTML = eqs.length ? eqs.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('') : `<option value="General">General</option>`;
       if (ultEq && eqs.includes(ultEq)) $('sel-equipo').value = ultEq;
       guardarUltimaSeleccionGrupo();
@@ -2523,17 +2525,17 @@
           .filter(a => a.categoria === cat && (a.equipo || 'General') === eq && a.fecha === fecha)
           .forEach(a => {
             const valor = String(a.estado || 'P');
-            asistTempDep[a.jugador] = valor.charAt(0) || 'P';
+            asistTempDep[a.jugador] = valor.charAt(0) || 'N';
             comidaTempDep[a.jugador] = valor.includes('Comida');
             if (valor.includes('Sem:A')) semTempDep[a.jugador] = 'A';
             else if (valor.includes('Sem:R')) semTempDep[a.jugador] = 'R';
-            else semTempDep[a.jugador] = 'V';
+            else semTempDep[a.jugador] = valor.includes('Sem:V') ? 'V' : 'N';
           });
       }
 
       lista.forEach(j => {
-        if (!asistTempDep[j]) asistTempDep[j] = 'P';
-        if (!semTempDep[j]) semTempDep[j] = 'V';
+        if (!asistTempDep[j]) asistTempDep[j] = 'N';
+        if (!semTempDep[j]) semTempDep[j] = 'N';
         if (comidaTempDep[j] === undefined) comidaTempDep[j] = false;
       });
 
@@ -2542,8 +2544,9 @@
       const alertasSem = lista.filter(j => semTempDep[j] === 'A' || semTempDep[j] === 'R').length;
       const alm = cfg.tieneComida ? lista.filter(j => asistTempDep[j] !== 'A' && comidaTempDep[j]).length : 0;
 
-      $('kpi-dia-pct').textContent = lista.length ? Math.round((pres / lista.length) * 100) + '%' : '0%';
-      $('kpi-dia-det').textContent = `${pres} de ${lista.length}`;
+      const registrados=lista.filter(j=>asistTempDep[j]!=='N').length;
+      $('kpi-dia-pct').textContent=registrados?Math.round(100*pres/registrados)+'%':'Sin registrar';
+      $('kpi-dia-det').textContent = `${pres} presentes · ${lista.length-registrados} sin registrar`;
       $('kpi-dia-total').textContent = String(lista.length);
 
       if (cfg.tieneComida) {
@@ -2552,8 +2555,8 @@
         $('kpi-dia-sub2').textContent = 'almuerzan en Colonia';
       } else {
         $('kpi-dia-lbl2').textContent = '🚦 Semáforo UGI';
-        $('kpi-dia-val2').textContent = alertasSem ? `${alertasSem} ⚠` : '100% 🟢';
-        $('kpi-dia-sub2').textContent = alertasSem ? 'amarillas/rojas hoy' : 'grupo en verde';
+        $('kpi-dia-val2').textContent = `${lista.filter(j=>semTempDep[j]!=='N').length}/${lista.length} observados`;
+        $('kpi-dia-sub2').textContent = `${alertasSem} alerta(s) · el resto puede estar sin observar`;
       }
 
       if (!filtrados.length) {
@@ -2572,11 +2575,13 @@
           <div class="asist-controls">
             ${cfg.tieneComida ? `<button type="button" class="comida-btn" data-action="comida" aria-pressed="${comidaTempDep[j] && asistTempDep[j] !== 'A'}">🍴 ${comidaTempDep[j] && asistTempDep[j] !== 'A' ? 'Comida' : 'Sin comida'}</button>` : ''}
             <div class="sem-group" title="Semáforo Conductual UGI">
+              <button type="button" class="sem-btn" data-sem="N" aria-label="Sin observar" aria-pressed="${semTempDep[j] === 'N'}">—</button>
               <button type="button" class="sem-btn" data-sem="V" aria-pressed="${semTempDep[j] === 'V'}">🟢</button>
               <button type="button" class="sem-btn" data-sem="A" aria-pressed="${semTempDep[j] === 'A'}">🟡</button>
               <button type="button" class="sem-btn" data-sem="R" aria-pressed="${semTempDep[j] === 'R'}">🔴</button>
             </div>
             <div class="pat">
+              <button type="button" data-e="N" aria-label="Asistencia sin registrar" aria-pressed="${asistTempDep[j] === 'N'}">—</button>
               <button type="button" data-e="P" aria-pressed="${asistTempDep[j] === 'P'}">P</button>
               <button type="button" data-e="A" aria-pressed="${asistTempDep[j] === 'A'}">A</button>
               <button type="button" data-e="T" aria-pressed="${asistTempDep[j] === 'T'}">T</button>
@@ -2608,7 +2613,7 @@
         if (asistTempDep[j] === 'A') comidaTempDep[j] = false;
       } else if (btnCom) {
         comidaTempDep[j] = !comidaTempDep[j];
-        if (comidaTempDep[j] && asistTempDep[j] === 'A') asistTempDep[j] = 'P';
+        if (comidaTempDep[j] && !['P','T'].includes(asistTempDep[j])) asistTempDep[j] = 'P';
       } else if (btnSem) {
         semTempDep[j] = btnSem.dataset.sem;
       }
@@ -2631,77 +2636,21 @@
       toast(activar ? "🍴 Comida marcada a todos los presentes" : "Comidas desmarcadas");
     });
 
+
     $('btn-guardar-asist').addEventListener('click', async () => {
-      const cfg = cfgActual();
-      const fecha = $('input-fecha').value;
-      const clima = $('sel-clima-clase').value;
-      const puntos = $('sel-puntos-ciudad').value;
-      const lista = plantelActualNombres();
-      if (!lista.length) return;
-
-      const cat = $('sel-categoria').value;
-      const eq  = $('sel-equipo').value || 'General';
-      const registro = {};
-
-      lista.forEach(j => {
-        const est = asistTempDep[j] || 'P';
-        const com = (cfg.tieneComida && est !== 'A' && comidaTempDep[j]) ? ' | 🍴 Comida' : '';
-        const sem = ` | Sem:${semTempDep[j] || 'V'}`;
-        registro[j] = `${est}${com}${sem}`;
-      });
-
-      datosDeporte.asistencia = datosDeporte.asistencia.filter(r => !(r.fecha === fecha && r.categoria === cat && (r.equipo || 'General') === eq));
-      Object.entries(registro).forEach(([jugador, estado]) => {
-        datosDeporte.asistencia.push({ fecha, categoria: cat, equipo: eq, jugador, estado });
-      });
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
-
-      if (localStorage.getItem('muni360_modo_demo') !== '1') {
-        try {
-          await fetch(URL_SCRIPT_DEPORTES, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              tipo: 'ASISTENCIA',
-              token: sesion?.token || '',
-              profe: sesion?.profeNombre || '',
-              deporte: areaActiva,
-              fecha,
-              categoria: cat,
-              equipo: eq,
-              puntosCiudad: puntos,
-              clima: clima,
-              datos: registro
-            })
-          });
-          toast(`✓ Asistencia de ${areaActiva} guardada en el Sheet`);
-        } catch (_) {
-          toast(`✓ Guardada en el dispositivo (se enviará al recuperar señal)`);
-        }
-      } else {
-        toast(`✓ Asistencia guardada en Modo Demo`);
-      }
-
-      if (clima === "Fuego") {
-        setTimeout(() => {
-          if (confirm("🔥 Marcaste clase con exceso de Fuego. ¿Querés abrir una dinámica de cancha de 2 minutos para 'Roce o discusión'?")) {
-            seleccionarGuiaUgi("Roce o discusión");
-            cambiarTab("ugi");
-          }
-        }, 400);
-      } else if (clima === "Agua") {
-        setTimeout(() => {
-          if (confirm("💧 Marcaste clase con exceso de Agua/dispersión. ¿Querés ver una variante rápida para 'Grupo disperso'?")) {
-            seleccionarGuiaUgi("Grupo disperso");
-            cambiarTab("ugi");
-          }
-        }, 400);
+      const lista=plantelActualNombres(); if (!lista.length) return;
+      const fecha=$('input-fecha').value, cat=$('sel-categoria').value, eq=$('sel-equipo').value||'General', cfg=cfgActual();
+      const registro={}; lista.forEach(j=>{const est=asistTempDep[j]||'N';registro[j]=est+((cfg.tieneComida && ['P','T'].includes(est) && comidaTempDep[j])?' | 🍴 Comida':'')+' | Sem:'+(semTempDep[j]||'N');});
+      const payload={tipo:'ASISTENCIA',deporte:areaActiva,fecha,categoria:cat,equipo:eq,datos:registro,clima:$('sel-clima-clase').value,puntosCiudad:$('sel-puntos-ciudad').value};
+      const ok=await enviarOperacion(payload);
+      if (ok) {
+        draftContext=null;$('draft-status').textContent='';
+        datosDeporte.asistencia=datosDeporte.asistencia.filter(r=>!(r.fecha===fecha && r.categoria===cat && r.equipo===eq));
+        Object.entries(registro).forEach(([jugador,estado])=>datosDeporte.asistencia.push({fecha,categoria:cat,equipo:eq,jugador,estado}));
+        almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte)); renderVistaActiva();
       }
     });
 
-    // =========================================================================
-    // 7. PESTAÑA 2: EVALUACIÓN TÉCNICA, ARQUERO, 4C UGI Y TARJETA VERDE DIGITAL
-    // =========================================================================
     function tieneArqueroActual() {
       return Boolean(cfgActual().arquero);
     }
@@ -2817,50 +2766,17 @@
       }
     });
 
+
     $('btn-guardar-eval').addEventListener('click', async () => {
-      const listaG = gestosActuales();
-      const notas = Object.fromEntries(Object.entries(notasTemp).filter(([k]) => listaG.includes(k)));
-      if (!Object.keys(notas).length) { toast("Puntuá al menos una variable"); return; }
-
-      const fecha = $('input-fecha').value;
-      const cat = $('sel-categoria').value;
-      const eq  = $('sel-equipo').value || 'General';
-
-      datosDeporte.evaluaciones = datosDeporte.evaluaciones.filter(r => !(r.fecha === fecha && r.jugador === jugadorActivo));
-      datosDeporte.evaluaciones.push({ fecha, categoria: cat, equipo: eq, jugador: jugadorActivo, notas });
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
-
-      if (localStorage.getItem('muni360_modo_demo') !== '1') {
-        try {
-          await fetch(URL_SCRIPT_DEPORTES, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              tipo: 'EVALUACION',
-              token: sesion?.token || '',
-              profe: sesion?.profeNombre || '',
-              deporte: areaActiva,
-              fecha,
-              categoria: cat,
-              equipo: eq,
-              jugador: jugadorActivo,
-              notas
-            })
-          });
-        } catch (_) {}
-      }
-
-      toast(`✓ ${nombreBaseDua(jugadorActivo)} evaluado`);
-      const pl = plantelActualNombres();
-      const idx = pl.indexOf(jugadorActivo);
-      const sig = [...pl.slice(idx + 1), ...pl.slice(0, idx)].find(j => !evalDeJugador(j, fecha));
-      if (sig) abrirPanelEval(sig);
-      else {
-        jugadorActivo = null;
-        $('panel-gestos').classList.add('hidden');
-        renderEvaluacion();
-        toast("¡Plantel completo evaluado!");
-      }
+      const notas=Object.fromEntries(Object.entries(notasTemp).filter(([k])=>gestosActuales().includes(k)));
+      if (!Object.keys(notas).length || !jugadorActivo) return toast('Puntuá al menos una variable.');
+      const fecha=$('input-fecha').value, categoria=$('sel-categoria').value, equipo=$('sel-equipo').value||'General', jugador=jugadorActivo;
+      if (!await enviarOperacion({tipo:'EVALUACION',deporte:areaActiva,fecha,categoria,equipo,jugador,notas})) return;
+      datosDeporte.evaluaciones=datosDeporte.evaluaciones.filter(r=>!(r.fecha===fecha && r.categoria===categoria && r.equipo===equipo && r.jugador===jugador));
+      datosDeporte.evaluaciones.push({fecha,categoria,equipo,jugador,notas});
+      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte)); renderVistaActiva();
+      const pl=plantelActualNombres(),idx=pl.indexOf(jugador),sig=[...pl.slice(idx+1),...pl.slice(0,idx)].find(j=>!evalDeJugador(j,fecha));
+      if (sig) abrirPanelEval(sig); else {jugadorActivo=null;$('panel-gestos').classList.add('hidden');}
     });
 
     $('btn-tarjeta-verde').addEventListener('click', () => {
@@ -2894,30 +2810,12 @@
       `;
       $('dua-modal').classList.remove('hidden');
 
-      $('btn-confirmar-verde').onclick = () => {
-        const motivo = $('sel-motivo-verde').value;
-        const notaExtra = $('nota-verde').value.trim();
-        const dniJ = obtenerDni(jugadorActivo);
-        const fichaLeg = obtenerLegajoUnificado(jugadorActivo, dniJ);
-        fichaLeg.bitacora.unshift({
-          id: 'tv_' + Date.now(),
-          fecha: $('input-fecha').value || fechaLocal(0),
-          tipo: '🟢 Tarjeta Verde Digital',
-          detalle: `${motivo}${notaExtra ? ' — "' + notaExtra + '"' : ''}`,
-          autor: `${sesion?.profeNombre || 'Profe'} (${areaActiva})`
-        });
-        guardarLegajoUnificado(jugadorActivo, dniJ, fichaLeg);
-
-        $('dua-modal').classList.add('hidden');
-        toast(`🟢 Tarjeta Verde asignada a ${jBase}`);
-        semTempDep[jugadorActivo] = 'V';
-        renderAsistencia();
+      $('btn-confirmar-verde').onclick=async()=>{
+        const ok=await enviarOperacion({tipo:'RECONOCIMIENTO',deporte:areaActiva,categoria:$('sel-categoria').value,equipo:$('sel-equipo').value||'General',jugador:jugadorActivo,fecha:$('input-fecha').value,motivo:$('sel-motivo-verde').value,nota:$('nota-verde').value.trim()});
+        if (ok) { $('dua-modal').classList.add('hidden'); toast('Tarjeta verde confirmada'); }
       };
     });
 
-    // =========================================================================
-    // 8. PESTAÑA 3: BANCO UGI (50 VARIANTES + REGISTRO DE BITÁCORA)
-    // =========================================================================
     function seleccionarGuiaUgi(clave) {
       situacionUgi = clave;
       document.querySelectorAll('#botonera-ugi .btn-situacion').forEach(b => {
@@ -2951,45 +2849,13 @@
     });
 
     $('btn-registrar-ugi').addEventListener('click', async () => {
-      const checks = [
-        $('chk-ugi-1').checked ? "Consigna <2 min" : null,
-        $('chk-ugi-2').checked ? "Variante aplicada" : null,
-        $('chk-ugi-3').checked ? "Refuerzo positivo" : null
-      ].filter(Boolean).join(", ") || "Sin tildar";
-
-      const variante = GUIAS_UGI[situacionUgi][indiceUgi].subtitulo;
-      const reg = {
-        fecha: new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }),
-        profe: sesion ? sesion.profeNombre : "Profe",
-        categoria: `${areaActiva}`,
-        foco: `${situacionUgi} (${variante})`,
-        checklist: checks,
-        nota: $('nota-ugi-profe').value.trim()
-      };
-
-      const hist = JSON.parse(localStorage.getItem('ugi_historial_sesiones') || '[]');
-      hist.unshift(reg);
-      localStorage.setItem('ugi_historial_sesiones', JSON.stringify(hist));
-      renderHistorialUgiLocal();
-
-      $('chk-ugi-1').checked = false;
-      $('chk-ugi-2').checked = false;
-      $('chk-ugi-3').checked = false;
-      $('nota-ugi-profe').value = '';
-      toast("✓ Sesión registrada en tu bitácora y enviada a la UGI");
-
-      try {
-        await fetch(URL_SCRIPT_PROFES_UGI, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(reg)
-        });
-      } catch (_) {}
+      const reg={fecha:new Date().toISOString(),profe:sesion.profeNombre,categoria:areaActiva,foco:situacionUgi+' ('+GUIAS_UGI[situacionUgi][indiceUgi].subtitulo+')',checklist:[$('chk-ugi-1').checked?'Consigna <2 min':'',$('chk-ugi-2').checked?'Variante aplicada':'',$('chk-ugi-3').checked?'Refuerzo positivo':''].filter(Boolean).join(', '),nota:$('nota-ugi-profe').value.trim()};
+      if (!await enviarOperacion({tipo:'SESION_UGI',deporte:areaActiva,...reg})) return;
+      datosDeporte.sesiones=[reg,...(datosDeporte.sesiones||[])]; renderHistorialUgiLocal(); $('nota-ugi-profe').value='';
     });
 
     function renderHistorialUgiLocal() {
-      const hist = JSON.parse(localStorage.getItem('ugi_historial_sesiones') || '[]');
+      const hist = datosDeporte.sesiones || [];
       $('historial-ugi-local').innerHTML = hist.length
         ? hist.slice(0, 8).map(x => `
             <div class="item" style="flex-direction:column; align-items:flex-start; gap:3px;">
@@ -3064,9 +2930,10 @@
             if (n < peorP) { peorP = n; peorG = g; }
           }
         }));
-        const prom = c ? (s / c) : null;
+        const promedios=Muni360Sync.splitAverage(evJ,GESTOS_COMUNES_UGI);
+        const prom=promedios.tecnico;
 
-        const regs = asistGrupo.filter(a => claveNombreDni(a.jugador) === kJ);
+        const regs = asistGrupo.filter(a => claveNombreDni(a.jugador) === kJ && /^[PAT]/.test(a.estado));
         const pres = regs.filter(a => String(a.estado).startsWith('P') || String(a.estado).startsWith('T')).length;
         totalPresGrupo += pres;
         totalRegsGrupo += regs.length;
@@ -3083,16 +2950,19 @@
         return {
           Deportista: nombreBaseDua(jugador),
           Promedio: prom !== null ? prom.toFixed(1) : '-',
+          Formacion: promedios.formativo !== null ? promedios.formativo.toFixed(1) : '-',
           ATrabajar: prom !== null ? (peorP <= 6.5 ? `${peorG} (${peorP})` : 'Parejo · Sólido') : 'Sin evaluar',
           Asistencia: pct !== null ? `${pct}% (${pres}/${regs.length})` : '-',
-          Semaforo: rojas ? `🔴 ${rojas} / 🟡 ${amarillas}` : (amarillas ? `🟡 ${amarillas}` : '🟢 100%'),
-          Estado: tienePlanActivo ? legData.estadoPlan.split('(')[0].trim() : (enAlerta ? '⚠ Seguimiento' : '✓ Óptimo'),
+          Semaforo: `🔴 ${rojas} / 🟡 ${amarillas} / sin observar: ${asistGrupo.filter(a=>claveNombreDni(a.jugador)===kJ && !/Sem:[VAR]/.test(a.estado)).length}`,
+          Estado: tienePlanActivo ? legData.estadoPlan.split('(')[0].trim() : (enAlerta ? '⚠ Revisar' : (prom===null || pct===null ? 'Sin datos suficientes' : 'Sin alertas en los datos registrados')),
           enAlerta
         };
       });
 
-      const pctGrupoGlobal = totalRegsGrupo ? Math.round((totalPresGrupo / totalRegsGrupo) * 100) + '%' : (ultimaMatrizExport.length ? 'Activa' : '-');
-      $('kpi-promedio').textContent = cant ? (suma / cant).toFixed(1) : '-';
+      const pctGrupoGlobal = totalRegsGrupo ? Math.round((totalPresGrupo / totalRegsGrupo) * 100) + '%' : 'Sin registrar';
+      const promSeparado=Muni360Sync.splitAverage(evals,GESTOS_COMUNES_UGI);
+      $('kpi-promedio').textContent=promSeparado.tecnico===null?'-':promSeparado.tecnico.toFixed(1);
+      $('kpi-formativo').textContent=promSeparado.formativo===null?'-':promSeparado.formativo.toFixed(1);
       $('kpi-asistencia').textContent = pctGrupoGlobal;
       $('kpi-alertas').textContent = String(alertas);
 
@@ -3100,17 +2970,19 @@
         ? ultimaMatrizExport.map(f => `
             <tr>
               <td><strong>${esc(f.Deportista)}</strong></td>
-              <td>${esc(f.Promedio)}</td>
+              <td>${esc(f.Promedio)}</td><td>${esc(f.Formacion)}</td>
               <td style="font-size:0.76rem; color:var(--muted);">${esc(f.ATrabajar)}</td>
               <td>${esc(f.Asistencia)}</td>
               <td><span class="pill ${f.enAlerta ? 'r' : 'v'}">${esc(f.Estado)}</span></td>
             </tr>`).join('')
-        : `<tr><td colspan="5" class="hint" style="text-align:center;">Sin deportistas cargados.</td></tr>`;
+        : `<tr><td colspan="6" class="hint" style="text-align:center;">Sin deportistas cargados.</td></tr>`;
     }
 
     $('sel-periodo').addEventListener('change', renderAnalisis);
 
-    $('btn-exportar-excel').addEventListener('click', () => {
+    $('btn-exportar-excel').addEventListener('click', async () => {
+      if (!permiso('exportar')) return toast('Dirección no habilitó exportaciones para esta cuenta.');
+      if (syncClient) { try { await syncClient.request({tipo:'EXPORTAR',deporte:areaActiva}); } catch(e) {return toast(e.message);} }
       if (!window.XLSX || !ultimaMatrizExport.length) { toast("No hay datos para exportar"); return; }
       const filasLimpias = ultimaMatrizExport.map(({ enAlerta, ...resto }) => resto);
       const ws = XLSX.utils.json_to_sheet(filasLimpias);
@@ -3126,9 +2998,15 @@
       if (!esCoordOAdmin()) return;
       const lista = plantelActualNombres();
       $('count-plantel').textContent = String(lista.length);
+      $('form-padron').closest('.card').classList.toggle('hidden',!permiso('administrarPadron'));
+      $('card-reset-datos').classList.toggle('hidden',!permiso('archivar'));
+      $('card-variables-deporte').classList.toggle('hidden',!permiso('administrarPadron'));
+      $('recuperar-fichas-locales').classList.toggle('hidden',!permiso('verLegajo'));
+      $('importar-sheets').classList.toggle('hidden',!permiso('administrarPadron'));
+      const b=datosDeporte.backup; $('backup-status').textContent=sesion?.esAdminTotal?(b?`Último backup: ${b.fecha} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
       $('gestos-dep').textContent = areaActiva;
       document.querySelectorAll('.txt-area-activa').forEach(el => el.textContent = areaActiva);
-      $('wrap-reset-general').classList.toggle('hidden', !sesion?.esAdminTotal);
+      $('wrap-reset-general').classList.toggle('hidden', !sesion?.esAdminTotal || !permiso('archivar'));
 
       $('lista-padron').innerHTML = lista.length
         ? lista.map((j, i) => {
@@ -3147,9 +3025,9 @@
                 ${planTag}
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button type="button" class="btn-dua-edit" data-dua-edit="${esc(j)}">🧩 DUA</button>
-                <button type="button" class="btn-legajo-dni ${dniVal ? 'con-dni' : ''}" data-legajo-open="${esc(j)}">${dniVal ? '🗂️ Legajo (DNI ✓)' : '🗂️ Legajo'}</button>
-                <button type="button" class="quitar" data-i="${i}">Quitar</button>
+                ${permiso('editarDua')?`<button type="button" class="btn-dua-edit" data-dua-edit="${esc(j)}">🧩 DUA</button>`:''}
+                <button type="button" class="btn-legajo-dni ${!permiso('verLegajo')?'hidden':''} ${dniVal ? 'con-dni' : ''}" data-legajo-open="${esc(j)}">${dniVal ? '🗂️ Legajo (DNI ✓)' : '🗂️ Legajo'}</button>
+                ${permiso('administrarPadron')?`<button type="button" class="quitar" data-i="${i}">Quitar</button>`:''}
               </div>
             </div>`;
           }).join('')
@@ -3173,93 +3051,30 @@
 
     $('form-padron').addEventListener('submit', async e => {
       e.preventDefault();
-      const cat = $('padron-cat').value.trim();
-      const eq  = cfgActual().esBase ? 'General' : ($('padron-eq').value.trim() || 'A');
-      const lineas = $('padron-lista').value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      if (!cat || !lineas.length) return;
-
-      const altasPayload = [];
-      lineas.forEach(lin => {
-        const parsed = extraerNombreYDni(lin);
-        if (!parsed || !parsed.jugador) return;
-        const nombreJ = parsed.jugador;
-        const dniJ    = parsed.dni;
-
-        if (!datosDeporte.padron.some(p => igual(p.categoria, cat) && igual(p.equipo || 'General', eq) && igual(p.jugador, nombreJ))) {
-          datosDeporte.padron.push({ categoria: cat, equipo: eq, jugador: nombreJ, dni: dniJ });
-        }
-        if (dniJ) guardarDniJugador(nombreJ, dniJ);
-        altasPayload.push({ jugador: nombreJ, dni: dniJ });
-      });
-
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
-      $('padron-lista').value = '';
-      renderFiltrosDeporte();
-      $('sel-categoria').value = cat;
-      $('sel-equipo').value = eq;
-      renderVistaActiva();
-      toast(`✓ ${altasPayload.length} deportistas cargados en ${cat}`);
-
-      if (localStorage.getItem('muni360_modo_demo') !== '1') {
-        try {
-          await fetch(URL_SCRIPT_DEPORTES, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              tipo: 'ALTA_PADRON',
-              token: sesion?.token || '',
-              deporte: areaActiva,
-              categoria: cat,
-              equipo: eq,
-              jugadores: altasPayload
-            })
-          });
-        } catch (_) {}
-      }
+      const categoria=$('padron-cat').value.trim(),equipo=cfgActual().esBase?'General':($('padron-eq').value.trim()||'A');
+      const jugadores=$('padron-lista').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(extraerNombreYDni);
+      if (!categoria || !jugadores.length) return;
+      if (await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria,equipo,jugadores})) {$('padron-lista').value='';await cargarAreaActiva();}
     });
 
     $('input-excel-file').addEventListener('change', async e => {
-      const file = e.target.files?.[0];
-      if (!file || !window.XLSX) return;
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array' });
-      const hoja = wb.Sheets[wb.SheetNames[0]];
-      const filas = XLSX.utils.sheet_to_json(hoja, { header: 1, defval: '' });
-      const nombres = [];
-
-      filas.slice(1).forEach(r => {
-        const c0 = String(r[0] || '').trim();
-        const c1 = String(r[1] || '').trim();
-        const c2 = String(r[2] || '').trim();
-        const c3 = String(r[3] || '').trim();
-        const c4 = String(r[4] || '').trim();
-
-        let nombreCompuesto = '';
-        let dniEncontrado = '';
-
-        [c0, c1, c2, c3, c4].forEach(val => {
-          const m = val.match(/^\d{7,8}$/);
-          if (m && !dniEncontrado) dniEncontrado = m[0];
-        });
-
-        if (c0 && c1 && isNaN(Number(c0)) && isNaN(Number(c1))) {
-          nombreCompuesto = `${c0}, ${c1}`;
-        } else if (c0 && isNaN(Number(c0))) {
-          nombreCompuesto = c0;
-        }
-
-        if (nombreCompuesto) {
-          nombres.push(dniEncontrado ? `${nombreCompuesto} - ${dniEncontrado}` : nombreCompuesto);
-        }
-      });
-
-      if (nombres.length) {
-        $('padron-lista').value = nombres.join('\n');
-        toast(`✓ ${nombres.length} deportistas leídos del Excel. Tocá "Cargar listado al grupo".`);
-      }
+      const file=e.target.files?.[0];if(!file)return;
+      const context=[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|');
+      try{
+        if(!window.XLSX)throw Error('No se pudo cargar el lector de planillas. Actualizá la página.');
+        if(file.size>2*1024*1024)throw Error('El archivo supera 2 MB. Dividilo en grupos más chicos.');
+        const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',sheetRows:502,cellHTML:false,cellFormula:false,bookVBA:false});
+        if(!wb.SheetNames.length)throw Error('El archivo no contiene hojas.');
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+        const people=MuniImport.parse(rows);
+        if(context!==[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|'))throw Error('Cambió el grupo durante la lectura. Volvé a elegir el archivo.');
+        if(!permiso('verDni')&&people.some(p=>p.dni))throw Error('Tu cuenta no tiene permiso para cargar DNI. Quitá esa columna.');
+        $('padron-lista').value=people.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n');
+        toast(`${people.length} deportistas leídos de ${wb.SheetNames[0]}. Revisá nombres y grupo antes de cargar.`);
+      }catch(error){toast(error.message||'No se pudo leer el archivo.');}finally{e.target.value='';}
     });
 
-    $('btn-sumar-gesto').addEventListener('click', () => {
+    $('btn-sumar-gesto').addEventListener('click', async () => {
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
@@ -3268,20 +3083,22 @@
         return;
       }
       base.push(nuevo);
+      if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base})) return;
       datosDeporte.gestos = base;
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
+      almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
       $('input-nuevo-gesto').value = '';
       renderVistaActiva();
       toast(`Variable "${nuevo}" sumada a ${areaActiva}`);
     });
 
-    $('lista-gestos-config').addEventListener('click', e => {
+    $('lista-gestos-config').addEventListener('click', async e => {
       const btn = e.target.closest('button[data-quitar-gesto]');
       if (!btn) return;
       const gQuitar = btn.dataset.quitarGesto;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
-      datosDeporte.gestos = base.filter(g => g !== gQuitar);
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
+      const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
+      datosDeporte.gestos = nueva;
+      almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
       renderVistaActiva();
       toast(`Variable "${gQuitar}" quitada`);
     });
@@ -3305,187 +3122,35 @@
       const cat = $('sel-categoria').value;
       const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
 
-      datosDeporte.padron = datosDeporte.padron.filter(p => !(igual(p.categoria, cat) && igual(p.equipo || 'General', eq) && igual(p.jugador, jugador)));
-      localStorage.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
-      renderVistaActiva();
-      toast(`✓ ${nombreBaseDua(jugador)} quitado del grupo`);
-
-      if (localStorage.getItem('muni360_modo_demo') !== '1') {
-        try {
-          await fetch(URL_SCRIPT_DEPORTES, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              tipo: 'BAJA_PADRON',
-              token: sesion?.token || '',
-              deporte: areaActiva,
-              categoria: cat,
-              equipo: eq,
-              jugador
-            })
-          });
-        } catch (_) {}
-      }
+      if (await enviarOperacion({tipo:'BAJA_PADRON',deporte:areaActiva,categoria:cat,equipo:eq,jugador})) await cargarAreaActiva();
     });
 
-    // --- ACCIONES DE REINICIO DE TEMPORADA Y VACIADO DE DATOS ---
-    $('btn-reset-temporada-deporte').addEventListener('click', async () => {
-      const dep = areaActiva;
-      const ok = confirm(`¿Confirmás PASAR DE TEMPORADA en ${dep}?\n\n• Se borrarán las asistencias y evaluaciones para iniciar el nuevo ciclo.\n• El PADRÓN de deportistas se mantendrá intacto.`);
-      if (!ok) return;
 
-      toast(`⏳ Pasando de temporada en ${dep}...`);
-      datosDeporte.asistencia = [];
-      datosDeporte.evaluaciones = [];
-      localStorage.setItem('muni360_cache_' + dep, JSON.stringify(datosDeporte));
-      renderVistaActiva();
-
-      try {
-        const res = await fetch(URL_SCRIPT_DEPORTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            tipo: 'RESET_DATOS',
-            modo: 'TEMPORADA',
-            deporte: dep,
-            token: sesion?.token || ''
-          })
-        });
-        const j = await res.json();
-        if (j && j.ok) {
-          toast(`✓ ${dep} pasó de temporada con éxito (Padrón conservado)`);
-        } else {
-          toast(j?.error || 'Aviso: actualizado');
-        }
-      } catch (_) {
-        toast(`✓ Aplicado en el dispositivo`);
+    async function archivarActividad(deporte, modo) {
+      if (syncClient?.queue.length) return toast('Enviá los pendientes antes de archivar.');
+      if (!confirm(`¿Archivar ${deporte} e iniciar una nueva temporada? Se conservarán copias consultables de asistencia, evaluaciones, padrón y variables.${modo==='TODO'?' El padrón actual quedará vacío.':' El padrón actual se conserva.'}`)) return;
+      const ok=await enviarOperacion({tipo:'RESET_DATOS',deporte,modo});
+      if (ok) await cargarAreaActiva();
+    }
+    $('btn-reset-temporada-deporte').onclick=()=>archivarActividad(areaActiva,'TEMPORADA');
+    $('btn-reset-todo-deporte').onclick=()=>archivarActividad(areaActiva,'TODO');
+    async function archivarClub(modo) {
+      if (!sesion?.esAdminTotal || !syncClient || syncClient.queue.length) return toast('Sólo Dirección, con conexión y sin pendientes.');
+      if (!confirm('¿Archivar las actividades del club una por una? Si una falla se detendrá el proceso y se informarán los archivos completados.')) return;
+      const completados=[];
+      for (const deporte of sesion.areas) {
+        try { await syncClient.read(deporte); } catch(e) { $('estado-txt').textContent=`Archivo detenido en ${deporte}. Completados: ${completados.join(', ') || 'ninguno'}. ${e.message}`; return; }
+        if (!await enviarOperacion({tipo:'RESET_DATOS',deporte,modo})) { $('estado-txt').textContent=`Archivo pendiente en ${deporte}. Completados: ${completados.join(', ') || 'ninguno'}. Revisá la carga pendiente.`; return; }
+        completados.push(deporte);
       }
-    });
+      await cargarAreaActiva(); toast(`${completados.length} actividades archivadas y confirmadas.`);
+    }
+    $('btn-reset-temporada-general').onclick=()=>archivarClub('TEMPORADA');
+    $('btn-reset-todo-general').onclick=()=>archivarClub('TODO');
 
-    $('btn-reset-todo-deporte').addEventListener('click', async () => {
-      const dep = areaActiva;
-      const resp = prompt(`⚠️ ATENCIÓN: Esta acción es irreversible.\n\nVas a BORRAR TODO en ${dep} (Padrón, Asistencias y Evaluaciones).\n\nPara confirmar, escribí BORRAR en mayúsculas:`);
-      if (resp !== 'BORRAR') {
-        if (resp !== null) alert('Operación cancelada: el texto no coincidió.');
-        return;
-      }
-
-      toast(`⏳ Vaciando toda la base de ${dep}...`);
-      datosDeporte.padron = [];
-      datosDeporte.asistencia = [];
-      datosDeporte.evaluaciones = [];
-      localStorage.setItem('muni360_cache_' + dep, JSON.stringify(datosDeporte));
-      renderFiltrosDeporte();
-      renderVistaActiva();
-
-      try {
-        const res = await fetch(URL_SCRIPT_DEPORTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            tipo: 'RESET_DATOS',
-            modo: 'TODO',
-            deporte: dep,
-            token: sesion?.token || ''
-          })
-        });
-        const j = await res.json();
-        if (j && j.ok) {
-          toast(`✓ ${dep} ha sido vaciado por completo`);
-        } else {
-          toast(j?.error || 'Aviso: vaciado localmente');
-        }
-      } catch (_) {
-        toast(`✓ Vaciado en el dispositivo`);
-      }
-    });
-
-    $('btn-reset-temporada-general').addEventListener('click', async () => {
-      if (!sesion?.esAdminTotal) return;
-      const resp = prompt(`🛡️ ATENCIÓN DIRECCIÓN UGI:\n\nVas a PASAR DE TEMPORADA EN TODO EL CLUB (25 actividades).\n\n• Se reiniciarán asistencias y evaluaciones en todas las planillas.\n• Los PADRONES de todos los deportes se mantendrán intactos.\n\nPara confirmar, escribí TEMPORADA en mayúsculas:`);
-      if (resp !== 'TEMPORADA') {
-        if (resp !== null) alert('Operación cancelada: el texto no coincidió.');
-        return;
-      }
-
-      toast('⏳ Pasando de temporada en todo el club...');
-      Object.keys(localStorage).filter(k => k.startsWith('muni360_cache_')).forEach(k => {
-        try {
-          const d = JSON.parse(localStorage.getItem(k));
-          if (d) {
-            d.asistencia = [];
-            d.evaluaciones = [];
-            localStorage.setItem(k, JSON.stringify(d));
-          }
-        } catch (_) {}
-      });
-      datosDeporte.asistencia = [];
-      datosDeporte.evaluaciones = [];
-      renderVistaActiva();
-
-      try {
-        const res = await fetch(URL_SCRIPT_DEPORTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            tipo: 'RESET_DATOS',
-            modo: 'TEMPORADA',
-            deporte: 'TODOS',
-            token: sesion?.token || ''
-          })
-        });
-        const j = await res.json();
-        if (j && j.ok) {
-          toast(`✓ Todo el club pasó de temporada con éxito`);
-        } else {
-          toast(j?.error || 'Operación enviada');
-        }
-      } catch (_) {
-        toast(`✓ Guardado localmente`);
-      }
-    });
-
-    $('btn-reset-todo-general').addEventListener('click', async () => {
-      if (!sesion?.esAdminTotal) return;
-      const resp = prompt(`🚨 PELIGRO MÁXIMO (DIRECCIÓN UGI):\n\nVas a BORRAR TODAS LAS PLANILLAS DE TODO EL CLUB (Padrón, Asistencias y Evaluaciones de las 25 actividades).\n\nPara confirmar esta acción IRREVERSIBLE, escribí BORRAR TODO en mayúsculas:`);
-      if (resp !== 'BORRAR TODO') {
-        if (resp !== null) alert('Operación cancelada: el texto no coincidió.');
-        return;
-      }
-
-      toast('⏳ Vaciando todas las planillas del club...');
-      Object.keys(localStorage).filter(k => k.startsWith('muni360_cache_')).forEach(k => localStorage.removeItem(k));
-      datosDeporte = { padron: [], evaluaciones: [], asistencia: [], gestos: null, email: '' };
-      renderFiltrosDeporte();
-      renderVistaActiva();
-
-      try {
-        const res = await fetch(URL_SCRIPT_DEPORTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            tipo: 'RESET_DATOS',
-            modo: 'TODO',
-            deporte: 'TODOS',
-            token: sesion?.token || ''
-          })
-        });
-        const j = await res.json();
-        if (j && j.ok) {
-          toast(`✓ Se han vaciado todas las planillas del club`);
-        } else {
-          toast(j?.error || 'Operación enviada');
-        }
-      } catch (_) {
-        toast(`✓ Vaciado en el dispositivo`);
-      }
-    });
-
-    // =========================================================================
-    // 11. CAMBIO DE PESTAÑAS Y RESTAURACIÓN AUTOMÁTICA DE SESIÓN
-    // =========================================================================
     function renderVistaActiva() {
       actualizarBarraContexto();
+      if ($('comparacion-temporada')) $('comparacion-temporada').textContent='';
       renderAsistencia();
       renderEvaluacion();
       renderAnalisis();
@@ -3495,7 +3160,7 @@
     function cambiarTab(id) {
       if (id === 'padron' && !esCoordOAdmin()) return;
       tabActual = id;
-      ['asistencia', 'evaluacion', 'ugi', 'analisis', 'padron'].forEach(t => {
+      ['asistencia', 'evaluacion', 'ugi', 'analisis', 'padron', 'auditoria'].forEach(t => {
         $('tab-' + t).classList.toggle('hidden', t !== id);
       });
       document.querySelectorAll('#nav-tabs .tab').forEach(b => {
@@ -3503,6 +3168,7 @@
       });
       $('wrap-fecha').classList.toggle('hidden', id === 'analisis' || id === 'padron');
       actualizarBarraContexto();
+      if(id==='auditoria')renderAuditoria();
     }
 
     $('nav-tabs').addEventListener('click', e => {
@@ -3514,7 +3180,9 @@
     // 12. MODO DEMO / PRESENTACIÓN PARA VIDEOS Y REUNIONES
     // =========================================================================
     window.cargarDemoVideoUGI = function(passIngresada) {
-      let pass = passIngresada || $('login-pass').value.trim();
+      if (syncClient) { syncClient.stop(); syncClient=null; }
+      storageScope='demo';
+      let pass = 'demo1234';
       const esValida = p => p && (p.toLowerCase() === "demo1234" || p.toLowerCase() === "demo");
       if (!esValida(pass)) {
         const pedida = prompt("Ingresá la contraseña para acceder al Modo Demo (demo1234):");
@@ -3722,13 +3390,13 @@
         gestos: null, email: "ugi@ccba.com.ar"
       };
 
-      localStorage.setItem('muni360_modo_demo', '1');
-      localStorage.setItem('muni360_ult_cat_' + dep, cat);
-      localStorage.setItem('muni360_ult_eq_' + dep, eq);
-      localStorage.setItem('muni360_cache_' + dep, JSON.stringify(demoData));
-      localStorage.setItem('muni360_cache_Colonia', JSON.stringify(demoColonia));
-      localStorage.setItem('muni360_cache_COYFD', JSON.stringify(demoCoyfd));
-      localStorage.setItem('muni360_cache_Hockey sobre Césped Damas', JSON.stringify(demoHockey));
+      almacen.setItem('muni360_modo_demo', '1');
+      almacen.setItem('muni360_ult_cat_' + dep, cat);
+      almacen.setItem('muni360_ult_eq_' + dep, eq);
+      almacen.setItem('muni360_cache_' + dep, JSON.stringify(demoData));
+      almacen.setItem('muni360_cache_Colonia', JSON.stringify(demoColonia));
+      almacen.setItem('muni360_cache_COYFD', JSON.stringify(demoCoyfd));
+      almacen.setItem('muni360_cache_Hockey sobre Césped Damas', JSON.stringify(demoHockey));
 
       const legajoMateo = {
         estadoPlan: "🟡 Plan A Activo (Acompañamiento 90 días)",
@@ -3825,44 +3493,65 @@
       mapaLegajosDemo[claveNombreDni("Gómez, Bautista")] = legajoBautista;
       mapaLegajosDemo["49210334"] = legajoValentinoP;
       mapaLegajosDemo[claveNombreDni("Peralta, Valentino")] = legajoValentinoP;
-      localStorage.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapaLegajosDemo));
+      almacen.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapaLegajosDemo));
 
       const sesionDemo = {
         area: dep, esAdminTotal: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
       };
-      localStorage.setItem('muni360_sesion_activa', JSON.stringify(sesionDemo));
+      almacen.setItem('muni360_sesion_activa', JSON.stringify(sesionDemo));
       iniciarSesion(sesionDemo);
       toast("🎭 Modo Demo activado con éxito");
     };
 
     window.salirModoDemo = function() {
-      localStorage.removeItem('muni360_modo_demo');
-      localStorage.removeItem('muni360_cache_Básquet Caballeros');
-      localStorage.removeItem('muni360_cache_Colonia');
-      localStorage.removeItem('muni360_cache_COYFD');
-      localStorage.removeItem('muni360_cache_Hockey sobre Césped Damas');
-      localStorage.removeItem('muni360_sesion_activa');
+      almacen.removeItem('muni360_modo_demo');
+      almacen.removeItem('muni360_cache_Básquet Caballeros');
+      almacen.removeItem('muni360_cache_Colonia');
+      almacen.removeItem('muni360_cache_COYFD');
+      almacen.removeItem('muni360_cache_Hockey sobre Césped Damas');
+      almacen.removeItem('muni360_sesion_activa');
       sesion = null;
-      $('login-pass').value = "";
+
       ['app-header', 'barra-estado', 'app-screen'].forEach(id => $(id).classList.add('hidden'));
       $('login-screen').classList.remove('hidden');
       toast("Modo Demo finalizado");
     };
 
-    const demoParam = new URLSearchParams(location.search).get('demo') || (location.hash === '#demo1234' ? 'demo1234' : null);
-    if (demoParam === '1' || demoParam === 'demo1234') {
-      window.cargarDemoVideoUGI('demo1234');
-    } else {
-      const guardada = localStorage.getItem('muni360_sesion_activa');
-      if (guardada) {
-        try {
-          iniciarSesion(JSON.parse(guardada));
-        } catch (e) {
-          console.error("Error restaurando sesión:", e);
-          localStorage.removeItem('muni360_sesion_activa');
-        }
-      }
+
+    $('recuperar-fichas-locales').onclick=recuperarFichasLocales;
+    $('sel-archivo').addEventListener('change', async e=>{
+      const id=e.target.value; if (!id) {$('comparacion-temporada').textContent='';return;}
+      if (!syncClient) return toast('La comparación histórica requiere conexión con Google.');
+      const d=areaActiva,cat=$('sel-categoria').value,eq=$('sel-equipo').value||'General';
+      try {
+        const old=await syncClient.read(d,id); if (d!==areaActiva || cat!==$('sel-categoria').value || eq!==($('sel-equipo').value||'General')) return;
+        const summarize=data=>{const ev=data.evaluaciones.filter(r=>r.categoria===cat && r.equipo===eq),a=data.asistencia.filter(r=>r.categoria===cat && r.equipo===eq && /^[PAT]/.test(r.estado)),p=Muni360Sync.splitAverage(ev,GESTOS_COMUNES_UGI);return [p.tecnico===null?'Sin datos':p.tecnico.toFixed(1),p.formativo===null?'Sin datos':p.formativo.toFixed(1),a.length?Math.round(100*a.filter(r=>/^[PT]/.test(r.estado)).length/a.length)+'%':'Sin datos',a.length];};
+        const now=summarize(datosDeporte),prev=summarize(old);
+        $('comparacion-temporada').innerHTML=`<p>${esc(cat)} · ${esc(eq)} · Se compara todo el historial de cada temporada; la composición del grupo puede cambiar.</p><table><thead><tr><th>Indicador</th><th>Actual</th><th>Archivada</th></tr></thead><tbody>${['Técnica','Formación','Asistencia','Asistencias registradas'].map((label,i)=>`<tr><td>${label}</td><td>${esc(now[i])}</td><td>${esc(prev[i])}</td></tr>`).join('')}</tbody></table>`;
+      } catch(e) {$('comparacion-temporada').textContent=e.message;}
+    });
+
+
+
+    function markDraft(){draftContext={cat:$('sel-categoria').value,eq:$('sel-equipo').value,date:$('input-fecha').value};$('draft-status').textContent='Hay cambios de asistencia sin guardar.';}
+    $('lista-asist').addEventListener('click',e=>{if(e.target.closest('button[data-e],button[data-sem],button[data-action]'))markDraft();});
+    $('btn-todos-p').addEventListener('click',markDraft);$('btn-todos-comida').addEventListener('click',markDraft);
+    ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>$(id).addEventListener('change',e=>{if(!draftContext)return;if(!confirm('Hay cambios sin guardar. ¿Cambiar de grupo o fecha y descartarlos?')){e.stopImmediatePropagation();$('sel-categoria').value=draftContext.cat;$('sel-equipo').value=draftContext.eq;$('input-fecha').value=draftContext.date;return;}draftContext=null;$('draft-status').textContent='';},true));
+    $('modo-cancha').onclick=()=>{const active=document.body.classList.toggle('modo-cancha');$('modo-cancha').textContent=active?'Vista completa':'Modo cancha';$('modo-cancha').setAttribute('aria-pressed',String(active));};
+    async function renderAuditoria(){
+      if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
+      try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(new Date(e.fecha).toLocaleString('es-AR'))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
     }
+    $('sync-sheets').onclick=async()=>{const button=$('sync-sheets');button.disabled=true;try{await MuniGoogle.call('/api/sheets/sync',{deporte:areaActiva});await cargarAreaActiva();toast('Vistas de Sheets actualizadas.');}catch(e){toast(e.message);}finally{button.disabled=false;}};
+    $('actualizar-auditoria').onclick=renderAuditoria;
+    $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.antes,null,2))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.despues,null,2))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
+    $('importar-sheets').onclick=async()=>{
+      if(!syncClient)return toast('La importación real requiere configurar Google.');
+      try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast('No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}
+    };
+    const demoParam=new URLSearchParams(location.search).get('demo');
+    if(demoParam==='1')window.cargarDemoVideoUGI('demo1234');
+    else if(window.MuniGoogle){MuniGoogle.observe((user,error)=>{if(error){$('login-error').textContent=error.message;return;}if(user)cargarPerfilGoogle();else if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden'));$('login-screen').classList.remove('hidden');}});}
   </script>
 </body>
 </html>

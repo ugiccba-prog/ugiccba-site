@@ -2,4 +2,8 @@ node_modules/
 .DS_Store
 *.log
 scratch/
-
+dist/
+.openai/
+.env
+.env.*
+.clasprc.json

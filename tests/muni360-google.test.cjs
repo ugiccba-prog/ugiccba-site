@@ -1,0 +1,49 @@
+const test=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const {fakeFirestore}=require('./fake-firestore.cjs');
+const {createService}=require('../server/muni360/service.cjs');
+const {createStore}=require('../server/muni360/firestore-store.cjs');
+const {createDataStore}=require('../server/muni360/data-store.cjs');
+const {defaults,actorFrom,authorize}=require('../server/muni360/policy.cjs');
+const {empty,applyOperation,visible,auditSlice,sha}=require('../server/muni360/domain.cjs');
+const {tablesFor}=require('../server/muni360/projection.cjs');
+const {createSheetsApi}=require('../server/muni360/sheets-api.cjs');
+const {parseLegacy}=require('../server/muni360/migration.cjs');
+const areas=['Tenis','Golf'],secret='test-only-id-secret-with-at-least-32-characters';
+async function setup(){
+  const db=fakeFirestore(),store=createStore(db,{documentId:()=>'__name__'}),ident=id=>({uid:id,name:id,email:id+'@example.invalid',email_verified:true,firebase:{sign_in_provider:'google.com'}});
+  const auth={verifyIdToken:async(token,revoked)=>{assert.equal(revoked,true);if(token==='invalid')throw Error('invalid');return ident(token);},revokeRefreshTokens:async()=>{}};
+  for(const name of areas)await db.collection('muni360_activities').doc(sha(name)).set({name,activeSeason:'inicial',epoch:0,version:0,migrationStatus:'complete'});
+  const data=createDataStore(db,{areas,idSecret:secret}),handle=createService({auth,store,operations:data.execute,staging:async()=>[],areas,ownerUid:'owner'});
+  const call=(id,path,body={})=>handle({authorization:'Bearer '+id,path,body});
+  await call('owner','/api/me');await call('teacher','/api/me');
+  const target=(await store.listUsers()).users.find(u=>u.uid==='teacher');
+  await call('owner','/api/users/update',{uid:'teacher',revision:target.revision,status:'activo',rol:'Profe',areas:['Tenis'],capabilities:{},expiresAt:null});
+  const owner=actorFrom((await db.collection('muni360_users').doc('owner').get()).data(),areas),teacher=actorFrom((await db.collection('muni360_users').doc('teacher').get()).data(),areas);
+  const send=(actor,body)=>data.execute(actor,{deporte:'Tenis',requestId:crypto.randomUUID(),revision:0,temporada:0,...body});
+  return {db,store,data,call,owner,teacher,send};
+}
+test('Google inválido y usuarios sin aprobación no reciben datos deportivos',async()=>{const e=await setup();await assert.rejects(()=>e.call('invalid','/api/me'),/inválida/);const p=await e.call('pending','/api/me');assert.equal(p.profile.status,'pendiente');assert.deepEqual(p.profile.areas,[]);await assert.rejects(()=>e.call('pending','/api/operations',{tipo:'LECTURA',deporte:'Tenis'}),/pendiente/);});
+test('sólo el propietario administra permisos; registro anterior y posterior se conserva',async()=>{const e=await setup();await assert.rejects(()=>e.call('teacher','/api/users/list'),/propietario/);const hist=await e.call('owner','/api/users/history');assert.equal(hist.events[0].antes.status,'pendiente');assert.equal(hist.events[0].despues.status,'activo');await assert.rejects(()=>e.call('owner','/api/users/update',{uid:'owner'}),/configuración/);});
+test('profes cubren todos los equipos de la actividad habilitada y no otras actividades',async()=>{const e=await setup();for(const equipo of ['A','B','C'])authorize(e.teacher,{tipo:'ASISTENCIA',deporte:'Tenis',equipo});assert.throws(()=>authorize(e.teacher,{tipo:'ASISTENCIA',deporte:'Golf'}),/actividad/);assert.throws(()=>authorize(e.teacher,{tipo:'ALTA_PADRON',deporte:'Tenis'}),/permiso/);});
+test('reemplazos con vencimiento y permisos revocados bloquean la siguiente operación',async()=>{const e=await setup(),u=(await e.store.listUsers()).users.find(u=>u.uid==='teacher');await assert.rejects(()=>e.call('owner','/api/users/update',{uid:u.uid,revision:u.revision,status:'activo',rol:'Reemplazante',areas:['Tenis'],expiresAt:null}),/vencimiento/);await e.call('owner','/api/users/update',{uid:u.uid,revision:u.revision,status:'suspendido',rol:'Profe',areas:['Tenis']});await assert.rejects(()=>e.send(e.teacher,{tipo:'LECTURA'}),/permisos cambiaron/);});
+test('Firestore guarda datos, recibo, auditoría y pendiente de Sheets juntos; reintentos no duplican',async()=>{
+  const e=await setup(),request={tipo:'ALTA_PADRON',categoria:'Sub 12',equipo:'B',jugadores:[{jugador:'Persona de prueba',dni:'12345678'}],deporte:'Tenis',requestId:crypto.randomUUID(),revision:0,temporada:0};
+  const first=await e.data.execute(e.owner,request),repeat=await e.data.execute(e.owner,request);assert.equal(first.ok,true);assert.equal(repeat.requestId,first.requestId);assert.equal([...e.db.values.keys()].filter(k=>k==='muni360_outbox/'+request.requestId).length,1);
+  const view=await e.send(e.teacher,{tipo:'LECTURA'});assert.equal(view.padron[0].equipo,'B');assert.equal(view.padron[0].dni,'');assert.equal(view.sheetsStatus,'pending');
+  const history=await e.send(e.owner,{tipo:'AUDITORIA'});const detail=await e.send(e.owner,{tipo:'AUDITORIA',auditId:history.events[0].id});assert.deepEqual(detail.antes,[]);assert.equal(detail.despues[0].dni,'12345678');
+});
+test('dos profes no pisan el mismo registro y los cambios quedan atribuidos al usuario real',async()=>{
+  const e=await setup();await e.send(e.owner,{tipo:'ALTA_PADRON',categoria:'Sub 12',equipo:'B',jugadores:[{jugador:'Persona de prueba',dni:''}]});
+  const d={tipo:'ASISTENCIA',categoria:'Sub 12',equipo:'B',fecha:'2026-11-09',datos:{'Persona de prueba':'P | Sem:N'},autor:'falso'};
+  const results=await Promise.allSettled([e.send(e.teacher,d),e.send(e.teacher,d)]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(results.filter(r=>r.status==='rejected').length,1);
+  const events=(await e.send(e.teacher,{tipo:'AUDITORIA'})).events;assert.equal(events[0].autor,'teacher');assert.equal(events[0].uid,'teacher');
+});
+test('archivo mantiene historial y padrón; no mezcla cargas de otra temporada',async()=>{
+  const e=await setup();await e.send(e.owner,{tipo:'ALTA_PADRON',categoria:'Sub 12',equipo:'A',jugadores:[{jugador:'Prueba'}]});await e.send(e.teacher,{tipo:'ASISTENCIA',categoria:'Sub 12',equipo:'A',fecha:'2026-11-09',datos:{Prueba:'P | Sem:V'}});await e.send(e.owner,{tipo:'RESET_DATOS',modo:'TEMPORADA'});
+  const current=await e.send(e.owner,{tipo:'LECTURA'});assert.equal(current.asistencia.length,0);assert.equal(current.padron.length,1);assert.equal(current.archivos.length,1);const archived=await e.send(e.owner,{tipo:'LECTURA',temporada:current.archivos[0].id});assert.equal(archived.asistencia.length,1);await assert.rejects(()=>e.send(e.teacher,{tipo:'EVALUACION',categoria:'Sub 12',equipo:'A',fecha:'2026-11-09',jugador:'Prueba',notas:{Pase:8}}),/temporada cambió/);
+});
+test('una caída de Sheets no pierde la carga confirmada ni el pendiente durable',async()=>{const e=await setup(),data=createDataStore(e.db,{areas,idSecret:secret,projectActivity:async()=>{throw Error('offline');}});const r=await data.execute(e.owner,{deporte:'Tenis',tipo:'SESION_UGI',requestId:crypto.randomUUID(),revision:0,temporada:0,foco:'Consigna visual',nota:''});assert.equal(r.ok,true);assert.equal(r.sheetsStatus,'pending');assert.equal((await e.send(e.owner,{tipo:'LECTURA'})).sesiones.length,1);});
+test('tarjeta verde no revela otras notas privadas en la auditoría del profe',()=>{let s=empty();s.padron=[{id:'p',jugador:'Prueba',categoria:'Sub 12',equipo:'A',dni:'12345678'}];s.fichas.p={legajo:{bitacora:[{id:'privado',detalle:'privado'}],actividadesSimultaneas:[]}};const teacher={id:'p1',nombre:'Profe',capabilities:{}};const d={tipo:'RECONOCIMIENTO',requestId:'request-123456789012345',subjectId:'p',categoria:'Sub 12',equipo:'A',jugador:'Prueba',fecha:'2026-11-09',motivo:'Compañerismo'};const after=applyOperation(s,d,teacher,{idSecret:secret});assert.equal(auditSlice(s,d).length,0);assert.equal(auditSlice(after,d).length,1);assert.ok(!JSON.stringify(auditSlice(after,d)).includes('privado'));assert.deepEqual(visible(after,teacher).fichas.p.legajo,{});});
+test('planillas compartidas no reciben DNI, notas privadas ni detalles de permisos',()=>{const s=empty();s.padron=[{id:'p',jugador:'Prueba',categoria:'Sub 12',equipo:'A',dni:'12345678'}];s.fichas.p={dua:{comunicacion:'Consigna visual'},legajo:{bitacora:[{detalle:'NOTA_PRIVADA'}]}};const t=tablesFor({state:s,meta:{version:1},audit:[],histories:[]},'Tenis');assert.ok(!JSON.stringify(t.publicTables).includes('12345678'));assert.ok(!JSON.stringify(t.publicTables).includes('NOTA_PRIVADA'));assert.ok(JSON.stringify(t.privateTables).includes('12345678'));assert.ok(JSON.stringify(t.privateTables).includes('NOTA_PRIVADA'));});
+test('Sheets escribe datos como texto sin ejecutar fórmulas y usa actualización en lote',async()=>{const requests=[];const client={request:async opts=>{requests.push(opts);if(opts.method==='POST')return {data:{}};return {data:{sheets:[{properties:{sheetId:1,title:'Padron',gridProperties:{rowCount:100,columnCount:6}}}]}};}};await createSheetsApi(client).replaceTables('test-sheet',{Padron:[['Nombre'],['=IMPORTXML("test")']]});const update=requests.find(r=>r.method==='POST').data.requests.find(r=>r.updateCells).updateCells;assert.equal(update.rows[1].values[0].userEnteredValue.stringValue,'=IMPORTXML("test")');assert.equal(update.rows[1].values[0].userEnteredValue.formulaValue,undefined);});
+test('migración preserva nombres, notas e identidad existente sin inventar estados',()=>{const s=parseLegacy({Padron:[['Deporte','Categoría','Equipo','Jugador','DNI','ID'],['Tenis','Sub 12','A','Prueba','12345678','old-id']],Asistencia:[['Fecha'],['9/11/2026','Tenis','Sub 12','A','Prueba','A']],Evaluaciones:[['Fecha'],['9/11/2026','Tenis','Sub 12','A','Prueba','Pase: 8 | Respeto: 7']]},secret);assert.equal(s.padron[0].id,'old-id');assert.equal(s.asistencia[0].estado,'A');assert.equal(s.asistencia[0].fecha,'2026-11-09');assert.equal(s.evaluaciones[0].notas.Pase,8);});

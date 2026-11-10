@@ -5,7 +5,8 @@
   "description": "Sitio oficial de la Unidad de Gestión Integral (UGI) - Club Ciudad de Buenos Aires",
   "scripts": {
     "lint:css": "stylelint \"**/*.css\"",
-    "lint:js": "jshint assets/scripts apps/training"
+    "lint:js": "jshint assets/scripts apps/training",
+    "test:muni360": "node scripts/build-apps-script.cjs --check && node --test tests/muni360*.test.cjs"
   },
   "devDependencies": {
     "playwright": "^1.40.0",
@@ -14,4 +15,3 @@
     "jshint": "^2.13.6"
   }
 }
-

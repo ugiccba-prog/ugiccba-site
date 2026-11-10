@@ -1,736 +1,86 @@
-/**
- * ============================================================================
- * UGI · Unidad de Gestión Integral — Backend Maestro de MUNI 360
- * URL de producción: https://www.ugiccba.com.ar/muni360
- * URL activa del Script: https://script.google.com/macros/s/AKfycbz0VhNzdHKgFfrbHvuCJtLqrLRz9BWKxYxKjQ5CdCNQDiMd38edOmTDnGyTm8OBDeZ6/exec
- * Maneja las 25 disciplinas oficiales (Colonia, COYFD y los 23 deportes/ramas).
- * Asistencia + Evaluaciones + Padrón (con DNI en Columna E) + Backup + Temporada.
- * ============================================================================
- * INSTALACIÓN RECOMENDADA:
- *  1. script.google.com > pegar este archivo completo.
- *  2. Implementar > Administrar implementaciones > Editar > Nueva versión > Implementar.
- *  3. Ejecutar UNA vez la función crearActivadorViernes() (menú ▶ Ejecutar)
- *     para que la auditoría de asistencia al mail y el backup semanal en Drive
- *     corran solos todos los viernes a las 9 AM.
- *
- * PESTAÑAS en cada Sheet:
- *   Evaluaciones | Asistencia | Padron (Col E = DNI) | Gestos | Config (B1 = mail)
- * ============================================================================
- */
-
-// 1. PLANILLAS OFICIALES UGI (Estricto: 25 disciplinas únicas, 1 Sheet independiente por actividad/rama)
-var SHEET_IDS = {
-  'Básquet Caballeros':                 '1atZz7i-cxBzLfKZeoKLgVo_n0W2S3xtd4K4T6nUHZUo',
-  'Básquet Damas':                      '1YNoY2uEymXVN0yA4vt13MNk1jeRjj5704ENGi_RpD1g',
-  'COYFD':                              '1NVb5u-a0KceaMH17_JibsMvMt5gBfOLy2G7hAdmkjnk',
-  'Cestoball':                          '1sXraAlu-ffUONjIlDxCrYqVcT3nKh_cKdDsWZqPzDDs',
-  'Colonia':                            '1i_c6Gmk8P2DftBRMo1PmqJ4SITAVs4hWn42-KXGkuyA',
-  'Fútbol Caballeros':                  '1hhkJdJNfCGoH2Of1D9krWmyftPg6KyyjXZbNHP-_ZNQ',
-  'Fútbol Damas':                       '12merM9tSeYivBDAskXvghB253DTdTEbLHyVS45hbEa0',
-  'Gimnasia Artística':                 '1IvqhYgaE3gZLQJZulkrcUayZ6lB6jczKXNEAiqKuEcY',
-  'Gimnasia Rítmica':                   '1aGBE83lkn7TCjWlCINnRe0fzY2JGN9503d-05NL8rWE',
-  'Golf':                               '1AptU0IPt589WqMoQp7KH8-iLIlLX70YmQezqTL9AspU',
-  'Handball':                           '1sX1qXGmhclyWNQ9emya5HvPdS0p6F5JOormRMLV9nqM',
-  'Hockey sobre Césped Caballeros':     '1dtjk_YnaUJYtm91TnDV4siKlRQor2ogf0_wrSmn27GI',
-  'Hockey sobre Césped Damas':          '1E5DTN9IPlZ0vN4XYFNfgzwru9snsQ2WnUCTbvqdx4Jc',
-  'Hockey sobre Patines Caballeros':    '1cd90Dt44mS8avP5G83cRJLgU3fNt_EQrSHNTgV9Xd-w',
-  'Hockey sobre Patines Damas':         '1oW0zu6OfgQj2A2Qsk8mb4f2v4O3qg4zRfjTiho-FMYY',
-  'Judo':                               '1Mp-HI_aPV-RMrycPREMbc9SlbcJvt-DDbb1C-poL4V4',
-  'Karate':                             '1bTl33vW7OkGMyyI1DAugog_P0AnfiDgLpGX-nm8xsX0',
-  'Natación Artística':                 '1MlLH8Tt8377db07WuusSvtMH9PxtArWmMvNE9nm5HCA',
-  'Patín Artístico':                    '1z3reK28Tz4f_2Xfp39BOkW2A_vD5fjfmi0F0kEx9DNI',
-  'Pelota Paleta':                      '14pa7-NPaSvyn5YpxxsfPOSUKaymJxSXQv_V-dlrPcno',
-  'Rugby Caballeros':                   '1QvGvPADaFIuo1befSR-MYtAiEHmwDRR_AaFQm3Qa5Mc',
-  'Rugby Damas':                        '1hqTHOhJPfhW2i-9QvFIqvB-L8KFKNWM1q0WOQIAgYYc',
-  'Tenis':                              '10-O7S6yDlOIofDs1Eb0nNd4bwqjWNPRjWqBB9URfrP0',
-  'Vóley Caballeros':                   '1RuAkEXIHGErXaq36y4zT-6YT-fupYGElej8z4uAJDf8',
-  'Vóley Damas':                        '1A4I4Eg_OcLXowIJImP8nwMSHyyN9OHwTLQZrJYbxHgE'
-};
-
-// 2. CLAVES SEGURAS POR ACTIVIDAD (Soporta las 3 claves universales muni360 / coordugi / profeugi, claves por deporte y PINes)
-var CLAVES_SEGURAS = {
-  // Base Formativa
-  'Colonia':                         { profe: 'coloniamuni', altProfe: 'colonia2025', coord: 'coloniacoord', pinProfe: '1001', pinCoord: '2001' },
-  'COYFD':                           { profe: 'coyfdmuni',   altProfe: 'coyfd2025',   coord: 'coyfdcoord',   pinProfe: '1002', pinCoord: '2002' },
-
-  // Deportes con ambas ramas (Caballeros y Damas)
-  'Básquet Caballeros':              { profe: 'basquetmuni', coord: 'basquetcoord', pinProfe: '1101', pinCoord: '2101' },
-  'Básquet Damas':                   { profe: 'basquetmuni', coord: 'basquetcoord', pinProfe: '1102', pinCoord: '2102' },
-  'Fútbol Caballeros':               { profe: 'futbolmuni',  coord: 'futbolcoord',  pinProfe: '1301', altPinP: '1104', pinCoord: '2301', altPinC: '2104' },
-  'Fútbol Damas':                    { profe: 'futbolmuni',  coord: 'futbolcoord',  pinProfe: '1302', altPinP: '1105', pinCoord: '2302', altPinC: '2105' },
-  'Hockey sobre Césped Caballeros':  { profe: 'hockeycespedmuni', altProfe: 'hockeymuni', coord: 'hockeycespedcoord', altCoord: 'hockeycoord', pinProfe: '1701', altPinP: '1109', pinCoord: '2701', altPinC: '2109' },
-  'Hockey sobre Césped Damas':       { profe: 'hockeycespedmuni', altProfe: 'hockeymuni', coord: 'hockeycespedcoord', altCoord: 'hockeycoord', pinProfe: '1702', altPinP: '1110', pinCoord: '2702', altPinC: '2110' },
-  'Hockey sobre Patines Caballeros': { profe: 'hockeypatinesmuni', altProfe: 'patinesmuni', coord: 'hockeypatinescoord', altCoord: 'patinescoord', pinProfe: '1801', altPinP: '1111', pinCoord: '2801', altPinC: '2111' },
-  'Hockey sobre Patines Damas':      { profe: 'hockeypatinesmuni', altProfe: 'patinesmuni', coord: 'hockeypatinescoord', altCoord: 'patinescoord', pinProfe: '1802', altPinP: '1112', pinCoord: '2802', altPinC: '2112' },
-  'Rugby Caballeros':                { profe: 'rugbymuni',   coord: 'rugbycoord',   pinProfe: '3501', altPinP: '1118', pinCoord: '4501', altPinC: '2118' },
-  'Rugby Damas':                     { profe: 'rugbymuni',   coord: 'rugbycoord',   pinProfe: '3502', altPinP: '1119', pinCoord: '4502', altPinC: '2119' },
-  'Vóley Caballeros':                { profe: 'voleymuni',   coord: 'voleycoord',   pinProfe: '3701', altPinP: '1121', pinCoord: '4701', altPinC: '2121' },
-  'Vóley Damas':                     { profe: 'voleymuni',   coord: 'voleycoord',   pinProfe: '3702', altPinP: '1122', pinCoord: '4702', altPinC: '2122' },
-
-  // Disciplinas únicas
-  'Cestoball':                       { profe: 'cestomuni',     coord: 'cestocoord',     pinProfe: '1200', altPinP: '1103', pinCoord: '2200', altPinC: '2103' },
-  'Gimnasia Artística':              { profe: 'gimnasiamuni',  coord: 'gimnasiacoord',  pinProfe: '1401', altPinP: '1106', pinCoord: '2401', altPinC: '2106' },
-  'Gimnasia Rítmica':                { profe: 'gimnasiamuni',  coord: 'gimnasiacoord',  pinProfe: '1402', altPinP: '1107', pinCoord: '2402', altPinC: '2107' },
-  'Golf':                            { profe: 'golfmuni',      coord: 'golfcoord',      pinProfe: '1500', altPinP: '1108', pinCoord: '2500', altPinC: '2108' },
-  'Handball':                        { profe: 'handballmuni',  coord: 'handballcoord',  pinProfe: '1600', altPinP: '1123', pinCoord: '2600', altPinC: '2123' },
-  'Judo':                            { profe: 'judomuni',      coord: 'judocoord',      pinProfe: '1900', altPinP: '1113', pinCoord: '2900', altPinC: '2113' },
-  'Karate':                          { profe: 'karatemuni',    coord: 'karatecoord',    pinProfe: '3100', altPinP: '1114', pinCoord: '4100', altPinC: '2114' },
-  'Natación Artística':              { profe: 'natacionmuni',  coord: 'natacioncoord',  pinProfe: '3201', altPinP: '1115', pinCoord: '4201', altPinC: '2115' },
-  'Patín Artístico':                 { profe: 'patinmuni',     coord: 'patincoord',     pinProfe: '3300', altPinP: '1116', pinCoord: '4300', altPinC: '2116' },
-  'Pelota Paleta':                   { profe: 'paletamuni',    coord: 'paletacoord',    pinProfe: '3400', altPinP: '1117', pinCoord: '4400', altPinC: '2117' },
-  'Tenis':                           { profe: 'tenismuni',     coord: 'teniscoord',     pinProfe: '3600', altPinP: '1120', pinCoord: '4600', altPinC: '2120' }
-};
-
-var TZ = 'America/Argentina/Buenos_Aires';
-
-// El DNI va siempre en la última columna (Columna E) de Padron para no mezclarse con ningún dato numérico
-var CABECERAS = {
-  'Evaluaciones': ['Fecha', 'Deporte', 'Categoría', 'Equipo', 'Jugador', 'Detalle Notas', 'Promedio'],
-  'Asistencia':   ['Fecha', 'Deporte', 'Categoría', 'Equipo', 'Jugador', 'Estado'],
-  'Padron':       ['Deporte', 'Categoría', 'Equipo', 'Jugador', 'DNI']
-};
-
-// --- UTILIDADES ---------------------------------------------------------------
-function abrirSheet(deporte) {
-  var id = SHEET_IDS[deporte];
-  if (!id) {
-    try {
-      id = PropertiesService.getScriptProperties().getProperty('SHEET_' + deporte) ||
-           PropertiesService.getScriptProperties().getProperty(deporte);
-    } catch (_) {}
+// Muni 360 v3 maintenance. No production IDs or secrets in source control.
+var TZ_UGI='America/Argentina/Buenos_Aires';
+function projectionUGI(name,a){
+  var s=a.state,p={};
+  p.Padron=[['Deporte','Categoría','Equipo','Jugador','DNI (privado)','ID deportista'],...s.padron.map(function(r){return [name,r.categoria,r.equipo,r.jugador,'',r.id];})];
+  p.Asistencia=[['Fecha','Deporte','Categoría','Equipo','Jugador','Estado','Clima','Puntos Ciudad'],...s.asistencia.map(function(r){return [r.fecha,name,r.categoria,r.equipo,r.jugador,r.estado,r.clima||'',r.puntosCiudad||''];})];
+  p.Evaluaciones=[['Fecha','Deporte','Categoría','Equipo','Jugador','Notas'],...s.evaluaciones.map(function(r){return [r.fecha,name,r.categoria,r.equipo,r.jugador,Object.entries(r.notas).map(function(x){return x[0]+': '+x[1];}).join(' | ')];})];
+  p.Gestos=[['Variable'],...s.gestos.map(function(g){return [g];})];
+  p.ApoyosDUA=[['ID','Jugador','Comunicación','Evitar','Apoyos'],...s.padron.filter(function(r){return s.fichas[r.id]?.dua;}).map(function(r){var f=s.fichas[r.id].dua;return [r.id,r.jugador,f.comunicacion,f.desborda,f.regula];})];
+  p.Cambios=[['Fecha UTC','Autor','Tipo','Categoría','Equipo','Jugador','ID'],...Object.values(a.audit).filter(function(e){return ['ASISTENCIA','EVALUACION','RECONOCIMIENTO'].includes(e.tipo);}).map(function(e){return [e.fecha,e.autor,e.tipo,e.categoria,e.equipo,e.jugador,e.id];})];
+  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',a.meta.version],['Actualizado UTC',new Date().toISOString()],['Uso','Vista de consulta. Cargar en la app o preparar nombres en CargaPadron.']];
+  var hs=Object.values(a.archives);
+  p.HistorialAsistencia=[['Temporada','Fecha','Categoría','Equipo','Jugador','Estado'],...hs.flatMap(function(h){return h.state.asistencia.map(function(r){return [h.id,r.fecha,r.categoria,r.equipo,r.jugador,r.estado];});})];
+  p.HistorialEvaluaciones=[['Temporada','Fecha','Categoría','Equipo','Jugador','Notas JSON'],...hs.flatMap(function(h){return h.state.evaluaciones.map(function(r){return [h.id,r.fecha,r.categoria,r.equipo,r.jugador,JSON.stringify(r.notas)];});})];
+  p.HistorialPadron=[['Temporada','Categoría','Equipo','Jugador','ID'],...hs.flatMap(function(h){return h.state.padron.map(function(r){return [h.id,r.categoria,r.equipo,r.jugador,r.id];});})];
+  return p;
+}
+function syncActivityUGI(c,name){
+  var a=loadActivityUGI(c,name),tables=projectionUGI(name,a),meta=metadataUGI(c.map[name]);
+  if(!meta.some(function(s){return s.title==='CargaPadron';}))tables.CargaPadron=[['Categoría','Equipo','Jugador']];
+  var previous=readTablesUGI(c.map[name],Object.keys(tables),meta);
+  // Views may need several batches. Their version marker is written last;
+  // canonical state, receipts and audits NEVER use this non-atomic projection mode.
+  var status=tables.EstadoSync;delete tables.EstadoSync;tables.EstadoSync=status;
+  writeTablesUGI(c.map[name],tables,meta,null,previous,true);
+  a.meta.projectedVersion=a.meta.version;var update={};update[prefixUGI(name)+'Meta']=[['Control JSON'],[JSON.stringify(a.meta)]];writeTablesUGI(c.id,update);
+}
+function sincronizarPendientesUGI(){
+  var c=configUGI(),props=PropertiesService.getScriptProperties(),areas=Object.keys(c.map),start=Number(props.getProperty('UGI_SYNC_CURSOR')||0)%areas.length,deadline=Date.now()+90000,done=0;
+  var errors=[];
+  // Scan only the small metadata tables, rather than every activity's history.
+  var metas=readTablesUGI(c.id,areas.map(function(name){return prefixUGI(name)+'Meta';}));
+  for(var i=0;i<areas.length&&Date.now()<deadline&&done<3;i++){
+    var idx=(start+i)%areas.length,name=areas[idx],row=rowsUGI(metas,prefixUGI(name)+'Meta')[0];
+    props.setProperty('UGI_SYNC_CURSOR',String((idx+1)%areas.length));
+    if(!row)continue;var state=JSON.parse(row[0]);if(state.version===state.projectedVersion)continue;
+    var lock=LockService.getScriptLock();if(!lock.tryLock(1000))break;
+    try{syncActivityUGI(c,name);done++;}catch(_){errors.push(name);}finally{lock.releaseLock();}
   }
-  if (id) return SpreadsheetApp.openById(id);
-  var activa = SpreadsheetApp.getActiveSpreadsheet();
-  if (activa) return activa;
-  throw new Error('No hay planilla configurada para: ' + deporte);
+  props.setProperty('UGI_ULTIMO_SYNC',JSON.stringify({fecha:new Date().toISOString(),ok:!errors.length,actividades:done,errores:errors}));
+  return {ok:!errors.length,actividades:done,errores:errors};
+}
+function realizarBackupSemanal(){
+  // Canonical spreadsheet contains data, users, receipts, audits and season snapshots.
+  var c=configUGI(),p=PropertiesService.getScriptProperties(),folderId=p.getProperty('UGI_BACKUP_FOLDER_ID');
+  if(!folderId)throw new AccessError('CONFIGURACION','Falta configurar la carpeta privada de respaldos.');
+  var date=Utilities.formatDate(new Date(),TZ_UGI,'yyyy-MM-dd'),lock=LockService.getScriptLock();if(!lock.tryLock(5000))return {ok:false,pendiente:true};
+  try{
+    var old=JSON.parse(p.getProperty('UGI_ULTIMO_BACKUP')||'null');if(old&&old.ok&&old.dia===date){var previous=DriveApp.getFileById(old.id);if(!previous.isTrashed())return old;}
+    var source=DriveApp.getFileById(c.id),folder=DriveApp.getFolderById(folderId);privateResourceUGI(source);privateResourceUGI(folder);
+    var file=source.makeCopy('Muni360_BACKUP_'+date,folder);privateResourceUGI(file);
+    // Backup folder must be private. Copies inherit folder permissions: verify before enabling.
+    var status={fecha:new Date().toISOString(),dia:date,id:file.getId(),ok:true,copias:1,errores:[]};p.setProperty('UGI_ULTIMO_BACKUP',JSON.stringify(status));return status;
+  }catch(_){p.setProperty('UGI_ULTIMO_BACKUP',JSON.stringify({fecha:new Date().toISOString(),ok:false,errores:['Respaldo no confirmado']}));throw new Error('Respaldo no confirmado. Revisar permisos y espacio en Drive.');}finally{lock.releaseLock();}
+}
+function instalarActivadoresUGI(){
+  prepararEntornoUGI();var handlers=['sincronizarPendientesUGI','realizarBackupSemanal','verificarAsistenciaSemanal'];
+  ScriptApp.getProjectTriggers().forEach(function(t){if(handlers.includes(t.getHandlerFunction()))ScriptApp.deleteTrigger(t);});
+  ScriptApp.newTrigger('sincronizarPendientesUGI').timeBased().everyMinutes(15).create();
+  ScriptApp.newTrigger('realizarBackupSemanal').timeBased().everyDays(1).atHour(2).inTimezone(TZ_UGI).create();
+}
+function diagnosticoUGI(){
+  var c=configUGI(),p=PropertiesService.getScriptProperties(),meta=metadataUGI(c.id),users=loadUsersUGI(c),issues=[];
+  if(!users.users.some(function(u){return u.uid===c.owner&&u.status==='activo';}))issues.push('El propietario todavía no ingresó.');
+  var dirty=[];Object.keys(c.map).forEach(function(name){var a=loadActivityUGI(c,name);if(a.meta.projectedVersion!==a.meta.version)dirty.push(name);if(a.meta.stateHash&&a.meta.stateHash!==sha(a.state))issues.push('Tablas internas alteradas: '+name);});
+  var folder=p.getProperty('UGI_BACKUP_FOLDER_ID');if(!folder)issues.push('Falta carpeta de respaldos.');
+  return {ok:!issues.length,backendVersion:MUNI_BACKEND_VERSION,actividades:Object.keys(c.map).length,pestanas:meta.length,pendientes:dirty,problemas:issues,backup:JSON.parse(p.getProperty('UGI_ULTIMO_BACKUP')||'null'),sync:JSON.parse(p.getProperty('UGI_ULTIMO_SYNC')||'null'),activadores:ScriptApp.getProjectTriggers().map(function(t){return t.getHandlerFunction();})};
+}
+function privateResourceUGI(resource){
+  var owner=Session.getEffectiveUser().getEmail();
+  if(!owner||resource.getSharingAccess()!==DriveApp.Access.PRIVATE||resource.getViewers().length||resource.getEditors().some(function(u){return u.getEmail()!==owner;}))throw new AccessError('PRIVACIDAD','La planilla original y la carpeta de respaldo deben ser privadas de la cuenta que ejecuta el script.');
+}
+function prepararEntornoUGI(){
+  var p=PropertiesService.getScriptProperties();if(!p.getProperty('UGI_ID_SECRET'))p.setProperty('UGI_ID_SECRET',randomUUID()+randomUUID());
+  var c=configUGI(),folder=p.getProperty('UGI_BACKUP_FOLDER_ID');if(!folder)throw new AccessError('CONFIGURACION','Falta UGI_BACKUP_FOLDER_ID.');
+  privateResourceUGI(DriveApp.getFileById(c.id));privateResourceUGI(DriveApp.getFolderById(folder));
+  var table={IndiceUGI:[['Actividad','Prefijo interno','Planilla de consulta'],...Object.keys(c.map).map(function(name){return [name,prefixUGI(name),c.map[name]];})]};writeTablesUGI(c.id,table);
+  return {ok:true,actividades:Object.keys(c.map).length,mensaje:'Entorno verificado. Ingresar con la cuenta propietaria y probar antes de habilitar activadores.'};
 }
 
-function hoja(ss, nombre) {
-  var sh = ss.getSheetByName(nombre) || ss.insertSheet(nombre);
-  var cab = CABECERAS[nombre];
-  if (cab && sh.getLastRow() === 0) {
-    sh.appendRow(cab);
-    sh.getRange(1, 1, 1, cab.length).setFontWeight('bold').setBackground('#082b49').setFontColor('#ffffff');
-    sh.setFrozenRows(1);
-  } else if (nombre === 'Padron' && sh.getLastColumn() < 5) {
-    sh.getRange(1, 5).setValue('DNI').setFontWeight('bold').setBackground('#082b49').setFontColor('#ffffff');
-  }
-  return sh;
-}
-
-function filas(sh) {
-  if (!sh || sh.getLastRow() <= 1) return [];
-  return sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(sh.getLastColumn(), 5)).getValues();
-}
-
-function fechaTxt(v, tz) {
-  if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
-  return String(v || '').slice(0, 10);
-}
-
-// Borra (de abajo hacia arriba) las filas de datos que cumplan la condición
-function borrarFilas(sh, condicion) {
-  var datos = filas(sh);
-  for (var i = datos.length - 1; i >= 0; i--) {
-    if (condicion(datos[i])) sh.deleteRow(i + 2);
-  }
-}
-
-function mismo(a, b) {
-  return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
-}
-
-function respuesta(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
-
-// --- GESTIÓN DE SESIONES Y TOKENS SEGUROS (CacheService) -----------------------
-// Genera un token único válido por 6 horas (21600 seg, límite máximo de CacheService)
-function emitirToken(rol, area) {
-  var token = 'tok_' + Utilities.getUuid();
-  try {
-    CacheService.getScriptCache().put(token, JSON.stringify({ rol: rol, area: area }), 21600);
-  } catch (_) {}
-  return token;
-}
-
-// Verifica si el token existe y sigue vigente en la memoria del servidor
-function tokenValido(token) {
-  if (!token) return null;
-  var t = String(token);
-  try {
-    var raw = CacheService.getScriptCache().get(t);
-    if (raw) return JSON.parse(raw);
-  } catch (_) {}
-  // Respaldo para tokens prefijados si CacheService se reinició
-  if (t.indexOf('ugi_') === 0) return { rol: 'Dirección UGI', area: 'TODOS' };
-  if (t.indexOf('coord_') === 0) return { rol: 'Coordinación', area: '' };
-  if (t.indexOf('profe_') === 0 || t.indexOf('tok_') === 0) return { rol: 'Profe', area: '' };
-  return null;
-}
-
-// --- 1. RECIBE LOS DATOS DESDE LA WEB -----------------------------------------
-function doPost(e) {
-  var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
-  try {
-    var data = JSON.parse(e.postData.contents);
-
-    // 0. AUTENTICACIÓN SEGURA MUNI 360 (Emite token temporal en servidor)
-    if (data.tipo === 'LOGIN') {
-      var clave = String(data.clave || '').trim().toLowerCase();
-      var deporte = String(data.deporte || '').trim();
-      var celular = String(data.celular || '').trim();
-
-      // 1. Dirección UGI: Clave maestra con acceso total a todo el club
-      if (clave === 'muni360' || clave === 'adminugi' || clave === 'ugi2026' || clave === 'argon2026') {
-        return respuesta({
-          ok: true,
-          rol: 'Dirección UGI',
-          esAdminTotal: true,
-          deporte: deporte,
-          celular: celular,
-          token: emitirToken('Dirección UGI', 'TODOS')
-        });
-      }
-
-      var reg = CLAVES_SEGURAS[deporte];
-
-      // 2. Coordinación: Clave del deporte (ej: basquetcoord), PIN (2101) o universal (coordugi)
-      if ((reg && (clave === reg.coord.toLowerCase() || (reg.altCoord && clave === reg.altCoord.toLowerCase()) || clave === reg.pinCoord || (reg.altPinC && clave === reg.altPinC))) || clave === 'coordugi') {
-        return respuesta({
-          ok: true,
-          rol: 'Coordinación',
-          esAdminTotal: false,
-          deporte: deporte,
-          celular: celular,
-          token: emitirToken('Coordinación', deporte)
-        });
-      }
-
-      // 3. Profesores: Clave del deporte (ej: basquetmuni), PIN (1101) o universal (profeugi)
-      if ((reg && (clave === reg.profe.toLowerCase() || (reg.altProfe && clave === reg.altProfe.toLowerCase()) || clave === reg.pinProfe || (reg.altPinP && clave === reg.altPinP))) || clave === 'profeugi') {
-        return respuesta({
-          ok: true,
-          rol: 'Profe',
-          esAdminTotal: false,
-          deporte: deporte,
-          celular: celular,
-          token: emitirToken('Profe', deporte)
-        });
-      }
-
-      return respuesta({ ok: false, error: 'Contraseña incorrecta para ' + deporte + '.' });
-    }
-
-    // CANDADO DE ESCRITURA
-    var sesionToken = tokenValido(data.token);
-    if (!sesionToken) {
-      return respuesta({ ok: false, error: 'Sesión vencida o no autorizada. Por favor volvé a ingresar tu clave.' });
-    }
-
-    // 0.1 REINICIO DE TEMPORADA Y VACIADO DE DATOS (POR DEPORTE O GENERAL)
-    if (data.tipo === 'RESET_DATOS') {
-      if (sesionToken.rol !== 'Dirección UGI' && sesionToken.rol !== 'Coordinación') {
-        return respuesta({ ok: false, error: 'No tenés permisos de coordinación para reiniciar datos.' });
-      }
-
-      var modo = String(data.modo || 'TEMPORADA').toUpperCase(); // 'TEMPORADA' o 'TODO'
-      var dep = String(data.deporte || '').trim();
-
-      if (dep === 'TODOS' && sesionToken.rol !== 'Dirección UGI') {
-        return respuesta({ ok: false, error: 'Solo Dirección UGI puede reiniciar todo el club.' });
-      }
-
-      var limpiarFilasHoja = function (ssObj, nombreHoja) {
-        var shObj = ssObj.getSheetByName(nombreHoja);
-        if (shObj && shObj.getLastRow() > 1) {
-          shObj.deleteRows(2, shObj.getLastRow() - 1);
-        }
-      };
-
-      var procesarSs = function (ssObj) {
-        limpiarFilasHoja(ssObj, 'Asistencia');
-        limpiarFilasHoja(ssObj, 'Evaluaciones');
-        if (modo === 'TODO') {
-          limpiarFilasHoja(ssObj, 'Padron');
-        }
-      };
-
-      if (dep === 'TODOS') {
-        var procesados = {};
-        Object.keys(SHEET_IDS).forEach(function (k) {
-          try {
-            var ssObj = abrirSheet(k);
-            var idSs = ssObj.getId();
-            if (!procesados[idSs]) {
-              procesados[idSs] = true;
-              procesarSs(ssObj);
-            }
-          } catch (errReset) {
-            console.error('Error al resetear ' + k, errReset);
-          }
-        });
-        return respuesta({ ok: true, mensaje: 'Reinicio general (' + modo + ') completado en todo el club.' });
-      } else {
-        var ssTarget = abrirSheet(dep);
-        procesarSs(ssTarget);
-        return respuesta({ ok: true, mensaje: 'Reinicio (' + modo + ') completado para ' + dep + '.' });
-      }
-    }
-
-    // OPERACIONES DIARIAS DE CANCHA Y PADRÓN (CON DNI EN COLUMNA E)
-    var ss = abrirSheet(data.deporte);
-    var tz = ss.getSpreadsheetTimeZone();
-    var sh;
-
-    if (data.tipo === 'EVALUACION') {
-      sh = hoja(ss, 'Evaluaciones');
-      var notas = data.notas || {};
-      var claves = Object.keys(notas);
-      var detalle = claves.map(function (k) { return k + ': ' + notas[k]; }).join(' | ');
-      var suma = claves.reduce(function (a, k) { return a + Number(notas[k]); }, 0);
-      var prom = claves.length ? Math.round((suma / claves.length) * 100) / 100 : '';
-      // Si el profe re-evalúa al mismo jugador el mismo día, se reemplaza
-      borrarFilas(sh, function (r) {
-        return fechaTxt(r[0], tz) === data.fecha && mismo(r[2], data.categoria) &&
-               mismo(r[3], data.equipo) && mismo(r[4], data.jugador);
-      });
-      sh.appendRow([data.fecha, data.deporte, data.categoria, data.equipo, data.jugador, detalle, prom]);
-
-    } else if (data.tipo === 'ASISTENCIA') {
-      sh = hoja(ss, 'Asistencia');
-      // Si se vuelve a tomar lista del mismo día/equipo, se reemplaza (no duplica)
-      borrarFilas(sh, function (r) {
-        return fechaTxt(r[0], tz) === data.fecha && mismo(r[2], data.categoria) && mismo(r[3], data.equipo);
-      });
-      var extraMeta = '';
-      if (data.puntosCiudad) extraMeta += ' | Pts:' + data.puntosCiudad;
-      if (data.clima) extraMeta += ' | Clima:' + data.clima;
-
-      var nuevas = Object.keys(data.datos || {}).map(function (j) {
-        return [data.fecha, data.deporte, data.categoria, data.equipo, j, data.datos[j] + extraMeta];
-      });
-      if (nuevas.length) sh.getRange(sh.getLastRow() + 1, 1, nuevas.length, 6).setValues(nuevas);
-
-    } else if (data.tipo === 'ALTA_PADRON') {
-      sh = hoja(ss, 'Padron');
-      var existentes = filas(sh);
-      var dnisMap = data.dnis || {};
-      var altas = [];
-
-      (data.jugadores || []).forEach(function (item) {
-        var nombreJ = (typeof item === 'object' && item !== null) ? String(item.jugador || '').trim() : String(item || '').trim();
-        var dniJ    = (typeof item === 'object' && item !== null) ? String(item.dni || '').trim() : String(dnisMap[nombreJ] || '').trim();
-        if (!nombreJ) return;
-
-        var idxExistente = -1;
-        for (var i = 0; i < existentes.length; i++) {
-          var r = existentes[i];
-          if (mismo(r[1], data.categoria) && mismo(r[2], data.equipo) && mismo(r[3], nombreJ)) {
-            idxExistente = i;
-            break;
-          }
-        }
-        if (idxExistente === -1) {
-          altas.push([data.deporte, data.categoria, data.equipo, nombreJ, dniJ]);
-        } else if (dniJ) {
-          // Si el jugador ya existía y se le cargó o actualizó el DNI desde el Legajo Privado, lo escribe en Columna E
-          sh.getRange(idxExistente + 2, 5).setValue(dniJ);
-        }
-      });
-      if (altas.length) sh.getRange(sh.getLastRow() + 1, 1, altas.length, 5).setValues(altas);
-
-    } else if (data.tipo === 'BAJA_PADRON') {
-      sh = hoja(ss, 'Padron');
-      borrarFilas(sh, function (r) {
-        return mismo(r[1], data.categoria) && mismo(r[2], data.equipo) && mismo(r[3], data.jugador);
-      });
-
-    } else if (data.tipo === 'GESTOS' || data.tipo === 'GUARDAR_GESTOS') {
-      sh = hoja(ss, 'Gestos');
-      sh.clear();
-      var lista = [['Gesto / Variable']].concat((data.gestos || []).map(function (g) { return [g]; }));
-      sh.getRange(1, 1, lista.length, 1).setValues(lista);
-      sh.getRange(1, 1).setFontWeight('bold');
-
-    } else if (data.tipo === 'CONFIG') {
-      sh = hoja(ss, 'Config');
-      sh.getRange('A1:B1').setValues([['Email coordinador', data.email || '']]);
-
-    } else {
-      return respuesta({ ok: false, error: 'Tipo desconocido: ' + data.tipo });
-    }
-
-    return respuesta({ ok: true });
-  } catch (err) {
-    return respuesta({ ok: false, error: String(err) });
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-// --- 2. DEVUELVE LOS DATOS A LA WEB (para Análisis, Padrón y Legajo Privado) ---
-function doGet(e) {
-  try {
-    var deporte = e && e.parameter && e.parameter.deporte;
-    if (!deporte) return respuesta({ ok: true, mensaje: 'Backend UGI Deportes activo.' });
-
-    // CANDADO DE LECTURA
-    var token = e && e.parameter && e.parameter.token;
-    if (!tokenValido(token)) {
-      return respuesta({ ok: false, error: 'Sesión no autorizada o vencida.' });
-    }
-
-    var ss = abrirSheet(deporte);
-    var tz = ss.getSpreadsheetTimeZone();
-    var delDeporte = function (r, col) { return !r[col] || mismo(r[col], deporte); };
-
-    var padron = filas(ss.getSheetByName('Padron'))
-      .filter(function (r) { return r[3] && delDeporte(r, 0); })
-      .map(function (r) {
-        return {
-          categoria: String(r[1]),
-          equipo: String(r[2] || 'General'),
-          jugador: String(r[3]),
-          dni: String(r[4] || '')
-        };
-      });
-
-    var evaluaciones = filas(ss.getSheetByName('Evaluaciones'))
-      .filter(function (r) { return r[4] && delDeporte(r, 1); })
-      .map(function (r) {
-        var notas = {};
-        String(r[5] || '').split(' | ').forEach(function (par) {
-          var i = par.lastIndexOf(':');
-          if (i > 0) notas[par.slice(0, i).trim()] = Number(par.slice(i + 1));
-        });
-        return { fecha: fechaTxt(r[0], tz), categoria: String(r[2]), equipo: String(r[3] || 'General'), jugador: String(r[4]), notas: notas };
-      });
-
-    var asistencia = filas(ss.getSheetByName('Asistencia'))
-      .filter(function (r) { return r[4] && delDeporte(r, 1); })
-      .map(function (r) {
-        return { fecha: fechaTxt(r[0], tz), categoria: String(r[2]), equipo: String(r[3] || 'General'), jugador: String(r[4]), estado: String(r[5]) };
-      });
-
-    var shG = ss.getSheetByName('Gestos');
-    var gestos = shG && shG.getLastRow() > 1
-      ? shG.getRange(2, 1, shG.getLastRow() - 1, 1).getValues().map(function (r) { return String(r[0]).trim(); }).filter(String)
-      : null;
-
-    var shC = ss.getSheetByName('Config');
-    var email = shC ? String(shC.getRange('B1').getValue() || '') : '';
-
-    return respuesta({ ok: true, padron: padron, evaluaciones: evaluaciones, asistencia: asistencia, gestos: gestos, email: email });
-  } catch (err) {
-    return respuesta({ ok: false, error: String(err) });
-  }
-}
-
-// --- 3. AUDITORÍA AUTOMÁTICA DE ASISTENCIA Y BACKUP (VIERNES 9 AM) -------------
-function verificarAsistenciaSemanal() {
-  // Ejecuta la copia de seguridad semanal de todas las planillas del club
-  try {
-    realizarBackupSemanal();
-  } catch (errBackup) {
-    console.error('Error al realizar backup semanal: ' + errBackup);
-  }
-
-  var deportes = Object.keys(SHEET_IDS);
-  if (deportes.length === 0) {
-    auditarPlanilla(SpreadsheetApp.getActiveSpreadsheet(), '');
-    return;
-  }
-  var vistos = {};
-  deportes.forEach(function (dep) {
-    var id = SHEET_IDS[dep];
-    if (!id || vistos[id]) return;
-    vistos[id] = true;
-    try { auditarPlanilla(SpreadsheetApp.openById(id), dep); } catch (e) { console.error(dep, e); }
-  });
-}
-
-function auditarPlanilla(ss, deporte) {
-  var shConfig = ss.getSheetByName('Config');
-  if (!shConfig) return;
-  var email = String(shConfig.getRange('B1').getValue() || '');
-  if (email.indexOf('@') === -1) return;
-
-  // Grupos registrados en el padrón (Categoría · Equipo)
-  var grupos = {};
-  filas(ss.getSheetByName('Padron')).forEach(function (r) {
-    if (r[3]) grupos[r[1] + ' · ' + r[2]] = true;
-  });
-  if (Object.keys(grupos).length === 0) return; // deporte sin padrón todavía
-
-  // Grupos que cargaron asistencia en los últimos 7 días
-  var unaSemanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  var cargados = {};
-  filas(ss.getSheetByName('Asistencia')).forEach(function (r) {
-    var f = r[0] instanceof Date ? r[0] : new Date(r[0]);
-    if (f >= unaSemanaAtras) cargados[r[2] + ' · ' + r[3]] = true;
-  });
-
-  var sinCargar = Object.keys(grupos).filter(function (g) { return !cargados[g]; });
-  if (sinCargar.length === 0) return;
-
-  var titulo = deporte ? ' (' + deporte + ')' : '';
-  var mensaje = 'Hola Coordinador,\n\nEl sistema detectó que estos grupos' + titulo +
-    ' NO registraron asistencia en los últimos 7 días:\n\n' +
-    sinCargar.map(function (g) { return '• ' + g; }).join('\n') +
-    '\n\nPor favor pasales el aviso a los profes.\n\nClub Ciudad de Buenos Aires - Unidad de Gestión Integral';
-
-  MailApp.sendEmail(email, '⚠️ UGI' + titulo + ': grupos sin asistencia esta semana', mensaje);
-}
-
-// Ejecutar UNA sola vez: crea el activador de los viernes a las 9 AM
-function crearActivadorViernes() {
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'verificarAsistenciaSemanal') ScriptApp.deleteTrigger(t);
-  });
-  ScriptApp.newTrigger('verificarAsistenciaSemanal')
-    .timeBased()
-    .onWeekDay(ScriptApp.WeekDay.FRIDAY)
-    .atHour(9)
-    .inTimezone(TZ)
-    .create();
-}
-
-// --- 4. COPIA DE SEGURIDAD AUTOMÁTICA SEMANAL EN GOOGLE DRIVE ------------------
-/**
- * Crea o utiliza la carpeta "_BACKUP_SEMANAL_UGI" en Google Drive y guarda
- * una copia fechada de cada una de las planillas oficiales.
- * Corre automáticamente todos los viernes junto con la auditoría de las 9 AM.
- */
-function realizarBackupSemanal() {
-  var nombreCarpeta = '_BACKUP_SEMANAL_UGI';
-  var iter = DriveApp.getFoldersByName(nombreCarpeta);
-  var carpetaBackup = iter.hasNext() ? iter.next() : DriveApp.createFolder(nombreCarpeta);
-  var fechaHoy = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
-
-  var idsCopiados = {};
-
-  // 1. Copia todas las planillas definidas en SHEET_IDS
-  Object.keys(SHEET_IDS).forEach(function (dep) {
-    var id = SHEET_IDS[dep];
-    if (!id || idsCopiados[id]) return;
-    idsCopiados[id] = true;
-    try {
-      var archivo = DriveApp.getFileById(id);
-      archivo.makeCopy('BACKUP_' + fechaHoy + '_' + archivo.getName(), carpetaBackup);
-    } catch (e) {
-      console.error('Error backup ' + dep + ' (' + id + '): ' + e);
-    }
-  });
-
-  // 2. Copia también planillas dinámicas guardadas en PropertiesService
-  try {
-    var props = PropertiesService.getScriptProperties().getProperties();
-    Object.keys(props).forEach(function (k) {
-      var id = props[k];
-      if (!id || idsCopiados[id] || typeof id !== 'string' || id.length < 20) return;
-      idsCopiados[id] = true;
-      try {
-        var archivo = DriveApp.getFileById(id);
-        archivo.makeCopy('BACKUP_' + fechaHoy + '_' + archivo.getName(), carpetaBackup);
-      } catch (_) {}
-    });
-  } catch (_) {}
-
-  Logger.log('========================================================');
-  Logger.log('✅ BACKUP SEMANAL FINALIZADO CON ÉXITO');
-  Logger.log('Carpeta: ' + nombreCarpeta + ' (' + carpetaBackup.getUrl() + ')');
-  Logger.log('Fecha: ' + fechaHoy);
-  Logger.log('========================================================');
-}
-
-// --- 5. CREADOR MASIVO DE TODAS LAS PLANILLAS OFICIALES ------------------------
-function crearTodasLasPlanillasOficiales() {
-  var NOMBRE_CARPETA = '📁 UGI · Planillas Oficiales MUNI 360 (Club Ciudad)';
-  var carpetas = DriveApp.getFoldersByName(NOMBRE_CARPETA);
-  var folder = carpetas.hasNext() ? carpetas.next() : DriveApp.createFolder(NOMBRE_CARPETA);
-
-  var ACTIVIDADES = [
-    {
-      clave: 'Colonia',
-      titulo: 'UGI · Colonia de Verano - Planilla Oficial',
-      gestos: ['Participación y entusiasmo', 'Respeto de consignas', 'Trabajo en equipo', 'Coordinación motriz', 'Adaptación al agua', 'Autonomía personal', 'Resolución de conflictos']
-    },
-    {
-      clave: 'COYFD',
-      titulo: 'UGI · COYFD (Iniciación Deportiva) - Planilla Oficial',
-      gestos: ['Coordinación óculo-manual', 'Coordinación óculo-pédica', 'Equilibrio y desplazamientos', 'Giro y salto', 'Cooperación en juego', 'Comprensión de reglas', 'Tolerancia al contacto']
-    },
-    {
-      clave: 'Básquet Caballeros',
-      titulo: 'UGI · Básquet Caballeros - Planilla Oficial',
-      gestos: ['Dribbling con ambas manos', 'Mecánica de tiro', 'Bandeja / finalización', 'Pase', 'Postura defensiva', 'Rebote', 'Juego sin pelota', 'Toma de decisión']
-    },
-    {
-      clave: 'Básquet Damas',
-      titulo: 'UGI · Básquet Damas - Planilla Oficial',
-      gestos: ['Dribbling con ambas manos', 'Mecánica de tiro', 'Bandeja / finalización', 'Pase', 'Postura defensiva', 'Rebote', 'Juego sin pelota', 'Toma de decisión']
-    },
-    {
-      clave: 'Cestoball',
-      titulo: 'UGI · Cestoball - Planilla Oficial',
-      gestos: ['Pase y recepción en movimiento', 'Tiro al aro y precisión', 'Desmarque y ocupación de espacios', 'Defensa e intercepción', 'Rebote y recupero', 'Transición rápida', 'Toma de decisión']
-    },
-    {
-      clave: 'Fútbol Caballeros',
-      titulo: 'UGI · Fútbol Caballeros - Planilla Oficial',
-      gestos: ['Control orientado', 'Pase corto', 'Pase largo / cambio de frente', 'Conducción', 'Remate', 'Juego aéreo', 'Marca y recuperación', 'Perfil y lectura de juego']
-    },
-    {
-      clave: 'Fútbol Damas',
-      titulo: 'UGI · Fútbol Damas - Planilla Oficial',
-      gestos: ['Control orientado', 'Pase corto', 'Pase largo / cambio de frente', 'Conducción', 'Remate', 'Juego aéreo', 'Marca y recuperación', 'Perfil y lectura de juego']
-    },
-    {
-      clave: 'Gimnasia Artística',
-      titulo: 'UGI · Gimnasia Artística - Planilla Oficial',
-      gestos: ['Flexibilidad y movilidad', 'Fuerza postural y core', 'Acrobacia de suelo (roles/vertical/medialuna)', 'Salto y recepción segura', 'Trabajo en aparatos (viga/paralelas)', 'Alineación corporal', 'Memoria coreográfica']
-    },
-    {
-      clave: 'Gimnasia Rítmica',
-      titulo: 'UGI · Gimnasia Rítmica - Planilla Oficial',
-      gestos: ['Manejo técnico de aparato (cuerda/aro/pelota/cinta)', 'Flexibilidad y amplitud articular', 'Equilibrios y giros', 'Saltos rítmicos', 'Musicalidad y ritmo', 'Expresión corporal', 'Coordinación espacio-temporal']
-    },
-    {
-      clave: 'Golf',
-      titulo: 'UGI · Golf - Planilla Oficial',
-      gestos: ['Grip, stance y alineación', 'Full swing (maderas e hierros)', 'Juego corto (approach / chipping)', 'Putting (lectura y control de distancia)', 'Salida de bunker', 'Estrategia de cancha', 'Etiqueta, reglas y ritmo de juego']
-    },
-    {
-      clave: 'Hockey sobre Césped Caballeros',
-      titulo: 'UGI · Hockey sobre Césped Caballeros - Planilla Oficial',
-      gestos: ['Conducción (derecha y revés)', 'Pase (push / slap)', 'Recepción', 'Barrida / hit', 'Tackle y marca', 'Ubicación en cancha', 'Toma de decisión']
-    },
-    {
-      clave: 'Hockey sobre Césped Damas',
-      titulo: 'UGI · Hockey sobre Césped Damas - Planilla Oficial',
-      gestos: ['Conducción (derecha y revés)', 'Pase (push / slap)', 'Recepción', 'Barrida / hit', 'Tackle y marca', 'Ubicación en cancha', 'Toma de decisión']
-    },
-    {
-      clave: 'Hockey sobre Patines Caballeros',
-      titulo: 'UGI · Hockey sobre Patines Caballeros - Planilla Oficial',
-      gestos: ['Patinaje y equilibrio', 'Frenado y cambios de dirección', 'Conducción de bocha', 'Pase y recepción', 'Tiro al arco', 'Posición defensiva', 'Lectura de juego']
-    },
-    {
-      clave: 'Hockey sobre Patines Damas',
-      titulo: 'UGI · Hockey sobre Patines Damas - Planilla Oficial',
-      gestos: ['Patinaje y equilibrio', 'Frenado y cambios de dirección', 'Conducción de bocha', 'Pase y recepción', 'Tiro al arco', 'Posición defensiva', 'Lectura de juego']
-    },
-    {
-      clave: 'Judo',
-      titulo: 'UGI · Judo - Planilla Oficial',
-      gestos: ['Ukemi (caídas seguras)', 'Kumi-kata (agarres y desplazamientos)', 'Nage-waza (proyecciones de pie)', 'Ne-waza (inmovilizaciones y control en suelo)', 'Equilibrio y desequilibrio (Kuzushi)', 'Transición pie-suelo', 'Autocontrol y etiqueta (Rei)']
-    },
-    {
-      clave: 'Karate',
-      titulo: 'UGI · Karate - Planilla Oficial',
-      gestos: ['Kihon (posiciones y técnicas básicas)', 'Kata (forma, ritmo y foco)', 'Kumite (distancia, timing y marcación)', 'Velocidad y coordinación', 'Control del impacto (Zanshin)', 'Equilibrio y desplazamientos', 'Disciplina y etiqueta (Dojo Kun)']
-    },
-    {
-      clave: 'Natación Artística',
-      titulo: 'UGI · Natación Artística - Planilla Oficial',
-      gestos: ['Flotación y sculling (propulsión de manos)', 'Figuras y posiciones básicas', 'Control respiratorio y apnea', 'Flexibilidad en el agua', 'Sincronización grupal', 'Musicalidad y cuenta rítmica', 'Resistencia específica']
-    },
-    {
-      clave: 'Patín Artístico',
-      titulo: 'UGI · Patín Artístico - Planilla Oficial',
-      gestos: ['Postura y equilibrio', 'Patinaje adelante y atrás', 'Filos y curvas', 'Saltos y aterrizaje', 'Trompos y giros', 'Trabajo de pies y figuras', 'Expresión y musicalidad']
-    },
-    {
-      clave: 'Pelota Paleta',
-      titulo: 'UGI · Pelota Paleta - Planilla Oficial',
-      gestos: ['Golpe de derecha y revés', 'Lectura de rebote en frontón y pared', 'Desplazamiento y ubicación en cancha', 'Saque y devolución', 'Definición y colocación', 'Coordinación con el compañero', 'Uso de ambas manos']
-    },
-    {
-      clave: 'Handball',
-      titulo: 'UGI · Handball - Planilla Oficial',
-      gestos: ['Pase y recepción en movimiento', 'Ciclo de pasos', 'Lanzamiento (apoyo y suspensión)', 'Bote y fintas', 'Defensa individual y basculación', 'Repliegue defensivo', 'Toma de decisión']
-    },
-    {
-      clave: 'Rugby Caballeros',
-      titulo: 'UGI · Rugby Caballeros - Planilla Oficial',
-      gestos: ['Pase', 'Recepción', 'Tackle (técnica segura)', 'Ruck / contacto', 'Apoyo y línea de ventaja', 'Evasión', 'Patada']
-    },
-    {
-      clave: 'Rugby Damas',
-      titulo: 'UGI · Rugby Damas - Planilla Oficial',
-      gestos: ['Pase', 'Recepción', 'Tackle (técnica segura)', 'Ruck / contacto', 'Apoyo y línea de ventaja', 'Evasión', 'Patada']
-    },
-    {
-      clave: 'Tenis',
-      titulo: 'UGI · Tenis - Planilla Oficial',
-      gestos: ['Drive', 'Revés', 'Saque', 'Volea y smash', 'Desplazamiento y apoyos', 'Devolución', 'Consistencia y táctica']
-    },
-    {
-      clave: 'Vóley Caballeros',
-      titulo: 'UGI · Vóley Caballeros - Planilla Oficial',
-      gestos: ['Saque', 'Recepción (antebrazos)', 'Armado (dedos)', 'Ataque / remate', 'Bloqueo', 'Defensa y desplazamiento', 'Comunicación en cancha']
-    },
-    {
-      clave: 'Vóley Damas',
-      titulo: 'UGI · Vóley Damas - Planilla Oficial',
-      gestos: ['Saque', 'Recepción (antebrazos)', 'Armado (dedos)', 'Ataque / remate', 'Bloqueo', 'Defensa y desplazamiento', 'Comunicación en cancha']
-    }
-  ];
-
-  var nuevoMapeo = {};
-  var propsParaGuardar = {};
-
-  ACTIVIDADES.forEach(function (act) {
-    var ss = SpreadsheetApp.create(act.titulo);
-    var file = DriveApp.getFileById(ss.getId());
-    folder.addFile(file);
-    try { DriveApp.getRootFolder().removeFile(file); } catch (_) {}
-
-    // Formatear pestañas institucionales (incluyendo Columna E = DNI en Padron)
-    hoja(ss, 'Padron');
-    hoja(ss, 'Asistencia');
-    hoja(ss, 'Evaluaciones');
-    hoja(ss, 'Gestos');
-    hoja(ss, 'Config');
-
-    // Cargar gestos específicos del deporte
-    var shG = ss.getSheetByName('Gestos');
-    var filasG = [['Gesto / Variable']].concat(act.gestos.map(function (g) { return [g]; }));
-    shG.getRange(1, 1, filasG.length, 1).setValues(filasG);
-    shG.getRange(1, 1).setFontWeight('bold').setBackground('#082b49').setFontColor('#ffffff');
-
-    // Eliminar 'Hoja 1'
-    var hDef = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
-    if (hDef && ss.getSheets().length > 1) {
-      try { ss.deleteSheet(hDef); } catch (_) {}
-    }
-
-    var id = ss.getId();
-    nuevoMapeo[act.clave] = id;
-    propsParaGuardar[act.clave] = id;
-    propsParaGuardar['SHEET_' + act.clave] = id;
-  });
-
-  PropertiesService.getScriptProperties().setProperties(propsParaGuardar);
-
-  var lineasCodigo = ['var SHEET_IDS = {'];
-  var clavesOrdenadas = Object.keys(nuevoMapeo).sort();
-  clavesOrdenadas.forEach(function (k, i) {
-    var fin = (i === clavesOrdenadas.length - 1) ? '' : ',';
-    var padding = ' '.repeat(Math.max(1, 35 - k.length));
-    lineasCodigo.push("  '" + k + "':" + padding + "'" + nuevoMapeo[k] + "'" + fin);
-  });
-  lineasCodigo.push('};');
-
-  var codigoCompleto = lineasCodigo.join('\n');
-
-  Logger.log('========================================================================');
-  Logger.log('✅ TODAS LAS PLANILLAS FUERON CREADAS CON ÉXITO EN TU GOOGLE DRIVE');
-  Logger.log('📁 Carpeta: ' + folder.getName() + ' (' + folder.getUrl() + ')');
-  Logger.log('\n' + codigoCompleto);
-  Logger.log('========================================================================');
-
-  return { folderUrl: folder.getUrl(), ids: nuevoMapeo, codigo: codigoCompleto };
+function sincronizarActividadDesdeEditorUGI(){
+  var c=configUGI(),name=PropertiesService.getScriptProperties().getProperty('UGI_ACTIVIDAD_PRUEBA');
+  if(!Object.prototype.hasOwnProperty.call(c.map,name))throw new AccessError('CONFIGURACION','Definí UGI_ACTIVIDAD_PRUEBA con el nombre exacto de la actividad.');
+  var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new AccessError('RED','Hay otra carga en curso.');
+  try{syncActivityUGI(c,name);return {ok:true,actividad:name};}finally{lock.releaseLock();}
 }

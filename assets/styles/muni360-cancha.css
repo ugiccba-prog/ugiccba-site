@@ -1,0 +1,23 @@
+:root{--touch:48px}
+#google-login{min-height:52px;background:#fff;color:#173451;border:1px solid #a7b8c8;font-weight:800;width:100%;border-radius:12px;cursor:pointer}
+#google-login:disabled{opacity:.55;cursor:wait}
+.google-status{font-size:.88rem;line-height:1.5;color:#334155;margin:12px 0}
+.toolbar-cancha{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar-cancha button,.toolbar-cancha a{min-height:44px}
+.draft-status{position:sticky;top:0;z-index:45;background:#fff4ce;color:#654c00;border:1px solid #d9b84c;border-radius:10px;padding:10px 14px;margin:8px 0;font-size:.9rem;font-weight:750}
+.draft-status:empty{display:none}
+.nav-tabs{overflow-x:auto}
+#tab-auditoria .audit-event{border:1px solid #d5e0ea;background:#fff;border-radius:12px;padding:14px;margin:10px 0}
+.audit-meta{font-size:.8rem;color:#52677b;line-height:1.6}
+.modo-cancha .app-header{position:static}
+.modo-cancha .asist-row{padding:16px 12px;border:1px solid #c8d6e4;border-radius:14px;margin:8px 0;gap:12px}
+.modo-cancha .asist-name{font-size:1rem;font-weight:850}
+.modo-cancha .pat button,.modo-cancha .sem-btn,.modo-cancha .comida-btn{min-width:46px;min-height:48px;font-size:1rem}
+.modo-cancha .btn-dua-badge{min-height:44px;padding:8px 12px}
+.modo-cancha #nav-tabs{position:sticky;top:0;z-index:40;background:#f8fbff;display:flex;gap:5px;padding:7px;overflow-x:auto}
+.modo-cancha #nav-tabs .tab{min-height:48px;flex:0 0 auto;padding:10px 14px}
+.modo-cancha #barra-contexto-activo{border:2px solid #17486c;background:#edf7ff}
+.modo-cancha #btn-guardar-asist{position:sticky;bottom:12px;z-index:35;min-height:56px;box-shadow:0 6px 20px #082b492b}
+.modo-cancha input,.modo-cancha select{min-height:46px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #d38d00;outline-offset:3px}
+@media(max-width:640px){.modo-cancha .asist-row{display:flex;flex-direction:column;align-items:stretch}.modo-cancha .asist-controls{justify-content:space-between;gap:8px;flex-wrap:wrap}.modo-cancha .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar-cancha{width:100%}.toolbar-cancha>*{flex:1}}

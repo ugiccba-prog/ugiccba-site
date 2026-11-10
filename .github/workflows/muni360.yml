@@ -1,0 +1,29 @@
+name: Muni 360 checks
+on:
+  pull_request:
+    paths:
+      - 'muni360/**'
+      - 'muni360cyc/**'
+      - 'apps-script/**'
+      - 'scripts/build-apps-script.cjs'
+      - 'assets/vendor/**'
+      - 'archive/apps-script-v2/**'
+      - 'package.json'
+      - 'assets/scripts/muni360*.js'
+      - 'server/muni360/**'
+      - 'admin/**'
+      - 'tests/**'
+      - 'tests/muni360.test.cjs'
+      - '.github/workflows/muni360.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run test:muni360

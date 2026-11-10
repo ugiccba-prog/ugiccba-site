@@ -1,0 +1,19 @@
+{
+  "name": "muni360-google-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.cjs",
+    "test": "node --test ../../tests/muni360*.test.cjs",
+    "sync:sheets": "node sync-job.cjs",
+    "migrate:sheets": "node migrate-sheets.cjs",
+    "bootstrap:owner": "node bootstrap-owner.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "google-auth-library": "^9.15.1"
+  }
+}
