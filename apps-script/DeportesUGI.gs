@@ -15,8 +15,8 @@ function projectionUGI(name,a){
   p.HistorialPadron=[['Temporada','Categoría','Equipo','Jugador','ID'],...hs.flatMap(function(h){return h.state.padron.map(function(r){return [h.id,r.categoria,r.equipo,r.jugador,r.id];});})];
   return p;
 }
-function syncActivityUGI(c,name){
-  var a=loadActivityUGI(c,name),tables=projectionUGI(name,a),meta=metadataUGI(c.map[name]);
+function syncActivityUGI(c,name,committedActivity){
+  var a=committedActivity||loadActivityUGI(c,name),tables=projectionUGI(name,a),meta=metadataUGI(c.map[name]);
   if(!meta.some(function(s){return s.title==='CargaPadron';}))tables.CargaPadron=[['Categoría','Equipo','Jugador']];
   var previous=readTablesUGI(c.map[name],Object.keys(tables),meta);
   // Views may need several batches. Their version marker is written last;
@@ -123,10 +123,10 @@ function activarSincronizacionAutomaticaUGI(){
   PropertiesService.getScriptProperties().setProperty('UGI_SYNC_ON_SAVE','true');
   return {ok:true,enabled:true,retryMinutes:15};
 }
-function automaticSyncUGI(c,name,result){
+function automaticSyncUGI(c,name,result,committedActivity){
   if(c.deferProjection===true)return result;
   if(PropertiesService.getScriptProperties().getProperty('UGI_SYNC_ON_SAVE')!=='true')return result;
-  try{syncActivityUGI(c,name);result.sheetsStatus='synced';}
+  try{syncActivityUGI(c,name,committedActivity);result.sheetsStatus='synced';}
   catch(_){result.sheetsStatus='pending';}
   return result;
 }

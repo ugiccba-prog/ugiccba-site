@@ -23,7 +23,17 @@ function sheetsReadUGI(read){
     }
   }
 }
-function metadataUGI(id){return (sheetsReadUGI(function(){return Sheets.Spreadsheets.get(id,{fields:'sheets.properties'});}).sheets||[]).map(function(s){return s.properties;});}
+// Metadata only: cache lives for one authenticated request and is invalidated on every write.
+var SHEETS_METADATA_CACHE_UGI=null;
+function metadataUGI(id){
+  if(SHEETS_METADATA_CACHE_UGI&&SHEETS_METADATA_CACHE_UGI[id])return SHEETS_METADATA_CACHE_UGI[id];
+  var meta=(sheetsReadUGI(function(){return Sheets.Spreadsheets.get(id,{fields:'sheets.properties'});}).sheets||[]).map(function(s){return s.properties;});
+  if(SHEETS_METADATA_CACHE_UGI)SHEETS_METADATA_CACHE_UGI[id]=meta;return meta;
+}
+function sheetsWriteUGI(body,id){
+  try{return Sheets.Spreadsheets.batchUpdate(body,id);}
+  finally{if(SHEETS_METADATA_CACHE_UGI)delete SHEETS_METADATA_CACHE_UGI[id];}
+}
 function readTablesUGI(id,names,meta){
   meta=meta||metadataUGI(id);var wanted=names.filter(function(n){return meta.some(function(s){return s.title===n;});}),out={};
   if(!wanted.length)return out;
@@ -57,10 +67,10 @@ function writeTablesUGI(id,tables,meta,appends,baseline,projectionOnly){
   var body={requests:requests};
   if(projectionOnly){
     var parts=[];requests.forEach(function(r){if(r.updateCells&&r.updateCells.rows.length>500){var u=r.updateCells;for(var i=0;i<u.rows.length;i+=500){var range=Object.assign({},u.range,{startRowIndex:u.range.startRowIndex+i,endRowIndex:Math.min(u.range.startRowIndex+i+500,u.range.endRowIndex)});parts.push({updateCells:{range:range,rows:u.rows.slice(i,i+500),fields:u.fields}});}}else parts.push(r);});
-    var pack=[],size=0;parts.forEach(function(r){var n=JSON.stringify(r).length;if(pack.length&&size+n>600000){Sheets.Spreadsheets.batchUpdate({requests:pack},id);pack=[];size=0;}pack.push(r);size+=n;});if(pack.length)Sheets.Spreadsheets.batchUpdate({requests:pack},id);return;
+    var pack=[],size=0;parts.forEach(function(r){var n=JSON.stringify(r).length;if(pack.length&&size+n>600000){sheetsWriteUGI({requests:pack},id);pack=[];size=0;}pack.push(r);size+=n;});if(pack.length)sheetsWriteUGI({requests:pack},id);return;
   }
   if(JSON.stringify(body).length>1800000)throw new AccessError('CAPACIDAD','Esta actividad necesita dividir o archivar su historial antes de continuar. No se guardó el cambio.');
-  Sheets.Spreadsheets.batchUpdate(body,id);
+  sheetsWriteUGI(body,id);
 }
 function rowsUGI(t,name){return (t[name]||[]).slice(1);}
 function chunksUGI(id,value){var raw=JSON.stringify(value),out=[];for(var i=0;i<raw.length;i+=30000)out.push([id,i/30000,raw.slice(i,i+30000)]);return out;}

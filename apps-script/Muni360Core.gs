@@ -79,10 +79,11 @@ function executeUGI(c,d,actor){
   a.receipts.push([d.requestId,actor.id,hash,JSON.stringify(result)]);
   commitOperationUGI(c,d.deporte,a,d);
   // Shared planillas are projections. Their failure never invalidates a committed change.
-  return automaticSyncUGI(c,d.deporte,result);
+  return automaticSyncUGI(c,d.deporte,result,a);
 }
 function doPost(e){
   var lock=LockService.getScriptLock(),locked=false;
+  var previousMetadataCache=SHEETS_METADATA_CACHE_UGI;SHEETS_METADATA_CACHE_UGI={};
   try{
     var raw=e&&e.postData&&e.postData.contents;if(typeof raw!=='string'||raw.length>140000)throw new AccessError('VALIDACION','Solicitud vacía o demasiado grande.');
     var d;try{d=JSON.parse(raw);}catch(_){throw new AccessError('VALIDACION','JSON inválido.');}
@@ -116,5 +117,5 @@ function doPost(e){
     }
     for(var k of ['uid','rol','actor','areas','capabilities','token','signature','timestamp','nonce'])delete d[k];
     return responseUGI(executeUGI(c,d,actor));
-  }catch(err){console.error(JSON.stringify({evento:'MUNI_REQUEST_FAILED',codigo:err.code||'SERVIDOR',requestId:typeof d==='object'&&d?String(d.requestId||'').slice(0,100):'',backendVersion:MUNI_BACKEND_VERSION}));return errorUGI(err);}finally{if(locked)lock.releaseLock();}
+  }catch(err){console.error(JSON.stringify({evento:'MUNI_REQUEST_FAILED',codigo:err.code||'SERVIDOR',requestId:typeof d==='object'&&d?String(d.requestId||'').slice(0,100):'',backendVersion:MUNI_BACKEND_VERSION}));return errorUGI(err);}finally{SHEETS_METADATA_CACHE_UGI=previousMetadataCache;if(locked)lock.releaseLock();}
 }
