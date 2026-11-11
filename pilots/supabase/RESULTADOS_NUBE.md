@@ -39,3 +39,25 @@ Proyecto Firebase esperado: `muni360-ugi-ensayo`. No modificar el Firebase activ
 La cuenta propietaria ya tiene acceso de Profe solo a actividades ficticias en esta base, usando el UID previamente proporcionado por Juan. No se migró el resto de las cuentas ni sus permisos. Las claves configuradas en la vista son públicas; no hay service_role en el navegador.
 
 Después de vincular Firebase: login real en la vista temporal, aperturas/guardados HTTP, prueba de concurrencia y entrega verificada a una NUEVA planilla ficticia. El puente de Sheets está preparado pero no activado ni configurado con secretos. No se declara migración completa.
+
+## Actualización verificada — 11/11/2026, después de corregir PT409
+
+La integración Firebase quedó configurada y Juan completó login real. En el archivo `muni360-piloto-mediciones (3).json` (versión `2026-11-11-pt409`, 22:10 UTC), 20 solicitudes HTTP concurrentes con la MISMA cuenta, grupo y revisión devolvieron 1 éxito (93,2 ms) y 19 conflictos HTTP 409/PT409 (90,1–243,4 ms), sin timeouts. Las tres lecturas tuvieron mediana 68,5 ms. No son 20 profesores distintos.
+
+Luego se enviaron 20 llamadas SQL independientes desde el conector, con 20 perfiles ficticios y 20 grupos distintos, fecha 18/11/2026. La base confirmó 20 sesiones en revisión 1, 20 autores y 400 asistencias. Las llamadas se solicitaron en paralelo, pero no se midió su solapamiento interno ni representan 20 logins Google o latencia HTTP de profesores. Los registros quedan en el piloto para verificar su copia a Sheets.
+
+### Puente limitado preparado, pendiente de activación en Google
+
+Proyecto NUEVO, separado del ensayo: https://script.google.com/d/1VvXToqJ7XIqxE1zBs4-aNVnSbhzbS4Oxc6WVFlfV_bID1B7WQ4bQsBNh/edit
+
+El puente usa clave pública más una credencial aleatoria limitada a leer/confirmar la cola de proyección. La base guarda solo SHA-256, con vencimiento 18/11/2026 23:00 UTC. No utiliza service_role. Las credenciales privadas se configuran exclusivamente en Propiedades del script, nunca en fuentes ni Git. La revisión automática rechazó el primer planteo de incluir el secreto en un archivo privado de código; ese envío no se ejecutó y fue reemplazado por Propiedades del script.
+
+La API HTTP real devolvió 401/42501 a una credencial inválida y 200 con 10 trabajos a la credencial válida. No se confirmó ningún trabajo mediante este diagnóstico. Security advisors: sin hallazgos tras la migración.
+
+`activarPuenteSupabasePiloto` creará una planilla NUEVA y ficticia, verificará hasta tres lotes iniciales y programará copia cada cinco minutos. Cada lote se confirma en la base solo después de releer los valores escritos. Al vencer la credencial, elimina exclusivamente su propio activador. Sin trabajos pendientes no lee Sheets. No confundir copia por eventos con una planilla de estado actual: este piloto conserva revisiones como eventos; una vista amigable de última versión queda para la migración completa.
+
+Al cerrar esta actualización, la entrega real a Sheets y el activador siguen SIN verificar: requieren configuración privada y autorización inicial del nuevo proyecto en Google. No declarar migración finalizada.
+
+### Validación local adicional
+
+13 pruebas de cliente/proyector y 13 escenarios PostgreSQL/PGlite, todos aprobados. Incluyen rechazo de clave incorrecta, ausente, vencida y suspendida; tabla de credenciales inaccesible al cliente; helper de autenticación privado; máximo diez confirmaciones por lote. Los escenarios locales no miden firmas Google ni rendimiento remoto.

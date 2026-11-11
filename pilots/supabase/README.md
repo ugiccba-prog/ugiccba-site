@@ -48,11 +48,11 @@ La comprobación directa de revocación/inhabilitación de Firebase y su tiempo 
 
 ## Puente de Sheets, opcional y separado
 
-`tools/SheetsProjector.gs` va en un proyecto Apps Script NUEVO, con Sheets API avanzada v4. Primero ejecutar `crearPlanillaSupabasePiloto`: crea un destino ficticio y registra su ID. Configurar solo en propiedades privadas `SUPABASE_PILOT_URL` y `SUPABASE_PILOT_SERVICE_KEY` (clave de servidor del proyecto ficticio). No compartirla ni copiarla al frontend.
+`tools/SheetsProjector.gs` va en un proyecto Apps Script NUEVO, con Sheets API avanzada v4. Aplicar también `sql/006_limited_sheets_worker.sql`. Generar una credencial aleatoria de 256 bits con prefijo `mpw_`, registrar únicamente su SHA-256 en `mp_private.projection_credentials` con vencimiento, y colocar el secreto únicamente en Propiedades del script (`SUPABASE_PILOT_WORKER_KEY`). Nunca en código fuente, Git, frontend, URLs ni registros. No necesita service_role.
 
-Ejecutar `proyectarSupabasePiloto` manualmente durante el ensayo. Es un registro legible de eventos por participante, con solicitud, fecha, grupo, asistencia, autor y revisión. Verifica la marca del destino, escribe strings literales, lee de vuelta y SOLO entonces confirma el trabajo en la base. Ante respuesta perdida, compara la solicitud antes de repetir. Una copia parcial o editada bloquea el ack para revisión.
+Las otras propiedades son `SUPABASE_PILOT_URL`, `SUPABASE_PILOT_PUBLISHABLE_KEY` y `PILOT_WORKER_EXPIRES` (ISO UTC); el proyecto preparado tiene una configuración pública separada que completa esas tres. `activarPuenteSupabasePiloto` crea un destino NUEVO ficticio, procesa hasta tres lotes iniciales e instala un solo activador de cinco minutos. Requiere la autorización inicial de Google para ese nuevo proyecto. Al vencer, elimina únicamente ese activador. No lee Sheets cuando no hay trabajos.
 
-Instalar como máximo un trabajador por destino. El script no crea activadores automáticamente. No es todavía el reemplazo completo de las vistas operativas del sistema original. Apps Script se usa aquí únicamente como puente opcional a Sheets; no interviene al abrir ni guardar en la base.
+Es un registro de eventos por participante, con solicitud, fecha, grupo, asistencia, autor y revisión. Verifica la marca del destino, escribe strings literales, lee de vuelta y SOLO entonces confirma el trabajo en la base. Ante respuesta perdida compara la solicitud antes de repetir. Una copia parcial o editada bloquea el ack para revisión. Instalar como máximo un trabajador por destino. No reemplaza todavía las vistas operativas del sistema original. Apps Script queda únicamente como copiador; no interviene al abrir ni guardar en Supabase.
 
 ## Medición pendiente en nube
 
@@ -68,7 +68,7 @@ El endpoint de Apps Script actual está basado en una versión anterior y su UI 
 
 ## Límites y reversión
 
-El proyecto Free ya tiene datos ficticios y pruebas SQL hospedadas. Sigue pendiente la comparación completa de velocidad por HTTP con Google real y la proyección real; ver RESULTADOS_NUBE.md. La rama conserva evidencia local y hospedada por separado. No afirmar que la migración está hecha ni recomendar pagar basándose solo en PGlite.
+El proyecto Free ya tiene datos ficticios y pruebas SQL hospedadas. Ya se midieron HTTP con Google real y conflictos sobre un mismo registro. Sigue pendiente la proyección real y una prueba con múltiples cuentas Google; ver RESULTADOS_NUBE.md. La rama conserva evidencia local y hospedada por separado. No afirmar que la migración está hecha ni recomendar pagar basándose solo en PGlite.
 
 Faltan las demás operaciones de Muni360, UI de permisos, legajos, evaluaciones, migración/conservación de identidades e históricos, backups reales del nuevo sistema y ensayo completo. No habilitar deportistas reales aquí.
 

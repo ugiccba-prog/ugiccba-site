@@ -17,6 +17,7 @@ async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
  await db.exec(fs.readFileSync(path.join(root,'sql/001_pilot.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'sql/004_private_guardrails.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'sql/002_fictitious_roster.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(root,'sql/006_limited_sheets_worker.sql'),'utf8'));
  const groups=await asActor(claims(),'select public.mp_groups() as value');const g=groups[0].id;
  await test('1500 participantes; solo grupos habilitados y 20 filas sin DNI',async()=>{assert.equal(await count('athletes'),1500);assert.equal(groups.length,3);const r=await read(g);assert.equal(r.rows.length,20);assert.ok(r.rows.every(x=>x.state==='N'&&!('dni' in x)));});
  await test('anónimo, otro proyecto, token vencido, proveedor ajeno y cuenta pendiente rechazados',async()=>{for(const j of [{},claims('pilot-teacher',{aud:'other'}),claims('pilot-teacher',{exp:0}),claims('pilot-teacher',{firebase:{sign_in_provider:'password'}}),claims('pilot-pending')])await assert.rejects(()=>read(g,'2026-11-11',j),/SESION|PERMISOS/);});
@@ -29,6 +30,18 @@ async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
  await test('padrón, temporada y participantes falsos no escriben parcialmente',async()=>{const n=await count('receipts'),s=await read(g);for(const p of [make(s,{roster:99}),make(s,{season:99}),make(s,{rows:s.rows.slice(1)}),make(s,{rows:s.rows.map(x=>({id:first.rows[0].id,state:'P',semaphore:'N',food:false}))}),make(s,{rows:s.rows.map(x=>({id:x.id,state:'A',semaphore:'N',food:true}))})])await assert.rejects(()=>save(p));assert.equal(await count('receipts'),n);assert.equal((await read(g)).revision,1);});
  await test('fallo posterior a asistencia revierte TODO el guardado',async()=>{await db.exec("create function mp_private.fail_outbox() returns trigger language plpgsql as $$begin raise exception 'forced outbox error';end$$;create trigger fail_outbox before insert on mp_private.projection_outbox for each row execute function mp_private.fail_outbox();");await assert.rejects(async()=>save(make(await read(g))),/forced outbox/);assert.equal((await read(g)).revision,1);assert.equal(await count('receipts'),1);await db.exec('drop trigger fail_outbox on mp_private.projection_outbox');});
  await test('suspensión y vencimiento rigen en la siguiente llamada',async()=>{await db.exec("update mp_private.principals set status='suspendido' where subject='pilot-teacher'");await assert.rejects(()=>read(g),/PERMISOS/);await db.exec("update mp_private.principals set status='activo',expires_at=now()-interval '1 minute' where subject='pilot-teacher'");await assert.rejects(()=>read(g),/PERMISOS/);await db.exec("update mp_private.principals set expires_at=null where subject='pilot-teacher'");});
+ await test('worker limitado: sin clave, incorrecta, vencida y desactivada rechazadas; tabla privada inaccesible',async()=>{
+  const secret='mpw_'+'a'.repeat(64),hash=crypto.createHash('sha256').update(secret).digest('hex');
+  await db.query("insert into mp_private.projection_credentials values('sheets-pilot',$1,true,now()+interval '1 hour')",[hash]);
+  const jobs=k=>asActor({},'select public.mp_worker_jobs($1,10) as value',[k]);
+  for(const k of [null,'wrong','mpw_'+'b'.repeat(64)])await assert.rejects(()=>jobs(k),e=>e.code==='42501');
+  assert.equal((await jobs(secret)).length,1);
+  await assert.rejects(()=>asActor({},'select * from mp_private.projection_credentials'),/permission denied/);
+  await assert.rejects(()=>asActor({},'select mp_private.mp_worker_auth($1) as value',[secret]),/permission denied/);
+  await assert.rejects(()=>asActor({},'select public.mp_worker_ack($1,$2::uuid[]) as value',[secret,Array(11).fill(first.id)]),/Lote/);
+  await db.exec("update mp_private.projection_credentials set expires_at=now()-interval '1 second'");await assert.rejects(()=>jobs(secret),e=>e.code==='42501');
+  await db.exec("update mp_private.projection_credentials set expires_at=now()+interval '1 hour',active=false");await assert.rejects(()=>jobs(secret),e=>e.code==='42501');
+ });
  await test('otro grupo puede guardar independientemente; corrección conserva clima y puntos',async()=>{const second=make(await read(groups[1].id));assert.equal((await save(second)).revision,1);const snap=await read(g),p=make(snap);p.rows[0].state='T';await save(p);const result=await read(g);assert.equal(result.climate,'Vapor');assert.equal(result.points,10);assert.equal(result.revision,2);});
  // Clean ONLY the ephemeral in-memory database before optional capacity fixture.
  await db.exec('truncate mp_private.projection_outbox,mp_private.audit,mp_private.receipts,mp_private.attendance,mp_private.sessions');
