@@ -15,6 +15,7 @@ async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
  db=new PGlite();await db.waitReady;
  await db.exec("create role anon;create role authenticated;create role service_role;create schema auth;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant usage on schema auth to anon,authenticated,service_role;grant execute on function auth.jwt() to anon,authenticated,service_role;");
  await db.exec(fs.readFileSync(path.join(root,'sql/001_pilot.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(root,'sql/004_private_guardrails.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'sql/002_fictitious_roster.sql'),'utf8'));
  const groups=await asActor(claims(),'select public.mp_groups() as value');const g=groups[0].id;
  await test('1500 participantes; solo grupos habilitados y 20 filas sin DNI',async()=>{assert.equal(await count('athletes'),1500);assert.equal(groups.length,3);const r=await read(g);assert.equal(r.rows.length,20);assert.ok(r.rows.every(x=>x.state==='N'&&!('dni' in x)));});

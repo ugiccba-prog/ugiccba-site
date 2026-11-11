@@ -5,7 +5,7 @@ const {chromium}=require(process.env.MUNI_PLAYWRIGHT_MODULE||'playwright');
 const root=path.resolve(__dirname,'..'),web=path.join(root,'web');let db,browser,server;
 (async()=>{
  db=new PGlite();await db.waitReady;await db.exec("create role anon;create role authenticated;create role service_role;create schema auth;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;");
- for(const f of ['001_pilot.sql','002_fictitious_roster.sql'])await db.exec(fs.readFileSync(path.join(root,'sql',f),'utf8'));
+ for(const f of ['001_pilot.sql','004_private_guardrails.sql','002_fictitious_roster.sql'])await db.exec(fs.readFileSync(path.join(root,'sql',f),'utf8'));
  server=http.createServer((req,res)=>{const name=new URL(req.url,'http://localhost').pathname;const file=path.resolve(web,'.'+(name==='/'?'/index.html':name));if(!file.startsWith(web+path.sep))return res.writeHead(403).end();try{res.setHeader('Content-Type',({'.js':'text/javascript','.html':'text/html','.png':'image/png'})[path.extname(file)]||'text/plain');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  const launch={headless:true};if(process.env.MUNI_CHROME_PATH)launch.executablePath=process.env.MUNI_CHROME_PATH;else launch.channel=process.env.MUNI_BROWSER_CHANNEL||'chrome';browser=await chromium.launch(launch);

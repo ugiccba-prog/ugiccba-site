@@ -34,6 +34,7 @@ create table mp_private.attendance(
   foreign key(group_id,athlete_id) references mp_private.athletes(group_id,id),
   check(state<>'A' or not food)
 );
+create index mp_attendance_roster_fk on mp_private.attendance(group_id,athlete_id);
 create table mp_private.receipts(
   request_id uuid primary key, actor text not null, payload jsonb not null, result jsonb not null,
   created_at timestamptz not null default now()
@@ -81,12 +82,12 @@ begin
 end $$;
 revoke all on function mp_private.actor() from public,anon,authenticated;
 
-create function public.mp_profile() returns jsonb
+create function mp_private.mp_profile() returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare a mp_private.principals;
 begin a:=mp_private.actor(); return jsonb_build_object('uid',a.subject,'name',a.name,'role',a.role,'activities',a.activities); end $$;
 
-create function public.mp_groups() returns jsonb
+create function mp_private.mp_groups() returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare a mp_private.principals; result jsonb;
 begin
@@ -96,7 +97,7 @@ begin
   return result;
 end $$;
 
-create function public.mp_read_group(p_group uuid,p_day date) returns jsonb
+create function mp_private.mp_read_group(p_group uuid,p_day date) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare a mp_private.principals; g mp_private.groups; s mp_private.sessions; rows jsonb;
 begin
@@ -110,7 +111,7 @@ begin
   return jsonb_build_object('group_id',g.id,'activity',g.activity,'label',g.label,'day',p_day,'season',g.season,'roster_revision',g.roster_revision,'revision',coalesce(s.revision,0),'climate',coalesce(s.climate,'N'),'points',s.points,'rows',rows);
 end $$;
 
-create function public.mp_save_attendance(p_request uuid,p_group uuid,p_day date,p_season integer,p_roster_revision integer,p_revision integer,p_rows jsonb,p_climate text default 'N',p_points integer default null) returns jsonb
+create function mp_private.mp_save_attendance(p_request uuid,p_group uuid,p_day date,p_season integer,p_roster_revision integer,p_revision integer,p_rows jsonb,p_climate text default 'N',p_points integer default null) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare a mp_private.principals; g mp_private.groups; s mp_private.sessions; prior mp_private.receipts;
         payload jsonb; result jsonb; before_rows jsonb; after_rows jsonb; count_rows integer; count_ids integer; expected integer;
@@ -161,18 +162,40 @@ end $$;
 -- Firebase tokens may have no Postgres 'role' custom claim. Only these RPCs are
 -- granted to anon; each checks the VERIFIED JWT and the private access table.
 -- An unsigned/anonymous request cannot pass mp_private.actor(). No table grants.
-revoke all on function public.mp_profile(),public.mp_groups(),public.mp_read_group(uuid,date),public.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) from public;
-grant execute on function public.mp_profile(),public.mp_groups(),public.mp_read_group(uuid,date),public.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) to anon,authenticated;
+revoke all on function mp_private.mp_profile(),mp_private.mp_groups(),mp_private.mp_read_group(uuid,date),mp_private.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) from public;
+grant execute on function mp_private.mp_profile(),mp_private.mp_groups(),mp_private.mp_read_group(uuid,date),mp_private.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) to anon,authenticated;
 
-create function public.mp_projection_jobs(p_limit integer default 10) returns jsonb
+create function mp_private.mp_projection_jobs(p_limit integer default 10) returns jsonb
 language sql security definer set search_path='' as $$
   select coalesce(jsonb_agg(j.payload order by j.created_at,j.request_id),'[]'::jsonb)
   from (select * from mp_private.projection_outbox where state='pending' order by created_at,request_id limit greatest(0,least(p_limit,10))) j;
 $$;
-create function public.mp_projection_ack(p_requests uuid[]) returns integer
+create function mp_private.mp_projection_ack(p_requests uuid[]) returns integer
 language plpgsql security definer set search_path='' as $$
 declare n integer;
 begin update mp_private.projection_outbox set state='verified',verified_at=now() where request_id=any(p_requests) and state='pending';get diagnostics n=row_count;return n;end $$;
-revoke all on function public.mp_projection_jobs(integer),public.mp_projection_ack(uuid[]) from public,anon,authenticated;
-grant execute on function public.mp_projection_jobs(integer),public.mp_projection_ack(uuid[]) to service_role;
+revoke all on function mp_private.mp_projection_jobs(integer),mp_private.mp_projection_ack(uuid[]) from public,anon,authenticated;
+grant execute on function mp_private.mp_projection_jobs(integer),mp_private.mp_projection_ack(uuid[]) to service_role;
+
+-- Only invoker wrappers are exposed through the public Data API.
+-- Schema usage permits calling approved helpers, never direct table access.
+grant usage on schema mp_private to anon,authenticated,service_role;
+create function public.mp_profile() returns jsonb language sql security invoker set search_path='' as $$select mp_private.mp_profile();$$;
+revoke all on function public.mp_profile() from public,anon,authenticated;
+grant execute on function public.mp_profile() to anon,authenticated;
+create function public.mp_groups() returns jsonb language sql security invoker set search_path='' as $$select mp_private.mp_groups();$$;
+revoke all on function public.mp_groups() from public,anon,authenticated;
+grant execute on function public.mp_groups() to anon,authenticated;
+create function public.mp_read_group(p_group uuid,p_day date) returns jsonb language sql security invoker set search_path='' as $$select mp_private.mp_read_group(p_group,p_day);$$;
+revoke all on function public.mp_read_group(uuid,date) from public,anon,authenticated;
+grant execute on function public.mp_read_group(uuid,date) to anon,authenticated;
+create function public.mp_save_attendance(p_request uuid,p_group uuid,p_day date,p_season integer,p_roster_revision integer,p_revision integer,p_rows jsonb,p_climate text default 'N',p_points integer default null) returns jsonb language sql security invoker set search_path='' as $$select mp_private.mp_save_attendance(p_request,p_group,p_day,p_season,p_roster_revision,p_revision,p_rows,p_climate,p_points);$$;
+revoke all on function public.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) from public,anon,authenticated;
+grant execute on function public.mp_save_attendance(uuid,uuid,date,integer,integer,integer,jsonb,text,integer) to anon,authenticated;
+create function public.mp_projection_jobs(p_limit integer default 10) returns jsonb language sql security invoker set search_path='' as $$select mp_private.mp_projection_jobs(p_limit);$$;
+revoke all on function public.mp_projection_jobs(integer) from public,anon,authenticated;
+grant execute on function public.mp_projection_jobs(integer) to service_role;
+create function public.mp_projection_ack(p_requests uuid[]) returns integer language sql security invoker set search_path='' as $$select mp_private.mp_projection_ack(p_requests);$$;
+revoke all on function public.mp_projection_ack(uuid[]) from public,anon,authenticated;
+grant execute on function public.mp_projection_ack(uuid[]) to service_role;
 commit;

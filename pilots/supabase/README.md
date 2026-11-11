@@ -31,7 +31,7 @@ Se generan 75 grupos de 20 participantes en 25 actividades ficticias. La tempora
 ## Preparación en Supabase real (pendiente de conexión)
 
 1. Usar un proyecto NUEVO de plan gratuito, revisar que no se contrate ningún plan ni cómputo adicional. No aplicar esta migración sobre otra base existente: crea un esquema nuevo y falla si ya existe.
-2. Aplicar `sql/001_pilot.sql` y `sql/002_fictitious_roster.sql`. El archivo 003 es opcional para medir capacidad y requiere que aún no haya clases. No genera trabajos de proyección de históricos.
+2. Aplicar `sql/001_pilot.sql`, `sql/004_private_guardrails.sql` y `sql/002_fictitious_roster.sql`. El archivo 003 es opcional para medir capacidad y requiere que aún no haya clases. No genera trabajos de proyección de históricos.
 3. Configurar la integración oficial Third-Party Auth con el proyecto Firebase correcto. La firma del JWT la valida Supabase; el SQL no sustituye esa validación. El piloto no cambia claims, usuarios ni configuración del Firebase activo.
 4. Revisar `mp_private.settings.firebase_project`. Para probar con una cuenta real, el administrador agrega SU UID a `mp_private.principals` con actividades ficticias concretas. Las filas `pilot-teacher`/`pilot-reader` son solo para tests, no credenciales ni cuentas Firebase.
 5. Completar `web/config.js` con la URL y clave PÚBLICA del nuevo proyecto y la configuración pública de Firebase. No poner `service_role`, contraseñas ni claves privadas. Se deja vacía en Git por diseño.
@@ -40,7 +40,7 @@ Se generan 75 grupos de 20 participantes en 25 actividades ficticias. La tempora
 
 ### Modelo de acceso del piloto
 
-Todas las tablas están en un esquema privado, con RLS habilitado y sin grants para `anon`/`authenticated`. Las únicas entradas de usuario son RPCs SECURITY DEFINER con `search_path` vacío, nombres cualificados y controles de identidad/permiso en cada llamada. No hay funciones para autoaprobarse ni escribir directamente tablas.
+Todas las tablas están en un esquema privado, con RLS habilitado, políticas restrictivas de denegación y sin grants de tabla para `anon`/`authenticated`. Los RPCs públicos son SECURITY INVOKER y delegan en funciones SECURITY DEFINER privadas, con `search_path` vacío, nombres cualificados y controles de identidad/permiso en cada llamada. La concesión de USAGE del esquema permite llamar esos helpers autorizados; no permite leer ni escribir sus tablas. No hay funciones para autoaprobarse ni escribir directamente tablas.
 
 El UID de Firebase es texto, no necesariamente UUID. Se usa el `sub` del JWT verificado. Como Firebase normalmente no incluye un claim Postgres `role`, los cuatro RPCs de usuario permiten también `anon`, pero RECHAZAN peticiones sin JWT válido, proyecto, proveedor Google y autorización privada. Esto no hace públicas las tablas. Validar este flujo en el gateway real antes de darlo por aprobado. No se llama al Admin SDK ni se activa Cloud Functions/Blaze para añadir claims.
 
@@ -68,7 +68,7 @@ El endpoint de Apps Script actual está basado en una versión anterior y su UI 
 
 ## Límites y reversión
 
-Sin proyecto Supabase conectado todavía no hay comparación de velocidad en nube, credenciales configuradas ni proyección real. La rama contiene preparación y evidencia local. No afirmar que la migración está hecha ni recomendar pagar basándose solo en PGlite.
+El proyecto Free ya tiene datos ficticios y pruebas SQL hospedadas. Sigue pendiente la comparación completa de velocidad por HTTP con Google real y la proyección real; ver RESULTADOS_NUBE.md. La rama conserva evidencia local y hospedada por separado. No afirmar que la migración está hecha ni recomendar pagar basándose solo en PGlite.
 
 Faltan las demás operaciones de Muni360, UI de permisos, legajos, evaluaciones, migración/conservación de identidades e históricos, backups reales del nuevo sistema y ensayo completo. No habilitar deportistas reales aquí.
 
