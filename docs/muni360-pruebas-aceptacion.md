@@ -115,3 +115,11 @@ El usuario también confirmó la separación por fecha y grupo, el guardado de e
 - Última suite ejecutada: 98 pruebas automatizadas aprobadas. No equivale a aprobar todos los casos reales.
 - Próximos bloques: importación inválida y límites, verificación de las ejecuciones programadas de respaldo, cierre de temporada sobre ensayo y medición de rendimiento. Los casos no ejecutados siguen pendientes.
 - No quedan procesos del asistente programados para revisar o modificar el código fuera de una conversación activa.
+
+## Verificacion del 11 de noviembre de 2026
+- El usuario verifico la ejecucion nocturna completada de respaldo y sincronizacion. Abrio el archivo de respaldo del dia y confirmo que contiene datos. B04 sigue parcial: una noche observada no verifica varios dias.
+- Importacion: DNI invalido rechazado; archivo con filas validas e invalidas rechazado sin agregar participantes, segun confirmacion del usuario.
+- Se preparo ensayarCierreTemporadaUGI, funcion exclusiva del editor del ensayo. Crea copias privadas del original y de sus vistas y usa el mismo motor de operaciones con destinos locales a esas copias. No reemplaza la configuracion activa.
+- El recorrido verifica ambos modos de cierre, conservacion de fichas, archivo exacto, lectura historica, reintento sin duplicado, rechazo de temporada anterior, sincronizacion de la copia y originales intactos. Se agrega una sesion ficticia solamente en la copia para verificar su archivo.
+- Ejecutar desde el editor y conservar CIERRE_TEMPORADA_VERIFICADO. Puede demorar varios minutos. Durante el recorrido evitar cargas para facilitar la observacion; utiliza el bloqueo del script. Si falla, conservar el error y las copias para diagnostico. Una falla no restaura ni reemplaza originales.
+- T01/T02 y la prueba real de este recorrido permanecen pendientes hasta observar su ejecucion en Google. T03 conserva pendiente el recorrido de la interfaz con cargas en cola. La interrupcion real de Google de T04 no se da por probada con simulaciones locales.

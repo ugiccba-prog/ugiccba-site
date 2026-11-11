@@ -167,3 +167,58 @@ function ensayarRespaldoYRecuperacionUGI(){
   console.log('RESPALDO_Y_RECUPERACION_VERIFICADOS '+JSON.stringify({ok:result.ok,pestanas:result.pestanas,filas:result.filas,recuperacionExacta:result.recuperacionExacta,cambioPosteriorExcluido:result.cambioPosteriorExcluido,respaldoSinDuplicado:true,respaldoDiarioProgramado:true,carpeta:result.carpeta}));
   return result;
 }
+
+
+// Editor-only drill: all mutations use private copies, never the active data or views.
+function ensayarCierreTemporadaUGI(){
+  var c=configUGI(),p=PropertiesService.getScriptProperties(),ss=SpreadsheetApp.getActiveSpreadsheet();
+  if(!ss||ss.getId()!==c.id||!/^Muni360 - Ensayo de temporada - /.test(ss.getName()))throw new Error('Ejecutar solo desde la planilla nueva de ensayo.');
+  var source=DriveApp.getFileById(c.id),parent=DriveApp.getFolderById(p.getProperty('UGI_BACKUP_FOLDER_ID'));
+  privateResourceUGI(source);privateResourceUGI(parent);
+  var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new Error('Hay otra carga en curso. Reintentar luego.');
+  function fingerprint(id){var names=metadataUGI(id).map(function(t){return t.title;}).sort();return sha(readTablesUGI(id,names));}
+  function check(condition,message){if(!condition)throw new Error('Cierre no verificado: '+message);}
+  try{
+    var originalIds=[c.id].concat(Object.values(c.map)),before=originalIds.map(fingerprint);
+    var folder=parent.createFolder('Verificacion cierre '+new Date().toISOString().replace(/[:.]/g,'-'));privateResourceUGI(folder);
+    var data=source.makeCopy('Copia privada - cierre de temporada',folder);privateResourceUGI(data);
+    var trial=Object.assign({},c,{id:data.getId(),map:{}});
+    Object.keys(c.map).forEach(function(name){
+      var view=DriveApp.getFileById(c.map[name]);privateResourceUGI(view);
+      var copied=view.makeCopy('Copia privada - '+name,folder);privateResourceUGI(copied);
+      trial.map[name]=copied.getId();
+    });
+    check([trial.id].concat(Object.values(trial.map)).every(function(id){return !originalIds.includes(id);}), 'destinos sin aislamiento');
+    var name=Object.keys(trial.map)[0],owner=loadUsersUGI(trial).users.find(function(u){return u.uid===trial.owner;});
+    var actor=actorFrom(owner,Object.keys(trial.map));
+    function payload(tipo,extra){
+      var a=loadActivityUGI(trial,name),d=Object.assign({tipo:tipo,deporte:name,requestId:randomUUID(),accessVersion:actor.version,temporada:a.meta.temporada},extra);
+      d.revision=a.versions[resource(d)]||0;return d;
+    }
+    // A marker session proves that the closed cycle preserves pedagogical records too.
+    executeUGI(trial,payload('SESION_UGI',{foco:'Verificacion aislada de cierre',nota:'Solo en la copia privada.'}),actor);
+    var old=loadActivityUGI(trial,name),expected=sha(old.state),close=payload('RESET_DATOS',{modo:'TEMPORADA'});
+    executeUGI(trial,close,actor);
+    var first=loadActivityUGI(trial,name),archiveId='temporada_'+close.requestId;
+    check(sha(first.archives[archiveId].state)===expected,'historial incompleto');
+    check(sha(first.state.padron)===sha(old.state.padron)&&sha(first.state.fichas)===sha(old.state.fichas),'padron o fichas alterados');
+    check(!first.state.asistencia.length&&!first.state.evaluaciones.length&&!first.state.sesiones.length,'registros activos no vaciados');
+    check(first.meta.temporada===old.meta.temporada+1,'numero de temporada');
+    executeUGI(trial,close,actor);
+    check(sha(loadActivityUGI(trial,name))===sha(first),'reintento duplicado');
+    var stale=Object.assign({},close,{requestId:randomUUID()}),rejected=false;
+    try{executeUGI(trial,stale,actor);}catch(e){if(e.code!=='CONFLICTO')throw e;rejected=true;}
+    check(rejected&&sha(loadActivityUGI(trial,name))===sha(first),'carga de temporada anterior');
+    var historical=executeUGI(trial,{tipo:'LECTURA',deporte:name,temporada:archiveId},actor);
+    check(historical.padron.length===old.state.padron.length&&historical.asistencia.length===old.state.asistencia.length&&historical.evaluaciones.length===old.state.evaluaciones.length&&historical.sesiones.length===old.state.sesiones.length,'consulta del historial');
+    executeUGI(trial,payload('RESET_DATOS',{modo:'TODO'}),actor);
+    var finalState=loadActivityUGI(trial,name);
+    check(!finalState.state.padron.length&&sha(finalState.state.fichas)===sha(old.state.fichas),'inicio sin padron o fichas perdidas');
+    check(sha(finalState.archives[archiveId].state)===expected,'historial anterior alterado');
+    check(syncActivityUGI(trial,name).verified===true,'vistas de la copia');
+    check(originalIds.every(function(id,i){return fingerprint(id)===before[i];}),'originales modificados');
+    var result={ok:true,fecha:new Date().toISOString(),padronConservado:true,fichasConservadas:true,historialConsultable:true,reintentoSinDuplicado:true,temporadaAnteriorRechazada:true,inicioSinPadron:true,sheetsVerificado:true,originalesIntactos:true,registrosPrevios:{padron:old.state.padron.length,asistencia:old.state.asistencia.length,evaluaciones:old.state.evaluaciones.length,sesiones:old.state.sesiones.length},carpeta:'https://drive.google.com/drive/folders/'+folder.getId()};
+    p.setProperty('UGI_CIERRE_VERIFICADO',JSON.stringify(result));
+    console.log('CIERRE_TEMPORADA_VERIFICADO '+JSON.stringify(result));return result;
+  }finally{lock.releaseLock();}
+}
