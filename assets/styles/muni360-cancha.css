@@ -21,3 +21,88 @@
 .modo-cancha input,.modo-cancha select{min-height:46px}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #d38d00;outline-offset:3px}
 @media(max-width:640px){.modo-cancha .asist-row{display:flex;flex-direction:column;align-items:stretch}.modo-cancha .asist-controls{justify-content:space-between;gap:8px;flex-wrap:wrap}.modo-cancha .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar-cancha{width:100%}.toolbar-cancha>*{flex:1}}
+
+
+/* Cancha: hierarchy, readable context and touch controls on narrow screens. */
+:root{--touch:48px;--bg:#f3f6fa;--muted:#52657b;--border:#ced9e5}
+body{padding-bottom:100px}
+#app-header{background:#102b4c;box-shadow:0 2px 12px #102b4c14;padding:16px max(18px,calc((100vw - 960px)/2))}
+#app-header .brand{gap:12px}
+#app-header .brand h2{font-size:1.12rem;letter-spacing:-.035em;font-weight:800}
+.brand-tagline{display:block;font-size:.72rem;font-weight:500;letter-spacing:.01em;color:#c0d5e9;margin-top:4px}
+#app-header .brand small{font-weight:500;font-size:.73rem;line-height:1.5;max-width:640px}
+#app-header .btn-salir{min-height:44px;font-weight:600;background:#ffffff0d;border-color:#ffffff40}
+#barra-estado{padding:10px max(18px,calc((100vw - 960px)/2));font-weight:500;line-height:1.6}
+.container{max-width:960px;padding:0 16px;margin:20px auto}
+.toolbar-cancha{gap:10px;margin-bottom:12px}
+.toolbar-cancha .btn-sec{border-radius:12px;background:#fff;border-color:#ced9e5;color:#1c456a;font-weight:650;justify-content:center;text-decoration:none}
+#modo-cancha{background:#102b4c;color:#fff;border-color:#102b4c}
+#nav-tabs,.modo-cancha #nav-tabs{display:flex;gap:4px;background:#e8eef5;border:1px solid #dce4ed;border-radius:14px;padding:5px;position:static;overflow-x:auto;margin-bottom:16px}
+#nav-tabs .tab,.modo-cancha #nav-tabs .tab{flex:1 0 auto;min-height:46px;padding:10px 12px;font-weight:650;font-size:.82rem;border-radius:10px}
+#nav-tabs .tab[aria-selected="true"]{background:#fff;color:#102b4c;box-shadow:0 2px 5px #102b4c12}
+#barra-contexto-activo,.modo-cancha #barra-contexto-activo{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:#fff;border:1px solid #ced9e5;border-left:4px solid #1599c6;border-radius:14px;padding:12px 14px;margin:0 0 14px;box-shadow:none}
+#txt-contexto-activo{white-space:normal;overflow:visible;text-overflow:clip;font-size:.85rem;line-height:1.6;font-weight:650}
+#btn-toggle-filtros{min-height:44px;border-radius:10px;background:#eef6fc;border-color:#d0e4f3;color:#204f77;font-weight:650}
+.card{padding:22px;border-radius:18px;border-color:#dde5ee;box-shadow:0 3px 14px #102b4c06;margin-bottom:18px}
+.card h3{font-size:1.06rem;line-height:1.4;font-weight:750;letter-spacing:-.02em}
+.hint{line-height:1.65;color:#52657b;font-weight:400}
+.kpis,.modo-cancha .kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.kpi{min-width:0;padding:13px 12px;border:1px solid #dde5ee;border-top:3px solid #173d60;border-radius:13px;box-shadow:none;display:flex;flex-direction:column;justify-content:center}
+.kpi b{font-weight:750;line-height:1.25;letter-spacing:-.025em}
+.kpi span{font-weight:550;line-height:1.45;letter-spacing:0;text-transform:none}
+.kpi.kpi-ok{border-top-color:#15803d}.kpi.kpi-warn{border-top-color:#be7610}
+#buscar-alumno-asist{min-height:48px!important;background:#f7f9fc;border:1px solid #ced9e5;border-radius:12px;font-size:.92rem!important}
+.asist-row,.modo-cancha .asist-row{display:flex;align-items:center;gap:18px;padding:16px 14px;margin:10px 0;border:1px solid #dde5ee;border-radius:14px;background:#fff}
+.asist-name,.modo-cancha .asist-name{font-size:.95rem;font-weight:650;line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.asist-controls,.modo-cancha .asist-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.sem-group,.pat{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:22px 4px 4px;border-radius:12px;background:#f1f5f9}
+.sem-group::before,.pat::before{position:absolute;left:8px;top:4px;font-size:.62rem;line-height:1.3;font-weight:600;color:#52657b}
+.sem-group::before{content:"Semáforo UGI"}.pat::before{content:"Asistencia"}
+.sem-btn,.pat button,.modo-cancha .sem-btn,.modo-cancha .pat button{min-width:44px;width:auto;min-height:46px;height:auto;border-radius:9px;font-size:.95rem;font-weight:650;transform:none}
+.sem-btn{opacity:.65;border:1px solid transparent}
+.sem-btn[aria-pressed="true"]{opacity:1;background:#fff;border-color:#95adc5;box-shadow:0 1px 4px #102b4c1a;transform:none}
+.pat button[aria-pressed="true"]{box-shadow:inset 0 0 0 1px currentColor}
+.btn-dua-badge,.modo-cancha .btn-dua-badge{display:inline-flex;align-items:center;min-height:44px;padding:8px 11px;border-radius:10px;font-weight:600;line-height:1.4}
+.comida-btn,.modo-cancha .comida-btn{min-height:46px;border-radius:10px;font-weight:600}
+#btn-todos-p,#btn-todos-comida{min-height:44px;font-weight:650}
+#btn-guardar-asist{min-height:52px;background:#148044;box-shadow:0 3px 10px #14804424;font-weight:700}
+.modo-cancha #app-header{position:static}
+.modo-cancha #tab-asistencia{padding-bottom:86px}
+.modo-cancha #btn-guardar-asist{position:fixed;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));width:min(calc(100% - 32px),928px);min-height:56px;z-index:35;box-shadow:0 5px 24px #102b4c30}
+.modo-cancha #toast{bottom:86px}
+details.cierre-acordeon{border-radius:12px;margin-top:18px}
+details.cierre-acordeon summary{padding:13px;font-weight:600;line-height:1.5}
+.draft-status{font-weight:600;line-height:1.6}
+@media(max-width:640px){
+ #app-header{padding:14px 16px;align-items:flex-start;gap:10px}
+ #app-header .brand{gap:10px}
+ #app-header .brand img{width:32px;height:40px}
+ #app-header .brand h2{font-size:1.08rem}
+ #app-header .brand small{font-size:.69rem;line-height:1.45}
+ #app-header .btn-salir{font-size:.7rem;padding:7px 9px}
+ .brand-tagline{font-size:.65rem;line-height:1.5}
+ .container{margin:14px auto;padding:0 12px}
+ #barra-estado{padding:9px 14px;font-size:.71rem}
+ .toolbar-cancha{gap:8px;margin-bottom:12px}
+ .toolbar-cancha>*{flex:1 1 145px}
+ #nav-tabs,.modo-cancha #nav-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:5px;overflow:visible}
+ #nav-tabs .tab,.modo-cancha #nav-tabs .tab{min-width:0;padding:9px 5px;min-height:44px;font-size:.74rem;white-space:normal;line-height:1.4}
+ #barra-contexto-activo,.modo-cancha #barra-contexto-activo{padding:11px 12px;gap:10px}
+ #btn-toggle-filtros{font-size:.72rem;padding:7px 10px;white-space:normal}
+ #txt-contexto-activo{font-size:.77rem}
+ #kpis-asist-dia,.modo-cancha #kpis-asist-dia{gap:7px;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:14px}
+ #kpis-asist-dia .kpi{padding:10px 7px}
+ #kpis-asist-dia .kpi b{font-size:1.12rem;line-height:1.3}
+ #kpis-asist-dia .kpi span{font-size:.65rem;font-weight:550}
+ .card{padding:16px;border-radius:16px}
+ .card h3{font-size:1rem}
+ #sub-lista-asist{font-size:.74rem}
+ .asist-row,.modo-cancha .asist-row{flex-direction:column;align-items:stretch;padding:13px 12px;gap:10px}
+ .asist-name,.modo-cancha .asist-name{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.92rem}
+ .asist-controls,.modo-cancha .asist-controls{display:grid;grid-template-columns:1fr;gap:8px;width:100%}
+ .sem-group,.pat{width:100%;padding-top:22px}
+ .sem-btn,.pat button,.modo-cancha .sem-btn,.modo-cancha .pat button{width:100%;min-width:44px;min-height:46px}
+ .comida-btn{width:100%;justify-content:center}
+ .hint{font-size:.8rem}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}

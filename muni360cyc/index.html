@@ -887,7 +887,7 @@
     <div class="brand">
       <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='escudo-ccba.png'" alt="C.C.B.A.">
       <div>
-        <h2>MUNI 360 · Colonia y COYFD (Base Formativa)</h2>
+        <h2>MUNI 360<span class="brand-tagline">Colonia y COYFD</span></h2>
         <small id="header-sub"></small>
       </div>
     </div>
@@ -909,7 +909,7 @@
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
     <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
-    <div class="tabs" id="nav-tabs" role="tablist"><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
+    <div class="tabs" id="nav-tabs" role="tablist">
       <button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true">
         <span>📋 Asistencia</span>
       </button>
@@ -922,6 +922,7 @@
       <button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false">
         <span>📊 Análisis</span>
       </button>
+      <button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
       <button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron">
         <span>⚙️ Padrón</span>
       </button>
@@ -2587,8 +2588,9 @@
         $('kpi-dia-sub2').textContent = 'almuerzan en Colonia';
       } else {
         $('kpi-dia-lbl2').textContent = '🚦 Semáforo UGI';
-        $('kpi-dia-val2').textContent = `${lista.filter(j=>semTempDep[j]!=='N').length}/${lista.length} observados`;
-        $('kpi-dia-sub2').textContent = `${alertasSem} alerta(s) · el resto puede estar sin observar`;
+        $('kpi-dia-val2').textContent = `${lista.filter(j=>semTempDep[j]!=='N').length}/${lista.length}`;
+          $('kpi-dia-val2').setAttribute('aria-label', `${lista.filter(j=>semTempDep[j]!=='N').length} de ${lista.length} personas observadas`);
+        $('kpi-dia-sub2').textContent = `${alertasSem} alerta(s) · ${lista.filter(j=>semTempDep[j]==='N').length} sin observar`;
       }
 
       if (!filtrados.length) {
@@ -2608,15 +2610,15 @@
             ${cfg.tieneComida ? `<button type="button" class="comida-btn" data-action="comida" aria-pressed="${comidaTempDep[j] && asistTempDep[j] !== 'A'}">🍴 ${comidaTempDep[j] && asistTempDep[j] !== 'A' ? 'Comida' : 'Sin comida'}</button>` : ''}
             <div class="sem-group" title="Semáforo Conductual UGI">
               <button type="button" class="sem-btn" data-sem="N" aria-label="Sin observar" aria-pressed="${semTempDep[j] === 'N'}">—</button>
-              <button type="button" class="sem-btn" data-sem="V" aria-pressed="${semTempDep[j] === 'V'}">🟢</button>
-              <button type="button" class="sem-btn" data-sem="A" aria-pressed="${semTempDep[j] === 'A'}">🟡</button>
-              <button type="button" class="sem-btn" data-sem="R" aria-pressed="${semTempDep[j] === 'R'}">🔴</button>
+              <button type="button" class="sem-btn" data-sem="V" aria-label="Semáforo verde" title="Semáforo verde" aria-pressed="${semTempDep[j] === 'V'}">🟢</button>
+              <button type="button" class="sem-btn" data-sem="A" aria-label="Semáforo amarillo" title="Semáforo amarillo" aria-pressed="${semTempDep[j] === 'A'}">🟡</button>
+              <button type="button" class="sem-btn" data-sem="R" aria-label="Semáforo rojo" title="Semáforo rojo" aria-pressed="${semTempDep[j] === 'R'}">🔴</button>
             </div>
             <div class="pat">
               <button type="button" data-e="N" aria-label="Asistencia sin registrar" aria-pressed="${asistTempDep[j] === 'N'}">—</button>
-              <button type="button" data-e="P" aria-pressed="${asistTempDep[j] === 'P'}">P</button>
-              <button type="button" data-e="A" aria-pressed="${asistTempDep[j] === 'A'}">A</button>
-              <button type="button" data-e="T" aria-pressed="${asistTempDep[j] === 'T'}">T</button>
+              <button type="button" data-e="P" aria-label="Presente" title="Presente" aria-pressed="${asistTempDep[j] === 'P'}">P</button>
+              <button type="button" data-e="A" aria-label="Ausente" title="Ausente" aria-pressed="${asistTempDep[j] === 'A'}">A</button>
+              <button type="button" data-e="T" aria-label="Tarde" title="Tarde" aria-pressed="${asistTempDep[j] === 'T'}">T</button>
             </div>
           </div>
         </div>`;
