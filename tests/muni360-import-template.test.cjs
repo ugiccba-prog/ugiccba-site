@@ -6,7 +6,7 @@ function portal(file){
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(name,fn){handlers.set(m[1]+':'+name,fn);},setAttribute(){}}]));
  const storage={getItem:()=>null,setItem(){},removeItem(){}},xlsx={...XLSX,writeFile:(wb,name)=>downloads.push({wb,name})};
  const c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},XLSX:xlsx},XLSX:xlsx,MuniImport,sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,capture:message=>messages.push(message)};
- vm.createContext(c);vm.runInContext(code,c);vm.runInContext("sesion={rol:'Dirección UGI',capabilities:{administrarPadron:true,verDni:true}};areaActiva='Tenis';toast=capture;",c);
+ vm.createContext(c);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),c);vm.runInContext(code,c);vm.runInContext("sesion={rol:'Dirección UGI',capabilities:{administrarPadron:true,verDni:true}};areaActiva='Tenis';toast=capture;",c);
  return {els,handlers,downloads,messages,run:s=>vm.runInContext(s,c)};
 }
 for(const file of ['muni360/index.html','muni360cyc/index.html']){

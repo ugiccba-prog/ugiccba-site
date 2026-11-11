@@ -1289,6 +1289,7 @@
 
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
+  <script src="../assets/scripts/muni360-time.js"></script>
   <script src="../assets/scripts/muni360-config.js"></script>
   <script src="../assets/scripts/muni360-google.js"></script>
   <script src="../assets/scripts/muni360-sync.js"></script>
@@ -1422,16 +1423,12 @@
     const orden = (a, b) => String(a).localeCompare(String(b), 'es', { numeric: true });
     const igual = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 
-    function fechaLocal(diasAtras = 0) {
-      const d = new Date();
-      d.setDate(d.getDate() - Math.abs(Number(diasAtras) || 0));
-      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      return d.toISOString().slice(0, 10);
-    }
+    function fechaLocal(diasAtras = 0) { return Muni360Time.dateIso(new Date(),diasAtras); }
 
     function normalizarFechaIso(f) {
       const s = String(f || '').trim();
       if (!s) return '';
+      if (/^\d{4}-\d{2}-\d{2}T/.test(s)) return Muni360Time.dateIso(s);
       if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
       const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
       if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
@@ -2177,7 +2174,7 @@
               <div class="bitacora-item">
                 <div class="bitacora-top">
                   <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <strong>📅 ${esc(ev.fecha)}</strong>
+                    <strong>📅 ${esc(Muni360Time.format(ev.fecha))}</strong>
                     <span class="pill" style="${estiloBadgeEventoLegajo(ev.tipo)}">${esc(ev.tipo)}</span>
                   </div>
                   <div style="display:flex; align-items:center; gap:6px;">
@@ -2395,7 +2392,7 @@
         client.snapshots[d]=j; datosDeporte=j; almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
         window._asistKeyActual=null; renderFiltrosDeporte(); renderVistaActiva(); renderHistorialUgiLocal();
         $('estado-txt').textContent=j.sheetsStatus==='pending'?'✓ Guardado en Sheets privado · Vistas de actividad pendientes':'✓ Guardado en Sheets · Vistas actualizadas'; $('estado-acciones').innerHTML='';
-        $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(a.fecha.slice(0,10))} · ${esc(a.modo)}</option>`).join('');
+        $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(Muni360Time.format(a.fecha))} · ${esc(a.modo)}</option>`).join('');
         $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
         if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
       } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
@@ -2899,7 +2896,7 @@
       $('historial-ugi-local').innerHTML = hist.length
         ? hist.slice(0, 8).map(x => `
             <div class="item" style="flex-direction:column; align-items:flex-start; gap:3px;">
-              <div><strong>${esc(x.fecha)}</strong> · ${esc(x.categoria)} (${esc(x.profe)})</div>
+              <div><strong>${esc(Muni360Time.format(x.fecha))}</strong> · ${esc(x.categoria)} (${esc(x.profe)})</div>
               <div style="font-size:0.78rem; color:var(--muted);">${esc(x.foco)} — ${esc(x.checklist)} ${x.nota ? '| ' + esc(x.nota) : ''}</div>
             </div>`).join('')
         : `<p class="hint">Todavía no registraste sesiones en este dispositivo.</p>`;
@@ -3043,7 +3040,7 @@
       $('card-variables-deporte').classList.toggle('hidden',!permiso('administrarPadron'));
       $('recuperar-fichas-locales').classList.toggle('hidden',!permiso('verLegajo'));
       $('importar-sheets').classList.toggle('hidden',!permiso('administrarPadron'));
-      const b=datosDeporte.backup; $('backup-status').textContent=sesion?.esAdminTotal?(b?`Último backup: ${b.fecha} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
+      const b=datosDeporte.backup; $('backup-status').textContent=sesion?.esAdminTotal?(b?`Último backup: ${Muni360Time.format(b.fecha)} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
       $('gestos-dep').textContent = areaActiva;
       document.querySelectorAll('.txt-area-activa').forEach(el => el.textContent = areaActiva);
       $('wrap-reset-general').classList.toggle('hidden', !sesion?.esAdminTotal || !permiso('archivar'));
@@ -3660,7 +3657,7 @@
     $('modo-cancha').onclick=()=>{const active=document.body.classList.toggle('modo-cancha');$('modo-cancha').textContent=active?'Vista completa':'Modo cancha';$('modo-cancha').setAttribute('aria-pressed',String(active));};
     async function renderAuditoria(){
       if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
-      try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(new Date(e.fecha).toLocaleString('es-AR'))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
+      try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(Muni360Time.format(e.fecha))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
     }
     $('sync-sheets').onclick=async()=>{
       if(syncClient?.queue.some(x=>x.payload.deporte===areaActiva))return toast('Hay cargas sin confirmar. Revisá los pendientes antes de actualizar Sheets.');
@@ -3681,7 +3678,7 @@
       }catch(e){toast(e.message);button.disabled=false;}
     };
     $('actualizar-auditoria').onclick=renderAuditoria;
-    $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.antes,null,2))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(JSON.stringify(r.despues,null,2))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
+    $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.antes))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.despues))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
     $('importar-sheets').onclick=async()=>{
       if(!syncClient)return toast('La importación real requiere configurar Google.');
       try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast('No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}

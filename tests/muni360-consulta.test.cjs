@@ -5,7 +5,7 @@ function portal(file){
  const storage={getItem:()=>null,setItem(){throw Error('Consulta no debe crear borradores');},removeItem(){}};
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const controls=[{disabled:false},{disabled:true}],c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>controls,addEventListener(){}},window:{addEventListener(){}},sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){throw Error('Consulta no debe programar guardados');},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};
- vm.createContext(c);vm.runInContext(code,c);
+ vm.createContext(c);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),c);vm.runInContext(code,c);
  vm.runInContext("sesion={rol:'Consulta'};toast=()=>{};writes=0;syncClient={queue:[],enqueue:async()=>{writes++;return true;}};",c);
  return {controls,els,run:s=>vm.runInContext(s,c)};
 }

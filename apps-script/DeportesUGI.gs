@@ -1,5 +1,6 @@
 // Muni 360 v3 maintenance. No production IDs or secrets in source control.
 var TZ_UGI='America/Argentina/Buenos_Aires';
+function fechaHoraArgentinaUGI(value){return Utilities.formatDate(new Date(value),TZ_UGI,'dd/MM/yyyy HH:mm:ss');}
 function projectionUGI(name,a){
   var s=a.state,p={};
   p.Padron=[['Deporte','Categoría','Equipo','Jugador','DNI (privado)','ID deportista'],...s.padron.map(function(r){return [name,r.categoria,r.equipo,r.jugador,'',r.id];})];
@@ -7,8 +8,8 @@ function projectionUGI(name,a){
   p.Evaluaciones=[['Fecha','Deporte','Categoría','Equipo','Jugador','Notas'],...s.evaluaciones.map(function(r){return [r.fecha,name,r.categoria,r.equipo,r.jugador,Object.entries(r.notas).map(function(x){return x[0]+': '+x[1];}).join(' | ')];})];
   p.Gestos=[['Variable'],...s.gestos.map(function(g){return [g];})];
   p.ApoyosDUA=[['ID','Jugador','Comunicación','Evitar','Apoyos'],...s.padron.filter(function(r){return s.fichas[r.id]?.dua;}).map(function(r){var f=s.fichas[r.id].dua;return [r.id,r.jugador,f.comunicacion,f.desborda,f.regula];})];
-  p.Cambios=[['Fecha UTC','Autor','Tipo','Categoría','Equipo','Jugador','ID'],...Object.values(a.audit).filter(function(e){return ['ASISTENCIA','EVALUACION','RECONOCIMIENTO'].includes(e.tipo);}).map(function(e){return [e.fecha,e.autor,e.tipo,e.categoria,e.equipo,e.jugador,e.id];})];
-  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',a.meta.version],['Actualizado UTC',new Date().toISOString()],['Uso','Vista de consulta. Cargar en la app o preparar nombres en CargaPadron.']];
+  p.Cambios=[['Fecha y hora (Argentina)','Autor','Tipo','Categoría','Equipo','Jugador','ID'],...Object.values(a.audit).filter(function(e){return ['ASISTENCIA','EVALUACION','RECONOCIMIENTO'].includes(e.tipo);}).map(function(e){return [fechaHoraArgentinaUGI(e.fecha),e.autor,e.tipo,e.categoria,e.equipo,e.jugador,e.id];})];
+  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',a.meta.version],['Actualizado (Argentina)',fechaHoraArgentinaUGI(new Date())],['Uso','Vista de consulta. Cargar en la app o preparar nombres en CargaPadron.']];
   var hs=Object.values(a.archives);
   p.HistorialAsistencia=[['Temporada','Fecha','Categoría','Equipo','Jugador','Estado'],...hs.flatMap(function(h){return h.state.asistencia.map(function(r){return [h.id,r.fecha,r.categoria,r.equipo,r.jugador,r.estado];});})];
   p.HistorialEvaluaciones=[['Temporada','Fecha','Categoría','Equipo','Jugador','Notas JSON'],...hs.flatMap(function(h){return h.state.evaluaciones.map(function(r){return [h.id,r.fecha,r.categoria,r.equipo,r.jugador,JSON.stringify(r.notas)];});})];

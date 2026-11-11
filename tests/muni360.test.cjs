@@ -178,7 +178,7 @@ test('sintaxis y arranque de los dos portales, sin autenticación local ni DUA a
     const els=new Map([...ids].map(id=>[id,{value:'',innerHTML:'',textContent:'',checked:false,disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
     const store={getItem:()=>null,setItem(){},removeItem(){}};
     const context={document:{addEventListener(){},getElementById:id=>els.get(id)||null,querySelectorAll:()=>[]},sessionStorage:store,localStorage:store,window:{addEventListener(){}},navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,Muni360Sync:require('../assets/scripts/muni360-sync.js')};
-    vm.createContext(context);scripts.forEach(s=>vm.runInContext(s,context));
+    vm.createContext(context);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),context);scripts.forEach(s=>vm.runInContext(s,context));
     assert.ok(!html.includes('validando clave localmente'));assert.ok(!html.includes('se enviará al recuperar señal'));assert.ok(!html.includes('mode: \'no-cors\''));
   }
 });
@@ -189,7 +189,7 @@ test('la carga por texto conserva dos renglones como dos deportistas',async()=>{
     const els=new Map(ids.map(id=>[id,{value:'',innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},addEventListener(type,fn){handlers.set(id+':'+type,fn);},setAttribute(){}}]));
     const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
     const ctx={document:{getElementById:id=>els.get(id)||null,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,crypto,Muni360Sync:require('../assets/scripts/muni360-sync.js')};
-    vm.createContext(ctx);vm.runInContext(script,ctx);
+    vm.createContext(ctx);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),ctx);vm.runInContext(script,ctx);
     vm.runInContext("almacen.setItem('muni360_modo_demo','1');areaActiva='Tenis';datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};cfgActual=()=>({esBase:false});renderFiltrosDeporte=()=>{};renderVistaActiva=()=>{};cargarAreaActiva=async()=>{};",ctx);
     els.get('padron-cat').value='Sub 12';els.get('padron-eq').value='A';els.get('padron-lista').value='Persona, Uno\nPersona, Dos';
     await handlers.get('form-padron:submit')({preventDefault(){}});assert.equal(vm.runInContext('datosDeporte.padron.length',ctx),2);
