@@ -123,3 +123,7 @@ El usuario también confirmó la separación por fecha y grupo, el guardado de e
 - El recorrido verifica ambos modos de cierre, conservacion de fichas, archivo exacto, lectura historica, reintento sin duplicado, rechazo de temporada anterior, sincronizacion de la copia y originales intactos. Se agrega una sesion ficticia solamente en la copia para verificar su archivo.
 - Ejecutar desde el editor y conservar CIERRE_TEMPORADA_VERIFICADO. Puede demorar varios minutos. Durante el recorrido evitar cargas para facilitar la observacion; utiliza el bloqueo del script. Si falla, conservar el error y las copias para diagnostico. Una falla no restaura ni reemplaza originales.
 - T01/T02 y la prueba real de este recorrido permanecen pendientes hasta observar su ejecucion en Google. T03 conserva pendiente el recorrido de la interfaz con cargas en cola. La interrupcion real de Google de T04 no se da por probada con simulaciones locales.
+
+
+### Error real detectado al leer el cierre de prueba
+La primera ejecucion en Google fallo en unchunksUGI, despues del cierre sobre la copia, porque Utilities.ungzip recibia un blob con tipo de contenido nulo. Se especifican application/gzip y un nombre .gz al reconstruir el archivo. No cambia el formato almacenado. Se agrego una prueba que falla con el codigo anterior y exige el tipo al descomprimir, con texto Unicode y notas decimales. La ejecucion real del cierre sigue pendiente de repeticion; no se declara aprobada a partir de las pruebas locales.

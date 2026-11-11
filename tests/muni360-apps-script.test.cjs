@@ -154,3 +154,16 @@ test('GAS: automatización sólo del propietario, activación idempotente y rein
   assert.equal(r.ok,true);assert.equal(r.sheetsStatus,'pending');assert.equal(e.read().asistencia[0].estado,'A | Sem:R');
   e.faults.write=false;assert.equal(e.ctx.sincronizarPendientesUGI().ok,true);assert.equal(e.read().sheetsStatus,'synced');
 });
+
+
+test('GAS: historial comprimido usa MIME gzip explicito requerido por Google y conserva Unicode',()=>{
+ const e=environment(),utilities=e.ctx.Utilities,makeBlob=utilities.newBlob,ungzip=utilities.ungzip;
+ utilities.newBlob=(data,contentType,name)=>({...makeBlob(data),getContentType:()=>contentType||null,getName:()=>name||null});
+ utilities.ungzip=blob=>{
+  assert.equal(blob.getContentType(),'application/gzip','Google rechaza descomprimir un blob sin tipo de contenido');
+  return ungzip(blob);
+ };
+ const original={id:'temporada_prueba',state:{jugador:'Lucía Ñandú',notas:{Tiro:6.5},sesiones:['Inclusión']}};
+ const rows=e.ctx.archiveChunksUGI(original.id,original);
+ assert.deepEqual(JSON.parse(JSON.stringify(e.ctx.unchunksUGI(rows)[original.id])),original);
+});

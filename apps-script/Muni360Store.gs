@@ -51,7 +51,7 @@ function writeTablesUGI(id,tables,meta,appends,baseline,projectionOnly){
 }
 function rowsUGI(t,name){return (t[name]||[]).slice(1);}
 function chunksUGI(id,value){var raw=JSON.stringify(value),out=[];for(var i=0;i<raw.length;i+=30000)out.push([id,i/30000,raw.slice(i,i+30000)]);return out;}
-function unchunksUGI(rows){var result={};rows.forEach(function(r){var id=String(r[0]);if(!result[id])result[id]=[];result[id].push(r);});Object.keys(result).forEach(function(id){result[id]=JSON.parse(result[id].sort(function(a,b){return a[1]-b[1];}).map(function(r){return r[2];}).join(''));if(result[id]&&result[id].encoding==='gzip-base64')result[id]=JSON.parse(Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(result[id].data))).getDataAsString());});return result;}
+function unchunksUGI(rows){var result={};rows.forEach(function(r){var id=String(r[0]);if(!result[id])result[id]=[];result[id].push(r);});Object.keys(result).forEach(function(id){result[id]=JSON.parse(result[id].sort(function(a,b){return a[1]-b[1];}).map(function(r){return r[2];}).join(''));if(result[id]&&result[id].encoding==='gzip-base64')result[id]=JSON.parse(Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(result[id].data),'application/gzip','temporada.json.gz')).getDataAsString());});return result;}
 var STATE_TABLES_UGI=['Padron','Asistencia','Evaluaciones','Fichas','Sesiones','Gestos','Config','Meta','Control','Operaciones','Auditoria','Archivos'];
 function loadActivityUGI(c,name){
   var pre=prefixUGI(name),names=STATE_TABLES_UGI.map(function(n){return pre+n;}),tables=readTablesUGI(c.id,names),s=empty();
