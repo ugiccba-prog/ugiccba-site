@@ -57,3 +57,7 @@ La matriz de aceptacion se actualizo con las confirmaciones que antes estaban so
 Cambio 5b5bea5 guardado en la rama de revision y publicado en Firebase Hosting del ensayo. Se comprobo HTTP 200 y contenido exacto del repositorio para CSS compartido y los HTML de ambos portales. Suite: 123 pruebas aprobadas; seis recorridos de navegador local a 360/390/1440 px aprobados. Ver muni360-estetica.md para alcance y reproduccion.
 La revision adicional de seguridad no encontro un fallo nuevo en los cinco casos agregados. No se marca como completa la matriz real de Google: sus casos pendientes, el rendimiento con varias cuentas reales, varios dias de respaldo y el proyector siguen diferenciados. Se paso a una primera mejora visual sin alterar ese estado de verificacion.
 No quedan procesos de prueba, servidores locales ni reintentos de publicacion del asistente en segundo plano. Las herramientas de navegador de esta revision usaron perfiles nuevos y datos ficticios.
+
+
+## Vista compacta unica publicada
+Cambio 6761aeb publicado y verificado por HTTP con contenido exacto en ambos HTML y CSS compartido. Se retiro el boton Modo cancha; la distribucion compacta es predeterminada. Indicadores plegados al final, ayuda de referencias, cabecera/navegacion reducidas y guardado en flujo normal. Suite: 123 pruebas aprobadas. Se completaron doce recorridos de navegador local con perfiles simulados Direccion/Profe a 360, 390 y 1440 px; las fichas de Profe comienzan a 329 px en Deportes y 379 px en Colonia en las demos moviles. Referencia vigente: muni360-estetica.md.
