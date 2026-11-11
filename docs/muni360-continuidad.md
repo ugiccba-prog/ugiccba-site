@@ -39,3 +39,15 @@ Antes de mover otra vez de PC, confirmar que los últimos cambios estén en un c
 El cambio 92f3037 agrega espera creciente a los reintentos periodicos del cliente; 113 pruebas aprobadas. Codigo guardado en la rama remota de revision. No esta publicado en Hosting: la API de Firebase devolvio 503 UNAVAILABLE al agregar los archivos y un segundo intento acotado tampoco finalizo. Ambos procesos de deploy se detuvieron; no queda reintento del asistente en segundo plano.
 Se comprobo HTTP 200 para el cliente y los dos portales; siguen sirviendo la version anterior sin nextRetryAt ni retry({automatic:true}). La optimizacion backend de lecturas de la version 5 de Apps Script permanece publicada.
 La carpeta privada de publicacion de esta PC contiene el frontend actualizado, con la configuracion publica recuperada del sitio vivo y validada contra el proyecto/endpoint de ensayo. Proximo paso: reintentar solo Hosting cuando la API permita publicar y comprobar los tres archivos servidos; no hace falta repetir pruebas manuales de datos ni cambiar Apps Script.
+
+
+## Publicacion recuperada y horario argentino — 11 de noviembre
+Firebase completo la publicacion del horario argentino y los reintentos escalonados que estaban pendientes. Se verifico HTTP 200 y coincidencia exacta con el repositorio en el modulo horario, el cliente de sincronizacion, el editor de permisos y los tres HTML de Deportes, Colonia y administracion. La comprobacion del endpoint de Apps Script tambien fue correcta. Backend de ensayo: deployment existente actualizado a version 6. Suite: 118 pruebas aprobadas. El pendiente anterior de Hosting queda resuelto.
+La pagina usa America/Argentina/Buenos_Aires y muestra ARG en los instantes del historial. Los vencimientos se interpretan en Argentina y se envian como UTC. Las proyecciones Cambios/EstadoSync adoptan el formato nuevo en su proxima sincronizacion; no se forzo una escritura sobre datos activos para probarlo. Las paginas ya abiertas necesitan recargarse para cargar el frontend nuevo.
+
+### Prioridades restantes
+1. Completar en Google los casos parciales de permisos/privacidad, fallos de guardado y restauracion que la matriz conserva pendientes. Las pruebas locales no sustituyen esos resultados.
+2. Medir latencias y cuotas reales con varios profes y volumen representativo en la conexion del club. Simulacion local de 20 profes y 400 participantes aprobada; no garantiza esa capacidad real.
+3. Observar varias ejecuciones nocturnas de respaldo/sincronizacion y el espacio libre de Drive. Solo la primera noche tiene confirmacion real; no hay monitoreo del asistente fuera de la conversacion.
+4. Revisar estetica, legibilidad y flujo de cancha en celular; recorrer la presentacion completa en el proyector. No se declaran aprobados por haber corregido el backend.
+La matriz de aceptacion se actualizo con las confirmaciones que antes estaban solo en notas: cierre sobre copias, primera noche, importacion invalida, comida de Colonia y aislamiento entre actividades.

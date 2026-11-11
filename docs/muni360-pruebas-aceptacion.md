@@ -22,7 +22,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Confirmado por usuario: enlace directo rechazado; sin lista de usuarios |
 | G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Pendiente |
 | G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
-| G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Parcial real: Colonia retirada rechaza escritura; continuidad de Hockey corregida, repetir |
+| G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Verificado por usuario: Colonia retirada rechaza y Hockey autorizado permite leer/guardar con pendiente ajeno |
 | G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
 | G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Parcial real: vencimiento rechaza y renovación recupera; guardado previo al vencimiento por confirmar |
@@ -34,12 +34,12 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | D05 | Mismo DNI/persona en dos actividades. | Identidad estable; no mezcla el contexto privado de las actividades. | Pendiente |
 | D06 | Corregir DNI y tratar de reutilizar el anterior para otra persona. | ID estable y conflicto para revisar el DNI reservado; sin herencia silenciosa de ficha. | Pendiente |
 | P01 | Pegar dos renglones de nombres y cargar en un grupo. | Dos deportistas; no se concatenan los renglones. | Parcial: dos jugadores; entrada por renglones pendiente |
-| P02 | Importar Apellido/Nombre/DNI con acentos y ceros vacíos. | Vista previa correcta; no adivina categorías ni sustituye DNI por otra cifra. | Pendiente |
-| P03 | Importar nombre repetido, DNI inválido, más de 500 filas o más de 2 MB. | Mensaje claro y ninguna carga parcial. | Pendiente |
+| P02 | Importar Apellido/Nombre/DNI con acentos y ceros vacíos. | Vista previa correcta; no adivina categorías ni sustituye DNI por otra cifra. | Parcial real: acentos, vista previa e importacion con DNI vacio confirmados; DNI valido pendiente |
+| P03 | Importar nombre repetido, DNI inválido, más de 500 filas o más de 2 MB. | Mensaje claro y ninguna carga parcial. | Parcial real: duplicado, DNI invalido y archivo mixto rechazados sin carga parcial; limites de filas/tamano solo automatizados |
 | P04 | Reimportar un nombre existente sin DNI. | Conserva DNI e identidad. | Pendiente |
 | P05 | Preparar nombres en CargaPadron y revisarlos en la app. | Se confirma el grupo de destino y se registra la persona que importó. | Pendiente |
 | A01 | Abrir fecha nueva sin asistencia. | Sin registrar y sin observar; no inventa presentes ni verdes. | Pendiente |
-| A02 | Guardar P/A/T, semáforos y comida en Colonia. | Datos correctos al recargar; comida sólo según la selección realizada. | Parcial: asistencia y semáforo; comida pendiente |
+| A02 | Guardar P/A/T, semáforos y comida en Colonia. | Datos correctos al recargar; comida sólo según la selección realizada. | Confirmado por usuario: asistencia, semaforo y comida de Colonia conservados; ausente sin comida |
 | A03 | Guardar fecha inválida o un alumno fuera del grupo. | Rechazo sin cambiar datos/versiones. | Pendiente |
 | A04 | Doble toque rápido en Guardar. | Una operación en curso; sin dos eventos involuntarios. | Pendiente |
 | A05 | Dos profes abren la misma fecha y guardan versiones distintas. | Se confirma la primera; la segunda requiere comparar y revisar. | Parcial real: conflicto bloqueado y dato anterior visible; cierre del pendiente por confirmar |
@@ -61,16 +61,16 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | S04 | Agregar una pestaña propia y sincronizar. | La pestaña propia se conserva; las vistas operativas se actualizan. | Pendiente |
 | S05 | Editar manualmente una tabla original con estado ya confirmado. | Nuevas cargas bloqueadas por discrepancia para revisión. | Pendiente |
 | S06 | Probar filas que comienzan por =, +, - o @. | Texto literal en Sheets y XLSX; no se ejecutan fórmulas de entrada. | Pendiente |
-| T01 | Archivar temporada conservando padrón. | Historial recuperable; nueva asistencia/evaluación vacía y padrón conservado. | Pendiente |
-| T02 | Archivar con padrón vacío nuevo y revisar una ficha anterior. | Copia histórica y legajos preservados según acceso. | Pendiente |
-| T03 | Intentar archivar con pendientes o enviar un pendiente de temporada vieja. | Se bloquea; no mezcla ciclos. | Pendiente |
+| T01 | Archivar temporada conservando padrón. | Historial recuperable; nueva asistencia/evaluación vacía y padrón conservado. | Verificado en Google sobre copia privada: padron/fichas conservados e historial consultable |
+| T02 | Archivar con padrón vacío nuevo y revisar una ficha anterior. | Copia histórica y legajos preservados según acceso. | Verificado en Google sobre copia privada: nuevo padron vacio y archivo/fichas conservados |
+| T03 | Intentar archivar con pendientes o enviar un pendiente de temporada vieja. | Se bloquea; no mezcla ciclos. | Parcial real: servidor rechaza temporada anterior; interfaz con cola pendiente solo automatizada |
 | T04 | Interrumpir un cierre de temporada. | Todo aplicado o todo intacto; recuperar el mismo recibo si se perdió la respuesta. | Pendiente |
 | B01 | Crear respaldo dos veces el mismo día. | Una copia confirmada; sin crecimiento duplicado por reintento normal. | Verificado en Google: copia diaria sin duplicado |
 | B02 | Probar carpeta compartida, sin permisos o Drive sin espacio. | No declara respaldo correcto; conserva originales. | Pendiente |
 | B03 | Restaurar en una copia y comparar registros posteriores al respaldo. | Recuperación documentada y conciliación; no se prometen datos posteriores a la copia. | Verificado en Google: recuperación exacta y cambio posterior excluido |
-| B04 | Verificar activadores durante varios días. | Ejecuciones verificables, vistas al día y respaldo real; no sólo activador creado. | Pendiente |
-| V01 | Simular el pico real de profes y planteles. | Medir latencia mediana/p95, errores y cuotas; sin pérdida ni duplicación. | Pendiente |
-| V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Pendiente |
+| B04 | Verificar activadores durante varios días. | Ejecuciones verificables, vistas al día y respaldo real; no sólo activador creado. | Parcial real: primera ejecucion nocturna y archivo con datos confirmados; varios dias pendientes |
+| V01 | Simular el pico real de profes y planteles. | Medir latencia mediana/p95, errores y cuotas; sin pérdida ni duplicación. | Parcial: simulacion local de 20 profes/400 personas; tiempos y cuotas reales pendientes |
+| V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Parcial: 500 personas/6000 asistencias en pruebas locales; volumen real en Google pendiente |
 | V03 | Usar Android, PC y el proyector de la presentación. | Login, teclado, botones de cancha y estados legibles. | Parcial: PC y Android; proyector pendiente |
 | V04 | Recorrer el guion completo dos veces con cuentas reales. | Dos ejecuciones completas reproducibles, sin fallas críticas. | Pendiente |
 
