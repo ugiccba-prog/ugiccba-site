@@ -61,3 +61,7 @@ No quedan procesos de prueba, servidores locales ni reintentos de publicacion de
 
 ## Vista compacta unica publicada
 Cambio 6761aeb publicado y verificado por HTTP con contenido exacto en ambos HTML y CSS compartido. Se retiro el boton Modo cancha; la distribucion compacta es predeterminada. Indicadores plegados al final, ayuda de referencias, cabecera/navegacion reducidas y guardado en flujo normal. Suite: 123 pruebas aprobadas. Se completaron doce recorridos de navegador local con perfiles simulados Direccion/Profe a 360, 390 y 1440 px; las fichas de Profe comienzan a 329 px en Deportes y 379 px en Colonia en las demos moviles. Referencia vigente: muni360-estetica.md.
+
+
+## Profe sin Cambios y con cuatro pestanas fijas
+Cambio e150ee3 publicado y verificado por HTTP con contenido exacto en CSS y ambos portales. Se retiro Cambios de la interfaz operativa; Direccion/Coordinacion conservan la vista. El registro de operaciones del servidor sigue activo. Perfil Profe habitual: Asistencia, Evaluar, Banco UGI y Analisis, en una fila sin scroll horizontal. Suite: 125 pruebas aprobadas y doce recorridos de navegador local, con comprobacion de opciones por perfil y posicion de las cuatro pestanas.
