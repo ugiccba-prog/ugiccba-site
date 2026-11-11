@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {environment}=require('./helpers/apps-script-env.cjs');
 function setup(){
- const e=environment();e.seed();
+ const e=environment();e.ctx.Utilities.sleep=()=>{};e.seed();
  assert.equal(e.write(e.teacher,{tipo:'ASISTENCIA',categoria:'Sub 12',equipo:'A',fecha:'2026-11-11',datos:{'Persona de prueba':'P | Sem:V'}}).ok,true);
  assert.equal(e.write(e.teacher,{tipo:'EVALUACION',categoria:'Sub 12',equipo:'A',fecha:'2026-11-11',jugador:'Persona de prueba',notas:{Tiro:6.5}}).ok,true);
  e.props.set('UGI_BACKUP_FOLDER_ID','backups');e.props.set('UGI_SYNC_ON_SAVE','true');
@@ -38,4 +38,26 @@ test('cierre aislado: rechaza una planilla ajena antes de crear copias',()=>{
  const {e,files,file}=setup();e.ctx.SpreadsheetApp.getActiveSpreadsheet=()=>file('otra');
  assert.throws(()=>e.ctx.ensayarCierreTemporadaUGI(),/planilla nueva de ensayo/);
  assert.equal([...files.keys()].filter(id=>id.startsWith('season-copy')).length,0);
+});
+
+
+test('cierre aislado: respeta 60 lecturas por minuto con cuota inicial agotada y una sola proyeccion final',()=>{
+ const {e}=setup();let now=0,quotaErrors=0;let reads=Array.from({length:60},()=>0);
+ e.ctx.Utilities.sleep=ms=>{now+=ms;};
+ const spreadsheets=e.ctx.Sheets.Spreadsheets;
+ function limited(fn){return function(...args){
+  reads=reads.filter(time=>time>now-60000);
+  if(reads.length>=60){quotaErrors++;throw Object.assign(Error('Too many requests'),{code:429});}
+  reads.push(now);return fn.apply(this,args);
+ };}
+ spreadsheets.get=limited(spreadsheets.get);
+ spreadsheets.Values.batchGet=limited(spreadsheets.Values.batchGet);
+ const sync=e.ctx.syncActivityUGI;let syncs=0;
+ e.ctx.syncActivityUGI=(...args)=>{syncs++;return sync(...args);};
+ const policy=e.ctx.SHEETS_READ_POLICY_UGI;
+ const r=e.ctx.ensayarCierreTemporadaUGI();
+ assert.equal(r.ok,true);assert.ok(quotaErrors>0);assert.equal(syncs,1);
+ assert.ok(now>=60000&&now<240000,'tiempo virtual acotado');
+ assert.equal(e.ctx.SHEETS_READ_POLICY_UGI,policy);
+ assert.deepEqual(JSON.parse(JSON.stringify(policy)),{retries:2,delayMs:0});
 });

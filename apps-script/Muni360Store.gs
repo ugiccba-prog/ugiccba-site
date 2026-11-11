@@ -10,11 +10,24 @@ function configUGI(){
 }
 function prefixUGI(name){return 'A_'+sha(name).slice(0,10)+'_';}
 function quoteUGI(name){return "'"+name.replace(/'/g,"''")+"'";}
-function metadataUGI(id){return (Sheets.Spreadsheets.get(id,{fields:'sheets.properties'}).sheets||[]).map(function(s){return s.properties;});}
+// Policy is local to each Apps Script execution, never stored in shared properties.
+var SHEETS_READ_POLICY_UGI={retries:2,delayMs:0};
+function sheetsReadUGI(read){
+  for(var attempt=0;;attempt++){
+    if(SHEETS_READ_POLICY_UGI.delayMs)Utilities.sleep(SHEETS_READ_POLICY_UGI.delayMs);
+    try{return read();}catch(e){
+      var quota=Number(e.code||e.details&&e.details.code)===429||/quota exceeded[\s\S]*read requests|429[\s\S]*too many requests/i.test(String(e.message||e));
+      if(!quota)throw e;
+      if(attempt>=SHEETS_READ_POLICY_UGI.retries)throw new AccessError('RED','Sheets alcanzo el limite temporal de lecturas. Espera un minuto y reintenta.');
+      Utilities.sleep(Math.min(32000,Math.pow(2,attempt)*1000)+Math.floor(Math.random()*1000));
+    }
+  }
+}
+function metadataUGI(id){return (sheetsReadUGI(function(){return Sheets.Spreadsheets.get(id,{fields:'sheets.properties'});}).sheets||[]).map(function(s){return s.properties;});}
 function readTablesUGI(id,names,meta){
   meta=meta||metadataUGI(id);var wanted=names.filter(function(n){return meta.some(function(s){return s.title===n;});}),out={};
   if(!wanted.length)return out;
-  var result=Sheets.Spreadsheets.Values.batchGet(id,{ranges:wanted.map(quoteUGI),valueRenderOption:'UNFORMATTED_VALUE',dateTimeRenderOption:'FORMATTED_STRING'});
+  var result=sheetsReadUGI(function(){return Sheets.Spreadsheets.Values.batchGet(id,{ranges:wanted.map(quoteUGI),valueRenderOption:'UNFORMATTED_VALUE',dateTimeRenderOption:'FORMATTED_STRING'});});
   wanted.forEach(function(n,i){out[n]=(result.valueRanges[i]||{}).values||[];});return out;
 }
 function writeTablesUGI(id,tables,meta,appends,baseline,projectionOnly){

@@ -127,3 +127,10 @@ El usuario también confirmó la separación por fecha y grupo, el guardado de e
 
 ### Error real detectado al leer el cierre de prueba
 La primera ejecucion en Google fallo en unchunksUGI, despues del cierre sobre la copia, porque Utilities.ungzip recibia un blob con tipo de contenido nulo. Se especifican application/gzip y un nombre .gz al reconstruir el archivo. No cambia el formato almacenado. Se agrego una prueba que falla con el codigo anterior y exige el tipo al descomprimir, con texto Unicode y notas decimales. La ejecucion real del cierre sigue pendiente de repeticion; no se declara aprobada a partir de las pruebas locales.
+
+
+### Limite real de lecturas durante el cierre aislado
+La repeticion del cierre alcanzo el limite de lecturas por minuto y usuario de Sheets al sincronizar la copia. Se difieren las proyecciones intermedias solo en la configuracion local de las copias y se verifica una proyeccion final. Las huellas reutilizan los metadatos ya consultados. El recorrido espacia cada llamada de lectura 1100 ms y permite seis reintentos con espera exponencial y variacion aleatoria; restablece la politica local aun si falla.
+La capa general reintenta exclusivamente lecturas rechazadas por cuota, con dos reintentos acotados; despues devuelve RED. No reintenta escrituras ni errores de permisos. No cambia propiedades de sincronizacion ni cuotas ni facturacion.
+Se prueban metadata y valores, rechazo persistente, errores de permisos y recorrido completo con reloj simulado, cuota inicial agotada y limite de 60 lecturas/minuto. La ejecucion real sigue pendiente. La prueba puede tardar entre dos y cuatro minutos; mantener la app sin nuevas cargas durante ese recorrido.
+Referencia tecnica: https://developers.google.com/workspace/sheets/api/limits

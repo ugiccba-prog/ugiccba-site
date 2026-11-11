@@ -124,6 +124,7 @@ function activarSincronizacionAutomaticaUGI(){
   return {ok:true,enabled:true,retryMinutes:15};
 }
 function automaticSyncUGI(c,name,result){
+  if(c.deferProjection===true)return result;
   if(PropertiesService.getScriptProperties().getProperty('UGI_SYNC_ON_SAVE')!=='true')return result;
   try{syncActivityUGI(c,name);result.sheetsStatus='synced';}
   catch(_){result.sheetsStatus='pending';}
@@ -176,13 +177,15 @@ function ensayarCierreTemporadaUGI(){
   var source=DriveApp.getFileById(c.id),parent=DriveApp.getFolderById(p.getProperty('UGI_BACKUP_FOLDER_ID'));
   privateResourceUGI(source);privateResourceUGI(parent);
   var lock=LockService.getScriptLock();if(!lock.tryLock(5000))throw new Error('Hay otra carga en curso. Reintentar luego.');
-  function fingerprint(id){var names=metadataUGI(id).map(function(t){return t.title;}).sort();return sha(readTablesUGI(id,names));}
+  function fingerprint(id){var meta=metadataUGI(id),names=meta.map(function(t){return t.title;}).sort();return sha(readTablesUGI(id,names,meta));}
   function check(condition,message){if(!condition)throw new Error('Cierre no verificado: '+message);}
+  var previousReadPolicy=SHEETS_READ_POLICY_UGI;
+  SHEETS_READ_POLICY_UGI={retries:6,delayMs:1100};
   try{
     var originalIds=[c.id].concat(Object.values(c.map)),before=originalIds.map(fingerprint);
     var folder=parent.createFolder('Verificacion cierre '+new Date().toISOString().replace(/[:.]/g,'-'));privateResourceUGI(folder);
     var data=source.makeCopy('Copia privada - cierre de temporada',folder);privateResourceUGI(data);
-    var trial=Object.assign({},c,{id:data.getId(),map:{}});
+    var trial=Object.assign({},c,{id:data.getId(),map:{},deferProjection:true});
     Object.keys(c.map).forEach(function(name){
       var view=DriveApp.getFileById(c.map[name]);privateResourceUGI(view);
       var copied=view.makeCopy('Copia privada - '+name,folder);privateResourceUGI(copied);
@@ -220,5 +223,5 @@ function ensayarCierreTemporadaUGI(){
     var result={ok:true,fecha:new Date().toISOString(),padronConservado:true,fichasConservadas:true,historialConsultable:true,reintentoSinDuplicado:true,temporadaAnteriorRechazada:true,inicioSinPadron:true,sheetsVerificado:true,originalesIntactos:true,registrosPrevios:{padron:old.state.padron.length,asistencia:old.state.asistencia.length,evaluaciones:old.state.evaluaciones.length,sesiones:old.state.sesiones.length},carpeta:'https://drive.google.com/drive/folders/'+folder.getId()};
     p.setProperty('UGI_CIERRE_VERIFICADO',JSON.stringify(result));
     console.log('CIERRE_TEMPORADA_VERIFICADO '+JSON.stringify(result));return result;
-  }finally{lock.releaseLock();}
+  }finally{SHEETS_READ_POLICY_UGI=previousReadPolicy;lock.releaseLock();}
 }
