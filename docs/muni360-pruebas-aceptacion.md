@@ -134,3 +134,9 @@ La repeticion del cierre alcanzo el limite de lecturas por minuto y usuario de S
 La capa general reintenta exclusivamente lecturas rechazadas por cuota, con dos reintentos acotados; despues devuelve RED. No reintenta escrituras ni errores de permisos. No cambia propiedades de sincronizacion ni cuotas ni facturacion.
 Se prueban metadata y valores, rechazo persistente, errores de permisos y recorrido completo con reloj simulado, cuota inicial agotada y limite de 60 lecturas/minuto. La ejecucion real sigue pendiente. La prueba puede tardar entre dos y cuatro minutos; mantener la app sin nuevas cargas durante ese recorrido.
 Referencia tecnica: https://developers.google.com/workspace/sheets/api/limits
+
+
+### Cierre aislado confirmado en Google — 11 de noviembre
+El usuario aporto el registro CIERRE_TEMPORADA_VERIFICADO, ok:true y ejecucion completada entre las 12:25:09 y 12:26:40 de Buenos Aires. Todas las verificaciones del recorrido resultaron verdaderas: padron y fichas conservados, historial consultable, reintento sin duplicado, temporada anterior rechazada, inicio sin padron, Sheets verificado y originales intactos.
+La copia contenia 6 registros de padron, 14 asistencias, 4 evaluaciones y 1 sesion (marcador agregado solo en la copia). T01 y T02 quedan verificados en Google mediante el motor real sobre copias privadas; no equivale a probar el recorrido de sus botones en la app. T03 confirma el rechazo del servidor por temporada anterior, pero mantiene pendiente la interfaz con cargas en cola. T04 mantiene pendiente la interrupcion real de un cierre. El ensayo activo no fue archivado.
+La suite previa a esta ejecucion aprobo 105 pruebas automatizadas. Siguiente bloque: medir tiempos reales de lectura, guardado y sincronizacion con volumen y concurrencia representativos. No se declara aprobado rendimiento por la duracion de esta prueba, que incluye esperas deliberadas para las cuotas.
