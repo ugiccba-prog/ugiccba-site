@@ -18,11 +18,12 @@
     return Object.fromEntries(Object.entries(groups).map(([g, vals]) => [g, vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null]));
   };
   class Client {
-    constructor({ url, fetch: fetcher, storage, session, onStatus = () => {}, id = () => crypto.randomUUID(), lock, getToken, transport = 'http' }) {
+    constructor({ url, fetch: fetcher, storage, session, onStatus = () => {}, id = () => crypto.randomUUID(), lock, getToken, transport = 'http', now = () => Date.now(), random = Math.random }) {
       this.url = url; this.fetch = fetcher; this.storage = storage; this.session = session; this.onStatus = onStatus; this.id = id; this.getToken = getToken; this.transport = transport;
       this.storageKey = 'muni360_v2_pending_' + session.usuario;
       this.queue = JSON.parse(storage.getItem(this.storageKey) || '[]');
       this.snapshots = {}; this.readVersions = {}; this.running = null; this.stopped = false;
+      this.now=now;this.random=random;this.retryFailures=0;this.nextRetryAt=0;
       this.lock = lock || (fn => {
         if (typeof navigator !== 'undefined' && navigator.locks) return navigator.locks.request(this.storageKey, fn);
         throw new ApiError('Este navegador no permite guardar pendientes de forma segura entre pestañas. Actualizalo.', 'NAVEGADOR');
@@ -102,16 +103,19 @@
           if (result.requestId !== entry.payload.requestId) throw new ApiError('No se pudo verificar la confirmación.', 'VERSION');
           const snap = this.snapshots[entry.payload.deporte];
           if (snap) snap.versiones[keyFor(entry.payload)] = result.revision;
-          this.queue.splice(index,1); this.persist(); this.status(result.sheetsStatus==='pending'?'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.':'Guardado y confirmado.');
+          this.queue.splice(index,1); this.persist(); this.retryFailures=0;this.nextRetryAt=0;this.status(result.sheetsStatus==='pending'?'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.':'Guardado y confirmado.');
         } catch (e) {
           if (e.code && !['RED', 'SERVIDOR'].includes(e.code)) {
             entry.error = e.message; entry.code = e.code; this.persist(); this.status(e.message); blockedAreas.add(entry.payload.deporte);continue;
           }
-          this.status('Sin confirmar. Se reintentará al recuperar conexión; no borres los datos del navegador.'); return;
+          this.retryFailures++;
+          this.nextRetryAt=this.now()+Math.min(300000,30000*Math.pow(2,Math.min(this.retryFailures-1,4))+Math.floor(this.random()*5000));
+          this.status('Sin confirmar. Se reintentará automáticamente; no borres los datos del navegador.'); return;
         }
       }
     }
-    async retry() {
+    async retry({automatic=false}={}) {
+      if(automatic&&this.now()<this.nextRetryAt)return false;
       await this.lock(async () => {
         this.queue = JSON.parse(this.storage.getItem(this.storageKey) || '[]');
         const entry = this.queue[0];

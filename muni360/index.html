@@ -1546,7 +1546,7 @@
         syncClient.stop(); syncClient=null; sesion=null; sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
         datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}}; $('dua-modal-body').textContent=''; $('dua-modal').classList.add('hidden');
         ['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden')); $('login-screen').classList.remove('hidden'); $('login-error').textContent='La sesión venció. Ingresá otra vez; los pendientes se conservan para tu cuenta.';
-      } else if (syncClient && navigator.onLine) syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
+      } else if (syncClient && navigator.onLine) syncClient.retry({automatic:true}).catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
     }, 30000);
 
     let sesion = null;
