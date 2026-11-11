@@ -33,3 +33,9 @@ Ejecutar Desktop Commander en la PC elegida, verificarla con la misma cuenta y m
 Seguir `docs/muni360-operacion.md`: crear el entorno separado de ensayo, configurar Authentication Spark, Sheets API, propietario y copias de planillas. Luego completar `docs/muni360-pruebas-aceptacion.md` con dos cuentas reales. Los ensayos automatizados con Google simulado no reemplazan esa aceptación.
 
 Antes de mover otra vez de PC, confirmar que los últimos cambios estén en un commit y que `git status` indique que la rama está al día con origin.
+
+
+## Pendiente de publicacion — reintentos escalonados
+El cambio 92f3037 agrega espera creciente a los reintentos periodicos del cliente; 113 pruebas aprobadas. Codigo guardado en la rama remota de revision. No esta publicado en Hosting: la API de Firebase devolvio 503 UNAVAILABLE al agregar los archivos y un segundo intento acotado tampoco finalizo. Ambos procesos de deploy se detuvieron; no queda reintento del asistente en segundo plano.
+Se comprobo HTTP 200 para el cliente y los dos portales; siguen sirviendo la version anterior sin nextRetryAt ni retry({automatic:true}). La optimizacion backend de lecturas de la version 5 de Apps Script permanece publicada.
+La carpeta privada de publicacion de esta PC contiene el frontend actualizado, con la configuracion publica recuperada del sitio vivo y validada contra el proyecto/endpoint de ensayo. Proximo paso: reintentar solo Hosting cuando la API permita publicar y comprobar los tres archivos servidos; no hace falta repetir pruebas manuales de datos ni cambiar Apps Script.
