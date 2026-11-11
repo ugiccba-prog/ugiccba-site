@@ -26,3 +26,5 @@ La asistencia, el semáforo y el cierre de clase se conservan como borrador loca
 
 ## Respaldo y recuperación sobre copias
 Ejecutar ensayarRespaldoYRecuperacionUGI desde el editor del ensayo. Comparará las copias completas y el punto temporal de recuperación; solo después verificará la copia diaria y programará el respaldo diario. Conserva las copias privadas en una subcarpeta de respaldos para su revisión. No reemplaza el original ni elimina las copias anteriores. El espacio de Drive y las ejecuciones diarias deben revisarse durante el piloto.
+
+La cuenta con permiso de administrar padron puede descargar una plantilla desde Padron. El archivo incluye Apellido, Nombre y DNI opcional. Completar datos ficticios, elegir grupo y equipo, seleccionar el archivo y revisar la lista antes de pulsar Cargar listado al grupo. La seleccion del archivo no confirma ninguna carga. Se verificaron la lectura de acentos y el rechazo de duplicados en pruebas automatizadas; falta confirmar el recorrido real en Google.

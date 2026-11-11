@@ -1179,6 +1179,7 @@
             <h3>1. Subir listado desde Excel (.xlsx) o CSV</h3>
             <p class="hint" style="margin:0;">Usá encabezados Apellido y Nombre, o Jugador; DNI es opcional. Se lee la primera hoja. Elegí abajo el grupo de destino. Máximo 500 filas y 2 MB.</p>
           </div>
+          <button type="button" class="btn-sec" id="descargar-plantilla-padron">Descargar plantilla de padrón</button>
           <input type="file" id="input-excel-file" accept=".xlsx,.xls,.csv" style="max-width:240px; font-size:0.78rem;">
         </div>
       </div>
@@ -3096,6 +3097,17 @@
       if (await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria,equipo,jugadores})) {$('padron-lista').value='';await cargarAreaActiva();}
     });
 
+    $('descargar-plantilla-padron').onclick=()=>{
+      if(!permiso('administrarPadron')||esSoloConsulta())return toast('Tu cuenta no puede administrar el padrón.');
+      if(!window.XLSX)return toast('No se pudo cargar el lector de planillas. Actualizá la página.');
+      try{
+        const wb=XLSX.utils.book_new(),sheet=XLSX.utils.aoa_to_sheet([['Apellido','Nombre','DNI']]);
+        sheet['!cols']=[{wch:26},{wch:26},{wch:16}];
+        XLSX.utils.book_append_sheet(wb,sheet,'Padron');
+        XLSX.writeFile(wb,'Muni360_plantilla_padron.xlsx');
+        toast('Completá Apellido y Nombre. DNI es opcional. Luego elegí el grupo e importá el archivo.');
+      }catch(e){toast(e.message||'No se pudo descargar la plantilla.');}
+    };
     $('input-excel-file').addEventListener('change', async e => {
       const file=e.target.files?.[0];if(!file)return;
       const context=[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|');
