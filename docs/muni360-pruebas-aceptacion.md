@@ -106,3 +106,12 @@ Se comprobó el rechazo de escritura por el servidor. La interfaz permitía gene
 Se reprodujo que un pendiente de Colonia bloqueaba la carga del padrón y nuevos guardados de Hockey. Se limitaron los bloqueos a la actividad afectada y se conservó el pendiente original con su identificador. La cola procesa las otras actividades sin saltar operaciones dentro de la misma actividad bloqueada. El aviso identifica a qué actividad corresponde el pendiente. Pruebas automatizadas: lectura con pendiente ajeno, retirada de autorización, rechazo real de la capa de permisos y continuidad de la actividad autorizada; 94 casos aprobados. Falta repetir el recorrido en Google después de publicar.
 
 El usuario también confirmó la separación por fecha y grupo, el guardado de evaluaciones, la comida de Colonia sin asignación al ausente, Consulta con lectura disponible y edición bloqueada, y la exportación numérica con rechazo para una cuenta sin permiso.
+
+## Punto de continuidad después de la importación
+- Confirmado por el usuario: archivo leído, jugadores importados visibles tras recargar y en Sheets, acentos conservados y reimportación del mismo archivo al mismo grupo sin duplicar los dos participantes.
+- Confirmado por el usuario: un archivo con nombre repetido muestra el rechazo por duplicado.
+- Pendiente inmediato: probar un DNI inválido de tres cifras en una copia de ensayo y confirmar que no se guarda ningún participante.
+- También confirmado después de la corrección: Hockey carga y guarda con un pendiente rechazado de Colonia, sin rehabilitar el acceso retirado.
+- Última suite ejecutada: 98 pruebas automatizadas aprobadas. No equivale a aprobar todos los casos reales.
+- Próximos bloques: importación inválida y límites, verificación de las ejecuciones programadas de respaldo, cierre de temporada sobre ensayo y medición de rendimiento. Los casos no ejecutados siguen pendientes.
+- No quedan procesos del asistente programados para revisar o modificar el código fuera de una conversación activa.
