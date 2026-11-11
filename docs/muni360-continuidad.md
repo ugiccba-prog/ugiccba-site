@@ -51,3 +51,9 @@ La pagina usa America/Argentina/Buenos_Aires y muestra ARG en los instantes del 
 3. Observar varias ejecuciones nocturnas de respaldo/sincronizacion y el espacio libre de Drive. Solo la primera noche tiene confirmacion real; no hay monitoreo del asistente fuera de la conversacion.
 4. Revisar estetica, legibilidad y flujo de cancha en celular; recorrer la presentacion completa en el proyector. No se declaran aprobados por haber corregido el backend.
 La matriz de aceptacion se actualizo con las confirmaciones que antes estaban solo en notas: cierre sobre copias, primera noche, importacion invalida, comida de Colonia y aislamiento entre actividades.
+
+
+## Primera estetica de cancha publicada
+Cambio 5b5bea5 guardado en la rama de revision y publicado en Firebase Hosting del ensayo. Se comprobo HTTP 200 y contenido exacto del repositorio para CSS compartido y los HTML de ambos portales. Suite: 123 pruebas aprobadas; seis recorridos de navegador local a 360/390/1440 px aprobados. Ver muni360-estetica.md para alcance y reproduccion.
+La revision adicional de seguridad no encontro un fallo nuevo en los cinco casos agregados. No se marca como completa la matriz real de Google: sus casos pendientes, el rendimiento con varias cuentas reales, varios dias de respaldo y el proyector siguen diferenciados. Se paso a una primera mejora visual sin alterar ese estado de verificacion.
+No quedan procesos de prueba, servidores locales ni reintentos de publicacion del asistente en segundo plano. Las herramientas de navegador de esta revision usaron perfiles nuevos y datos ficticios.
