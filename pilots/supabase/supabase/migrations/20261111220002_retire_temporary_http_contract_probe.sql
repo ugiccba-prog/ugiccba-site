@@ -1,0 +1,1 @@
+revoke all on function public.mp_pilot_conflict_contract_probe() from public,anon,authenticated,service_role; comment on function public.mp_pilot_conflict_contract_probe() is 'Retired isolated HTTP contract probe. No API role may execute this function.';

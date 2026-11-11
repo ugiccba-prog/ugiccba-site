@@ -17,9 +17,9 @@
       if(!token)throw new PilotError('Volvé a ingresar con Google.','SESION');
       let response,data;
       try{response=await this.fetch(this.url+'/rest/v1/rpc/'+name,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{apikey:this.key,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(20000)});data=await response.json();}
-      catch{this.metrics.push({operation:name,ms:this.clock()-start,ok:false,kind:'network'});throw new PilotError('Sin confirmación. El pendiente queda en este dispositivo.','RED');}
-      this.metrics.push({operation:name,ms:this.clock()-start,ok:response.ok,responseBytes:new TextEncoder().encode(JSON.stringify(data)).length});
-      if(!response.ok){const code=data?.code==='40001'?'CONFLICTO':data?.code==='42501'?'PERMISOS':response.status===401?'SESION':response.status===429||response.status>=500?'RED':'VALIDACION';throw new PilotError(data?.message||'No se pudo confirmar la operación.',code);}
+      catch(e){this.metrics.push({operation:name,ms:this.clock()-start,ok:false,status:response?.status??null,kind:['TimeoutError','AbortError'].includes(e?.name)?'timeout':'network'});throw new PilotError('Sin confirmación. El pendiente queda en este dispositivo.','RED');}
+      this.metrics.push({operation:name,ms:this.clock()-start,ok:response.ok,status:response.status,code:response.ok?null:data?.code??null,responseBytes:new TextEncoder().encode(JSON.stringify(data)).length});
+      if(!response.ok){const code=data?.code==='PT409'?'CONFLICTO':data?.code==='42501'?'PERMISOS':response.status===401?'SESION':data?.code==='40001'||response.status===429||response.status>=500?'RED':'VALIDACION';throw new PilotError(data?.message||'No se pudo confirmar la operación.',code);}
       return data;
     }
     async read(group,day){return this.rpc('mp_read_group',{p_group:group,p_day:day});}

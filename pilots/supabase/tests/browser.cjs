@@ -15,7 +15,7 @@ const root=path.resolve(__dirname,'..'),web=path.join(root,'web');let db,browser
  else if(name==='mp_read_group')result=await db.query('select public.mp_read_group($1::uuid,$2::date) as value',[a.p_group,a.p_day]);
  else if(name==='mp_save_attendance')result=await db.query('select public.mp_save_attendance($1::uuid,$2::uuid,$3::date,$4::int,$5::int,$6::int,$7::jsonb,$8::text,$9::int) as value',[a.p_request,a.p_group,a.p_day,a.p_season,a.p_roster_revision,a.p_revision,JSON.stringify(a.p_rows),a.p_climate,a.p_points]);
  else throw Error('Unknown RPC');await db.exec('commit');return {status:200,data:result.rows[0].value};
- }catch(e){await db.exec('rollback');return {status:e.code==='40001'?409:e.code==='42501'?403:400,data:{code:e.code,message:e.message}};}});}
+ }catch(e){await db.exec('rollback');return {status:e.code==='PT409'?409:e.code?.startsWith('40')?500:e.code==='42501'?403:400,data:{code:e.code,message:e.message}};}});}
  let cases=0;
  for(const width of [360,1440])for(const role of ['Profe','Consulta']){
   const uid=role==='Consulta'?'pilot-reader':'pilot-teacher',context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[];let offline=false;
@@ -37,7 +37,7 @@ const root=path.resolve(__dirname,'..'),web=path.join(root,'web');let db,browser
    await page.locator('#all').click();await page.locator('#climate').selectOption('Vapor');await page.locator('#points').fill('10');await page.locator('#save').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Guardado confirmado'));
    await page.locator('#load').click();await page.waitForFunction(()=>document.getElementById('message').textContent.startsWith('Grupo abierto'));assert.equal(await page.locator('#climate').inputValue(),'Vapor');assert.equal(await page.locator('#points').inputValue(),'10');
    offline=true;await page.locator('#roster .row select').first().selectOption('T');await page.locator('#save').click();await page.locator('#pending').waitFor({state:'visible'});await page.waitForFunction(()=>!document.getElementById('retry').disabled);const before=JSON.parse(await page.locator('#pending-data').textContent()).p_request;
-   offline=false;await page.reload();await page.locator('#roster .row').nth(19).waitFor();await page.locator('#pending').waitFor({state:'visible'});assert.equal(JSON.parse(await page.locator('#pending-data').textContent()).p_request,before);await page.locator('#retry').click();await page.locator('#pending').waitFor({state:'hidden'});assert.equal(await page.locator('#roster .row select').first().inputValue(),'T');
+   offline=false;await page.reload();await page.locator('#roster .row').nth(19).waitFor();await page.locator('#pending').waitFor({state:'visible'});assert.equal(JSON.parse(await page.locator('#pending-data').textContent()).p_request,before);await page.locator('#retry').click();await page.locator('#pending').waitFor({state:'hidden'});assert.equal(await page.locator('#roster .row select').first().inputValue(),'T');if(width===360){await page.locator('#benchmark-write').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('1 confirmadas, 19 conflictos'));const metrics=JSON.parse(await page.locator('#metrics').textContent());assert.equal(metrics.filter(m=>m.status===409&&m.code==='PT409').length,19);}
   }
   assert.deepEqual(errors,[]);console.log('UI_PASS '+width+' '+role);cases++;await context.close();
  }

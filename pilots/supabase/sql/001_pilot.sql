@@ -129,10 +129,10 @@ begin
   perform pg_advisory_xact_lock(hashtextextended(p_request::text,0));
   select * into prior from mp_private.receipts where request_id=p_request;
   if found then
-    if prior.actor<>a.subject or prior.payload<>payload then raise exception using errcode='40001',message='CONFLICTO: Identificador usado con otra carga.'; end if;
+    if prior.actor<>a.subject or prior.payload<>payload then raise exception using errcode='PT409',message='CONFLICTO: Identificador usado con otra carga.'; end if;
     return prior.result;
   end if;
-  if p_season<>g.season or p_roster_revision<>g.roster_revision then raise exception using errcode='40001',message='CONFLICTO: Cambió el padrón o la temporada.'; end if;
+  if p_season<>g.season or p_roster_revision<>g.roster_revision then raise exception using errcode='PT409',message='CONFLICTO: Cambió el padrón o la temporada.'; end if;
   select count(*),count(distinct x->>'id') into count_rows,count_ids from jsonb_array_elements(p_rows) x;
   select count(*) into expected from mp_private.athletes where group_id=g.id;
   if expected=0 or count_rows<>expected or count_ids<>expected or exists(
@@ -143,7 +143,7 @@ begin
   ) then raise exception 'VALIDACION: Revisá el plantel, asistencia, semáforo o comida.'; end if;
   insert into mp_private.sessions(group_id,day,season) values(g.id,p_day,g.season) on conflict(group_id,day,season) do nothing;
   select * into s from mp_private.sessions where group_id=g.id and day=p_day and season=g.season for update;
-  if s.revision<>p_revision then raise exception using errcode='40001',message='CONFLICTO: Otra persona modificó esta clase. Actualizá y revisá.'; end if;
+  if s.revision<>p_revision then raise exception using errcode='PT409',message='CONFLICTO: Otra persona modificó esta clase. Actualizá y revisá.'; end if;
   select coalesce(jsonb_agg(to_jsonb(x) order by x.athlete_id),'[]'::jsonb) into before_rows from mp_private.attendance x where session_id=s.id;
   before_rows:=jsonb_build_object('rows',before_rows,'climate',s.climate,'points',s.points);
   insert into mp_private.attendance(session_id,group_id,athlete_id,state,semaphore,food)
