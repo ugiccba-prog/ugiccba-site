@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,...(process.env.MUNI360_BROWSER_PATH?{executablePath:process.env.MUNI360_BROWSER_PATH}:{})});
  const results=[];
  try{
-  for(const portal of ['muni360','muni360cyc'])for(const width of [360,390,1440]){
+  for(const portal of ['muni360','muni360cyc'])for(const width of [360,390,1440])for(const profile of ['direccion','profe']){
    const height=width===1440?1000:844,context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1}),page=await context.newPage(),errors=[],businessRequests=[];
    page.on('dialog',dialog=>dialog.accept());page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
@@ -27,10 +27,22 @@ const server=http.createServer((req,res)=>{
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+portal+'/?demo=1',{waitUntil:'load'});
    await page.locator('#app-screen').waitFor({state:'visible'});
    await page.waitForFunction(()=>{const el=document.getElementById('toast');return !el||getComputedStyle(el).opacity==='0'||getComputedStyle(el).display==='none';},{},{timeout:6000});
+   if(profile==='profe')await page.evaluate(()=>{sesion.rol='Profe';sesion.esAdminTotal=false;sesion.canManageUsers=false;sesion.capabilities={};actualizarCabeceraYPestanas();renderAsistencia();});
    const rows=page.locator('#lista-asist .asist-row');assert.ok(await rows.count()>0);
    assert.equal(await page.locator('#nav-tabs .tab').first().getAttribute('data-tab'),'asistencia');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'page overflow');
-   await page.locator('#modo-cancha').click();
+   assert.equal(await page.locator('#modo-cancha').count(),0,'removed mode button');
+   const firstRowTop=(await rows.first().boundingBox()).y;
+   if(profile==='profe'&&width<640){
+    assert.equal(await page.locator('.toolbar-cancha').isVisible(),false,'empty professor toolbar must collapse');
+    assert.ok(firstRowTop<470,'players should appear above 470px by default');
+   }
+   assert.equal(await page.locator('#kpis-asist-dia').isVisible(),false,'summary starts collapsed');
+   await page.locator('.ayuda-asistencia summary').click();
+   const help=await page.locator('#sub-lista-asist').boundingBox();
+   assert.ok(help.x>=0&&help.x+help.width<=width,'legend fits viewport');
+   await page.locator('.ayuda-asistencia summary').click();
+   assert.equal(await page.locator('#btn-guardar-asist').evaluate(el=>getComputedStyle(el).position),'static');
    const tiny=await page.locator('#lista-asist .sem-btn,#lista-asist .pat button').evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width<44||r.height<44;}).length);
    assert.equal(tiny,0,'attendance targets must be at least 44px');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'cancha overflow');
@@ -43,6 +55,8 @@ const server=http.createServer((req,res)=>{
    await rows.last().locator('[data-e="P"]').scrollIntoViewIfNeeded();
    const target=await rows.last().locator('[data-e="P"]').boundingBox(),save=await page.locator('#btn-guardar-asist').boundingBox();
    assert.ok(target.y+target.height<=save.y||target.y>=save.y+save.height,'fixed save overlaps last controls');
+   await page.locator('.resumen-jornada summary').click();assert.equal(await page.locator('#kpis-asist-dia').isVisible(),true);
+   await page.locator('.resumen-jornada summary').click();
    await page.locator('#btn-toggle-filtros').click();assert.equal(await page.locator('#card-filtros').isVisible(),true);
    await page.locator('#btn-listo-filtros').click();
    const evalTab=page.locator('[data-tab="evaluacion"]');
@@ -52,10 +66,10 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'evaluation overflow');
    }
    await page.locator('[data-tab="asistencia"]').click();await page.evaluate(()=>scrollTo(0,0));
-   await page.screenshot({path:path.join(output,portal+'-'+width+'.png'),fullPage:false});
-   await rows.first().scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,portal+'-controls-'+width+'.png'),fullPage:false});
+   await page.screenshot({path:path.join(output,portal+'-'+profile+'-'+width+'.png'),fullPage:false});
+   await rows.first().scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,portal+'-'+profile+'-controls-'+width+'.png'),fullPage:false});
    assert.deepEqual(errors,[]);assert.deepEqual(businessRequests,[]);
-   results.push({portal,width,rows:await rows.count(),overflow:false,touchTargets:true,attendance:true,filters:true,evaluation:true,errors:0});
+   results.push({portal,profile,width,firstRowTop:Math.round(firstRowTop),rows:await rows.count(),overflow:false,touchTargets:true,attendance:true,filters:true,evaluation:true,errors:0});
    await context.close();
   }
   fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));

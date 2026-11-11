@@ -1,31 +1,32 @@
-# Primera revision visual de cancha
-11 de noviembre de 2026. Aplicada a Deportes y Colonia/COYFD.
+# Vista compacta por defecto
+11 de noviembre de 2026. Deportes y Colonia/COYFD.
 
-Se mantiene la identidad azul institucional, el escudo y el celeste. La cabecera tiene una marca breve y una segunda linea descriptiva. Asistencia pasa al primer lugar de la navegacion. Las pestanas se distribuyen en dos filas en celular para que las funciones no queden recortadas en una tira horizontal.
+Se retiro el boton Modo cancha y su alternancia: todos ingresan a la misma distribucion compacta. La cabecera tiene una sola linea descriptiva, sin subtitulo decorativo. La navegacion usa una fila desplazable horizontalmente. La barra de administracion desaparece por completo cuando sus acciones no corresponden al perfil.
 
-El contexto muestra grupo, equipo y fecha completos. Los tres indicadores tienen una distribucion consistente; el semaforo separa la cantidad observada de las alertas y explicita cuantas personas siguen sin observar.
+Grupo y fecha permanecen arriba de la lista. El encabezado de asistencia es breve y las referencias se abren con el boton de ayuda. Los indicadores se conservan en Resumen de la clase, plegado por defecto al final de la lista. El cierre opcional tambien sigue disponible.
 
-Cada persona tiene su tarjeta. Semaforo y asistencia aparecen como grupos separados con nombre; los controles incluyen etiquetas accesibles y areas tactiles de al menos 44 por 44 pixeles. En celular se apilan para conservar ese tamano. El apoyo DUA y la comida mantienen sus controles. En modo cancha, Guardar asistencia queda al pie; el contenido tiene espacio de salida para alcanzar los ultimos controles. El aviso de cambios pendientes sigue visible.
+Las fichas tienen menos separacion, conservando controles de al menos 44 por 44 pixeles. Semaforo y asistencia estan agrupados con etiquetas accesibles. Guardar asistencia queda al final, en el flujo normal, como respaldo del autoguardado; no ocupa una franja fija sobre los registros. Los avisos de pendientes conservan su visibilidad.
 
 ## Verificacion
-Se uso un navegador Chrome nuevo y aislado, un servidor local restringido y datos de demostracion. Se bloquearon solicitudes externas; no se uso el navegador autenticado del usuario ni se escribieron datos en Google.
+Chrome nuevo y aislado, servidor local restringido, datos ficticios y solicitudes externas bloqueadas. No se usaron cuentas autenticadas ni se escribio en Google.
 
-Seis recorridos: ambos portales a 360, 390 y 1440 pixeles de ancho. Se verificaron:
-- Ausencia de desborde horizontal y de errores JavaScript.
-- Controles de semaforo y asistencia de al menos 44 pixeles.
-- Busqueda de persona y cambios de asistencia/semaforo con estado seleccionado correcto.
-- Acceso al ultimo control sin superposicion con el guardado fijo.
-- Apertura/cierre de filtros y acceso a la ficha de evaluacion.
-- Guardado fijo oculto al navegar a evaluacion.
-- Ninguna solicitud a autenticacion ni al backend de Google durante la prueba local.
+Doce recorridos: Deportes y Colonia, con perfiles simulados Direccion y Profe, a 360, 390 y 1440 pixeles. Se verificaron:
+- Ausencia del boton retirado y de desborde horizontal.
+- Barra vacia de administracion oculta para Profe.
+- Primer jugador por encima de 470 px en los escenarios moviles de Profe.
+- Ayuda dentro de los limites de pantalla.
+- Resumen cerrado por defecto y accesible al desplegar.
+- Controles de al menos 44 px y busqueda/estados seleccionados correctos.
+- Guardado en flujo normal, acceso al ultimo jugador, filtros y evaluacion.
+- Cero errores JavaScript y cero solicitudes al backend/autenticacion de Google.
 
-Las capturas se inspeccionaron visualmente. La prueba no sustituye un recorrido tactil real en la cancha ni la comprobacion del proyector.
+En las demostraciones moviles de Profe, el primer jugador comienza a 329 px en Deportes y 379 px en Colonia. Son mediciones del escenario de prueba; avisos de pendientes, textos y datos reales pueden modificar esa posicion. Se inspeccionaron capturas de los perfiles.
 
 ## Reproduccion
-Con las dependencias de desarrollo y un navegador Playwright disponible:
+Con Playwright y un navegador de pruebas disponibles:
 
 ```
 node scripts/check-muni360-ui.cjs
 ```
 
-Se puede indicar MUNI360_BROWSER_PATH para un ejecutable de Chrome y MUNI360_UI_OUTPUT para guardar las capturas temporales. MUNI360_PLAYWRIGHT_MODULE admite una instalacion de pruebas externa al repositorio. El servidor se limita a 127.0.0.1, publica solo las carpetas estaticas necesarias y se cierra al terminar.
+MUNI360_BROWSER_PATH permite indicar Chrome; MUNI360_UI_OUTPUT el destino temporal de capturas; MUNI360_PLAYWRIGHT_MODULE una instalacion externa al repositorio. El servidor se limita a 127.0.0.1 y se cierra al terminar. El recorrido tactil real y el proyector permanecen pendientes.

@@ -894,7 +894,7 @@
   <main id="app-screen" class="container hidden">
 
     <!-- PESTAÑAS UNIFICADAS -->
-    <div class="toolbar-cancha"><button type="button" class="btn-sec" id="modo-cancha">Modo cancha</button><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
+    <div class="toolbar-cancha"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
     <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
@@ -958,17 +958,12 @@
          PESTAÑA 1: ASISTENCIA + COMIDA (COLONIA) + SEMÁFORO + PUNTOS CIUDAD
          =================================================================== -->
     <section id="tab-asistencia">
-      <div class="kpis" id="kpis-asist-dia">
-        <div class="kpi kpi-ok"><span>Presentismo hoy</span><b id="kpi-dia-pct">0%</b><span id="kpi-dia-det">0 de 0</span></div>
-        <div class="kpi kpi-warn" id="kpi-dia-box2"><span id="kpi-dia-lbl2">🚦 Semáforo</span><b id="kpi-dia-val2">0</b><span id="kpi-dia-sub2">destacados hoy</span></div>
-        <div class="kpi"><span>Inscriptos</span><b id="kpi-dia-total">0</b><span>en el grupo</span></div>
-      </div>
 
-      <div class="card">
+      <div class="card" id="card-asistencia">
         <div class="spread">
           <div>
-            <h3 id="titulo-lista-asist">Lista de asistencia</h3>
-            <p class="hint" style="margin:0;" id="sub-lista-asist">— = Sin registrar / sin observar · P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p>
+            <h3 id="titulo-lista-asist">Asistencia</h3>
+            <details class="ayuda-asistencia"><summary aria-label="Ver referencias de asistencia y semáforo" title="Referencias de carga">?</summary><p class="hint" style="margin:0;" id="sub-lista-asist">— = Sin registrar / sin observar · P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p></details>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn-sec" id="btn-todos-p">Todos Presentes (P)</button>
@@ -979,6 +974,14 @@
         <input type="search" id="buscar-alumno-asist" placeholder="🔍 Buscar deportista por apellido o nombre..." style="margin-bottom:10px; min-height:40px; font-size:0.86rem;">
 
         <div id="lista-asist"></div>
+
+        <details class="resumen-jornada"><summary>Resumen de la clase</summary>
+<div class="kpis" id="kpis-asist-dia">
+        <div class="kpi kpi-ok"><span>Presentismo hoy</span><b id="kpi-dia-pct">0%</b><span id="kpi-dia-det">0 de 0</span></div>
+        <div class="kpi kpi-warn" id="kpi-dia-box2"><span id="kpi-dia-lbl2">🚦 Semáforo</span><b id="kpi-dia-val2">0</b><span id="kpi-dia-sub2">destacados hoy</span></div>
+        <div class="kpi"><span>Inscriptos</span><b id="kpi-dia-total">0</b><span>en el grupo</span></div>
+      </div>
+        </details>
 
         <!-- CIERRE DE CLASE UGI COLAPSABLE: PUNTOS CIUDAD + TERMOSTATO GRUPAL -->
         <details class="cierre-acordeon" id="details-cierre-clase">
@@ -1672,7 +1675,7 @@
       $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre}) · Todos los equipos habilitados`;
       $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('auto-sheets').classList.toggle('hidden',!sesion.canManageUsers);
-      $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || almacen.getItem('muni360_modo_demo')==='1'));
+      $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || sesion.esAdminTotal && almacen.getItem('muni360_modo_demo')==='1'));
       $('link-admin-ugi').href='../admin/'+(almacen.getItem('muni360_modo_demo')==='1'?'?demo=1':'');
       const puedePadron = esCoordOAdmin();
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
@@ -2438,7 +2441,7 @@
       const sinCategoria = !cat;
       const mostrarCard = !enBancoUgi && (filtrosDesplegados || sinCategoria);
       $('card-filtros').classList.toggle('hidden', !mostrarCard);
-      $('btn-toggle-filtros').textContent = mostrarCard ? '▴ Ocultar filtros' : '⚙️ Cambiar grupo / fecha';
+      $('btn-toggle-filtros').textContent = mostrarCard ? 'Ocultar' : 'Grupo / fecha';
     }
 
     function renderFiltrosDeporte() {
@@ -2539,7 +2542,7 @@
       const cat = $('sel-categoria').value;
       const eq  = $('sel-equipo').value || 'General';
 
-      $('titulo-lista-asist').textContent = `Lista de asistencia · ${cat || areaActiva} ${!cfg.esBase && eq ? '(' + eq + ')' : ''}`;
+      $('titulo-lista-asist').textContent = 'Asistencia';
       const lista = plantelActualNombres();
       const currentKey = `${areaActiva}|${cat}|${eq}|${fecha}`;
 
@@ -2602,13 +2605,13 @@
           <div class="asist-name">${esc(nombreBaseDua(j))} ${btnDuaHtml}</div>
           <div class="asist-controls">
             ${cfg.tieneComida ? `<button type="button" class="comida-btn" data-action="comida" aria-pressed="${comidaTempDep[j] && asistTempDep[j] !== 'A'}">🍴 ${comidaTempDep[j] && asistTempDep[j] !== 'A' ? 'Comida' : 'Sin comida'}</button>` : ''}
-            <div class="sem-group" title="Semáforo Conductual UGI">
+            <div class="sem-group" role="group" aria-label="Semáforo UGI" title="Semáforo Conductual UGI">
               <button type="button" class="sem-btn" data-sem="N" aria-label="Sin observar" aria-pressed="${semTempDep[j] === 'N'}">—</button>
               <button type="button" class="sem-btn" data-sem="V" aria-label="Semáforo verde" title="Semáforo verde" aria-pressed="${semTempDep[j] === 'V'}">🟢</button>
               <button type="button" class="sem-btn" data-sem="A" aria-label="Semáforo amarillo" title="Semáforo amarillo" aria-pressed="${semTempDep[j] === 'A'}">🟡</button>
               <button type="button" class="sem-btn" data-sem="R" aria-label="Semáforo rojo" title="Semáforo rojo" aria-pressed="${semTempDep[j] === 'R'}">🔴</button>
             </div>
-            <div class="pat">
+            <div class="pat" role="group" aria-label="Asistencia">
               <button type="button" data-e="N" aria-label="Asistencia sin registrar" aria-pressed="${asistTempDep[j] === 'N'}">—</button>
               <button type="button" data-e="P" aria-label="Presente" title="Presente" aria-pressed="${asistTempDep[j] === 'P'}">P</button>
               <button type="button" data-e="A" aria-label="Ausente" title="Ausente" aria-pressed="${asistTempDep[j] === 'A'}">A</button>
@@ -3618,7 +3621,6 @@
       borrarBorradorAsistencia();
     },true);
     ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>$(id).addEventListener('change',e=>{if(!draftContext)return;if(!confirm('Hay cambios sin guardar. ¿Cambiar de grupo o fecha y descartarlos?')){e.stopImmediatePropagation();$('sel-categoria').value=draftContext.cat;$('sel-equipo').value=draftContext.eq;$('input-fecha').value=draftContext.date;return;}borrarBorradorAsistencia();},true));
-    $('modo-cancha').onclick=()=>{const active=document.body.classList.toggle('modo-cancha');$('modo-cancha').textContent=active?'Vista completa':'Modo cancha';$('modo-cancha').setAttribute('aria-pressed',String(active));};
     async function renderAuditoria(){
       if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
       try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(Muni360Time.format(e.fecha))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
