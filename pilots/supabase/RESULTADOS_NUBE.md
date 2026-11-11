@@ -60,4 +60,19 @@ Al cerrar esta actualización, la entrega real a Sheets y el activador siguen SI
 
 ### Validación local adicional
 
-13 pruebas de cliente/proyector y 13 escenarios PostgreSQL/PGlite, todos aprobados. Incluyen rechazo de clave incorrecta, ausente, vencida y suspendida; tabla de credenciales inaccesible al cliente; helper de autenticación privado; máximo diez confirmaciones por lote. Los escenarios locales no miden firmas Google ni rendimiento remoto.
+15 pruebas de cliente/proyector y 13 escenarios PostgreSQL/PGlite, todos aprobados. Incluyen rechazo de clave incorrecta, ausente, vencida y suspendida; tabla de credenciales inaccesible al cliente; helper de autenticación privado; máximo diez confirmaciones por lote. Los escenarios locales no miden firmas Google ni rendimiento remoto.
+
+
+## Activación real de Google — 11/11/2026, 19:42 ART
+
+Juan configuró la credencial en Propiedades del script y autorizó el proyecto nuevo con la cuenta institucional. El registro `PUENTE_PILOTO_ACTIVADO` confirmó tres lotes (10 + 10 + 3), destino nuevo https://docs.google.com/spreadsheets/d/1WXBy1219ZePmB-tHzqCcm8U6OmU2cUOFlMtb09oWYoo/edit e instalación automática cada cinco minutos.
+
+Una lectura independiente en Supabase confirmó los 23 trabajos en estado `verified`, entre 22:42:45.040456 y 22:42:47.904941 UTC (19:42 ART). El puente solo confirma después de releer y comparar todas las celdas. El conector de Drive está vinculado a la cuenta personal, no a la institucional, y devolvió 403 al intentar leer la nueva planilla: no se cambiaron permisos ni se la hizo pública para el diagnóstico.
+
+Para comprobar entrega SIN ejecución manual, se creó otra carga ficticia para Grupo 01, fecha de clase 19/11/2026, veinte estados T y siete Puntos Ciudad. Solicitud `3e47e1f6-1079-9fba-2cb5-ff577ae10226`, creada 22:44:59.844191 UTC. Esta carga se generó administrativamente con un perfil simulado; su propósito es probar el activador, no un login de profesor. No se ejecutó manualmente el copiador después de insertarla.
+
+### Activador automático verificado
+
+La solicitud `3e47e1f6-1079-9fba-2cb5-ff577ae10226` pasó a `verified` a las 22:48:00.888769 UTC (19:48:00 ART), 181,04 segundos después de su creación. No se ejecutó el puente manualmente para esta prueba: la entrega ocurrió tras la instalación del activador de cinco minutos. Una consulta independiente confirmó 24 trabajos verificados y ninguno pendiente. La confirmación implica la lectura/comparación de las filas por el puente antes del ack; no sustituye una inspección visual independiente de la planilla (el conector personal no tiene acceso a la planilla institucional).
+
+Esto verifica una ejecución automática real y la entrega del evento ficticio de veinte participantes. No prueba disponibilidad continua, cuotas de toda la temporada ni la migración de evaluaciones, fichas, usuarios o vistas actuales. La credencial temporal vence el 18/11/2026 a las 20:00 ART y el puente deja de programarse al detectarlo. El sistema original sigue sin cambios.
