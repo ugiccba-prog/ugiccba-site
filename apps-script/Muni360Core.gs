@@ -119,3 +119,39 @@ function doPost(e){
     return responseUGI(executeUGI(c,d,actor));
   }catch(err){console.error(JSON.stringify({evento:'MUNI_REQUEST_FAILED',codigo:err.code||'SERVIDOR',requestId:typeof d==='object'&&d?String(d.requestId||'').slice(0,100):'',backendVersion:MUNI_BACKEND_VERSION}));return errorUGI(err);}finally{SHEETS_METADATA_CACHE_UGI=previousMetadataCache;if(locked)lock.releaseLock();}
 }
+
+function activarAvisosAccesoUGI(){
+  var c=configUGI(),data=loadUsersUGI(c),owner=data.users.find(function(u){return u.uid===c.owner;});
+  if(!owner||String(Session.getEffectiveUser().getEmail()).toLowerCase()!==owner.email.toLowerCase())throw new AccessError('PERMISOS','Ejecutar con la cuenta propietaria.');
+  MailApp.getRemainingDailyQuota(); // Solicita el permiso de Google antes de activar.
+  var handler='enviarAvisosAccesoUGI';
+  if(!ScriptApp.getProjectTriggers().some(function(t){return t.getHandlerFunction()===handler;}))ScriptApp.newTrigger(handler).timeBased().everyMinutes(5).create();
+  PropertiesService.getScriptProperties().setProperty('UGI_AVISOS_ACCESO','true');
+  var result=enviarAvisosAccesoUGI();
+  console.log('AVISOS_ACCESO_ACTIVADOS '+JSON.stringify(result));
+  return result;
+}
+function enviarAvisosAccesoUGI(){
+  if(PropertiesService.getScriptProperties().getProperty('UGI_AVISOS_ACCESO')!=='true')return {ok:true,activo:false};
+  var lock=LockService.getScriptLock();if(!lock.tryLock(1000))return {ok:true,ocupado:true};
+  try{
+    var c=configUGI(),data=loadUsersUGI(c),owner=data.users.find(function(u){return u.uid===c.owner;});
+    if(!owner||!/^\S+@\S+\.\S+$/.test(owner.email))throw new AccessError('CONFIGURACION','Falta el correo verificado del propietario.');
+    var pending=data.users.filter(function(u){return u.uid!==c.owner&&u.status==='pendiente'&&!u.avisoAcceso;});
+    var quota=Math.min(10,MailApp.getRemainingDailyQuota()),sent=0,review=0;
+    for(var i=0;i<pending.length&&sent+review<quota;i++){
+      var u=pending[i];
+      // Reservar antes del envio. Ante una respuesta ambigua NO reenviar automaticamente.
+      // No se modifican permisos ni revisiones de acceso.
+      u.avisoAcceso={estado:'enviando',fecha:new Date().toISOString()};
+      writeTablesUGI(c.id,userTablesUGI(data));
+      try{
+        MailApp.sendEmail({to:owner.email,subject:'Muni360: nueva solicitud de acceso',name:'Muni360 · UGI',
+          body:'Hay una solicitud de acceso pendiente en Muni360.\n\nNombre: '+String(u.nombre).replace(/[\r\n]/g,' ')+'\nCorreo: '+String(u.email).replace(/[\r\n]/g,' ')+'\n\nRevisar y autorizar:\nhttps://muni360-ugi-ensayo.web.app/admin/\n\nIngresá con la cuenta propietaria, revisá el rol y las actividades y activá el acceso si corresponde.\n\nLa persona no tiene acceso a los datos hasta que la autorices. Este aviso no habilita permisos.'});
+        u.avisoAcceso={estado:'enviado',fecha:new Date().toISOString()};sent++;
+      }catch(_){u.avisoAcceso={estado:'revisar',fecha:new Date().toISOString()};review++;console.error('AVISO_ACCESO_REQUIERE_REVISION');}
+      writeTablesUGI(c.id,userTablesUGI(data));
+    }
+    return {ok:true,activo:true,enviados:sent,revisar:review,pendientes:Math.max(0,pending.length-sent-review)};
+  }finally{lock.releaseLock();}
+}
