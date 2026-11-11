@@ -1,0 +1,20 @@
+name: Muni360 Supabase isolated pilot
+on:
+  push:
+    branches: ['piloto/supabase-*']
+  pull_request:
+    paths: ['pilots/supabase/**', '.github/workflows/muni360-supabase-pilot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run test:muni360
+      - run: npm ci --prefix pilots/supabase
+      - run: npm test --prefix pilots/supabase

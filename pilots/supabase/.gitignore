@@ -1,0 +1,5 @@
+node_modules/
+web/config.local.js
+reports/*.json
+.env*
+!.env.example

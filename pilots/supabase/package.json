@@ -1,0 +1,6 @@
+{
+  "name":"muni360-supabase-isolated-pilot",
+  "private":true,
+  "scripts":{"test":"node --test tests/*.test.cjs && node tests/database.cjs","test:client":"node --test tests/*.test.cjs","test:db":"node tests/database.cjs","test:browser":"node tests/browser.cjs"},
+  "devDependencies":{"@electric-sql/pglite":"0.5.16","playwright":"1.65.0"}
+}
