@@ -76,3 +76,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
  .hint{font-size:.78rem}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+
+/* The operational profile has four fixed tabs: no horizontal scrolling. */
+#nav-tabs.nav-operativa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;scrollbar-width:none}
+#nav-tabs.nav-operativa .tab{min-width:0;max-width:100%;width:100%;padding:6px 2px;white-space:normal;font-size:.72rem;line-height:1.25}

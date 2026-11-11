@@ -922,7 +922,7 @@
       <button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false">
         <span>📊 Análisis</span>
       </button>
-      <button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false">🕓 Cambios</button>
+      <button type="button" class="tab" role="tab" data-tab="auditoria" id="tab-btn-auditoria" aria-selected="false">🕓 Cambios</button>
       <button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron">
         <span>⚙️ Padrón</span>
       </button>
@@ -1625,7 +1625,7 @@
       try{await MuniGoogle.login();}catch(e){$('login-error').textContent=e.code==='auth/popup-blocked'?'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.':e.code==='auth/popup-closed-by-user'?'Ingreso cancelado. Podés intentarlo otra vez.':e.message||'No se pudo abrir Google.';}finally{btn.disabled=false;}
     });
     $('revisar-acceso').onclick=()=>cargarPerfilGoogle();
-    function permiso(nombre){return almacen.getItem('muni360_modo_demo')==='1'||!!sesion?.capabilities?.[nombre];}
+    function permiso(nombre){return almacen.getItem('muni360_modo_demo')==='1'&&!!sesion?.esAdminTotal||!!sesion?.capabilities?.[nombre];}
     function iniciarSesion(datosSesion) {
       if(syncClient)syncClient.stop();
       sesion = datosSesion;
@@ -1675,6 +1675,8 @@
 
     function esCoordOAdmin(){return !!sesion && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
+    function puedeVerCambios(){return !!sesion && ['Dirección UGI','Coordinación'].includes(sesion.rol);}
+
     function actualizarCabeceraYPestanas() {
       const cfg = cfgActual();
       aplicarModoConsulta();
@@ -1686,6 +1688,10 @@
       const puedePadron = esCoordOAdmin();
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
       $('nav-tabs').classList.toggle('cuatro', !puedePadron);
+      const verCambios=puedeVerCambios();
+      $('tab-btn-auditoria').classList.toggle('hidden',!verCambios);
+      $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
+      if(!verCambios){$('audit-list').textContent='';if(tabActual==='auditoria')cambiarTab('asistencia');}
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
@@ -3211,6 +3217,7 @@
     }
 
     function cambiarTab(id) {
+      if(id==='auditoria'&&!puedeVerCambios())return;
       if (id === 'padron' && !esCoordOAdmin()) return;
       tabActual = id;
       ['asistencia', 'evaluacion', 'ugi', 'analisis', 'padron', 'auditoria'].forEach(t => {
@@ -3660,6 +3667,7 @@
     },true);
     ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>$(id).addEventListener('change',e=>{if(!draftContext)return;if(!confirm('Hay cambios sin guardar. ¿Cambiar de grupo o fecha y descartarlos?')){e.stopImmediatePropagation();$('sel-categoria').value=draftContext.cat;$('sel-equipo').value=draftContext.eq;$('input-fecha').value=draftContext.date;return;}borrarBorradorAsistencia();},true));
     async function renderAuditoria(){
+      if(!puedeVerCambios())return;
       if(!syncClient){$('audit-list').innerHTML='<p>Demostración: el historial real aparecerá después de configurar Google y guardar cambios.</p>';return;}
       try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(Muni360Time.format(e.fecha))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
     }

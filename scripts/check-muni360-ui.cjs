@@ -28,6 +28,15 @@ const server=http.createServer((req,res)=>{
    await page.locator('#app-screen').waitFor({state:'visible'});
    await page.waitForFunction(()=>{const el=document.getElementById('toast');return !el||getComputedStyle(el).opacity==='0'||getComputedStyle(el).display==='none';},{},{timeout:6000});
    if(profile==='profe')await page.evaluate(()=>{sesion.rol='Profe';sesion.esAdminTotal=false;sesion.canManageUsers=false;sesion.capabilities={};actualizarCabeceraYPestanas();renderAsistencia();});
+   if(profile==='profe'){
+    assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false,'professor audit tab hidden');
+    const tabs=page.locator('#nav-tabs .tab:visible');assert.equal(await tabs.count(),4);
+    assert.equal(await page.locator('#nav-tabs').evaluate(el=>el.scrollWidth>el.clientWidth),false,'operational tabs must not scroll');
+    const bounds=await tabs.evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,right:r.right,y:r.y};}));
+    assert.ok(bounds.every(r=>r.x>=0&&r.right<=width));
+    assert.ok(bounds.every(r=>Math.abs(r.y-bounds[0].y)<1),'four tabs on one row');
+    await page.evaluate(()=>cambiarTab('auditoria'));assert.equal(await page.locator('#tab-auditoria').isVisible(),false);
+   }else assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),true,'management retains changes');
    const rows=page.locator('#lista-asist .asist-row');assert.ok(await rows.count()>0);
    assert.equal(await page.locator('#nav-tabs .tab').first().getAttribute('data-tab'),'asistencia');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'page overflow');

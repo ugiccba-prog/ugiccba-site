@@ -167,3 +167,9 @@ La primera revision estetica de Deportes y Colonia/COYFD se verifico en Chrome a
 
 ### Vista compacta solicitada por el usuario
 Retirados el boton Modo cancha, su controlador y sus estilos condicionales. Vista compacta por defecto en ambos portales; cabecera y navegacion mas bajas, resumen plegado al final, referencias bajo ayuda, fichas compactas y guardado sin superposicion fija. Se ampliaron las pruebas de navegador a doce recorridos con Direccion/Profe en tres anchos por portal. Se verifica la ausencia del boton, barra administrativa vacia oculta, primer jugador visible mas arriba, resumen/ayuda y controles de 44 px. Detalle vigente: muni360-estetica.md.
+
+
+### Navegacion operativa sin Cambios
+A partir del video aportado por el usuario se retiro Cambios de la interfaz de Profe, Reemplazante y Consulta. Direccion y Coordinacion lo conservan. El perfil operativo habitual, sin administracion de padron, tiene cuatro pestanas fijas en una fila: Asistencia, Evaluar, Banco UGI y Analisis; no necesita desplazamiento horizontal.
+Se bloquea la apertura de la vista desde su controlador de interfaz, se evita consultar auditoria desde esa vista para perfiles operativos y se limpia el contenido si cambia el rol mientras estaba abierta. No se altera el registro de las operaciones ni la politica del servidor para su auditoria.
+Se corrigio tambien el perfil Profe simulado de las pruebas: la demostracion solo otorga permisos generales a su Direccion ficticia, en lugar de hacer que todos los perfiles hereden administracion. Dos regresiones verifican roles y cambio de perfil; los doce recorridos de navegador comprueban cuatro opciones visibles y alineadas sin scroll para Profe y Cambios visible para Direccion. Suite: 125 pruebas aprobadas.

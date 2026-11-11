@@ -50,7 +50,7 @@ test('Argentina: el historial de ambos portales renderiza el horario argentino y
   const html=fs.readFileSync(file,'utf8'),start=html.indexOf('async function renderAuditoria(){'),end=html.indexOf("    $('sync-sheets').onclick",start);
   assert.ok(start>0&&end>start);
   const output={innerHTML:''},esc=value=>String(value??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const c={Muni360Time:time,esc,$:()=>output,areaActiva:'Tenis',syncClient:{request:async()=>({events:[{tipo:'ASISTENCIA',fecha:'2026-11-12T01:15:00Z',autor:'<Profe>',categoria:'Ensayo',equipo:'A',estado:'CONFIRMADO',id:'prueba'}]})}};
+  const c={puedeVerCambios:()=>true,Muni360Time:time,esc,$:()=>output,areaActiva:'Tenis',syncClient:{request:async()=>({events:[{tipo:'ASISTENCIA',fecha:'2026-11-12T01:15:00Z',autor:'<Profe>',categoria:'Ensayo',equipo:'A',estado:'CONFIRMADO',id:'prueba'}]})}};
   vm.createContext(c);vm.runInContext(html.slice(start,end),c);await vm.runInContext('renderAuditoria()',c);
   assert.ok(output.innerHTML.includes('11/11/2026 22:15:00 (ARG)'),file);assert.ok(output.innerHTML.includes('&lt;Profe&gt;'));
   assert.ok(!output.innerHTML.includes('2026-11-12T01:15'));
