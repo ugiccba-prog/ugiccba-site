@@ -65,3 +65,8 @@ Cambio 6761aeb publicado y verificado por HTTP con contenido exacto en ambos HTM
 
 ## Profe sin Cambios y con cuatro pestanas fijas
 Cambio e150ee3 publicado y verificado por HTTP con contenido exacto en CSS y ambos portales. Se retiro Cambios de la interfaz operativa; Direccion/Coordinacion conservan la vista. El registro de operaciones del servidor sigue activo. Perfil Profe habitual: Asistencia, Evaluar, Banco UGI y Analisis, en una fila sin scroll horizontal. Suite: 125 pruebas aprobadas y doce recorridos de navegador local, con comprobacion de opciones por perfil y posicion de las cuatro pestanas.
+
+
+## Candidata de presentacion consolidada
+Se agregan muni360-cierre-ensayo.md y muni360-guia-uso.md. El nuevo recorrido scripts/check-muni360-flow.cjs ejecuto las pantallas reales sin modo demo, conectadas al motor Apps Script mediante adaptadores en memoria: dos portales, acceso DUA sin datos privados, autoguardado, reapertura, evaluacion decimal, offline/reconexion, doble toque y panel propietario; 21 peticiones, resultado correcto. No es una prueba adicional en servicios Google reales.
+Se verificaron los siete recursos principales publicados por HTTP, su coincidencia con el repositorio, salud del backend y rechazo de una peticion sin sesion. La ultima validacion de CI para 279c216 esta aprobada. El codigo de la app publicada no cambio en este cierre: se consolida la evidencia y el procedimiento de uso. La matriz real mantiene sus variantes pendientes para el piloto; el cierre es de candidata para presentacion.
