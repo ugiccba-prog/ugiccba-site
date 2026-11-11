@@ -22,15 +22,15 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Confirmado por usuario: enlace directo rechazado; sin lista de usuarios |
 | G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Pendiente |
 | G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
-| G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Pendiente |
+| G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Parcial real: Colonia retirada rechaza escritura; continuidad de Hockey corregida, repetir |
 | G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
-| G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Pendiente |
-| G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Parcial real: servidor rechaza; interfaz corregida, repetir en Google |
+| G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Parcial real: vencimiento rechaza y renovación recupera; guardado previo al vencimiento por confirmar |
+| G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Confirmado por usuario: lectura y navegación disponibles, controles de escritura bloqueados |
 | D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Parcial real: Padrón oculto y nota privada ausente en Cambios; apoyo DUA pendiente |
 | D02 | Dirección abre legajo y agrega una nota. | Nota compartida entre sesiones autorizadas, autor real y fecha; no sólo memoria local. | Pendiente |
 | D03 | Intentar modificar una nota histórica. | Se conserva; se pide una rectificación como evento nuevo. | Pendiente |
-| D04 | Profe registra una tarjeta verde. | Evento propio en la bitácora; no recibe otras notas privadas en respuesta o auditoría. | Pendiente |
+| D04 | Profe registra una tarjeta verde. | Evento propio en la bitácora; no recibe otras notas privadas en respuesta o auditoría. | Confirmado por usuario: reconocimiento con autor y nota privada conservada |
 | D05 | Mismo DNI/persona en dos actividades. | Identidad estable; no mezcla el contexto privado de las actividades. | Pendiente |
 | D06 | Corregir DNI y tratar de reutilizar el anterior para otra persona. | ID estable y conflicto para revisar el DNI reservado; sin herencia silenciosa de ficha. | Pendiente |
 | P01 | Pegar dos renglones de nombres y cargar en un grupo. | Dos deportistas; no se concatenan los renglones. | Parcial: dos jugadores; entrada por renglones pendiente |
@@ -52,7 +52,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | E01 | Evaluar una variable, decimales y notas fuera de 1–10. | Sólo valores válidos; sin promedio técnico/formativo mezclado. | Pendiente |
 | E02 | Guardar evaluación y volver a abrirla. | Mismos valores; autor y cambio presentes en historial. | Parcial real: evaluación decimal recuperada tras conflicto; reapertura en ambas cuentas pendiente |
 | E03 | Consultar análisis sin datos y con pocos datos. | Sin divisiones por cero; sin convertir ausencia de observación en buen resultado. | Pendiente |
-| E04 | Exportar XLSX con permiso y sin permiso. | Archivo correcto para autorizado; bloqueo para quien no puede exportar. | Pendiente |
+| E04 | Exportar XLSX con permiso y sin permiso. | Archivo correcto para autorizado; bloqueo para quien no puede exportar. | Confirmado por usuario: XLSX correcto y descarga sin permiso rechazada |
 | H01 | Consultar Cambios como profe y como Dirección. | Alcance correcto, autor, fecha y antes/después de cada operación. | Parcial: autor en Sheets; alcance completo pendiente |
 | H02 | Registrar una sesión y contrastar el autor enviado por el navegador. | Se usa el usuario autenticado, no un autor escrito libremente. | Pendiente |
 | S01 | Guardar y pulsar Actualizar vistas de Sheets desde Dirección. | Original, vista y EstadoSync consistentes. | Verificado en Google y confirmado por usuario |
@@ -101,3 +101,8 @@ Se reprodujo que una caché vacía mostraba temporalmente cero jugadores al refr
 
 ## Modo Consulta
 Se comprobó el rechazo de escritura por el servidor. La interfaz permitía generar un pendiente improcedente: se bloquearon los controles de escritura, los borradores automáticos y el alta local de operaciones para Consulta. La navegación, lectura y selección de fecha o grupo permanecen disponibles. Falta repetir la comprobación real con la versión corregida.
+
+## Separación de pendientes entre actividades
+Se reprodujo que un pendiente de Colonia bloqueaba la carga del padrón y nuevos guardados de Hockey. Se limitaron los bloqueos a la actividad afectada y se conservó el pendiente original con su identificador. La cola procesa las otras actividades sin saltar operaciones dentro de la misma actividad bloqueada. El aviso identifica a qué actividad corresponde el pendiente. Pruebas automatizadas: lectura con pendiente ajeno, retirada de autorización, rechazo real de la capa de permisos y continuidad de la actividad autorizada; 94 casos aprobados. Falta repetir el recorrido en Google después de publicar.
+
+El usuario también confirmó la separación por fecha y grupo, el guardado de evaluaciones, la comida de Colonia sin asignación al ausente, Consulta con lectura disponible y edición bloqueada, y la exportación numérica con rechazo para una cuenta sin permiso.

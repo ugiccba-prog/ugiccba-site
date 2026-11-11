@@ -76,3 +76,27 @@ test('evaluación pendiente: cambio de padrón y revisión conservan ambos punta
  const confirmed=e.read();assert.equal(confirmed.padron.length,2);assert.equal(confirmed.evaluaciones.length,1);
  assert.deepEqual(JSON.parse(JSON.stringify(confirmed.evaluaciones[0].notas)),notas);
 });
+
+test('actividades: retirar un permiso conserva su pendiente y permite guardar en la actividad aún autorizada',async()=>{
+ const e=environment();e.seed();
+ e.write(e.owner,{tipo:'ALTA_PADRON',deporte:'Golf',categoria:'Sub 12',equipo:'A',jugadores:[{jugador:'Persona de prueba'}]});
+ e.grant(e.teacher,{areas:['Tenis','Golf']});const a=browser(e,e.teacher);await a.client.read('Golf');a.network.online=false;
+ await a.client.enqueue({...attendance,deporte:'Golf'});const original=a.client.queue[0].payload.requestId;
+ e.grant(e.teacher,{areas:['Tenis']});const b=browser(e,e.teacher,a.values);await b.client.read('Tenis');
+ assert.equal(await b.client.enqueue(attendance),true);
+ assert.equal(e.read().asistencia.length,1);assert.equal(e.read(e.owner,'Golf').asistencia.length,0);
+ assert.equal(b.client.queue.length,1);assert.equal(b.client.queue[0].payload.deporte,'Golf');assert.equal(b.client.queue[0].payload.requestId,original);
+ assert.equal(e.read(e.teacher,'Golf').codigo,'PERMISOS');
+});
+test('actividades: rechazo del servidor en una actividad no bloquea otra ni permite saltar el orden dentro de la misma',async()=>{
+ const e=environment();e.seed();
+ e.write(e.owner,{tipo:'ALTA_PADRON',deporte:'Golf',categoria:'Sub 12',equipo:'A',jugadores:[{jugador:'Persona de prueba'}]});
+ e.grant(e.teacher,{areas:['Tenis','Golf']});const a=browser(e,e.teacher);await a.client.read('Golf');a.network.online=false;
+ await a.client.enqueue({...attendance,deporte:'Golf'});await a.client.enqueue({...attendance,deporte:'Golf',fecha:'2026-11-11'});
+ e.grant(e.teacher,{areas:['Tenis']});const b=browser(e,e.teacher,a.values);
+ // Use current authorization version to exercise the server's permission denial itself.
+ b.client.queue[0].usuarioVersion=b.client.session.versionUsuario;b.client.persist();await b.client.read('Tenis');
+ assert.equal(await b.client.enqueue(attendance),true);assert.equal(b.client.queue.length,2);
+ assert.equal(b.client.queue[0].code,'PERMISOS');assert.equal(b.client.queue[1].error,undefined);
+ assert.equal(e.read(e.owner,'Golf').asistencia.length,0);assert.equal(e.read().asistencia.length,1);
+});

@@ -1537,8 +1537,8 @@
       }
       await cargarAreaActiva(); toast(`${count} ficha(s) recuperadas. Los originales siguen en este dispositivo.`);
     }
-    window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.length) { if(draftContext)markDraft(); else await cargarAreaActiva(); } } });
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&draftContext&&!guardandoOperacion&&!syncClient?.queue.length)guardarAsistenciaActual().catch(()=>{});});
+    window.addEventListener('online', async () => { if (syncClient) { await syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message})); if (!syncClient.queue.some(x=>x.payload.deporte===areaActiva)) { if(draftContext)markDraft(); else await cargarAreaActiva(); } } });
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&draftContext&&!guardandoOperacion&&!syncClient?.queue.some(x=>x.payload.deporte===areaActiva))guardarAsistenciaActual().catch(()=>{});});
     window.addEventListener('beforeunload', e => { if (syncClient?.queue.length || draftContext) { e.preventDefault(); e.returnValue = ''; } });
     setInterval(() => {
       if (syncClient && sesion?.expiresAt<=Date.now()) {
@@ -1693,7 +1693,6 @@
     }
 
     $('sel-deporte').addEventListener('change', e => {
-      if (syncClient?.queue.length) { e.target.value=areaActiva; return toast('Enviá o revisá los pendientes antes de cambiar de actividad.'); }
       areaActiva = e.target.value;
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
@@ -2381,7 +2380,7 @@
       }else{
         datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};renderFiltrosDeporte();renderVistaActiva();
       }
-      if(client?.queue.length){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
+      if(client?.queue.some(x=>x.payload.deporte===d)){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
       $('estado-txt').textContent='Conectando con Google...';
       try {
         const j=await client.read(d);
@@ -2391,6 +2390,7 @@
         $('estado-txt').textContent=j.sheetsStatus==='pending'?'✓ Guardado en Sheets privado · Vistas de actividad pendientes':'✓ Guardado en Sheets · Vistas actualizadas'; $('estado-acciones').innerHTML='';
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(a.fecha.slice(0,10))} · ${esc(a.modo)}</option>`).join('');
         $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
+        if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
       } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
     }
 
@@ -3594,7 +3594,7 @@
       const context=JSON.stringify(draftContext),uid=storageScope;
       autosaveTimer=setTimeout(()=>{
         if(!draftContext||JSON.stringify(draftContext)!==context||storageScope!==uid||areaActiva!==draftContext.deporte)return;
-        if(guardandoOperacion||syncClient?.queue.length){$('draft-status').textContent='Borrador conservado. Resolvé la carga pendiente y pulsá Guardar asistencia.';return;}
+        if(guardandoOperacion||syncClient?.queue.some(x=>x.payload.deporte===areaActiva)){$('draft-status').textContent='Borrador conservado. Resolvé la carga pendiente y pulsá Guardar asistencia.';return;}
         guardarAsistenciaActual().catch(e=>{$('draft-status').textContent=e.message;});
       },3000);
     }
@@ -3613,7 +3613,7 @@
       try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva});$('audit-list').innerHTML=r.events.length?r.events.map(e=>`<article class="audit-event"><strong>${esc(e.tipo)} · ${esc(e.jugador||e.categoria||e.deporte)}</strong><p class="audit-meta">${esc(new Date(e.fecha).toLocaleString('es-AR'))} · ${esc(e.autor)} · ${esc(e.categoria)} ${esc(e.equipo)} · ${esc(e.estado)}</p><button type="button" class="btn-sec" data-audit-detail="${esc(e.id)}">Ver antes y después</button></article>`).join(''):'<p>No hay cambios registrados para mostrar.</p>';}catch(e){$('audit-list').textContent=e.message;}
     }
     $('sync-sheets').onclick=async()=>{
-      if(syncClient?.queue.length)return toast('Hay cargas sin confirmar. Revisá los pendientes antes de actualizar Sheets.');
+      if(syncClient?.queue.some(x=>x.payload.deporte===areaActiva))return toast('Hay cargas sin confirmar. Revisá los pendientes antes de actualizar Sheets.');
       const button=$('sync-sheets'),deporte=areaActiva;button.disabled=true;button.textContent='Actualizando y verificando…';
       try{
         const result=await MuniGoogle.syncSheets(deporte);

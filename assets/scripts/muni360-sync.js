@@ -55,7 +55,11 @@
       return result;
     }
     persist() { this.storage.setItem(this.storageKey, JSON.stringify(this.queue)); }
-    status(message) { this.onStatus({ count: this.queue.length, message, blocked: this.queue.find(x => x.error) || null }); }
+    status(message) {
+      const blocked=this.queue.find(x=>x.error)||null;
+      if(blocked)message=(message===blocked.error?'':message+' ')+ 'Pendiente de '+blocked.payload.deporte+': '+blocked.error;
+      this.onStatus({count:this.queue.length,message,blocked});
+    }
     async enqueue(payload) {
       if(this.session.rol==='Consulta')throw new ApiError('Tu acceso es de consulta.','PERMISOS');
       if (this.stopped) throw new ApiError('Volvé a ingresar.', 'SESION');
@@ -83,11 +87,14 @@
       return this.running;
     }
     async drain() {
+      const blockedAreas=new Set();
       while (!this.stopped && this.queue.length) {
-        const entry = this.queue[0];
-        if (entry.error) { this.status(entry.error); return; }
+        const index=this.queue.findIndex(x=>!blockedAreas.has(x.payload.deporte));
+        if(index<0)break;
+        const entry = this.queue[index];
+        if (entry.error) { blockedAreas.add(entry.payload.deporte);this.status(entry.error);continue; }
         if (entry.usuarioVersion !== this.session.versionUsuario) {
-          entry.error = 'Cambió tu acceso. Revisá esta carga antes de reenviarla.'; entry.code = 'CONFLICTO'; this.persist(); this.status(entry.error); return;
+          entry.error = 'Cambió tu acceso. Revisá esta carga antes de reenviarla.'; entry.code = 'CONFLICTO'; this.persist(); this.status(entry.error); blockedAreas.add(entry.payload.deporte);continue;
         }
         try {
           const result = await this.request(entry.payload);
@@ -95,10 +102,10 @@
           if (result.requestId !== entry.payload.requestId) throw new ApiError('No se pudo verificar la confirmación.', 'VERSION');
           const snap = this.snapshots[entry.payload.deporte];
           if (snap) snap.versiones[keyFor(entry.payload)] = result.revision;
-          this.queue.shift(); this.persist(); this.status(result.sheetsStatus==='pending'?'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.':'Guardado y confirmado.');
+          this.queue.splice(index,1); this.persist(); this.status(result.sheetsStatus==='pending'?'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.':'Guardado y confirmado.');
         } catch (e) {
           if (e.code && !['RED', 'SERVIDOR'].includes(e.code)) {
-            entry.error = e.message; entry.code = e.code; this.persist(); this.status(e.message); return;
+            entry.error = e.message; entry.code = e.code; this.persist(); this.status(e.message); blockedAreas.add(entry.payload.deporte);continue;
           }
           this.status('Sin confirmar. Se reintentará al recuperar conexión; no borres los datos del navegador.'); return;
         }

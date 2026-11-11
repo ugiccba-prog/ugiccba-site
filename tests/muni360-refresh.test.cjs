@@ -53,3 +53,11 @@ test('cliente: una lectura que termina después de cerrar sesión no repuebla lo
  resolve({ok:true,json:async()=>({apiVersion:2,ok:true,version:1})});await reading;
  assert.deepEqual(client.snapshots,{});
 });
+
+for(const file of ['muni360/index.html','muni360cyc/index.html']){
+ test(file+': un pendiente de otra actividad no impide consultar ni cargar el padrón actual',async()=>{
+  const p=portal(file);p.run("syncClient.queue=[{payload:{deporte:'Golf'},error:'Sin acceso',code:'PERMISOS'}];syncClient.status=()=>{};");
+  const done=p.run('cargarAreaActiva()');assert.equal(p.calls.length,1);
+  p.calls[0].resolve(p.payload(2));await done;assert.equal(p.run('datosDeporte.padron.length'),2);assert.equal(p.run('syncClient.queue.length'),1);
+ });
+}
