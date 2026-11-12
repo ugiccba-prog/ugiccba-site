@@ -20,7 +20,7 @@
   class Client {
     constructor({ url, fetch: fetcher, storage, session, onStatus = () => {}, id = () => crypto.randomUUID(), lock, getToken, transport = 'http', now = () => Date.now(), random = Math.random }) {
       this.url = url; this.fetch = fetcher; this.storage = storage; this.session = session; this.onStatus = onStatus; this.id = id; this.getToken = getToken; this.transport = transport;
-      this.storageKey = 'muni360_v2_pending_' + session.usuario;
+      this.storageKey = (transport==='supabase'?'muni360_supabase_v1_pending_':'muni360_v2_pending_') + session.usuario;
       this.queue = JSON.parse(storage.getItem(this.storageKey) || '[]');
       this.snapshots = {}; this.readVersions = {}; this.running = null; this.stopped = false;
       this.now=now;this.random=random;this.retryFailures=0;this.nextRetryAt=0;
@@ -36,7 +36,7 @@
       try {
         let token;try{token=this.getToken?await this.getToken():this.session.token;}catch(e){throw new ApiError('No se pudo verificar Google. Reintentá con conexión.',String(e.code||'').includes('network')?'RED':'SESION');}
         const data=query?{...query,tipo:'LECTURA'}:{...payload};delete data.token;
-        if(this.transport==='apps-script'){
+        if(['apps-script','supabase'].includes(this.transport)){
           response=await this.fetch(this.url,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',signal:controller.signal,headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...data,path:'/api/operations',idToken:token,accessVersion:this.session.versionUsuario})});
         }else response=await this.fetch(this.url,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data)});
       } finally { clearTimeout(timer); }
@@ -44,7 +44,7 @@
       let result;
       try { result = await response.json(); } catch (_) { throw new ApiError('Respuesta inválida del servidor.', 'RED'); }
       if (!response.ok && !result.codigo) throw new ApiError('No se pudo contactar al servidor.','RED');
-      if (result.apiVersion !== 2 || this.transport==='apps-script' && result.backendVersion!=='apps-script-3.0.0') throw new ApiError('La actualización de Google todavía no está instalada. Contactá a Dirección UGI.', 'VERSION');
+      if (result.apiVersion !== 2 || ['apps-script','supabase'].includes(this.transport) && result.backendVersion!==(this.transport==='supabase'?'supabase-1.0.0':'apps-script-3.0.0')) throw new ApiError('La actualización de Google todavía no está instalada. Contactá a Dirección UGI.', 'VERSION');
       if (!result.ok) throw new ApiError(result.error || 'El servidor rechazó la carga.', result.codigo || 'SERVIDOR');
       return result;
     }
@@ -71,7 +71,7 @@
       await this.lock(async () => {
         this.queue = JSON.parse(this.storage.getItem(this.storageKey) || '[]');
         const key = keyFor(payload), preceding = this.queue.filter(x => x.payload.deporte === payload.deporte && keyFor(x.payload) === key).length;
-        entry = { payload: { ...payload, requestId: this.id(), revision: (snapshot.versiones[key] || 0) + preceding, temporada: snapshot.temporada, ...(this.transport==='apps-script'?{roster:rosterFor(snapshot,payload),rosterRevision:snapshot.versiones[keyFor({tipo:'PADRON',categoria:payload.categoria,equipo:payload.equipo})]||0}:{}) }, usuarioVersion: this.session.versionUsuario };
+        entry = { payload: { ...payload, requestId: this.id(), revision: (snapshot.versiones[key] || 0) + preceding, temporada: snapshot.temporada, ...(['apps-script','supabase'].includes(this.transport)?{roster:rosterFor(snapshot,payload),rosterRevision:snapshot.versiones[keyFor({tipo:'PADRON',categoria:payload.categoria,equipo:payload.equipo})]||0}:{}) }, usuarioVersion: this.session.versionUsuario };
         this.queue.push(entry);
         try { this.persist(); } catch (e) { this.queue.pop(); throw new ApiError('No hay espacio para guardar la carga pendiente. No cierres esta pantalla.', 'ALMACENAMIENTO'); }
         this.status('Carga pendiente de confirmación.');
@@ -103,7 +103,7 @@
           if (result.requestId !== entry.payload.requestId) throw new ApiError('No se pudo verificar la confirmación.', 'VERSION');
           const snap = this.snapshots[entry.payload.deporte];
           if (snap) snap.versiones[keyFor(entry.payload)] = result.revision;
-          this.queue.splice(index,1); this.persist(); this.retryFailures=0;this.nextRetryAt=0;this.status(result.sheetsStatus==='pending'?'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.':'Guardado y confirmado.');
+          this.queue.splice(index,1); this.persist(); this.retryFailures=0;this.nextRetryAt=0;this.status(result.sheetsStatus==='pending'?(this.transport==='supabase'?'Guardado en la base. Copia a Sheets pendiente.':'Guardado en Sheets privado. Vistas de actividad pendientes de actualización.'):'Guardado y confirmado.');
         } catch (e) {
           if (e.code && !['RED', 'SERVIDOR'].includes(e.code)) {
             entry.error = e.message; entry.code = e.code; this.persist(); this.status(e.message); blockedAreas.add(entry.payload.deporte);continue;
@@ -127,13 +127,13 @@
       await this.lock(async () => {
       this.queue = JSON.parse(this.storage.getItem(this.storageKey) || '[]');
       const entry = this.queue[0]; if (!entry) return;
-      if(this.transport==='apps-script'){
+      if(['apps-script','supabase'].includes(this.transport)){
         const receipt=await this.request({tipo:'RESULTADO',deporte:entry.payload.deporte,requestId:entry.payload.requestId});
         if(receipt.committed){this.queue.shift();this.persist();this.status('La carga ya estaba confirmada en Google.');return;}
       }
       const snapshot = await this.read(entry.payload.deporte);
       if (entry.payload.temporada !== snapshot.temporada) throw new ApiError('La carga pertenece a una temporada anterior. Descartala después de copiar los datos que necesites.', 'CONFLICTO');
-      if(this.transport==='apps-script'){entry.payload.roster=rosterFor(snapshot,entry.payload);entry.payload.rosterRevision=snapshot.versiones[keyFor({tipo:'PADRON',categoria:entry.payload.categoria,equipo:entry.payload.equipo})]||0;}
+      if(['apps-script','supabase'].includes(this.transport)){entry.payload.roster=rosterFor(snapshot,entry.payload);entry.payload.rosterRevision=snapshot.versiones[keyFor({tipo:'PADRON',categoria:entry.payload.categoria,equipo:entry.payload.equipo})]||0;}
       entry.payload.revision = snapshot.versiones[keyFor(entry.payload)] || 0;
       entry.payload.requestId = this.id(); entry.usuarioVersion = this.session.versionUsuario;
       delete entry.error; delete entry.code;

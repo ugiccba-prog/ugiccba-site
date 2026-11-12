@@ -1,0 +1,25 @@
+name: Muni360 Supabase migration
+on:
+  push:
+    paths: ['server/supabase/**', 'assets/scripts/muni360-*.js', 'muni360/**', 'muni360cyc/**', '.github/workflows/muni360-supabase-migration.yml']
+  pull_request:
+    paths: ['server/supabase/**', 'assets/scripts/muni360-*.js', 'muni360/**', 'muni360cyc/**']
+permissions:
+  contents: read
+jobs:
+  migration-contracts:
+    runs-on: ubuntu-latest
+    env:
+      MUNI_PGLITE_MODULE: ${{ github.workspace }}/pilots/supabase/node_modules/@electric-sql/pglite
+      MUNI360_PLAYWRIGHT_MODULE: ${{ github.workspace }}/pilots/supabase/node_modules/playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix pilots/supabase
+      - run: npm run test:muni360
+      - run: node --test server/supabase/tests/core.test.mjs server/supabase/tests/bridge.test.cjs
+      - run: npx playwright install --with-deps chromium
+        working-directory: pilots/supabase
+      - run: node server/supabase/tests/browser-flow.cjs

@@ -2,7 +2,7 @@
   'use strict';
   let sdk,auth,loading;
   const callbacks=new Set();
-  function configured(){const c=root.MUNI_CONFIG;return !!(c?.backend==='apps-script'&&/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(c.apiBaseUrl)&&c.firebase?.apiKey&&c.firebase?.authDomain&&c.firebase?.projectId&&c.firebase?.appId);}
+  function configured(){const c=root.MUNI_CONFIG;return !!(c&&((c.backend==='apps-script'&&/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(c.apiBaseUrl))||(c.backend==='supabase'&&/^https:\/\/[a-z0-9]+\.supabase\.co\/functions\/v1\/muni360$/.test(c.apiBaseUrl)))&&c.firebase?.apiKey&&c.firebase?.authDomain&&c.firebase?.projectId&&c.firebase?.appId);}
   async function initialize(){
     if(!configured())throw Error('El acceso con Google está preparado; falta configurar el proyecto antes de publicarlo.');
     if(loading)return loading;
@@ -18,7 +18,8 @@
     const token=await getToken();
     const response=await fetch(root.MUNI_CONFIG.apiBaseUrl,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...body,path,idToken:token}),signal:AbortSignal.timeout(25000)});
     let data;try{data=await response.json();}catch(_){throw Error('No se pudo leer la respuesta del servicio.');}
-    if(data.backendVersion!=='apps-script-3.0.0')throw Error('La versión de Apps Script todavía no coincide con esta app.');
+    const expected=root.MUNI_CONFIG.backend==='supabase'?'supabase-1.0.0':'apps-script-3.0.0';
+    if(data.backendVersion!==expected)throw Error('La versión del servicio todavía no coincide con esta app.');
     if(!response.ok||!data.ok){const e=Error(data.error||'No se pudo completar la operación.');e.code=data.codigo;throw e;}return data;
   }
   async function syncSheets(deporte){

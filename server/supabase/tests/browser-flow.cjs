@@ -1,0 +1,78 @@
+// Full portal workflow against the real Apps Script engine with in-memory Google adapters.
+// No production credentials, browser profiles or remote Google requests.
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require(process.env.MUNI360_PLAYWRIGHT_MODULE||'playwright');
+const root=path.resolve(__dirname,'../../..');let fixture,e;const areas=['Básquet Caballeros','Colonia'];
+const calls=[],mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png'};
+let port;
+const server=http.createServer(async(req,res)=>{
+ try{
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname==='/api/backend'){
+   let raw='';for await(const part of req)raw+=part;
+   const d=JSON.parse(raw);calls.push({tipo:d.tipo,path:d.path,uid:d.idToken==='owner'?'owner':'teacher'});
+   const result={apiVersion:2,backendVersion:'supabase-1.0.0',...await fixture.call(d.idToken,d,d.path)};res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify(result));
+  }
+  if(url.pathname==='/assets/scripts/muni360-config.js'){
+   res.writeHead(200,{'Content-Type':mime['.js']});return res.end('window.MUNI_CONFIG='+JSON.stringify({backend:'supabase',apiBaseUrl:'http://127.0.0.1:'+port+'/api/backend'})+';');
+  }
+  if(url.pathname==='/assets/scripts/muni360-google.js'){
+   res.writeHead(200,{'Content-Type':mime['.js']});
+   return res.end(`(function(){const owner=new URLSearchParams(location.search).get('qa')==='owner',token=owner?${JSON.stringify('owner')}:${JSON.stringify('teacher')};async function call(path,body={}){const r=await fetch('/api/backend',{method:'POST',body:JSON.stringify({...body,path,idToken:token})});const d=await r.json();if(!d.ok)throw Object.assign(Error(d.error),{code:d.codigo});return d;}window.MuniGoogle={configured:()=>true,getToken:async()=>token,call,syncSheets:deporte=>call('/api/sheets/sync',{deporte}),observe:fn=>queueMicrotask(()=>fn({uid:owner?'owner':'teacher'})),login:async()=>{},logout:async()=>{}};})();`);
+  }
+  let name=decodeURIComponent(url.pathname).replace(/^\//,'');if(name.endsWith('/'))name+='index.html';
+  const file=path.resolve(root,name),first=name.split('/')[0];
+  if(!file.startsWith(root+path.sep)||!['muni360','muni360cyc','admin','assets','escudo-ccba.png'].includes(first)){res.writeHead(403);return res.end();}
+  const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
+ }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
+});
+async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(await check())return;await new Promise(r=>setTimeout(r,100));}throw Error('Workflow condition not reached');}
+(async()=>{
+ fixture=await import('./browser-fixture.mjs');e={read:(uid,deporte)=>fixture.call(uid,{tipo:'LECTURA',deporte})};
+ for(const deporte of areas){const snap=await e.read('owner',deporte);await fixture.call('owner',fixture.operation(snap,'DUA',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{comunicacion:'APOYO_VISIBLE'}}));await fixture.call('owner',fixture.operation(await e.read('owner',deporte),'LEGAJO',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{paseInterno:'NOTA_PRIVADA_FLUJO',bitacora:[],actividadesSimultaneas:[]}}));}
+ await fixture.db.query("insert into mc_private.permission_history values('fixture', $1)",[JSON.stringify({fecha:new Date().toISOString(),autor:'owner',usuario:'teacher',antes:{},despues:{}})]);
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));port=server.address().port;
+ const browser=await chromium.launch({headless:true,...(process.env.MUNI360_BROWSER_PATH?{executablePath:process.env.MUNI360_BROWSER_PATH}:{})}),report=[];
+ try{
+  for(const [index,portal]of ['muni360','muni360cyc'].entries()){
+   const deporte=areas[index],context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[],responses=[];
+   await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
+   page.on('dialog',d=>d.accept());page.on('pageerror',error=>errors.push(error.message));
+   page.on('response',async r=>{if(r.url().endsWith('/api/backend'))responses.push(await r.text());});
+   await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});
+   await page.locator('#lista-asist .asist-row').first().waitFor();assert.equal(await page.locator('#lista-asist .asist-row').count(),2);
+   assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false);
+   assert.equal(await page.locator('#tab-btn-padron').isVisible(),false);
+   assert.equal(await page.locator('#lista-asist [data-e="N"][aria-pressed="true"]').count(),2);
+   await page.locator('#lista-asist [data-dua-ver]').first().click();
+   await page.locator('#dua-modal').waitFor({state:'visible'});assert.ok((await page.locator('#dua-modal-body').textContent()).includes('APOYO_VISIBLE'));
+   assert.ok(!(await page.locator('#dua-modal-body').textContent()).includes('NOTA_PRIVADA_FLUJO'));
+   await page.locator('#dua-modal').click({position:{x:2,y:2}});
+   await page.locator('#lista-asist [data-e="P"]').first().click();
+   await until(async()=>(await e.read('owner',deporte)).asistencia.length===2);
+   await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
+   assert.equal((await e.read('owner',deporte)).sheetsStatus,'pending');
+   await page.reload();await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();
+   await page.locator('[data-tab="evaluacion"]').click();await page.locator('#lista-eval button').first().click();
+   await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
+   await until(async()=>(await e.read('owner',deporte)).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));
+   await page.locator('[data-tab="asistencia"]').click();await context.setOffline(true);
+   await page.locator('#lista-asist [data-e="T"]').first().click();
+   await until(async()=>await page.evaluate(()=>syncClient.queue.length>0));
+   await context.setOffline(false);
+   await until(async()=>(await e.read('owner',deporte)).asistencia.some(r=>r.estado.startsWith('T')));
+   await until(async()=>await page.evaluate(()=>syncClient.queue.length===0));
+   const auditCount=async()=>Number((await fixture.db.query("select count(*) as n from mc_private.audit where activity=$1 and event->>'tipo'='ASISTENCIA'",[deporte])).rows[0].n);const count=await auditCount();
+   await page.locator('#btn-guardar-asist').scrollIntoViewIfNeeded();await page.locator('#btn-guardar-asist').dblclick();
+   await until(async()=>await page.evaluate(()=>!guardandoOperacion));
+   assert.ok(await auditCount()<=count+1,'double click produced duplicate operations');
+   for(const response of responses)for(const secret of ['12345678','NOTA_PRIVADA_FLUJO'])assert.ok(!response.includes(secret),'private data delivered to teacher');
+   assert.deepEqual(errors,[]);report.push({portal,postgresWasmWithMockedGoogle:true,dua:true,privateDataRedacted:true,autosave:true,sheetsPending:true,decimalEvaluation:true,offlineRecovery:true,doubleClick:true});
+   await context.close();
+  }
+  const context=await browser.newContext(),page=await context.newPage();await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
+  await page.goto('http://127.0.0.1:'+port+'/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
+  assert.ok(await page.locator('#users [data-edit]').count()>=2);assert.ok((await page.locator('#history').textContent()).length>0);
+  await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
+ }finally{await browser.close();server.close();await fixture.db.close();}
+})().catch(error=>{console.error(error);server.close();process.exitCode=1;});
