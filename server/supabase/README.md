@@ -1,8 +1,8 @@
 # Muni360 — Supabase y mantenimiento institucional
 
-## Estado al recuperar la sesión, 12/11/2026
+## Estado publicado, 12/11/2026
 
-Los datos del ensayo fueron importados y comparados. La interrupción dejó la base en `preparing` y el portal habitual todavía con configuración Apps Script. El cambio final de acceso debe registrarse después de verificar su publicación; no asumirlo a partir de las pruebas locales.
+Los datos del ensayo fueron importados y comparados. Con confirmación explícita del propietario se ejecutó `tools/activate-verified.sql`: validación exacta y habilitación en una transacción. La base está en `ready`, con las dos actividades habilitadas. Firebase Hosting fue publicado en el sitio habitual el 12/11/2026, aproximadamente a las 10:00 de Argentina. Los tres portales responden HTTP 200 y la configuración publicada usa Supabase.
 
 Se recuperaron en la PC del club los cambios sin subir de la PC de casa. La rama de continuidad es `continuacion/supabase-club-20261112`; la copia de trabajo está en `C:\Users\Juan Machado\Projects\muni360-supabase-migracion`. El repositorio original y la copia de casa se conservan. No usar reset destructivo al volver a la PC de casa: comparar primero sus modificaciones locales con esta rama.
 
@@ -54,6 +54,17 @@ Conservar el origen congelado y los respaldos privados. Si ya existen cargas en 
 
 `tools/verify-import.sql` compara de forma exacta las tres unidades con el último manifiesto del origen congelado, incluidos usuarios, permisos, identidades y cada colección de las actividades. Ejecutado con resultado `VERIFICACION_COMPLETA_OK`: 3 usuarios, 2 actividades y 31 recibos. No modifica registros ni banderas.
 
-`tools/activate-verified.sql` repite ese control dentro de una transacción con bloqueos antes de habilitar la base y las actividades. No elimina la huella ni el vencimiento de la importación; el modo activo cierra ese ingreso. Su ejecución y la publicación esperan la confirmación explícita del corte solicitada por la revisión automática. El estado sigue siendo `preparing` y el portal habitual sigue configurado con Apps Script.
+`tools/activate-verified.sql` repite ese control dentro de una transacción con bloqueos antes de habilitar la base y las actividades. No elimina la huella ni el vencimiento de la importación; el modo activo cierra ese ingreso. La ejecución y publicación fueron aprobadas explícitamente por el propietario y se completaron. Se conservaron las credenciales de importación; el modo `ready` impide utilizarlas para reimportar.
 
-Se conservó una copia exacta del Hosting publicado en el canal `previo-supabase-20261112`. La versión nueva está preparada en la PC del club y no fue publicada. Los recorridos de navegador de los dos portales y administración pasaron en esta PC; se agregó una espera de la carga asíncrona del historial para evitar una carrera en la prueba.
+Se conservó una copia exacta del Hosting publicado en el canal `previo-supabase-20261112`. La versión nueva fue publicada desde la PC del club. Los recorridos de navegador de los dos portales y administración pasaron en esta PC; se agregó una espera de la carga asíncrona del historial para evitar una carrera en la prueba.
+
+## Verificación posterior a la publicación
+
+La configuración pública apunta a la Edge Function Supabase y las rutas `/muni360/`, `/muni360cyc/` y `/admin/` respondieron 200. La API rechaza sesiones ausentes e inválidas con HTTP 401 / SESION. La consulta privada confirmó 3 usuarios, 31 recibos, 2 actividades habilitadas, cero copias pendientes, versiones de Sheets actuales y origen congelado. El intento anónimo de inspeccionar por HTTP el endpoint antiguo recibió HTML de Google; no se consideró una verificación adicional de su respuesta MIGRADO.
+
+La primera entrada real de Google al portal completo publicado queda para comprobar con la sesión del usuario. Los tests con Google simulado y el login real del piloto tienen alcances diferentes. Las nuevas vistas institucionales son:
+
+- Hockey: https://docs.google.com/spreadsheets/d/16kf1nC5dS4LOd5eygWEly-qhB5Rq8_21L3oj30c9wjI/edit
+- Colonia: https://docs.google.com/spreadsheets/d/1iRqT1FDNoZuu4Q1UMuCzFzEPZSkOhk4Ygk3XeImCu3Y/edit
+
+Las planillas originales se conservan congeladas. Las cargas se guardan en Supabase; la proyección institucional a Sheets se procesa cada cinco minutos, sin necesitar una PC encendida.
