@@ -69,3 +69,7 @@ Hay código candidato, demo visual y pruebas locales. Falta configurar y validar
 - [Instalación paso a paso y recuperación](docs/muni360-operacion.md)
 - [Matriz de aceptación en Google](docs/muni360-pruebas-aceptacion.md)
 - Pruebas: `npm run test:muni360`.
+
+## Muni360 en el dominio
+
+Entrada: https://ugiccba.com.ar/ensayo360muni/ . Abrir UGI.code-workspace en VS Code. Fuentes, compilación, pendientes entre dominios y continuidad entre PC: [docs/muni360-dominio.md](docs/muni360-dominio.md).

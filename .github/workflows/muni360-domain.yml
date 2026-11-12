@@ -1,0 +1,17 @@
+name: Muni360 domain bundle
+on:
+  push:
+    paths: ['ensayo360muni/**', 'apps/muni360/**', 'scripts/build-ensayo360muni.cjs', 'muni360/**', 'muni360cyc/**', 'admin/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360-cancha.css', '.github/workflows/muni360-domain.yml']
+  pull_request:
+    paths: ['ensayo360muni/**', 'apps/muni360/**', 'scripts/build-ensayo360muni.cjs', 'muni360/**', 'muni360cyc/**', 'admin/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360-cancha.css']
+permissions:
+  contents: read
+jobs:
+  public-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run check:ensayo360

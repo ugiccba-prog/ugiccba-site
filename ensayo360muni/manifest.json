@@ -1,0 +1,20 @@
+{
+  "format": "MUNI360_PUBLIC_BUNDLE_V1",
+  "base": "/ensayo360muni/",
+  "files": {
+    "assets/scripts/muni360-admin.js": "0d2b1bc966fe1cca7f1430717fffce91af07540b832b668ee5dc940ee4e67bf0",
+    "assets/scripts/muni360-config.js": "bd4e9f7a6bae733e3c4158bd7502b910a4e582af9077ab673f2c96ef6b3eee68",
+    "assets/scripts/muni360-google.js": "0583caa01cd42c4ff4a71326750ae45e5530b12618b574bf5892de832347dc24",
+    "assets/scripts/muni360-import.js": "94a98ced0137d5f0ebc83429955ee73d46f71f435a7570fbd3fb5cb750ae57a0",
+    "assets/scripts/muni360-sync.js": "969f589b2b9763aacd9d7acf7ae573eaf6c3aacab75a0dedcfad1f638eac85f7",
+    "assets/scripts/muni360-time.js": "1c26c9861ba3876b01ea0beaec542a2e7c5070b51c29be3394f8d4b58bf16d9b",
+    "assets/styles/muni360-cancha.css": "39df6d412e5a9d2cb1563b51171294290ed17687e479f1450d52a55b3ffb3095",
+    "assets/vendor/SheetJS-LICENSE.txt": "f9463066a83f512aaa2c4f5bda7514c82110ec46b703f477d112c90d33b7ed83",
+    "assets/vendor/xlsx-0.20.3.full.min.js": "ac8d774d39bb05a527f87912e2c283e237e3633120b31acf20bc6eef0e19eede",
+    "escudo-ccba.png": "5e8b27469509f931cc676026ec49116ded2f10617d17313b11c96c4d318d0793",
+    "deportes/index.html": "22b8a8c888a0c5bec3dfcc260d647b5c0853b61e6da00399d88ff8c392bbda2b",
+    "colonia/index.html": "b685be9d1c0e66e38de98e8e8a849ff86bbd6450ebe01091b87a5b9948e8cdfc",
+    "admin/index.html": "38ab72fa298f6613b4db746b44bd370249b58aa85a17dd801fdb81415722845b",
+    "index.html": "912791e564d1d9d52c2fdbd1443585b0f4ec687d1ddbae05a00f457a5a8b4844"
+  }
+}
