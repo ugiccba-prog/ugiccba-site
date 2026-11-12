@@ -49,3 +49,11 @@ El piloto anterior verificó HTTP real con Google y un guardado concurrente del 
 ## Recuperación
 
 Conservar el origen congelado y los respaldos privados. Si ya existen cargas en Supabase, no reabrir el sistema viejo ni cambiar su configuración como reversión rápida: primero reconciliar los datos posteriores al corte. Para recuperación, restaurar en una base vacía, comparar el contenido y habilitar después. La activación se condiciona a copia del origen cerrada, respaldo verificado, permisos coincidentes y vistas sin pendientes.
+
+## Control final del 12 de noviembre
+
+`tools/verify-import.sql` compara de forma exacta las tres unidades con el último manifiesto del origen congelado, incluidos usuarios, permisos, identidades y cada colección de las actividades. Ejecutado con resultado `VERIFICACION_COMPLETA_OK`: 3 usuarios, 2 actividades y 31 recibos. No modifica registros ni banderas.
+
+`tools/activate-verified.sql` repite ese control dentro de una transacción con bloqueos antes de habilitar la base y las actividades. No elimina la huella ni el vencimiento de la importación; el modo activo cierra ese ingreso. Su ejecución y la publicación esperan la confirmación explícita del corte solicitada por la revisión automática. El estado sigue siendo `preparing` y el portal habitual sigue configurado con Apps Script.
+
+Se conservó una copia exacta del Hosting publicado en el canal `previo-supabase-20261112`. La versión nueva está preparada en la PC del club y no fue publicada. Los recorridos de navegador de los dos portales y administración pasaron en esta PC; se agregó una espera de la carga asíncrona del historial para evitar una carrera en la prueba.

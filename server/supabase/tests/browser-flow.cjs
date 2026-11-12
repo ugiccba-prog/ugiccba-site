@@ -73,7 +73,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   }
   const context=await browser.newContext(),page=await context.newPage();await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
   await page.goto('http://127.0.0.1:'+port+'/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
-  assert.ok(await page.locator('#users [data-edit]').count()>=2);assert.ok((await page.locator('#history').textContent()).length>0);
+  assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
  }finally{await browser.close();server.close();await fixture.db.close();}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1;});
