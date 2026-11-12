@@ -80,3 +80,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 /* The operational profile has four fixed tabs: no horizontal scrolling. */
 #nav-tabs.nav-operativa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;scrollbar-width:none}
 #nav-tabs.nav-operativa .tab{min-width:0;max-width:100%;width:100%;padding:6px 2px;white-space:normal;font-size:.72rem;line-height:1.25}
+/* Keep the signed-in identity readable on every screen. */
+#app-header{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:3px}
+#header-sub{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 10px;min-width:0;margin:0;color:#bae6fd;font-size:.74rem;font-weight:500;line-height:1.4;white-space:normal;overflow:visible;overflow-wrap:anywhere;text-overflow:clip}
+#header-sub>span{min-width:0;max-width:100%}
+#header-person{color:#fff;font-weight:600}
+#header-role{color:#d5e8f6}
+@media(max-width:640px){#header-activity{flex-basis:100%}}

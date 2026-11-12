@@ -888,10 +888,10 @@
       <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='escudo-ccba.png'" alt="C.C.B.A.">
       <div>
         <h2>MUNI 360<span class="brand-tagline">Colonia y COYFD</span></h2>
-        <small id="header-sub"></small>
       </div>
     </div>
     <button type="button" class="btn-salir" id="btn-salir">Cambiar / Salir</button>
+    <small id="header-sub"><span id="header-activity"></span><span id="header-person"></span><span id="header-role"></span></small>
   </header>
 
   <div id="barra-estado" class="hidden">
@@ -1680,7 +1680,9 @@
     function actualizarCabeceraYPestanas() {
       const cfg = cfgActual();
       aplicarModoConsulta();
-      $('header-sub').textContent = `${cfg.nombre} · ${sesion.rol} (${sesion.profeNombre}) · Todos los equipos habilitados`;
+      $('header-activity').textContent = cfg.nombre;
+      $('header-person').textContent = sesion.profeNombre;
+      $('header-role').textContent = sesion.rol;
       $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('auto-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || sesion.esAdminTotal && almacen.getItem('muni360_modo_demo')==='1'));
