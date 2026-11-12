@@ -2,6 +2,18 @@
   'use strict';
   let sdk,auth,loading;
   const callbacks=new Set();
+  const rememberKey='muni360_keep_signed_in';
+  function remembered(){try{return root.localStorage.getItem(rememberKey)!=='false';}catch(_){return true;}}
+  function setupRememberChoice(){
+    const doc=root.document,button=doc?.querySelector('#google-login, #google');
+    if(!button||doc.getElementById('keep-signed-in'))return;
+    const label=doc.createElement('label'),input=doc.createElement('input'),text=doc.createElement('span');
+    input.type='checkbox';input.id='keep-signed-in';input.checked=remembered();
+    input.style.cssText='width:18px;height:18px;min-width:18px;margin:0;accent-color:#173451';
+    text.textContent='Mantener sesión iniciada en este dispositivo';
+    label.style.cssText='display:flex;align-items:center;gap:9px;min-height:44px;margin:8px 0;font-size:.84rem;font-weight:500;line-height:1.4;text-transform:none;letter-spacing:normal;cursor:pointer';
+    label.append(input,text);button.before(label);
+  }
   function configured(){const c=root.MUNI_CONFIG;return !!(c&&((c.backend==='apps-script'&&/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(c.apiBaseUrl))||(c.backend==='supabase'&&/^https:\/\/[a-z0-9]+\.supabase\.co\/functions\/v1\/muni360$/.test(c.apiBaseUrl)))&&c.firebase?.apiKey&&c.firebase?.authDomain&&c.firebase?.projectId&&c.firebase?.appId);}
   async function initialize(){
     if(!configured())throw Error('El acceso con Google está preparado; falta configurar el proyecto antes de publicarlo.');
@@ -9,7 +21,7 @@
     loading=(async()=>{
       const [app,mod]=await Promise.all([import('https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js')]);
       sdk=mod;auth=mod.getAuth(app.getApps().length?app.getApp():app.initializeApp(root.MUNI_CONFIG.firebase));
-      await mod.setPersistence(auth,mod.browserSessionPersistence);
+      await mod.setPersistence(auth,remembered()?mod.browserLocalPersistence:mod.browserSessionPersistence);
       mod.onAuthStateChanged(auth,()=>callbacks.forEach(fn=>fn(auth.currentUser)));
     })().catch(e=>{loading=null;throw e;});return loading;
   }
@@ -27,8 +39,8 @@
     if(result.verified!==true||result.actividad!==deporte||!Number.isInteger(result.version)||result.version<0)throw Error('Sheets no confirmó la actividad y versión solicitadas. Volvé a intentar.');
     return result;
   }
-  async function login(){await initialize();const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});return sdk.signInWithPopup(auth,provider);}
+  async function login(){await initialize();const choice=root.document?.getElementById('keep-signed-in'),remember=choice?choice.checked:remembered();await sdk.setPersistence(auth,remember?sdk.browserLocalPersistence:sdk.browserSessionPersistence);try{root.localStorage.setItem(rememberKey,String(remember));}catch(_){}const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});return sdk.signInWithPopup(auth,provider);}
   async function logout(){if(auth)await sdk.signOut(auth);}
-  function observe(fn){callbacks.add(fn);initialize().catch(e=>fn(null,e));return ()=>callbacks.delete(fn);}
+  function observe(fn){setupRememberChoice();callbacks.add(fn);initialize().catch(e=>fn(null,e));return ()=>callbacks.delete(fn);}
   root.MuniGoogle={configured,initialize,getToken,call,syncSheets,login,logout,observe};
 })(window);
