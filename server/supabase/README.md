@@ -68,3 +68,11 @@ La primera entrada real de Google al portal completo publicado queda para compro
 - Colonia: https://docs.google.com/spreadsheets/d/1iRqT1FDNoZuu4Q1UMuCzFzEPZSkOhk4Ygk3XeImCu3Y/edit
 
 Las planillas originales se conservan congeladas. Las cargas se guardan en Supabase; la proyección institucional a Sheets se procesa cada cinco minutos, sin necesitar una PC encendida.
+
+## Aviso al aprobar el acceso
+
+La migración `009_access_notifications.sql` agrega una cola privada para las próximas habilitaciones. El cambio de permisos y su aviso se registran en la misma transacción mediante un trigger. No se generan avisos retroactivos para los usuarios existentes. Una aprobación o renovación de acceso vencido/suspendido avisa a la cuenta Google registrada, con nombre, función, actividades y los portales correspondientes. Los cambios de permisos mientras sigue activo no generan otro correo; actualizan el alcance del aviso si aún estaba pendiente.
+
+El trabajador institucional ya autorizado procesa hasta diez avisos por ciclo y respeta la cuota diaria restante. Reserva los mensajes y solo envía las reservas que recibió esa ejecución; dos trabajadores no toman el mismo aviso. Revocar o vencer el permiso antes de reservar cancela el aviso. Un resultado de correo ambiguo queda en revisión y nunca se reenvía automáticamente; las reservas sin confirmación pasan a revisión después de quince minutos. Esto evita duplicaciones automáticas, sin prometer entrega al buzón o reintento sin revisión. Los avisos al propietario por solicitudes nuevas siguen funcionando.
+
+Se conservó una copia del proyecto Apps Script y la versión inmutable 9 antes de cambiar únicamente `MantenimientoOriginal.js`; el manifiesto y los permisos de Google no se modificaron. Las pruebas de notificaciones utilizan correos ficticios y MailApp simulado: no se envió un correo de prueba a personas reales. Pasaron 32 pruebas de Supabase, seis específicas de esta función, y el asesor de seguridad no informó hallazgos.
