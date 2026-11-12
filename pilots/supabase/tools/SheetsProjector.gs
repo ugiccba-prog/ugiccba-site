@@ -9,7 +9,6 @@ function crearPlanillaSupabasePiloto(){
   props.setProperty('PILOT_SHEET_ID',book.spreadsheetId);console.log('Planilla ficticia del piloto creada.');return book.spreadsheetId;
 }
 function proyectarSupabasePiloto(){
-  if(typeof sincronizarMuni360Supabase==='function'){try{sincronizarMuni360Supabase();}catch(e){console.error('MUNI360_FULL_COPY_PENDING');}}
   var expiry=PropertiesService.getScriptProperties().getProperty('PILOT_WORKER_EXPIRES');
   if(expiry&&Date.now()>=Date.parse(expiry)){
     ScriptApp.getProjectTriggers().filter(function(t){return t.getHandlerFunction()==='proyectarSupabasePiloto';}).forEach(function(t){ScriptApp.deleteTrigger(t);});

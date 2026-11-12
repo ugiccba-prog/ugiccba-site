@@ -21,7 +21,14 @@
     constructor({ url, fetch: fetcher, storage, session, onStatus = () => {}, id = () => crypto.randomUUID(), lock, getToken, transport = 'http', now = () => Date.now(), random = Math.random }) {
       this.url = url; this.fetch = fetcher; this.storage = storage; this.session = session; this.onStatus = onStatus; this.id = id; this.getToken = getToken; this.transport = transport;
       this.storageKey = (transport==='supabase'?'muni360_supabase_v1_pending_':'muni360_v2_pending_') + session.usuario;
-      this.queue = JSON.parse(storage.getItem(this.storageKey) || '[]');
+      const stored=storage.getItem(this.storageKey);
+      this.queue = JSON.parse(stored || '[]');
+      if(transport==='supabase'&&stored===null){
+        const previous=JSON.parse(storage.getItem('muni360_v2_pending_'+session.usuario)||'[]');
+        if(!Array.isArray(previous))throw new ApiError('La cola anterior requiere revisión.','DATOS_LOCALES');
+        this.queue=previous.map(e=>({...e,error:'Carga del sistema anterior. Actualizá los datos y revisá antes de reenviarla.',code:'CONFLICTO'}));
+        storage.setItem(this.storageKey,JSON.stringify(this.queue));
+      }
       this.snapshots = {}; this.readVersions = {}; this.running = null; this.stopped = false;
       this.now=now;this.random=random;this.retryFailures=0;this.nextRetryAt=0;
       this.lock = lock || (fn => {

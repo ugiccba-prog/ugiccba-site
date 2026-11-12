@@ -26,6 +26,7 @@ function applyOperation(before,d,actor,{idSecret,now=()=>new Date().toISOString(
     const rows=Object.entries(d.datos).map(([jugador,estado])=>{
       const person=member(s,{...d,jugador});
       if(typeof estado!=='string'||!/^[PATN](?: \| 🍴 Comida)? \| Sem:[VARN]$/.test(estado))invalid('Asistencia o semáforo inválido.');
+      if(estado.includes('Comida')&&(d.deporte!=='Colonia'||estado.startsWith('A')))invalid('La comida se registra solo en Colonia y para participantes presentes.');
       if(d.clima&&!['N','Vapor','Fuego','Agua'].includes(d.clima))invalid('Clima inválido.');
       if(d.puntosCiudad&&!/^\+?\d{1,3}$/.test(String(d.puntosCiudad)))invalid('Puntos inválidos.');
       return {fecha:d.fecha,categoria:d.categoria,equipo:d.equipo,jugador,jugadorId:person.id,estado,clima:d.clima||'N',puntosCiudad:d.puntosCiudad||''};

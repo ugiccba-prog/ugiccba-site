@@ -67,7 +67,8 @@ export function createHandler({rpc,verify,now=()=>Date.now()}){
    const loaded=await service('load',loadArgs),current=actorFrom(loaded.actor,areas,now());authorize(current,d);
    if(d.tipo==='LECTURA'){
     const out=visible(loaded.state,current);out.asistencia=out.asistencia.map(r=>({...r,estado:r.estado+(r.puntosCiudad?' | Pts:'+r.puntosCiudad:'')+(r.clima&&r.clima!=='N'?' | Clima:'+r.clima:'')}));
-    return {ok:true,...out,versiones:loaded.versions,temporada:loaded.meta.temporada,version:loaded.meta.version,archivos:loaded.archives,sheetsStatus:loaded.meta.projectedVersion>=loaded.meta.version?'synced':'pending',backup:null};
+    let backup=null;if(current.id===owner){try{backup=await rpc('mc_backup_status',{p_uid:current.id});}catch(_){/* Optional status must not block access to confirmed records. */}}
+    return {ok:true,...out,versiones:loaded.versions,temporada:loaded.meta.temporada,version:loaded.meta.version,archivos:loaded.archives,sheetsStatus:loaded.meta.projectedVersion>=loaded.meta.version?'synced':'pending',backup};
    }
    const payload=prepare(loaded,d,current),result=await rpc('mc_commit',{p:payload});if(!result.retry)return result;
   }

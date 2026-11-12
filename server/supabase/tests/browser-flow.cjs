@@ -48,11 +48,12 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await page.locator('#dua-modal').waitFor({state:'visible'});assert.ok((await page.locator('#dua-modal-body').textContent()).includes('APOYO_VISIBLE'));
    assert.ok(!(await page.locator('#dua-modal-body').textContent()).includes('NOTA_PRIVADA_FLUJO'));
    await page.locator('#dua-modal').click({position:{x:2,y:2}});
+   await page.evaluate(()=>{document.getElementById('sel-clima-clase').value='Fuego';document.getElementById('sel-puntos-ciudad').value='0';});
    await page.locator('#lista-asist [data-e="P"]').first().click();
    await until(async()=>(await e.read('owner',deporte)).asistencia.length===2);
    await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
    assert.equal((await e.read('owner',deporte)).sheetsStatus,'pending');
-   await page.reload();await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();
+   await page.reload();await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();assert.equal(await page.locator('#sel-clima-clase').inputValue(),'Fuego');assert.equal(await page.locator('#sel-puntos-ciudad').inputValue(),'0');
    await page.locator('[data-tab="evaluacion"]').click();await page.locator('#lista-eval button').first().click();
    await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
    await until(async()=>(await e.read('owner',deporte)).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));

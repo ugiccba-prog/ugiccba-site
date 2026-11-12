@@ -2563,6 +2563,15 @@
         asistTempDep = {};
         comidaTempDep = {};
         semTempDep = {};
+        const clase=datosDeporte.asistencia.find(a=>a.categoria===cat&&(a.equipo||'General')===eq&&a.fecha===fecha);
+        $('sel-clima-clase').value=clase?.clima||'N';
+        const puntos=String(clase?.puntosCiudad??'');
+        const selectPuntos=$('sel-puntos-ciudad');
+        selectPuntos.querySelectorAll?.('[data-saved-points]').forEach(n=>n.remove());
+        let valorPuntos=puntos;
+        if(puntos==='5'||puntos==='10')valorPuntos='+'+puntos;
+        if(valorPuntos&&!['+5','+10','0'].includes(valorPuntos)&&/^\+?\d{1,3}$/.test(valorPuntos))selectPuntos.insertAdjacentHTML?.('beforeend',`<option data-saved-points value="${valorPuntos}">Valor guardado (${valorPuntos})</option>`);
+        selectPuntos.value=valorPuntos;
         datosDeporte.asistencia
           .filter(a => a.categoria === cat && (a.equipo || 'General') === eq && a.fecha === fecha)
           .forEach(a => {
@@ -3051,7 +3060,7 @@
       $('card-variables-deporte').classList.toggle('hidden',!permiso('administrarPadron'));
       $('recuperar-fichas-locales').classList.toggle('hidden',!permiso('verLegajo'));
       $('importar-sheets').classList.toggle('hidden',!permiso('administrarPadron'));
-      const b=datosDeporte.backup; $('backup-status').textContent=sesion?.esAdminTotal?(b?`Último backup: ${Muni360Time.format(b.fecha)} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
+      const b=datosDeporte.backup; $('backup-status').textContent=sesion?.canManageUsers?(b?`Último backup: ${Muni360Time.format(b.fecha)} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
       $('gestos-dep').textContent = areaActiva;
       document.querySelectorAll('.txt-area-activa').forEach(el => el.textContent = areaActiva);
       $('wrap-reset-general').classList.toggle('hidden', !sesion?.esAdminTotal || !permiso('archivar'));
@@ -3693,7 +3702,7 @@
     $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.antes))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.despues))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
     $('importar-sheets').onclick=async()=>{
       if(!syncClient)return toast('La importación real requiere configurar Google.');
-      try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast('No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}
+      try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast(window.MUNI_CONFIG?.backend==='supabase'?'Todavía no hay filas recibidas de Sheets para este grupo. Se actualizan cada 5 minutos.':'No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}
     };
     const demoParam=new URLSearchParams(location.search).get('demo');
     if(demoParam==='1')window.cargarDemoVideoUGI('demo1234');

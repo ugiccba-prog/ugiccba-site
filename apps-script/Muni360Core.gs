@@ -88,6 +88,7 @@ function doPost(e){
     var raw=e&&e.postData&&e.postData.contents;if(typeof raw!=='string'||raw.length>140000)throw new AccessError('VALIDACION','Solicitud vacía o demasiado grande.');
     var d;try{d=JSON.parse(raw);}catch(_){throw new AccessError('VALIDACION','JSON inválido.');}
     if(!d||typeof d!=='object'||Array.isArray(d))throw new AccessError('VALIDACION','Solicitud inválida.');
+    if(PropertiesService.getScriptProperties().getProperty('UGI_SUPABASE_READONLY')==='true')throw new AccessError('MIGRADO','Muni360 se trasladó. Recargá la página para usar el acceso actualizado. Las cargas pendientes se conservan para revisar.');
     var c=configUGI(),identity=identityUGI(c,d.idToken),path=d.path;delete d.idToken;delete d.path;
     if(!['/api/me','/api/users/list','/api/users/update','/api/users/history','/api/sheets/staging','/api/sheets/sync','/api/sheets/automation','/api/operations'].includes(path))throw new AccessError('RUTA','Ruta inexistente.');
     if(!lock.tryLock(5000))throw new AccessError('RED','Hay otra carga en curso. Esperá unos segundos y reintentá.');locked=true;
@@ -132,6 +133,8 @@ function activarAvisosAccesoUGI(){
   return result;
 }
 function enviarAvisosAccesoUGI(){
+  if(typeof tareasSupabaseUGI==='function'){try{tareasSupabaseUGI();}catch(e){console.error('MANTENIMIENTO_SUPABASE_PENDIENTE');}}
+  if(PropertiesService.getScriptProperties().getProperty('UGI_SUPABASE_READONLY')==='true')return {ok:true,migrado:true};
   if(PropertiesService.getScriptProperties().getProperty('UGI_AVISOS_ACCESO')!=='true')return {ok:true,activo:false};
   var lock=LockService.getScriptLock();if(!lock.tryLock(1000))return {ok:true,ocupado:true};
   try{

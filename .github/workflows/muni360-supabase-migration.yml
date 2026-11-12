@@ -19,7 +19,7 @@ jobs:
           node-version: '24'
       - run: npm ci --prefix pilots/supabase
       - run: npm run test:muni360
-      - run: node --test server/supabase/tests/core.test.mjs server/supabase/tests/bridge.test.cjs
+      - run: node --test server/supabase/tests/*.test.*
       - run: npx playwright install --with-deps chromium
         working-directory: pilots/supabase
       - run: node server/supabase/tests/browser-flow.cjs

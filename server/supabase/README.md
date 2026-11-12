@@ -1,49 +1,51 @@
-# Muni360: migración completa a Supabase
+# Muni360 — Supabase y mantenimiento institucional
 
-Estado: infraestructura y código preparados, importación del origen pendiente. NO se cambió el portal activo. Rama `migracion/supabase-completa-20261111`.
+## Estado al recuperar la sesión, 12/11/2026
 
-## Arquitectura
+Los datos del ensayo fueron importados y comparados. La interrupción dejó la base en `preparing` y el portal habitual todavía con configuración Apps Script. El cambio final de acceso debe registrarse después de verificar su publicación; no asumirlo a partir de las pruebas locales.
 
-La web mantiene Firebase Google login y la cola local. Una Edge Function verifica cada JWT mediante PostgREST Third-Party Auth; no confía en decodificar claims. Las tablas privadas, los commits y los estados sin redactar se acceden exclusivamente desde el servicio. Las políticas y capacidades se vuelven a comprobar en cada operación; el SQL comprueba permisos vigentes dentro del commit.
+Se recuperaron en la PC del club los cambios sin subir de la PC de casa. La rama de continuidad es `continuacion/supabase-club-20261112`; la copia de trabajo está en `C:\Users\Juan Machado\Projects\muni360-supabase-migracion`. El repositorio original y la copia de casa se conservan. No usar reset destructivo al volver a la PC de casa: comparar primero sus modificaciones locales con esta rama.
 
-Registros separados por grupo/clase/evaluación; un guardado de asistencia carga el grupo y la clase correspondientes, sin recorrer todo el historial o la auditoría. El commit compara documentos para evitar sobrescrituras, valida versión, padrón y temporada y guarda datos, autoría, recibo y trabajo de Sheets atómicamente. Los conflictos de negocio son PT409, nunca 40001. Los recibos se verifican antes de repetir una escritura. Dos actividades no comparten bloqueo; dentro de una actividad el bloqueo dura solo el commit SQL, sin esperar redes externas.
+## Datos trasladados y comprobaciones
 
-El frontend usa un espacio de pendientes separado para Supabase: nunca reenvía silenciosamente una cola vieja de Apps Script a la base nueva. Antes de cualquier corte hay que resolver las cargas pendientes del sistema viejo en sus dispositivos.
+El origen tenía dos actividades configuradas: Hockey sobre Patines Caballeros y Colonia. Son 3 usuarios, 13 eventos de permisos, 8 filas de padrón, 18 asistencias, 4 evaluaciones, 31 auditorías y 31 recibos. No había temporadas archivadas en ese origen; el cierre y la conservación de temporadas se probaron con datos ficticios. El ensayo anterior de 1500 deportistas permanece separado en `mp_private`; no se mezcló con los registros importados en `mc_private`.
 
-## Preparación e importación
+Los SHA-256 de las tres unidades recibidas coincidieron con el manifiesto original y con la última exportación realizada con el origen cerrado para escritura. Se compararon padrón, asistencias, evaluaciones, sesiones, fichas, gestos, configuración, revisiones, recibos, auditoría, archivos, usuarios, permisos e identidades. Todos coincidieron. Los ID estables y el secreto de identidad se conservaron; este último nunca se incluye en código, navegador o Git.
 
-- Migración aplicada: `20261111235236_full_muni360_core`, esquema `mc_private` separado de `mp_private`.
-- Proyecto Free existente `kaalffshnrkxviqaymhv`, sin facturación adicional.
-- API desplegada: `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360`.
-- `verify_jwt=false` en el gateway Edge porque usa JWT Firebase: la función exige un token y lo verifica mediante `mc_identity` en PostgREST antes de establecer identidad o hacer llamadas de servicio. No es un endpoint anónimo de datos.
-- La configuración inicial está en modo `preparing`, actividades deshabilitadas, sin usuarios importados. No habilitar `ready` hasta completar y comparar la importación.
+Se restauró un respaldo completo en PostgreSQL/PGlite aislado. Además de comparar los registros, se ensayaron guardado y reintento usando el formato real de las autorizaciones importadas, sin modificar la base hospedada.
 
-`tools/ExportarDesdeSheets.gs` se añade al proyecto Apps Script ORIGINAL sin publicar otra versión web. Requiere una credencial aleatoria `mci_` de 256 bits en la propiedad `UGI_SUPABASE_IMPORT_KEY`; solo su SHA-256 queda en Supabase, con vencimiento de 24 horas. No incluirla en código, Git, capturas ni logs.
+## Arquitectura y autorización
 
-Ejecutar `exportarMuni360ASupabase` desde el editor con la cuenta propietaria. Obtiene un bloqueo del origen durante la exportación, valida el hash del estado original y manda fragmentos a un destino fijo. Conserva usuarios, permisos, identidades, ID_SECRET privado, estados, revisiones, recibos, autorías y archivos de temporada. Los logs contienen solo nombres de actividades, número de partes y SHA-256; no datos personales o claves. No modifica las tablas originales.
+La web conserva Firebase Google login y el historial de pendientes. La API es una Edge Function en `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360`. Verifica el token mediante PostgREST Third-Party Auth antes de establecer identidad. `verify_jwt=false` corresponde al gateway Edge; la validación criptográfica del JWT Firebase sigue siendo obligatoria en la función. No hay endpoint adicional de diagnóstico público.
 
-Una vez recibidas las 26 unidades, verificar que todas las partes están completas y finalizar por servicio cada unidad contra el hash del manifiesto. Empezar por `global`. Comparar cantidades y hash canónico de estado, auditoría, recibos, versiones, archivos y permisos. La clave de exportación no puede finalizar ni habilitar la migración. Cerrar/revocar esa clave al terminar. No eliminar inmediatamente el origen.
+Las operaciones de servicio y el estado sin redactar solo están disponibles para el rol de servidor. Tablas privadas con RLS y sin permisos directos de navegador. Los profesores cubren todos los equipos de sus actividades autorizadas. Se comprueban los permisos vigentes en cada solicitud y dentro del commit. Retirar acceso desde el panel de Muni360 rige en la próxima operación; no asumir que eliminar una cuenta en Firebase invalida inmediatamente un JWT ya emitido.
 
-## Sheets
+| Campo | Contrato |
+| --- | --- |
+| Usuario `version` | Identificador opaco de autorización; en el origen es UUID. Nunca convertir a entero. |
+| Usuario `revision` | Entero para editar permisos con control de concurrencia. |
+| Actividad `version` | Entero que identifica el estado que debe copiarse a Sheets. |
+| Recurso `revision` | Entero por grupo, clase o evaluación. |
+| Actividad `epoch` | Temporada; invalida cargas de otra temporada. |
 
-`tools/SheetsCompleto.gs` se añade al puente autorizado, que ya tiene la credencial de copia en Propiedades. El activador existente del piloto invoca también el copiador completo; no necesita otro consentimiento ni un endpoint web de Apps Script. Las vistas nuevas se crean privadas, con una marca exclusiva por actividad; no escriben sobre los Sheets originales.
+Un guardado carga los documentos de su grupo y recurso; no lee la auditoría completa. Datos, revisión, recibo, autoría y cola de proyección se confirman atómicamente. Los conflictos de negocio son PT409. Las lecturas de la interfaz todavía incluyen el historial de la actividad: medir tamaño y tráfico antes de prometer rendimiento para toda una temporada.
 
-Replica padrón sin DNI, asistencia, evaluaciones, gestos, DUA, cambios con horario argentino e históricos. Legajos, DNI e ID_SECRET no se exponen al copiador de vistas. Solo confirma una versión tras releer todas sus tablas. Una confirmación antigua no borra un trabajo de versión más nueva. Un error de Sheets no invalida la carga confirmada en Supabase. Las vistas son reemplazos idempotentes, sin duplicar filas ante una respuesta perdida. La clave actual de copia es temporal: vence el 18/11/2026 a las 20:00 ART.
+## Continuidad, pendientes y mantenimiento
 
-## Validación y condiciones antes del corte
+Los pendientes de Apps Script se conservan en su almacenamiento original y se copian una sola vez a la cola nueva, bloqueados y visibles para revisión. No se reenvían automáticamente. El endpoint viejo quedó con guardia de solo lectura en su versión 7. Existe una copia del código y un checkpoint inmutable de Apps Script, versión 8, anterior al último ajuste de mantenimiento.
 
-12 escenarios PostgreSQL/PGlite y 4 pruebas de exportador/copias aprobados inicialmente; repetir después de cambios. Incluyen ID estables, permisos, suspensión, conflictos, pérdida de respuesta, duplicados, estado/recibo/auditoría/cola atómicos, rollback por fallo, redacción de DNI/legajos, temporadas y Unicode entre partes. No confundir estos escenarios con 20 cuentas reales de Google.
+Apps Script funciona como trabajador institucional: vistas de Sheets cada cinco minutos, lectura de CargaPadron, avisos de acceso al propietario y respaldos privados diarios en Drive. La credencial vive en Propiedades del script y solo su hash se guarda en la base. La credencial temporal de importación se cierra al activar la base; el mantenimiento utiliza su autorización institucional independiente. No requiere que una PC permanezca encendida.
 
-El piloto previo sí verificó HTTP real con Google, 1 éxito + 19 conflictos del mismo registro y copia automática real a Sheets. El API completo, la importación real y el portal completo requieren su propia comprobación; no heredan automáticamente esas garantías.
+Las vistas nuevas se crean privadas, con marca y actividad verificadas. No contienen DNI ni legajos privados. Se escriben valores literales, se comparan contra las celdas actuales y se procesan cambios en lotes acotados. Cada versión se confirma solo tras releer todas sus tablas. Una confirmación antigua no borra una versión pendiente más nueva. Los nombres de CargaPadron se refrescan aunque no haya cambios de asistencia.
 
-Antes de cambiar el portal activo quedan obligatorios: comparar exportación/importación; verificar las tres vistas con usuarios reales; comprobar la entrega completa de las nuevas vistas; respaldos y ensayo de recuperación de la nueva base; avisos de acceso de nuevos usuarios; lectura actualizada de CargaPadron; revisar grandes historiales y límites del copiador (actualmente 1,8 MB por vista/operación); prueba de dos cuentas en distintos grupos; comprobar que no haya pendientes antiguos; documentar corte y reversión. La infraestructura preparada NO equivale a migración terminada.
+Los respaldos incluyen usuarios, permisos, identidades, secreto de identidad, registros, fichas, revisiones, recibos, auditorías y temporadas. Se comprueba que la carpeta y el archivo de Drive sean privados y que el contenido leído tenga la misma huella. Los avisos de acceso reservan el envío antes de mandar mail; una respuesta ambigua queda para revisión, evitando reenvíos automáticos duplicados.
 
-## Evidencia de esta preparación
+## Pruebas y límites de la evidencia
 
-- 16 pruebas nuevas aprobadas (12 escenarios SQL + 4 de exportación/copias), y las 133 pruebas previas sin regresiones.
-- Chrome aislado: recorrido completo de Deportes y Colonia contra el núcleo nuevo con PostgreSQL/PGlite y Google simulado. Guardado automático, DUA sin legajo privado, nota 6,5, desconexión/reconexión, doble clic y panel de propietario aprobados. Esto no mide latencia real ni valida firmas Google.
-- Revisión de interfaz: 12 combinaciones de portal, perfil y ancho (360, 390 y 1440), sin desbordes ni errores JavaScript.
-- Edge Function hospedada: HTTP 401/SESION ante ausencia de token o token falso; HTTP 403 ante un origen externo no habilitado.
-- Preview completo de siete días, separado del portal activo: https://muni360-ugi-ensayo--supabase-migracion-mleyxrv3.web.app/muni360/ (Colonia en `/muni360cyc/`, administración en `/admin/`). Hasta importar el origen el acceso muestra migración en curso.
-- El exportador está cargado en el editor original, sin publicar otra versión web: https://script.google.com/d/11B4Nfn84rYQU51pSzz0W1L9U3Z7XStXFH69Gt9obNZO-eFgY8Z5CFkZP/edit
-- El puente autorizado ya tiene `SheetsCompleto.js` y su activador existente invoca las vistas completas. No hay datos reales importados todavía. La próxima acción necesaria es configurar la propiedad privada `UGI_SUPABASE_IMPORT_KEY` en el origen y ejecutar `exportarMuni360ASupabase` desde la cuenta propietaria.
+En la PC del club pasaron 26 pruebas nuevas y las 133 previas. Incluyen rollback de la transacción completa, idempotencia, conflictos, revocación de permisos, formatos de autorización reales, migración de pendientes, redacción de datos privados, copias grandes en lotes y recuperación de respaldos. Los recorridos de los dos portales con PostgreSQL/PGlite y Google simulado también se probaron; no equivalen a un login Google real en el portal migrado.
+
+El piloto anterior verificó HTTP real con Google y un guardado concurrente del mismo registro: 1 éxito y 19 conflictos sin timeouts, además de copia automática real a Sheets. No afirmar que esto prueba 20 cuentas Google distintas o la carga completa de una temporada. El proyecto continúa en Free, sin habilitar facturación adicional; medir cuotas, tráfico y tiempos con el uso real.
+
+## Recuperación
+
+Conservar el origen congelado y los respaldos privados. Si ya existen cargas en Supabase, no reabrir el sistema viejo ni cambiar su configuración como reversión rápida: primero reconciliar los datos posteriores al corte. Para recuperación, restaurar en una base vacía, comparar el contenido y habilitar después. La activación se condiciona a copia del origen cerrada, respaldo verificado, permisos coincidentes y vistas sin pendientes.
