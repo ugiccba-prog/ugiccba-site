@@ -855,7 +855,7 @@
       <button type="submit" id="google-login">Continuar con Google</button>
       <button type="button" id="revisar-acceso" class="btn-sec" style="margin-top:10px">Ya me autorizaron · Revisar acceso</button>
       <div style="text-align:center; margin-top:16px; padding-top:14px; border-top:1px dashed #cbd5e1;">
-        <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI('demo1234')" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
+        <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI()" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
           🎭 Entrar con Modelo de Prueba (Reunión / Video)
         </button>
         <div style="font-size:0.72rem; color:var(--muted); margin-top:5px;">
@@ -3248,21 +3248,16 @@
     // =========================================================================
     // 12. MODO DEMO / PRESENTACIÓN PARA VIDEOS Y REUNIONES
     // =========================================================================
-    window.cargarDemoVideoUGI = function(passIngresada) {
-      if (syncClient) { syncClient.stop(); syncClient=null; }
-      storageScope='demo';
-      let pass = 'demo1234';
-      const esValida = p => p && (p.toLowerCase() === "demo1234" || p.toLowerCase() === "demo");
-      if (!esValida(pass)) {
-        const pedida = prompt("Ingresá la contraseña para acceder al Modo Demo (demo1234):");
-        if (pedida === null) return;
-        pass = pedida.trim();
-      }
-      if (!esValida(pass)) {
+    window.cargarDemoVideoUGI = function() {
+      const pedida = prompt("Ingresá la contraseña del Modo Demo:");
+      if (pedida === null) return;
+      if (pedida.trim() !== "360,demo") {
         $('login-error').textContent = "Contraseña de demo incorrecta.";
         toast("Contraseña de demo incorrecta.");
         return;
       }
+      if (syncClient) { syncClient.stop(); syncClient=null; }
+      storageScope='demo';
       $('login-error').textContent = "";
 
       const dep = "Básquet Caballeros";
@@ -3565,7 +3560,7 @@
       almacen.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapaLegajosDemo));
 
       const sesionDemo = {
-        area: dep, esAdminTotal: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
+        area: dep, esAdminTotal: true, modoDemo: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
       };
       almacen.setItem('muni360_sesion_activa', JSON.stringify(sesionDemo));
       iniciarSesion(sesionDemo);
@@ -3673,7 +3668,7 @@
       try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast(window.MUNI_CONFIG?.backend==='supabase'?'Todavía no hay filas recibidas de Sheets para este grupo. Se actualizan cada 5 minutos.':'No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}
     };
     const demoParam=new URLSearchParams(location.search).get('demo');
-    if(demoParam==='1')window.cargarDemoVideoUGI('demo1234');
+    if(demoParam==='1')window.cargarDemoVideoUGI();
     else if(window.MuniGoogle){MuniGoogle.observe((user,error)=>{if(error){$('login-error').textContent=error.message;return;}if(user)cargarPerfilGoogle();else if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden'));$('login-screen').classList.remove('hidden');}});}
   </script>
 </body>

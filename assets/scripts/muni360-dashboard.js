@@ -4,7 +4,7 @@ let identity='',generation=0;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=n=>n==null?'Sin datos':n.toLocaleString('es-AR')+' %';
 window.MuniDashboard={mount(session){
- const allowed=new URLSearchParams(location.search).get('demo')!=='1'&&session&&(session.canManageUsers||['Coordinación','Dirección UGI'].includes(session.rol));
+ const allowed=session&&session.modoDemo!==true&&(session.canManageUsers||['Coordinación','Dirección UGI'].includes(session.rol));
  const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers]):'';
  if(identity===key)return;identity=key;generation++;document.getElementById('management-panel')?.remove();if(!allowed)return;
  const owner=!!session.canManageUsers,box=document.createElement('details');box.id='management-panel';box.className='card muni-management';
