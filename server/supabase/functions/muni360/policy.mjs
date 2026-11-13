@@ -8,10 +8,10 @@ function defaults(role) {
   const manage=['Coordinación','Dirección UGI'].includes(role);
   return Object.fromEntries(CAPS.map(k=>[k, manage]));
 }
-function actorFrom(record, areas, now=Date.now()) {
+function actorFrom(record, areas, now=Date.now(), owner=null) {
   if (!record || record.status!=='activo' || !ROLES.includes(record.rol)) throw new AccessError('PENDIENTE', 'Tu acceso está pendiente o suspendido.');
   if (record.expiresAt && (!Number.isFinite(Date.parse(record.expiresAt)) || Date.parse(record.expiresAt)<=now)) throw new AccessError('VENCIDO', 'Tu autorización venció. Dirección puede renovarla.');
-  return {id:record.uid,nombre:record.nombre,rol:record.rol,areas:record.rol==='Dirección UGI'?areas:record.areas.filter(a=>areas.includes(a)),capabilities:{...defaults(record.rol),...record.capabilities},version:record.version};
+  return {id:record.uid,nombre:record.nombre,rol:record.rol,areas:record.uid===owner?areas:(record.areas||[]).filter(a=>areas.includes(a)),capabilities:{...defaults(record.rol),...record.capabilities},version:record.version};
 }
 function authorize(actor, d) {
   if (!actor.areas.includes(d.deporte)) throw new AccessError('PERMISOS','No tenés acceso a esa actividad.');
@@ -26,6 +26,7 @@ function validateAccess(input, areas) {
   if (!input || !ROLES.includes(input.rol) || !['activo','suspendido','pendiente'].includes(input.status)) throw new AccessError('VALIDACION','Rol o estado inválido.',400);
   if (!Array.isArray(input.areas) || input.areas.some(a=>!areas.includes(a))) throw new AccessError('VALIDACION','Actividad inválida.',400);
   if (input.status==='activo' && input.rol!=='Dirección UGI' && !input.areas.length) throw new AccessError('VALIDACION','Elegí al menos una actividad.',400);
+  if(input.rol==='Dirección UGI')throw new AccessError('VALIDACION','Dirección UGI está reservada para la cuenta propietaria.',400);
   const expiresAt=input.expiresAt||null;
   if (expiresAt && (!Number.isFinite(Date.parse(expiresAt)) || Date.parse(expiresAt)<=Date.now())) throw new AccessError('VALIDACION','El vencimiento debe ser una fecha futura.',400);
   if (input.rol==='Reemplazante' && !expiresAt) throw new AccessError('VALIDACION','Un reemplazo debe tener vencimiento.',400);

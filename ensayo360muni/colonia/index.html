@@ -905,7 +905,7 @@
   <main id="app-screen" class="container hidden">
 
     <!-- PESTAÑAS UNIFICADAS -->
-    <div class="toolbar-cancha"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
+    <div class="toolbar-cancha" id="owner-tools"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
     <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
@@ -942,7 +942,7 @@
       </div>
 
       <div class="field hidden" id="wrap-deporte-admin">
-        <label for="sel-deporte">Actividad / Deporte Activo (Vista Dirección UGI)</label>
+        <label for="sel-deporte">Actividad autorizada</label>
         <select id="sel-deporte"></select>
       </div>
 
@@ -1298,6 +1298,7 @@
   <script src="../assets/scripts/muni360-google.js?v=ea8d43d5bf84"></script>
   <script src="../assets/scripts/muni360-sync.js?v=a90df13757d8"></script>
   <script src="../assets/scripts/muni360-import.js?v=b6e5aaa353ad"></script>
+  <script src="../assets/scripts/muni360-dashboard.js?v=c47d37a95692"></script>
   <script>
     // =========================================================================
     // 1. CONFIGURACIÓN MAESTRA MUNI 360 (100% GOOGLE SHEETS · SIN SUPABASE NI CLAVES EXPUESTAS)
@@ -1617,7 +1618,7 @@
         const available=deportesSolo.filter(d=>p.areas.includes(d.nombre));
         if(!available.length){$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;}
         limpiarCachePrivada();storageScope=p.uid;
-        iniciarSesion({usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:p.rol==='Dirección UGI',expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre});
+        iniciarSesion({usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:!!p.canManageUsers,expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre});
       }catch(e){$('login-error').textContent=e.message||'No se pudo verificar el acceso. Reintentá con conexión.';}
     }
     $('login-form').addEventListener('submit',async e=>{
@@ -1647,7 +1648,8 @@
       $('login-screen').classList.add('hidden');
       ['app-header', 'barra-estado', 'app-screen'].forEach(id => $(id).classList.remove('hidden'));
 
-      const esAdmin = Boolean(sesion.esAdminTotal && sesion.rol !== "Profe");
+      $('sel-deporte').innerHTML=deportesSolo.filter(d=>sesion.areas.includes(d.nombre)).map(d=>'<option value="'+esc(d.nombre)+'">'+esc(d.nombre)+'</option>').join('');
+      const esAdmin = deportesSolo.filter(d=>sesion.areas.includes(d.nombre)).length>1;
       $('wrap-deporte-admin').classList.toggle('hidden', !esAdmin);
       $('sel-deporte').value = areaActiva;
       $('input-fecha').value = fechaLocal(0);
@@ -1678,6 +1680,8 @@
     function puedeVerCambios(){return !!sesion && ['Dirección UGI','Coordinación'].includes(sesion.rol);}
 
     function actualizarCabeceraYPestanas() {
+      window.MuniDashboard?.mount(sesion);
+      $('owner-tools').classList.toggle('hidden',!sesion.canManageUsers);
       const cfg = cfgActual();
       aplicarModoConsulta();
       $('header-activity').textContent = cfg.nombre;
@@ -3697,7 +3701,7 @@
         const result=await MuniGoogle.call('/api/sheets/automation');
         if(result.enabled!==true)throw Error('No se confirmó la sincronización automática.');
         button.textContent='Sincronización automática activada';
-        toast('Sheets se actualizará al guardar. Los pendientes se reintentan cada 15 minutos.');
+        toast('La copia a Sheets se procesa automáticamente cada 5 minutos.');
       }catch(e){toast(e.message);button.disabled=false;}
     };
     $('actualizar-auditoria').onclick=renderAuditoria;

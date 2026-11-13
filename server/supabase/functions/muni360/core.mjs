@@ -1,3 +1,4 @@
+import {dashboard} from './dashboard.mjs';
 import {AccessError,actorFrom,authorize,validateAccess,ROLES,CAPS} from './policy.mjs';
 import {sha,copy,resource,empty,applyOperation,visible,auditSlice} from './domain.mjs';
 const groupTypes=['ALTA_PADRON','BAJA_PADRON','ASISTENCIA','EVALUACION','DUA','LEGAJO','RECONOCIMIENTO'];
@@ -33,7 +34,7 @@ export function createHandler({rpc,verify,now=()=>Date.now()}){
   const identity=await verify(input.token),targetUid=input.body.uid,d={...input.body};
   for(const k of ['token','idToken','actor','uid','rol','areas','capabilities','path'])delete d[k];
   const context=await service('touch',{...identity,allowCreate:input.path==='/api/me'}),{user,owner,areas}=context;
-  let actor;try{actor=actorFrom(user,areas,now());}catch(e){if(input.path!=='/api/me')throw e;}
+  let actor;try{actor=actorFrom(user,areas,now(),owner);}catch(e){if(input.path!=='/api/me')throw e;}
   if(input.path==='/api/me')return {ok:true,profile:{uid:identity.uid,nombre:user.nombre,email:user.email,status:actor?'activo':user.status==='activo'?'vencido':user.status,expiresAt:user.expiresAt||null,rol:user.rol,areas:actor?.areas||[],capabilities:actor?.capabilities||{},version:user.version,canManageUsers:identity.uid===owner},catalog:{areas,roles:ROLES,capabilities:CAPS}};
   if(input.path.startsWith('/api/users/')){
    if(identity.uid!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra permisos.');
@@ -42,7 +43,9 @@ export function createHandler({rpc,verify,now=()=>Date.now()}){
    if(input.path==='/api/users/update'){if(typeof targetUid!=='string')throw new AccessError('VALIDACION','Usuario inválido.',400);return {ok:true,...await service('updateUser',{uid:actor.id,target:targetUid,revision:d.revision,access:validateAccess(input.body,areas)})};}
    throw new AccessError('RUTA','Ruta inexistente.',404);
   }
-  if(input.path==='/api/sheets/automation'){if(actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección configura el puente.');return {ok:true,automatico:true,intervaloMinutos:5,mensaje:'El puente de Sheets se configura desde el proyecto de mantenimiento.'};}
+  if(input.path==='/api/dashboard')return dashboard(actor,owner,d,service,now());
+  if(input.path==='/api/sheets/sync'&&actor.id!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra la sincronización.');
+  if(input.path==='/api/sheets/automation'){if(actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección configura el puente.');return {ok:true,enabled:true,automatico:true,intervaloMinutos:5,mensaje:'El puente de Sheets se configura desde el proyecto de mantenimiento.'};}
   if(input.path!=='/api/operations'&&!input.path.startsWith('/api/sheets/'))throw new AccessError('RUTA','Ruta inexistente.',404);
   if(d.tipo==='LOGOUT')return {ok:true};
   authorize(actor,d.tipo==='RESULTADO'||input.path==='/api/sheets/sync'?{...d,tipo:'LECTURA'}:input.path==='/api/sheets/staging'?{...d,tipo:'ALTA_PADRON'}:d);
@@ -64,7 +67,7 @@ export function createHandler({rpc,verify,now=()=>Date.now()}){
   }
   for(let attempt=0;attempt<4;attempt++){
    const loadArgs={uid:actor.id,activity:d.deporte,...(d.temporada&&d.tipo==='LECTURA'?{archive:d.temporada}:{}),...(scoped?{scope:'operation',category:d.categoria||'',team:d.equipo||'',recordKey}:{}),dnis:[...(d.jugadores||[]).map(j=>j.dni).filter(Boolean),...(d.ficha?.dni?[d.ficha.dni]:[])]};
-   const loaded=await service('load',loadArgs),current=actorFrom(loaded.actor,areas,now());authorize(current,d);
+   const loaded=await service('load',loadArgs),current=actorFrom(loaded.actor,areas,now(),owner);authorize(current,d);
    if(d.tipo==='LECTURA'){
     const out=visible(loaded.state,current);out.asistencia=out.asistencia.map(r=>({...r,estado:r.estado+(r.puntosCiudad?' | Pts:'+r.puntosCiudad:'')+(r.clima&&r.clima!=='N'?' | Clima:'+r.clima:'')}));
     let backup=null;if(current.id===owner){try{backup=await rpc('mc_backup_status',{p_uid:current.id});}catch(_){/* Optional status must not block access to confirmed records. */}}
