@@ -62,7 +62,7 @@ Se conservó una copia exacta del Hosting publicado en el canal `previo-supabase
 
 La configuración pública apunta a la Edge Function Supabase y las rutas `/muni360/`, `/muni360cyc/` y `/admin/` respondieron 200. La API rechaza sesiones ausentes e inválidas con HTTP 401 / SESION. La consulta privada confirmó 3 usuarios, 31 recibos, 2 actividades habilitadas, cero copias pendientes, versiones de Sheets actuales y origen congelado. El intento anónimo de inspeccionar por HTTP el endpoint antiguo recibió HTML de Google; no se consideró una verificación adicional de su respuesta MIGRADO.
 
-La primera entrada real de Google al portal completo publicado queda para comprobar con la sesión del usuario. Los tests con Google simulado y el login real del piloto tienen alcances diferentes. Las nuevas vistas institucionales son:
+La primera entrada real de Google al portal completo publicado en `/ensayo360muni/` fue confirmada por el propietario el 12/11/2026 en los tres portales (`/deportes/`, `/admin/` y `/colonia/` con sesión recordada), verificando también `G03`, `G05`, `D01`, `D02` y `S01` (`docs/muni360-pruebas-aceptacion.md`). Las nuevas vistas institucionales son:
 
 - Hockey: https://docs.google.com/spreadsheets/d/16kf1nC5dS4LOd5eygWEly-qhB5Rq8_21L3oj30c9wjI/edit
 - Colonia: https://docs.google.com/spreadsheets/d/1iRqT1FDNoZuu4Q1UMuCzFzEPZSkOhk4Ygk3XeImCu3Y/edit

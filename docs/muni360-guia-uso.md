@@ -1,12 +1,15 @@
-# Muni360 — guia de uso del ensayo
-Version candidata del 11 de noviembre de 2026.
+# Muni360 — guía de uso del ensayo
+Versión activa `supabase-1.0.0` · Actualizada el 12 de noviembre de 2026.
 
 ## Acceso
-- Deportes: https://muni360-ugi-ensayo.web.app/muni360/
-- Colonia y COYFD: https://muni360-ugi-ensayo.web.app/muni360cyc/
-- Usuarios y permisos: https://muni360-ugi-ensayo.web.app/admin/
+- Entrada unificada (recomendada): https://ugiccba.com.ar/ensayo360muni/
+- Deportes: https://ugiccba.com.ar/ensayo360muni/deportes/
+- Colonia y COYFD: https://ugiccba.com.ar/ensayo360muni/colonia/
+- Usuarios y permisos: https://ugiccba.com.ar/ensayo360muni/admin/
 
-Ingresar con Google y usar una cuenta aprobada. La cuenta propietaria administra accesos. Direccion y Coordinacion ven las herramientas que sus permisos habilitan. Profe ve Asistencia, Evaluar, Banco UGI y Analisis. Puede cubrir todos los equipos de cada actividad autorizada. La pagina usa horario argentino.
+> **Continuidad desde el acceso anterior:** Si habías usado https://muni360-ugi-ensayo.web.app/muni360/, verificá primero allí con tu cuenta que no hayan quedado cargas locales pendientes antes de pasar al dominio `ugiccba.com.ar`. Tus datos confirmados ya están en la misma base Supabase y al cambiar de dominio sólo iniciás sesión con Google una vez (luego rige *Mantener sesión iniciada*).
+
+Ingresar con Google y usar una cuenta aprobada. La cuenta propietaria administra accesos. Dirección y Coordinación ven las herramientas que sus permisos habilitan. Profe ve Asistencia, Evaluar, Banco UGI y Análisis. Puede cubrir todos los equipos de cada actividad autorizada. La página usa horario argentino.
 
 ## Profe: una clase
 1. Revisar actividad, grupo/equipo y fecha en Grupo / fecha.
@@ -19,15 +22,15 @@ Ingresar con Google y usar una cuenta aprobada. La cuenta propietaria administra
 
 La asistencia y las evaluaciones pertenecen a la fecha y al grupo elegidos. Los indicadores de la clase estan al final, dentro de Resumen de la clase. Si se cambia de grupo con un borrador, revisar la advertencia antes de descartarlo.
 
-## Que significa el estado
-| Estado | Accion |
+## Qué significa el estado
+| Estado | Acción |
 | --- | --- |
-| Guardado y confirmado / vistas actualizadas | La operacion fue confirmada y la vista se verifico. |
-| Guardado en Sheets privado, vistas pendientes | El original esta confirmado; la vista necesita sincronizarse. Direccion puede usar Actualizar vistas de Sheets. |
-| Carga pendiente / sin confirmar | Conservar el navegador y sus datos. Reintentar con conexion; no dar la carga por guardada. |
-| Otra persona modifico el registro / cambio el padron | Abrir Revisar pendiente, ver los datos actuales y decidir si corresponde reenviar o descartar. |
-| Acceso pendiente, suspendido, vencido o actividad no habilitada | Consultar a Direccion. No cambiar de cuenta para intentar enviar esa misma carga. |
-| Autorizacion modificada | Revisar acceso y comparar el pendiente antes de reenviar. |
+| Guardado en la base / vistas actualizadas | La operación se confirmó en Supabase y la vista en Google Sheets está al día. |
+| Guardado en la base, proyección a Sheets pendiente | El original está confirmado en Supabase; el trabajador de Apps Script proyecta a Google Sheets cada 5 minutos (o Dirección puede usar *Actualizar vistas de Sheets*). |
+| Carga pendiente / sin confirmar | Conservar el navegador y sus datos. Reintentar con conexión; no dar la carga por guardada. |
+| Otra persona modificó el registro / cambió el padrón | Abrir *Revisar pendiente*, ver los datos actuales y decidir si corresponde reenviar o descartar. |
+| Acceso pendiente, suspendido, vencido o actividad no habilitada | Consultar a Dirección. No cambiar de cuenta para intentar enviar esa misma carga. |
+| Autorización modificada | Revisar acceso y comparar el pendiente antes de reenviar. |
 
 ## Conexion y cierre
 Si se corta Internet con la pagina ya abierta, la carga queda pendiente en ese navegador y cuenta. Al recuperar conexion se reintenta. Para abrir la pagina desde cero hace falta conexion; no se promete funcionamiento completo al recargar sin red.

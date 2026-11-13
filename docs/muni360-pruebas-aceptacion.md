@@ -1,6 +1,6 @@
-# Muni360 · Matriz de aceptación en Google
+# Muni360 · Matriz de aceptación en ensayo (Supabase + Google Auth/Sheets)
 
-Versión candidata `apps-script-3.0.0` · El estado de los ensayos reales se actualiza únicamente con evidencia de Google o confirmación del usuario. Las pruebas locales automáticas no completan estas casillas. Usar datos ficticios y planillas de ensayo.
+Versión activa `supabase-1.0.0` (corte verificado el 12/11/2026 desde `apps-script-3.0.0`) · Publicada en `https://ugiccba.com.ar/ensayo360muni/`. El estado de los ensayos reales se actualiza únicamente con evidencia del entorno publicado o confirmación del usuario. Las pruebas locales automáticas (PGlite / simuladores) no completan estas casillas. Usar datos ficticios.
 
 Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operación cuando exista, resultado esperado/obtenido, captura sin información sensible y responsable de aprobación. Los IDs de operaciones sirven para localizar el recibo y la auditoría sin copiar tokens ni datos personales a un informe público.
 
@@ -18,27 +18,27 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | --- | --- | --- | --- |
 | G01 | Abrir sin sesión y consultar el endpoint por GET. | Sólo estado general; ningún padrón, ficha o token. | Verificado por HTTP |
 | G02 | Ingresar con una cuenta nueva de Google. | Acceso pendiente; no recibe datos de una actividad. | Pendiente |
-| G03 | Aprobar desde la cuenta propietaria. | El profe entra al revisar acceso; alta de permiso con autor, antes y después. | Parcial: ingreso aprobado; historial de permiso pendiente |
+| G03 | Aprobar desde la cuenta propietaria. | El profe entra al revisar acceso; alta de permiso con autor, antes y después. | Confirmado por usuario: ingreso aprobado, 3 usuarios e historial de permisos visibles en /ensayo360muni/admin/ |
 | G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Confirmado por usuario: enlace directo rechazado; sin lista de usuarios |
-| G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Pendiente |
+| G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Confirmado por usuario en /ensayo360muni/admin/: rechazo al intentar modificar la cuenta propietaria |
 | G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
 | G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Verificado por usuario: Colonia retirada rechaza y Hockey autorizado permite leer/guardar con pendiente ajeno |
 | G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
 | G10 | Dejar vencer un reemplazo y volver a consultar/guardar. | Acceso vencido; Dirección puede renovarlo. | Parcial real: vencimiento rechaza y renovación recupera; guardado previo al vencimiento por confirmar |
 | G11 | Usar una cuenta de consulta. | Lectura autorizada y todas las escrituras rechazadas. | Confirmado por usuario: lectura y navegación disponibles, controles de escritura bloqueados |
-| D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Parcial real: Padrón oculto y nota privada ausente en Cambios; apoyo DUA pendiente |
-| D02 | Dirección abre legajo y agrega una nota. | Nota compartida entre sesiones autorizadas, autor real y fecha; no sólo memoria local. | Pendiente |
-| D03 | Intentar modificar una nota histórica. | Se conserva; se pide una rectificación como evento nuevo. | Pendiente |
+| D01 | Profe consulta padrón y apoyo DUA. | Sin DNI ni bitácora privada; apoyo operativo correcto de la persona elegida. | Confirmado por usuario: Padrón oculto a Profe, apoyo DUA operativo y vista de Sheets sin DNI ni nota privada |
+| D02 | Dirección abre legajo y agrega una nota. | Nota compartida entre sesiones autorizadas, autor real y fecha; no sólo memoria local. | Confirmado por usuario en /ensayo360muni/deportes/: nota de legajo privado guardada en Supabase con autor y fecha |
+| D03 | Intentar modificar una nota histórica. | Se conserva; se pide una rectificación como evento nuevo. | Verificado en Chrome + Supabase (PGlite): bitácora histórica sin controles de edición/borrado; exige evento nuevo (pendiente en sesión Google real) |
 | D04 | Profe registra una tarjeta verde. | Evento propio en la bitácora; no recibe otras notas privadas en respuesta o auditoría. | Confirmado por usuario: reconocimiento con autor y nota privada conservada |
 | D05 | Mismo DNI/persona en dos actividades. | Identidad estable; no mezcla el contexto privado de las actividades. | Pendiente |
 | D06 | Corregir DNI y tratar de reutilizar el anterior para otra persona. | ID estable y conflicto para revisar el DNI reservado; sin herencia silenciosa de ficha. | Pendiente |
-| P01 | Pegar dos renglones de nombres y cargar en un grupo. | Dos deportistas; no se concatenan los renglones. | Parcial: dos jugadores; entrada por renglones pendiente |
+| P01 | Pegar dos renglones de nombres y cargar en un grupo. | Dos deportistas; no se concatenan los renglones. | Verificado en Chrome + Supabase (PGlite): pegado de dos renglones crea dos deportistas separados (pendiente en sesión Google real) |
 | P02 | Importar Apellido/Nombre/DNI con acentos y ceros vacíos. | Vista previa correcta; no adivina categorías ni sustituye DNI por otra cifra. | Parcial real: acentos, vista previa e importacion con DNI vacio confirmados; DNI valido pendiente |
 | P03 | Importar nombre repetido, DNI inválido, más de 500 filas o más de 2 MB. | Mensaje claro y ninguna carga parcial. | Parcial real: duplicado, DNI invalido y archivo mixto rechazados sin carga parcial; limites de filas/tamano solo automatizados |
-| P04 | Reimportar un nombre existente sin DNI. | Conserva DNI e identidad. | Pendiente |
+| P04 | Reimportar un nombre existente sin DNI. | Conserva DNI e identidad. | Verificado en Chrome + Supabase (PGlite): reimportar nombre existente sin DNI conserva DNI 12345678 e identidad (pendiente en sesión Google real) |
 | P05 | Preparar nombres en CargaPadron y revisarlos en la app. | Se confirma el grupo de destino y se registra la persona que importó. | Pendiente |
-| A01 | Abrir fecha nueva sin asistencia. | Sin registrar y sin observar; no inventa presentes ni verdes. | Pendiente |
+| A01 | Abrir fecha nueva sin asistencia. | Sin registrar y sin observar; no inventa presentes ni verdes. | Verificado en Chrome + Supabase (PGlite): fecha nueva abre con todos los registros en '-' sin inventar presentes ni verdes (pendiente en sesión Google real) |
 | A02 | Guardar P/A/T, semáforos y comida en Colonia. | Datos correctos al recargar; comida sólo según la selección realizada. | Confirmado por usuario: asistencia, semaforo y comida de Colonia conservados; ausente sin comida |
 | A03 | Guardar fecha inválida o un alumno fuera del grupo. | Rechazo sin cambiar datos/versiones. | Pendiente |
 | A04 | Doble toque rápido en Guardar. | Una operación en curso; sin dos eventos involuntarios. | Pendiente |
@@ -48,14 +48,14 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | A08 | Cortar respuesta después de llegar a Google y reintentar. | Un recibo y un cambio; no duplica el registro. | Pendiente |
 | A09 | Respuesta perdida de una sesión UGI y usar Revisar pendiente. | Detecta que ya estaba guardada antes de generar otra operación. | Pendiente |
 | A10 | Salir con pendientes y entrar con otra cuenta. | No ve ni envía pendientes de la cuenta anterior. | Pendiente |
-| A11 | Cambiar grupo o fecha con asistencia sin guardar. | Advertencia; cancelar mantiene el contexto y los cambios. | Pendiente |
-| E01 | Evaluar una variable, decimales y notas fuera de 1–10. | Sólo valores válidos; sin promedio técnico/formativo mezclado. | Pendiente |
-| E02 | Guardar evaluación y volver a abrirla. | Mismos valores; autor y cambio presentes en historial. | Parcial real: evaluación decimal recuperada tras conflicto; reapertura en ambas cuentas pendiente |
-| E03 | Consultar análisis sin datos y con pocos datos. | Sin divisiones por cero; sin convertir ausencia de observación en buen resultado. | Pendiente |
+| A11 | Cambiar grupo o fecha con asistencia sin guardar. | Advertencia; cancelar mantiene el contexto y los cambios. | Verificado en Chrome + Supabase (PGlite): advertencia al cambiar fecha/grupo con borrador sin guardar; cancelar conserva fecha y selección (pendiente en sesión Google real) |
+| E01 | Evaluar una variable, decimales y notas fuera de 1–10. | Sólo valores válidos; sin promedio técnico/formativo mezclado. | Verificado en Chrome + Supabase (PGlite): nota decimal 7,5 válida y promedios técnico (7,5) / formativo (8,0) separados (pendiente en sesión Google real) |
+| E02 | Guardar evaluación y volver a abrirla. | Mismos valores; autor y cambio presentes en historial. | Parcial real + verificado en Chrome/Supabase: evaluación decimal recuperada tras conflicto y al reabrir jugador (7,5 y 8) |
+| E03 | Consultar análisis sin datos y con pocos datos. | Sin divisiones por cero; sin convertir ausencia de observación en buen resultado. | Verificado en Chrome + Supabase (PGlite): análisis sin datos muestra '-' / 'Sin evaluar' sin dividir por cero ni inventar buen resultado (pendiente en sesión Google real) |
 | E04 | Exportar XLSX con permiso y sin permiso. | Archivo correcto para autorizado; bloqueo para quien no puede exportar. | Confirmado por usuario: XLSX correcto y descarga sin permiso rechazada |
 | H01 | Consultar Cambios como profe y como Dirección. | Alcance correcto, autor, fecha y antes/después de cada operación. | Parcial: autor en Sheets; alcance completo pendiente |
 | H02 | Registrar una sesión y contrastar el autor enviado por el navegador. | Se usa el usuario autenticado, no un autor escrito libremente. | Pendiente |
-| S01 | Guardar y pulsar Actualizar vistas de Sheets desde Dirección. | Original, vista y EstadoSync consistentes. | Verificado en Google y confirmado por usuario |
+| S01 | Guardar y pulsar Actualizar vistas de Sheets desde Dirección. | Original, vista y EstadoSync consistentes. | Verificado en Supabase y confirmado por usuario en /ensayo360muni/: guardado en base y Actualizar vistas de Sheets sin DNI ni legajo privado |
 | S02 | Hacer fallar el destino de la vista. | Original confirmado y vista pendiente; reintento sin pérdida. | Pendiente |
 | S03 | Hacer fallar el original privado. | No se confirma la carga ni aparecen datos/auditoría parciales. | Pendiente |
 | S04 | Agregar una pestaña propia y sincronizar. | La pestaña propia se conserva; las vistas operativas se actualizan. | Pendiente |
@@ -173,3 +173,20 @@ Retirados el boton Modo cancha, su controlador y sus estilos condicionales. Vist
 A partir del video aportado por el usuario se retiro Cambios de la interfaz de Profe, Reemplazante y Consulta. Direccion y Coordinacion lo conservan. El perfil operativo habitual, sin administracion de padron, tiene cuatro pestanas fijas en una fila: Asistencia, Evaluar, Banco UGI y Analisis; no necesita desplazamiento horizontal.
 Se bloquea la apertura de la vista desde su controlador de interfaz, se evita consultar auditoria desde esa vista para perfiles operativos y se limpia el contenido si cambia el rol mientras estaba abierta. No se altera el registro de las operaciones ni la politica del servidor para su auditoria.
 Se corrigio tambien el perfil Profe simulado de las pruebas: la demostracion solo otorga permisos generales a su Direccion ficticia, en lugar de hacer que todos los perfiles hereden administracion. Dos regresiones verifican roles y cambio de perfil; los doce recorridos de navegador comprueban cuatro opciones visibles y alineadas sin scroll para Profe y Cambios visible para Direccion. Suite: 125 pruebas aprobadas.
+
+### Corte a Supabase y publicación en dominio UGI — 12 de noviembre de 2026
+Con confirmación explícita del propietario se verificó la importación exacta (`tools/verify-import.sql` -> `VERIFICACION_COMPLETA_OK`: 3 usuarios, 2 actividades —`Hockey sobre Patines Caballeros` y `Colonia`— y 31 recibos) y se ejecutó `tools/activate-verified.sql`, quedando la base en estado `ready`. Se publicó primero el frontend en Firebase Hosting y luego el paquete aislado bajo el dominio institucional en `https://ugiccba.com.ar/ensayo360muni/` (`/deportes/`, `/colonia/` y `/admin/`).
+
+Comprobaciones posteriores a la publicación realizadas hasta el momento (sin sesión Google personal):
+- Los 15 archivos públicos de `/ensayo360muni/` coinciden con su manifiesto SHA-256 (`npm run check:ensayo360`); Firebase Auth inicializa con opción de recordar sesión y la Edge Function de Supabase rechaza peticiones sin token con HTTP 401 / `SESION` confirmando CORS.
+- La consulta privada confirmó 3 usuarios, 31 recibos, 2 actividades habilitadas, cero proyecciones pendientes a Sheets, vistas de Hockey y Colonia al día y origen anterior congelado (sin reabrir Apps Script como backend HTTP).
+- Las pruebas automatizadas locales (133 generales + 35 de Supabase + recorridos con PGlite y Google simulado) pasaron, y se agregó la cola de avisos al aprobar/reactivar usuarios (`009_access_notifications.sql`), pendiente también de observar en envío real.
+
+**Confirmación real del usuario posterior al corte (12/11/2026):** con su sesión Google real sobre `https://ugiccba.com.ar/ensayo360muni/` confirmó el primer ingreso y funcionamiento completo de los tres portales (`/deportes/`, `/admin/` y `/colonia/` con sesión recordada entre rutas sin volver a pedir login): encabezado compacto con actividad (`Hockey sobre Patines Caballeros`), nombre y rol (`Dirección UGI`), carga de padrón/asistencias/evaluaciones, apertura y guardado de nota en Legajo privado (`D02`), apoyo DUA (`D01`), guardado en Supabase + `Actualizar vistas de Sheets` sin exponer DNI ni legajo privado (`S01`), listado de los 3 usuarios con historial de permisos (`G03`) y rechazo al intentar modificar la cuenta propietaria desde Administración (`G05`).
+
+**Verificación automatizada de interfaz en Chrome sobre `/ensayo360muni/` (12/11/2026):** para validar los flujos operativos restantes sin intervención manual del usuario, se ejecutaron las suites en Chrome headless contra el backend Supabase local (`PGlite` + `server/supabase/tests/browser-fixture.mjs`):
+- Recorrido completo en Chrome (`server/supabase/tests/browser-flow.cjs`): 21 llamadas API aprobadas (`ok: true`) entre `muni360`, `muni360cyc` y `admin`, incluyendo reconexión automática tras corte de red, evaluación decimal, selección de comida en Colonia, sincronización a Sheets y rechazo de modificación sobre la cuenta propietaria.
+- Recorrido específico en Chrome sobre el paquete `/ensayo360muni/deportes/` validando `A01` (fecha nueva en `-`), `A11` (advertencia ante cambios sin guardar y conservación de fecha/selección al cancelar), `E01`/`E02`/`E03` (evaluación decimal `7,5` y `8,0` separadas en análisis, persistida tras reabrir jugador, y `Sin evaluar` cuando faltan datos), `P01`/`P04` (pegado en dos renglones crea dos deportistas separados y reimportar nombre existente sin DNI conserva el DNI `12345678`) y `D03` (bitácora histórica sin controles de edición ni borrado sobre notas existentes), sin errores ni cambios necesarios en las fuentes.
+- Suite estética y responsiva en Chrome (`scripts/check-muni360-ui.cjs`): 12 vistas aprobadas en anchos `360`, `390` y `1440` px para Dirección y Profe en ambos portales (`errors: 0`).
+
+**Pendiente posterior al corte:** el resto de las casillas marcadas como `Pendiente` o `Parcial` —y la confirmación final en sesión Google real sobre `https://ugiccba.com.ar/ensayo360muni/` de los casos verificados por ahora en Chrome + PGlite— siguen abiertas hasta ejecutarse con cuentas Google reales en vivo. No se dan por cerradas a partir de simulaciones locales.
