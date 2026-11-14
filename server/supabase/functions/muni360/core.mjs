@@ -1,4 +1,5 @@
 import {dashboard} from './dashboard.mjs';
+import {handleComunidad} from './comunidad.mjs';
 import {AccessError,actorFrom,authorize,validateAccess,ROLES,CAPS} from './policy.mjs';
 import {sha,copy,resource,empty,applyOperation,visible,auditSlice} from './domain.mjs';
 const groupTypes=['ALTA_PADRON','BAJA_PADRON','ASISTENCIA','EVALUACION','DUA','LEGAJO','RECONOCIMIENTO'];
@@ -28,9 +29,10 @@ export function prepare(loaded,d,actor,now=()=>new Date().toISOString()){
  const stamp=now(),clean=copy(d);delete clean.accessVersion;
  return {uid:actor.id,actorVersion:actor.version,activity:d.deporte,operation:d,hash:sha(clean),resource:key,rosterKey:groupKey,checkRoster:groupTypes.includes(d.tipo),rosterChanged:!equal(before.padron,after.padron),baseVersion:meta.version,changes:deltas(before,after),fichas:Object.entries(after.fichas).filter(([id,f])=>!equal(f,before.fichas[id])).map(([id,f])=>({id,before:before.fichas[id]||null,after:f})),archive:d.tipo==='RESET_DATOS'?{id:'temporada_'+d.requestId,fecha:stamp,modo:d.modo,autor:actor.id,state:before,temporada:meta.temporada}:null,audit:{id:d.requestId,fecha:stamp,uid:actor.id,autor:actor.nombre,rol:actor.rol,tipo:d.tipo,deporte:d.deporte,categoria:d.categoria||'',equipo:d.equipo||'',jugador:d.jugador||'',antes:auditSlice(before,d),despues:auditSlice(after,d)}};
 }
-export function createHandler({rpc,verify,now=()=>Date.now()}){
+export function createHandler({rpc,verify,now=()=>Date.now(),notify=null}){
  const service=(action,p)=>rpc('mc_service',{p_action:action,p});
  return async function handle(input){
+  if(typeof input.path==='string'&&input.path.startsWith('/api/comunidad/'))return handleComunidad({rpc,verify,notify},input);
   const identity=await verify(input.token),targetUid=input.body.uid,d={...input.body};
   for(const k of ['token','idToken','actor','uid','rol','areas','capabilities','path'])delete d[k];
   const context=await service('touch',{...identity,allowCreate:input.path==='/api/me'}),{user,owner,areas}=context;
