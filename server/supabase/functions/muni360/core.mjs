@@ -36,8 +36,13 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify}){
   const identity=await verify(input.token),targetUid=input.body.uid,d={...input.body};
   for(const k of ['token','idToken','actor','uid','rol','areas','capabilities','path'])delete d[k];
   const context=await service('touch',{...identity,allowCreate:input.path==='/api/me'}),{user,owner,areas}=context;
-  let actor;try{actor=actorFrom(user,areas,now(),owner);}catch(e){if(input.path!=='/api/me')throw e;}
-  if(input.path==='/api/me')return {ok:true,profile:{uid:identity.uid,nombre:user.nombre,email:user.email,status:actor?'activo':user.status==='activo'?'vencido':user.status,expiresAt:user.expiresAt||null,rol:user.rol,areas:actor?.areas||[],capabilities:actor?.capabilities||{},version:user.version,canManageUsers:identity.uid===owner},catalog:{areas,roles:ROLES,capabilities:CAPS}};
+  let actor,accessStatus=user?.status;
+  try{actor=actorFrom(user,areas,now(),owner);}catch(e){
+   if(input.path!=='/api/me'||!(e instanceof AccessError))throw e;
+   if(e.code==='VENCIDO')accessStatus='vencido';
+   else if(e.code!=='PENDIENTE'||user?.status==='activo')throw e;
+  }
+  if(input.path==='/api/me')return {ok:true,profile:{uid:identity.uid,nombre:user.nombre,email:user.email,status:actor?'activo':accessStatus,expiresAt:user.expiresAt||null,rol:user.rol,areas:actor?.areas||[],capabilities:actor?.capabilities||{},version:user.version,canManageUsers:identity.uid===owner},catalog:{areas,roles:ROLES,capabilities:CAPS}};
   if(input.path.startsWith('/api/users/')){
    if(identity.uid!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra permisos.');
    if(input.path==='/api/users/history')return {ok:true,...await service('permissionHistory',{uid:actor.id})};

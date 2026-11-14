@@ -20,7 +20,12 @@
     if(loading)return loading;
     loading=(async()=>{
       const [app,mod]=await Promise.all([import('https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js')]);
-      sdk=mod;auth=mod.getAuth(app.getApps().length?app.getApp():app.initializeApp(root.MUNI_CONFIG.firebase));
+      sdk=mod;
+      const appName=root.MUNI_AUTH_APP_NAME||'[DEFAULT]';
+      const firebaseApp=app.getApps().some(existing=>existing.name===appName)
+        ? app.getApp(appName)
+        : app.initializeApp(root.MUNI_CONFIG.firebase, appName);
+      auth=mod.getAuth(firebaseApp);
       await mod.setPersistence(auth,remembered()?mod.browserLocalPersistence:mod.browserSessionPersistence);
       mod.onAuthStateChanged(auth,()=>callbacks.forEach(fn=>fn(auth.currentUser)));
     })().catch(e=>{loading=null;throw e;});return loading;

@@ -1,11 +1,11 @@
 'use strict';
-const ROLES = ['Profe', 'Coordinación', 'Dirección UGI', 'Consulta', 'Reemplazante'];
+const ROLES = ['Profe', 'Coordinaci\u00f3n', 'Direcci\u00f3n UGI', 'Consulta', 'Reemplazante'];
 const CAPS = ['verDni', 'verLegajo', 'administrarPadron', 'editarDua', 'exportar', 'archivar'];
 class AccessError extends Error {
   constructor(code, message, status=403) { super(message); this.code=code; this.status=status; }
 }
 function defaults(role) {
-  const manage=['Coordinación','Dirección UGI'].includes(role);
+  const manage=['Coordinaci\u00f3n','Direcci\u00f3n UGI'].includes(role);
   return Object.fromEntries(CAPS.map(k=>[k, manage]));
 }
 function actorFrom(record, areas, now=Date.now(), owner=null) {
@@ -25,8 +25,8 @@ function authorize(actor, d) {
 function validateAccess(input, areas) {
   if (!input || !ROLES.includes(input.rol) || !['activo','suspendido','pendiente'].includes(input.status)) throw new AccessError('VALIDACION','Rol o estado inválido.',400);
   if (!Array.isArray(input.areas) || input.areas.some(a=>!areas.includes(a))) throw new AccessError('VALIDACION','Actividad inválida.',400);
-  if (input.status==='activo' && input.rol!=='Dirección UGI' && !input.areas.length) throw new AccessError('VALIDACION','Elegí al menos una actividad.',400);
-  if(input.rol==='Dirección UGI')throw new AccessError('VALIDACION','Dirección UGI está reservada para la cuenta propietaria.',400);
+  if (input.status==='activo' && input.rol!=='Direcci\u00f3n UGI' && !input.areas.length) throw new AccessError('VALIDACION','Elegí al menos una actividad.',400);
+  if(input.rol==='Direcci\u00f3n UGI')throw new AccessError('VALIDACION','Dirección UGI está reservada para la cuenta propietaria.',400);
   const expiresAt=input.expiresAt||null;
   if (expiresAt && (!Number.isFinite(Date.parse(expiresAt)) || Date.parse(expiresAt)<=Date.now())) throw new AccessError('VALIDACION','El vencimiento debe ser una fecha futura.',400);
   if (input.rol==='Reemplazante' && !expiresAt) throw new AccessError('VALIDACION','Un reemplazo debe tener vencimiento.',400);

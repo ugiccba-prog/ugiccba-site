@@ -5,7 +5,7 @@
     "assets/scripts/muni360-admin.js": "5454ae97d39abd9f87f271d8f444dc3071ee3894df9aeb84ced7517889fa3234",
     "assets/scripts/muni360-config.js": "bd4e9f7a6bae733e3c4158bd7502b910a4e582af9077ab673f2c96ef6b3eee68",
     "assets/scripts/muni360-dashboard.js": "bf4b3704fdde3c34fe3ff692a41705a97650ad09b9d7aaf584af1173048f784e",
-    "assets/scripts/muni360-google.js": "ea8d43d5bf84a926c4eba15dd8fb8786cf6bf4551c64d8c7ba4c8f29d3a23efc",
+    "assets/scripts/muni360-google.js": "1ade1c8579d0788bd2efbe11cd8fa1ae8755817000c8e1dbcfedeecebfb58698",
     "assets/scripts/muni360-import.js": "b6e5aaa353ad6faeb3748ca3760cc34d901a0fe8f52b956bc590c697c08fd896",
     "assets/scripts/muni360-sync.js": "a90df13757d86502417f3a9ce64d0db180720e0ad4e3e2a84c7c4273dc0f27cb",
     "assets/scripts/muni360-time.js": "d11baa34dcdc2b60eb71e0d22db9ac29518433f3c6daec4373d95f13658e353d",
@@ -13,9 +13,9 @@
     "assets/vendor/SheetJS-LICENSE.txt": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64",
     "assets/vendor/xlsx-0.20.3.full.min.js": "cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41",
     "escudo-ccba.png": "5e8b27469509f931cc676026ec49116ded2f10617d17313b11c96c4d318d0793",
-    "deportes/index.html": "30dc2e0140bdea07ba584a37916263a36eabf15ab22ad25aa69da2254439ac88",
-    "colonia/index.html": "4f329af452cf58302113ef3ccd747949ca663128c5f3341d91572995f23e0843",
-    "admin/index.html": "e0ee1078a6a35623b541ef8a17d865082f18727c03870943561647649cc302d5",
+    "deportes/index.html": "5bc7900309b11adf1190c22ec8b774f5e223821cb23fd42f3e8b49544ece17b3",
+    "colonia/index.html": "ab2aa3e72871feb90ecb3b45a8ed0e9e9ce96b8952ac38da797f6a4a2fdee8b7",
+    "admin/index.html": "6de5ecb31cfe605e257f32428fc8db57621220854c6df9e2abea0c0e5d1b1649",
     "index.html": "b077ba13203fd8a2858d37aed4b3f2b519651d7657cc36c0df3a7d210df67b4c"
   }
 }
