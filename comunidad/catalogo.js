@@ -84,6 +84,6 @@ export const HORARIOS_ENTRENAMIENTO = Object.freeze([
 
 // Clave pública VAPID opcional para Web Push externo (FCM). Completar cuando esté habilitada en Firebase Console.
 export const PUSH_CONFIG = Object.freeze({
-  messagingSenderId: "",
-  vapidKey: ""
+  messagingSenderId: "966447516538",
+  vapidKey: "BFkYizUTTN6R2pLIA_VR5y2RXatQ5p-rJA5x1SHO8FNuuurSb7D2wr9YnaDMXGf2J47RvID7PGuYzlvGIVQLkvg"
 });

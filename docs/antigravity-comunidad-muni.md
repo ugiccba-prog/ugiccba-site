@@ -122,6 +122,8 @@ La tabla `comunidad.dispositivos` debe almacenar tokens de notificación asociad
 
 Preferir Supabase Auth con Google para mantener autenticación y autorización dentro de la misma plataforma.
 
+Comunidad Muni debe usar una instancia Firebase con nombre propio (`comunidad`) para no heredar la sesión persistente de Ensayo360 Muni. No cerrar ni reutilizar automáticamente la sesión de otras aplicaciones del mismo proyecto.
+
 Si el proyecto ya depende fuertemente de Firebase Auth, mantener Firebase solo si se implementa un backend que valide el token de Firebase antes de acceder a Supabase. No mezclar Firebase UID con RLS de Supabase de forma directa.
 
 ## Interfaz pública
