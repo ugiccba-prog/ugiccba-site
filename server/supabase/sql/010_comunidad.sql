@@ -177,7 +177,8 @@ begin
 
   v_is_coord := v_is_active and (
     v_uid = v_settings.owner_uid
-    or v_user->>'rol' in ('Dirección UGI', 'Coordinación')
+    or v_user->>'rol' = 'Dirección UGI'
+    or coalesce((v_user#>>'{capabilities,publicarComunidad}')::boolean, v_user->>'rol' = 'Coordinación')
   );
 
   if v_is_coord then

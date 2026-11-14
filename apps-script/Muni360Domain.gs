@@ -3,7 +3,7 @@ function canonicalUGI(v){if(Array.isArray(v))return v.map(canonicalUGI);if(v&&ty
 function randomUUID(){return Utilities.getUuid();}
 function sha(v){return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,typeof v==="string"?v:JSON.stringify(canonicalUGI(v)),Utilities.Charset.UTF_8).map(function(b){return ("0"+((b+256)%256).toString(16)).slice(-2);}).join("");}
 const ROLES = ['Profe', 'Coordinación', 'Dirección UGI', 'Consulta', 'Reemplazante'];
-const CAPS = ['verDni', 'verLegajo', 'administrarPadron', 'editarDua', 'exportar', 'archivar'];
+const CAPS = ['verDni', 'verLegajo', 'administrarPadron', 'editarDua', 'exportar', 'archivar', 'publicarComunidad'];
 class AccessError extends Error {
   constructor(code, message, status=403) { super(message); this.code=code; this.status=status; }
 }

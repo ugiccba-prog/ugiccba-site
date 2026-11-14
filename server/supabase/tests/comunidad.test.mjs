@@ -260,4 +260,69 @@ await test('coordinator publishes Partido with filtered deduplicated notificatio
   await callAs('familia1', '/api/comunidad/unsubscribe', { id: subsAfter.suscripciones[0].id });
 });
 
+await test('owner can grant publicarComunidad to Profe and revoke it from Coordinación via users panel', async () => {
+  const { users } = await callAs('owner', '/api/users/list');
+  const teacher = users.find(u => u.uid === 'teacher');
+  const coord = users.find(u => u.uid === 'coord');
+
+  await callAs('owner', '/api/users/update', {
+    uid: 'teacher',
+    rol: 'Profe',
+    status: 'activo',
+    areas: ['Básquet Caballeros'],
+    capabilities: { publicarComunidad: true },
+    revision: teacher.revision,
+    expiresAt: null
+  });
+
+  const teacherSess = await callAs('teacher', '/api/comunidad/session');
+  assert.equal(teacherSess.profile.canPublish, true);
+  assert.ok(teacherSess.profile.publishAreas.includes('Básquet Caballeros'));
+
+  const teacherPub = await callAs('teacher', '/api/comunidad/publish', {
+    actividad: 'Básquet Caballeros',
+    tipo: 'Aviso',
+    titulo: 'Aviso de profe habilitado',
+    detalle: 'Confirmado entrenamiento de hoy.'
+  });
+  assert.equal(teacherPub.ok, true);
+  await callAs('teacher', '/api/comunidad/deactivate', { id: teacherPub.aviso.id });
+
+  await callAs('owner', '/api/users/update', {
+    uid: 'coord',
+    rol: 'Coordinación',
+    status: 'activo',
+    areas: ['Básquet Caballeros'],
+    capabilities: { publicarComunidad: false },
+    revision: coord.revision,
+    expiresAt: null
+  });
+
+  const coordSessRevoked = await callAs('coord', '/api/comunidad/session');
+  assert.equal(coordSessRevoked.profile.canPublish, false);
+  await assert.rejects(
+    () => callAs('coord', '/api/comunidad/publish', {
+      actividad: 'Básquet Caballeros',
+      tipo: 'Aviso',
+      titulo: 'Intento sin permiso',
+      detalle: 'Debe fallar al quitar publicarComunidad.'
+    }),
+    /coordinación|permisos/i
+  );
+
+  const { users: usersAfter } = await callAs('owner', '/api/users/list');
+  const coordUpdated = usersAfter.find(u => u.uid === 'coord');
+  await callAs('owner', '/api/users/update', {
+    uid: 'coord',
+    rol: 'Coordinación',
+    status: 'activo',
+    areas: ['Básquet Caballeros'],
+    capabilities: { publicarComunidad: true },
+    revision: coordUpdated.revision,
+    expiresAt: null
+  });
+  const coordSessRestored = await callAs('coord', '/api/comunidad/session');
+  assert.equal(coordSessRestored.profile.canPublish, true);
+});
+
 await db.close();

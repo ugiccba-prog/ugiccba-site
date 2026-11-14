@@ -1295,7 +1295,7 @@
 
   <script src="../assets/scripts/muni360-time.js?v=d11baa34dcdc"></script>
   <script src="../assets/scripts/muni360-config.js?v=bd4e9f7a6bae"></script>
-  <script src="../assets/scripts/muni360-google.js?v=1ade1c8579d0"></script>
+  <script src="../assets/scripts/muni360-google.js?v=cd5843f54895"></script>
   <script src="../assets/scripts/muni360-sync.js?v=a90df13757d8"></script>
   <script src="../assets/scripts/muni360-import.js?v=b6e5aaa353ad"></script>
   <script src="../assets/scripts/muni360-dashboard.js?v=bf4b3704fdde"></script>
@@ -1583,7 +1583,7 @@
     const deportesSolo = CATALOGO_MUNI360.filter(x => x.esBase);
     $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
-    let areaElegidaLogin = almacen.getItem('muni360cyc_area') || "Colonia";
+    let areaElegidaLogin = almacen.getItem('muni360cyc_area') || (()=>{try{return localStorage.getItem('muni360cyc_ult_area');}catch(_){return '';}})() || "Colonia";
     if (areaElegidaLogin !== "Colonia" && areaElegidaLogin !== "COYFD") areaElegidaLogin = "Colonia";
     $('login-profe').value = almacen.getItem('muni360_profe') || "";
 
@@ -1608,7 +1608,7 @@
 
 
     let authLoad=0;
-    async function cargarPerfilGoogle() {
+    async function cargarPerfilGoogle(user) {
       const attempt=++authLoad;
       $('login-error').textContent='Comprobando autorización de UGI...';
       try {
@@ -1618,8 +1618,29 @@
         const available=deportesSolo.filter(d=>p.areas.includes(d.nombre));
         if(!available.length){$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;}
         limpiarCachePrivada();storageScope=p.uid;
-        iniciarSesion({usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:!!p.canManageUsers,expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre});
-      }catch(e){$('login-error').textContent=e.message||'No se pudo verificar el acceso. Reintentá con conexión.';}
+        let ultArea='';try{ultArea=localStorage.getItem('muni360cyc_ult_area')||'';}catch(_){}
+        const preferred=available.some(d=>d.nombre===ultArea)?ultArea:(available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre);
+        const datosSesion={usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:!!p.canManageUsers,expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:preferred};
+        try{
+          if(localStorage.getItem('muni360_keep_signed_in')!=='false')localStorage.setItem('muni360cyc_perfil_cache:'+p.uid,JSON.stringify(datosSesion));
+          else localStorage.removeItem('muni360cyc_perfil_cache:'+p.uid);
+        }catch(_){}
+        iniciarSesion(datosSesion);
+      }catch(e){
+        if(user?.uid && !['PENDIENTE','VENCIDO','PERMISOS','SESION'].includes(e?.code)){
+          try{
+            if(localStorage.getItem('muni360_keep_signed_in')!=='false'){
+              const cached=JSON.parse(localStorage.getItem('muni360cyc_perfil_cache:'+user.uid)||'null');
+              if(cached?.usuario===user.uid){
+                const ult=localStorage.getItem('muni360cyc_ult_area')||'';
+                if(ult && Array.isArray(cached.areas) && cached.areas.includes(ult) && deportesSolo.some(d=>d.nombre===ult))cached.area=ult;
+                storageScope=user.uid;iniciarSesion(cached);return;
+              }
+            }
+          }catch(_){}
+        }
+        $('login-error').textContent=e.message||'No se pudo verificar el acceso. Reintentá con conexión.';
+      }
     }
     $('login-form').addEventListener('submit',async e=>{
       e.preventDefault();const btn=$('google-login');btn.disabled=true;$('login-error').textContent='Abriendo Google...';
@@ -1642,6 +1663,7 @@
         : "Colonia";
 
       almacen.setItem('muni360cyc_area', areaActiva);
+      try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360cyc_ult_area', areaActiva); } catch(_) {}
       almacen.setItem('muni360_profe', datosSesion.profeNombre || "Juan Machado");
       almacen.setItem('muni360cyc_sesion_activa', JSON.stringify({ ...datosSesion, area: areaActiva }));
 
@@ -1667,6 +1689,7 @@
       authLoad++;try{await MuniGoogle.logout();}catch(_){}
       syncClient=null; sesion=null; datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};
       sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
+      try{Object.keys(localStorage).filter(k=>k.startsWith('muni360_perfil_cache:')||k.startsWith('muni360cyc_perfil_cache:')).forEach(k=>localStorage.removeItem(k));}catch(_){}
       $('dua-modal').classList.add('hidden'); $('dua-modal-body').textContent='';
       ['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden')); $('login-screen').classList.remove('hidden');
     });
@@ -1714,6 +1737,7 @@
 
     $('sel-deporte').addEventListener('change', e => {
       areaActiva = e.target.value;
+      try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360cyc_ult_area', areaActiva); } catch(_) {}
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
       actualizarCabeceraYPestanas();
@@ -3707,7 +3731,7 @@
     };
     const demoParam=new URLSearchParams(location.search).get('demo');
     if(demoParam==='1')window.cargarDemoVideoUGI();
-    else if(window.MuniGoogle){MuniGoogle.observe((user,error)=>{if(error){$('login-error').textContent=error.message;return;}if(user)cargarPerfilGoogle();else if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden'));$('login-screen').classList.remove('hidden');}});}
+    else if(window.MuniGoogle){MuniGoogle.observe((user,error)=>{if(error){$('login-error').textContent=error.message;return;}if(user)cargarPerfilGoogle(user);else if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen'].forEach(id=>$(id).classList.add('hidden'));$('login-screen').classList.remove('hidden');}});}
   </script>
 </body>
 </html>

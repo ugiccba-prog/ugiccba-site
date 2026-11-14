@@ -1,6 +1,6 @@
 'use strict';
 const ROLES = ['Profe', 'Coordinaci\u00f3n', 'Direcci\u00f3n UGI', 'Consulta', 'Reemplazante'];
-const CAPS = ['verDni', 'verLegajo', 'administrarPadron', 'editarDua', 'exportar', 'archivar'];
+const CAPS = ['verDni', 'verLegajo', 'administrarPadron', 'editarDua', 'exportar', 'archivar', 'publicarComunidad'];
 class AccessError extends Error {
   constructor(code, message, status=403) { super(message); this.code=code; this.status=status; }
 }
