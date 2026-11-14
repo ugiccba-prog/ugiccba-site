@@ -19,7 +19,6 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
 
 const TIPO_ETIQUETAS = Object.fromEntries([
   ...TIPOS_AVISO.map(t => [t.valor, t.etiqueta]),
-  ["Entrenamiento", "Entrenamiento"],
   ["Comunicado", "Aviso"]
 ]);
 
@@ -228,12 +227,15 @@ function renderNotifEstado() {
   }
   btn.disabled = false;
   const perm = Notification.permission;
+  const pushReady = Boolean(PUSH_CONFIG.messagingSenderId && PUSH_CONFIG.vapidKey);
+  if (!pushReady) {
+    lbl.textContent = "Las notificaciones todavía no están configuradas.";
+    btn.disabled = true;
+    return;
+  }
   if (perm === "granted") {
-    const pushReady = Boolean(PUSH_CONFIG.messagingSenderId && PUSH_CONFIG.vapidKey);
     lbl.textContent = count > 0
-      ? (pushReady
-        ? `Notificaciones activadas (${count} dispositivo registrado en tu cuenta).`
-        : `Permiso concedido y dispositivo registrado (${count}). Falta configurar certificado Web Push en el servidor para envío en segundo plano.`)
+      ? `Notificaciones activadas (${count} dispositivo registrado en tu cuenta).`
       : "Permiso concedido en este navegador. Tocá el botón para registrar este dispositivo en tu cuenta.";
   } else if (perm === "denied") {
     lbl.textContent = "Las notificaciones están bloqueadas en la configuración de este navegador.";
@@ -444,10 +446,7 @@ async function obtenerTokenDispositivo() {
       // Continúa con canal web del navegador si FCM remoto aún no está disponible.
     }
   }
-  const suffix = typeof crypto?.randomUUID === "function"
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 14)}`;
-  return { token: `web-local-${suffix}`, plataforma: "web-local" };
+  throw Error("Las notificaciones web todavía no están configuradas.");
 }
 
 $("btn-activar-notificaciones").addEventListener("click", async () => {

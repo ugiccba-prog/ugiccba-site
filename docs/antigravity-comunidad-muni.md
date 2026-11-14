@@ -72,7 +72,7 @@ La tabla `comunidad.novedades` debe soportar como mínimo:
 - `actividad`
 - `categoria`
 - `equipo`
-- `tipo`: `Partido`, `Entrenamiento`, `Cambio`, `Suspension`, `Aviso`
+- `tipo`: `Partido`, `Cambio`, `Suspension`, `Aviso`
 - `urgente`
 - `titulo`
 - `detalle`

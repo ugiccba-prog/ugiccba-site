@@ -2,7 +2,7 @@ import {AccessError} from './policy.mjs';
 
 const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
-const TIPOS=new Set(['Partido','Entrenamiento','Cambio','Suspension','Aviso']);
+const TIPOS=new Set(['Partido','Cambio','Suspension','Aviso']);
 
 function validDate(value){
  const s=String(value||'').trim();

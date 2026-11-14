@@ -15,7 +15,7 @@ create table if not exists comunidad.novedades (
   actividad text not null,
   categoria text not null default '',
   equipo text not null default '',
-  tipo text not null check (tipo in ('Partido', 'Entrenamiento', 'Cambio', 'Suspension', 'Aviso')),
+  tipo text not null check (tipo in ('Partido', 'Cambio', 'Suspension', 'Aviso')),
   urgente boolean not null default false,
   titulo text not null check (char_length(btrim(titulo)) between 3 and 160),
   detalle text not null check (char_length(btrim(detalle)) between 3 and 2000),
@@ -31,12 +31,12 @@ alter table comunidad.novedades add column if not exists enviar_notificacion boo
 alter table comunidad.novedades add column if not exists notificacion_estado jsonb not null default '{"enviados":[],"errores":[]}'::jsonb;
 alter table comunidad.novedades alter column hora_evento set default '';
 alter table comunidad.novedades alter column lugar set default '';
-update comunidad.novedades set tipo = 'Aviso' where tipo = 'Comunicado';
+update comunidad.novedades set tipo = 'Aviso' where tipo in ('Comunicado', 'Entrenamiento');
 update comunidad.novedades set hora_evento = '' where hora_evento is null;
 update comunidad.novedades set lugar = '' where lugar is null;
 alter table comunidad.novedades drop constraint if exists novedades_tipo_check;
 alter table comunidad.novedades add constraint novedades_tipo_check
-  check (tipo in ('Partido', 'Entrenamiento', 'Cambio', 'Suspension', 'Aviso'));
+  check (tipo in ('Partido', 'Cambio', 'Suspension', 'Aviso'));
 
 create index if not exists idx_novedades_feed on comunidad.novedades (activa, creado_at desc);
 
@@ -329,7 +329,7 @@ begin
     if v_eq <> '' and v_cat = '' then
       raise exception using errcode = '22023', message = 'Indicá la categoría antes de filtrar por equipo.';
     end if;
-    if not (v_tipo = any(array['Partido', 'Entrenamiento', 'Cambio', 'Suspension', 'Aviso']::text[])) then
+    if not (v_tipo = any(array['Partido', 'Cambio', 'Suspension', 'Aviso']::text[])) then
       raise exception using errcode = '22023', message = 'Tipo de aviso inválido.';
     end if;
     if char_length(v_titulo) < 3 or char_length(v_titulo) > 160 then
