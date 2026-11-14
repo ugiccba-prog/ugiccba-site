@@ -423,6 +423,17 @@ $("btn-logout-comunidad").addEventListener("click", async () => {
   }
 });
 
+$("btn-cambiar-cuenta").addEventListener("click", async () => {
+  bannerAlertasMensaje = null;
+  try {
+    await window.MuniGoogle.login();
+  } catch (err) {
+    if (err?.code === "auth/popup-closed-by-user") return;
+    bannerAlertasMensaje = { type: "error", text: err?.message || "No se pudo cambiar la cuenta de Google." };
+    mostrarEstado($("estado-alertas"), bannerAlertasMensaje);
+  }
+});
+
 // Consentimiento explícito de notificaciones web
 async function obtenerTokenDispositivo() {
   if ("serviceWorker" in navigator) {
