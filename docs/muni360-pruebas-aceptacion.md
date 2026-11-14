@@ -1,6 +1,8 @@
-# Muni360 · Matriz de aceptación en ensayo (Supabase + Google Auth/Sheets)
+# Muni360 · Matriz de aceptación histórica y destino 2027
 
-Versión activa `supabase-1.0.0` (corte verificado el 12/11/2026 desde `apps-script-3.0.0`) · Publicada en `https://ugiccba.com.ar/ensayo360muni/`. El estado de los ensayos reales se actualiza únicamente con evidencia del entorno publicado o confirmación del usuario. Las pruebas locales automáticas (PGlite / simuladores) no completan estas casillas. Usar datos ficticios.
+La evidencia confirmada aquí corresponde al paquete anterior `/ensayo360muni/`, publicado el 12/11/2026. El nuevo paquete de `muni360/oficial-2027` conserva el backend, pero cambia las rutas y todavía no se publicó. No trasladar automáticamente estos estados: volver a verificar el inicio de sesión y los flujos de navegación desde `/muni360/` antes de declarar aceptada la versión 2027.
+
+El estado de los ensayos reales se actualiza únicamente con evidencia del entorno publicado o confirmación del usuario. Las pruebas locales automáticas (PGlite / simuladores) no completan estas casillas. Usar datos ficticios.
 
 Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operación cuando exista, resultado esperado/obtenido, captura sin información sensible y responsable de aprobación. Los IDs de operaciones sirven para localizar el recibo y la auditoría sin copiar tokens ni datos personales a un informe público.
 

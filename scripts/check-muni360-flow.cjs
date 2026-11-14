@@ -22,16 +22,16 @@ const server=http.createServer(async(req,res)=>{
    const d=JSON.parse(raw);calls.push({tipo:d.tipo,path:d.path,uid:d.idToken===e.owner?'owner':'teacher'});
    const result=e.ctx.doPost({postData:{contents:raw}});res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify(result));
   }
-  if(url.pathname==='/assets/scripts/muni360-config.js'){
+  if(url.pathname.endsWith('/assets/scripts/muni360-config.js')){
    res.writeHead(200,{'Content-Type':mime['.js']});return res.end('window.MUNI_CONFIG='+JSON.stringify({backend:'apps-script',apiBaseUrl:'http://127.0.0.1:'+port+'/api/backend'})+';');
   }
-  if(url.pathname==='/assets/scripts/muni360-google.js'){
+  if(url.pathname.endsWith('/assets/scripts/muni360-google.js')){
    res.writeHead(200,{'Content-Type':mime['.js']});
    return res.end(`(function(){const owner=new URLSearchParams(location.search).get('qa')==='owner',token=owner?${JSON.stringify(e.owner)}:${JSON.stringify(e.teacher)};async function call(path,body={}){const r=await fetch('/api/backend',{method:'POST',body:JSON.stringify({...body,path,idToken:token})});const d=await r.json();if(!d.ok)throw Object.assign(Error(d.error),{code:d.codigo});return d;}window.MuniGoogle={configured:()=>true,getToken:async()=>token,call,syncSheets:deporte=>call('/api/sheets/sync',{deporte}),observe:fn=>queueMicrotask(()=>fn({uid:owner?'owner':'teacher'})),login:async()=>{},logout:async()=>{}};})();`);
   }
   let name=decodeURIComponent(url.pathname).replace(/^\//,'');if(name.endsWith('/'))name+='index.html';
   const file=path.resolve(root,name),first=name.split('/')[0];
-  if(!file.startsWith(root+path.sep)||!['muni360','muni360cyc','admin','assets','escudo-ccba.png'].includes(first)){res.writeHead(403);return res.end();}
+  if(!file.startsWith(root+path.sep)||!['muni360','assets','escudo-ccba.png'].includes(first)){res.writeHead(403);return res.end();}
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
@@ -40,7 +40,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
  await new Promise(r=>server.listen(0,'127.0.0.1',r));port=server.address().port;
  const browser=await chromium.launch({headless:true,...(process.env.MUNI360_BROWSER_PATH?{executablePath:process.env.MUNI360_BROWSER_PATH}:{})}),report=[];
  try{
-  for(const [index,portal]of ['muni360','muni360cyc'].entries()){
+  for(const [index,portal]of ['muni360/deportes','muni360/colonia'].entries()){
    const deporte=areas[index],context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[],responses=[];
    await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
    page.on('dialog',d=>d.accept());page.on('pageerror',error=>errors.push(error.message));
@@ -78,7 +78,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await context.close();
   }
   const context=await browser.newContext(),page=await context.newPage();await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
-  await page.goto('http://127.0.0.1:'+port+'/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
+  await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);assert.ok((await page.locator('#history').textContent()).length>0);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
  }finally{await browser.close();server.close();}

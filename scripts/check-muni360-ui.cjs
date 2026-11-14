@@ -7,7 +7,7 @@ const server=http.createServer((req,res)=>{
  try{
   let name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'');if(name.endsWith('/'))name+='index.html';
   const file=path.resolve(root,name),first=name.split('/')[0];
-  if(!file.startsWith(root+path.sep)||!['muni360','muni360cyc','admin','assets','escudo-ccba.png'].includes(first)){res.writeHead(403);return res.end();}
+  if(!file.startsWith(root+path.sep)||!['muni360','assets','escudo-ccba.png'].includes(first)){res.writeHead(403);return res.end();}
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch{res.writeHead(404);res.end();}
 });
@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,...(process.env.MUNI360_BROWSER_PATH?{executablePath:process.env.MUNI360_BROWSER_PATH}:{})});
  const results=[];
  try{
-  for(const portal of ['muni360','muni360cyc'])for(const width of [360,390,1440])for(const profile of ['direccion','profe']){
+  for(const portal of ['muni360/deportes','muni360/colonia'])for(const width of [360,390,1440])for(const profile of ['direccion','profe']){
    const height=width===1440?1000:844,context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1}),page=await context.newPage(),errors=[],businessRequests=[];
    page.on('dialog',dialog=>dialog.accept());page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
@@ -75,8 +75,8 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'evaluation overflow');
    }
    await page.locator('[data-tab="asistencia"]').click();await page.evaluate(()=>scrollTo(0,0));
-   await page.screenshot({path:path.join(output,portal+'-'+profile+'-'+width+'.png'),fullPage:false});
-   await rows.first().scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,portal+'-'+profile+'-controls-'+width+'.png'),fullPage:false});
+   await page.screenshot({path:path.join(output,portal.replaceAll('/','-')+'-'+profile+'-'+width+'.png'),fullPage:false});
+   await rows.first().scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,portal.replaceAll('/','-')+'-'+profile+'-controls-'+width+'.png'),fullPage:false});
    assert.deepEqual(errors,[]);assert.deepEqual(businessRequests,[]);
    results.push({portal,profile,width,firstRowTop:Math.round(firstRowTop),rows:await rows.count(),overflow:false,touchTargets:true,attendance:true,filters:true,evaluation:true,errors:0});
    await context.close();

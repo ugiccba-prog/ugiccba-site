@@ -2,11 +2,13 @@ name: Muni 360 checks
 on:
   push:
     branches:
-      - 'revision/muni360-*'
+      - 'muni360/**'
   pull_request:
     paths:
       - 'muni360/**'
-      - 'muni360cyc/**'
+      - 'apps/muni360/source/**'
+      - 'comunidad/**'
+      - 'scripts/build-muni360-public.cjs'
       - 'apps-script/**'
       - 'scripts/build-apps-script.cjs'
       - 'assets/vendor/**'

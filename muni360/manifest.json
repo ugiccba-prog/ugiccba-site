@@ -1,6 +1,6 @@
 {
   "format": "MUNI360_PUBLIC_BUNDLE_V1",
-  "base": "/ensayo360muni/",
+  "base": "/muni360/",
   "files": {
     "assets/scripts/muni360-admin.js": "35628e9fcedf731600b917023c162fd22891a7f1551c125492159f4cb75a6be6",
     "assets/scripts/muni360-config.js": "bd4e9f7a6bae733e3c4158bd7502b910a4e582af9077ab673f2c96ef6b3eee68",

@@ -1,11 +1,12 @@
-# Muni360 — guía de uso del ensayo
-Versión activa `supabase-1.0.0` · Actualizada el 12 de noviembre de 2026.
+# Muni360 — guía de uso para el destino oficial 2027
+Versión candidata `supabase-1.0.0` · Ruta preparada en la rama local `muni360/oficial-2027` · No publicada.
 
 ## Acceso
-- Entrada unificada (recomendada): https://ugiccba.com.ar/ensayo360muni/
-- Deportes: https://ugiccba.com.ar/ensayo360muni/deportes/
-- Colonia y COYFD: https://ugiccba.com.ar/ensayo360muni/colonia/
-- Usuarios y permisos: https://ugiccba.com.ar/ensayo360muni/admin/
+- Entrada unificada: https://ugiccba.com.ar/muni360/
+- Deportes: https://ugiccba.com.ar/muni360/deportes/
+- Colonia y COYFD: https://ugiccba.com.ar/muni360/colonia/
+- Usuarios y permisos: https://ugiccba.com.ar/muni360/admin/
+- Avisos de Comunidad: https://ugiccba.com.ar/comunidad/
 
 > **Continuidad desde el acceso anterior:** Si habías usado https://muni360-ugi-ensayo.web.app/muni360/, verificá primero allí con tu cuenta que no hayan quedado cargas locales pendientes antes de pasar al dominio `ugiccba.com.ar`. Tus datos confirmados ya están en la misma base Supabase y al cambiar de dominio sólo iniciás sesión con Google una vez (luego rige *Mantener sesión iniciada*).
 

@@ -9,7 +9,7 @@ function portal(file){
  vm.runInContext("sesion={rol:'Consulta'};toast=()=>{};writes=0;syncClient={queue:[],enqueue:async()=>{writes++;return true;}};",c);
  return {controls,els,run:s=>vm.runInContext(s,c)};
 }
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': Consulta deshabilita edición y al cambiar de rol restaura el estado anterior',()=>{
   const p=portal(file);p.run('aplicarModoConsulta()');assert.ok(p.controls.every(c=>c.disabled));
   p.run("sesion.rol='Profe';aplicarModoConsulta();");assert.equal(p.controls[0].disabled,false);assert.equal(p.controls[1].disabled,true);

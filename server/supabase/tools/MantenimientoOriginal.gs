@@ -29,7 +29,7 @@ function tareasSupabaseUGI(){
  if(eligible.length){
   if(!tasks.ownerEmail)throw Error('Falta el email del propietario.');
   rpc('mc_source_tasks',{p_result:{claim:eligible.map(function(n){return n.uid;})}});
-  eligible.forEach(function(n){try{MailApp.sendEmail({to:tasks.ownerEmail,subject:'Muni360 · Nueva solicitud de acceso',body:'Una persona solicitó acceso a Muni360.\n\nNombre: '+n.nombre+'\nEmail: '+n.email+'\n\nRevisá Usuarios y permisos en https://muni360-ugi-ensayo.web.app/admin/ . El acceso no se habilita automáticamente.'});sent.push(n.uid);}catch(e){review.push(n.uid);}});
+  eligible.forEach(function(n){try{MailApp.sendEmail({to:tasks.ownerEmail,subject:'Muni360 · Nueva solicitud de acceso',body:'Una persona solicitó acceso a Muni360.\n\nNombre: '+n.nombre+'\nEmail: '+n.email+'\n\nRevisá Usuarios y permisos en https://ugiccba.com.ar/muni360/admin/ . El acceso no se habilita automáticamente.'});sent.push(n.uid);}catch(e){review.push(n.uid);}});
   rpc('mc_source_tasks',{p_result:{sent:sent,review:review}});
  }
  // Claims return only the messages reserved by this invocation. No automatic retry
@@ -51,9 +51,9 @@ function tareasSupabaseUGI(){
 // Plain text only: recipient comes from the authenticated Google account record.
 function mensajeAccesoHabilitadoUGI(n){
  if(!n||typeof n.email!=='string'||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(n.email)||!Array.isArray(n.areas)||!n.areas.length)throw Error('Aviso de acceso inválido.');
- var base='https://muni360-ugi-ensayo.web.app',links=[],baseAreas=['Colonia','COYFD'];
- if(n.areas.some(function(a){return baseAreas.indexOf(a)<0;}))links.push('Deportes: '+base+'/muni360/');
- if(n.areas.some(function(a){return baseAreas.indexOf(a)>=0;}))links.push('Colonia y COYFD: '+base+'/muni360cyc/');
+ var base='https://ugiccba.com.ar/muni360',links=[],baseAreas=['Colonia','COYFD'];
+ if(n.areas.some(function(a){return baseAreas.indexOf(a)<0;}))links.push('Deportes: '+base+'/deportes/');
+ if(n.areas.some(function(a){return baseAreas.indexOf(a)>=0;}))links.push('Colonia y COYFD: '+base+'/colonia/');
  var body='Hola '+(n.nombre||'')+',\n\nTu acceso a Muni360 fue habilitado.\n\nFunción: '+n.rol+'\nActividades: '+n.areas.join(', ')+'\n\n'+links.join('\n')+'\n\nIngresá con esta misma cuenta Google: '+n.email+'.';
  if(n.expiresAt)body+='\nAutorización vigente hasta: '+Utilities.formatDate(new Date(n.expiresAt),'America/Argentina/Buenos_Aires','dd/MM/yyyy HH:mm')+' (hora argentina).';
  body+='\n\nUGI · Club Ciudad de Buenos Aires';

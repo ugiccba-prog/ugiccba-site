@@ -172,7 +172,7 @@ test('baja y alta del mismo DNI recuperan identidad estable; otro DNI no hereda 
   assert.notEqual(e.read(token).padron[1].id,id);
 });
 test('sintaxis y arranque de los dos portales, sin autenticación local ni DUA ajeno',()=>{
-  for(const path of ['muni360/index.html','muni360cyc/index.html']){
+  for(const path of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
     const html=fs.readFileSync(path,'utf8'),scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim());
     const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));
     const els=new Map([...ids].map(id=>[id,{value:'',innerHTML:'',textContent:'',checked:false,disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
@@ -183,7 +183,7 @@ test('sintaxis y arranque de los dos portales, sin autenticación local ni DUA a
   }
 });
 test('la carga por texto conserva dos renglones como dos deportistas',async()=>{
-  for(const path of ['muni360/index.html','muni360cyc/index.html']){
+  for(const path of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
     const html=fs.readFileSync(path,'utf8'),script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
     const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]),handlers=new Map(),values=new Map();
     const els=new Map(ids.map(id=>[id,{value:'',innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},addEventListener(type,fn){handlers.set(id+':'+type,fn);},setAttribute(){}}]));

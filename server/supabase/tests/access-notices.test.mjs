@@ -43,8 +43,8 @@ await test('approval and queue insertion roll back atomically',async()=>{
 await test('mail goes to the account holder with only relevant portal links; no email is sent in this test',()=>{
  const ctx={};vm.runInNewContext(fs.readFileSync(new URL('../tools/MantenimientoOriginal.gs',import.meta.url),'utf8'),ctx);
  const mail=ctx.mensajeAccesoHabilitadoUGI({email:'teacher@example.com',nombre:'Profe ficticio',rol:'Profe',areas:['Colonia']});
- assert.equal(mail.to,'teacher@example.com');assert.match(mail.body,/\/muni360cyc\//);assert.ok(!mail.body.includes('/muni360/'));
- const both=ctx.mensajeAccesoHabilitadoUGI({email:'teacher@example.com',nombre:'Ficticio',rol:'Coordinación',areas:['Colonia','Tenis']});assert.match(both.body,/\/muni360\//);assert.match(both.body,/\/muni360cyc\//);
+ assert.equal(mail.to,'teacher@example.com');assert.match(mail.body,/\/muni360\/colonia\//);assert.ok(!mail.body.includes('/muni360/deportes/'));
+ const both=ctx.mensajeAccesoHabilitadoUGI({email:'teacher@example.com',nombre:'Ficticio',rol:'Coordinación',areas:['Colonia','Tenis']});assert.match(both.body,/\/muni360\/deportes\//);assert.match(both.body,/\/muni360\/colonia\//);
  assert.throws(()=>ctx.mensajeAccesoHabilitadoUGI({email:'a@example.com\nb@example.com',areas:['Tenis']}));
 });
 await db.close();

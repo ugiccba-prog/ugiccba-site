@@ -9,7 +9,7 @@ function portal(file){
  vm.createContext(c);vm.runInContext(fs.readFileSync('assets/scripts/muni360-time.js','utf8'),c);vm.runInContext(code,c);
  return {els,run:s=>vm.runInContext(s,c)};
 }
-for(const file of ['muni360/index.html','muni360cyc/index.html'])test(file+': perfiles operativos no abren Cambios ni consultan auditoria; al bajar rol se limpia y vuelve a asistencia',async()=>{
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html'])test(file+': perfiles operativos no abren Cambios ni consultan auditoria; al bajar rol se limpia y vuelve a asistencia',async()=>{
  const p=portal(file);
  p.run("storageScope='demo';almacen.setItem('muni360_modo_demo','1');sesion={rol:'Profe',profeNombre:'Ejemplo',areas:[],capabilities:{},esAdminTotal:false};let auditCalls=0;syncClient={queue:[],request:async()=>{auditCalls++;throw Error('No debe consultar');}};");
  for(const role of ['Profe','Reemplazante','Consulta']){

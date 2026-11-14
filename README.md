@@ -25,11 +25,11 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `ciudad-integrado.html`: Programa de inclusión, deporte adaptado y pertenencia institucional.
 
 ### 2. Gestión Deportiva: Muni 360
-* **Portales canónicos:**
-  * `muni360/index.html`: Portal de **Deportes** (Hockey sobre Patines, Básquet, Fútbol, Vóley, Rugby y demás disciplinas del club).
-  * `muni360cyc/index.html`: Portal de **Colonia y COYFD** (incluye opción de comedor en Colonia).
-  * `admin/index.html`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
-* **Paquete público publicado en el dominio:** [`https://ugiccba.com.ar/ensayo360muni/`](https://ugiccba.com.ar/ensayo360muni/) (generado desde las fuentes mediante `npm run build:ensayo360`, ver [docs/muni360-dominio.md](docs/muni360-dominio.md)).
+* **Paquete canónico preparado para la versión oficial 2027:** `muni360/`, destino `https://ugiccba.com.ar/muni360/` (rama local `muni360/oficial-2027`; aún no publicado).
+  * `apps/muni360/source/deportes/index.html`: Portal de **Deportes**.
+  * `apps/muni360/source/colonia/index.html`: Portal de **Colonia y COYFD**.
+  * `apps/muni360/source/admin/index.html`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
+  * `muni360/` se genera con `npm run build:muni360-public`; Comunidad conserva sus avisos en `/comunidad/`.
 * **Capacidades de cancha y gestión:**
   * Registro de Asistencia en vivo con autoguardado, semáforo UGI y cola offline recuperable por cuenta.
   * Evaluaciones técnicas y formativas con decimales, Tarjeta Verde Digital y apoyos DUA.
@@ -67,15 +67,15 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
 
 La decisión vigente (corte aprobado el 12/11/2026) utiliza **Supabase (`supabase-1.0.0`)** como API y base privada operativa, **Firebase Authentication (Spark)** para entrar con Google (con opción de recordar sesión) y **Apps Script + Google Sheets/Drive** como trabajador institucional para vistas de consulta, `CargaPadron`, avisos de aprobación y respaldos diarios privados. No se despliega Cloud Run ni Firestore ni se habilita facturación adicional. Sólo el propietario aprueba accesos; los profes cubren todos los equipos de sus actividades habilitadas y cada cambio conserva autor y antes/después.
 
-El ensayo ya fue importado, activado en modo `ready` y publicado en `https://ugiccba.com.ar/ensayo360muni/`. Lo pendiente principal es completar la validación funcional real posterior al corte con cuentas Google reales sobre la matriz de aceptación. `archive/apps-script-v2/` y `server/muni360/` se conservan sólo como referencia histórica.
+El corte a Supabase se mantiene activo. La rama local `muni360/oficial-2027` prepara la ruta única `/muni360/` para el ciclo 2027; todavía no está publicada. La versión de dominio existente permanece intacta hasta completar la revisión y acordar el momento de salida. `archive/apps-script-v2/` y `server/muni360/` se conservan como referencia histórica.
 
 - [Estado y arquitectura en Supabase](server/supabase/README.md)
 - [Publicación en dominio UGI y compilación](docs/muni360-dominio.md)
 - [Decisión y costos](docs/muni360-decision.md)
-- [Guía de uso del ensayo](docs/muni360-guia-uso.md)
+- [Guía de uso de Muni360](docs/muni360-guia-uso.md)
 - [Matriz de aceptación en Google](docs/muni360-pruebas-aceptacion.md)
-- Comprobaciones: `npm run test:muni360` y `npm run check:ensayo360`.
+- Comprobaciones: `npm run test:muni360` y `npm run check:muni360-public`.
 
 ## Muni360 en el dominio
 
-Entrada: https://ugiccba.com.ar/ensayo360muni/ . Abrir `UGI.code-workspace` en VS Code. Fuentes, compilación, pendientes entre dominios y continuidad entre PC: [docs/muni360-dominio.md](docs/muni360-dominio.md).
+Destino oficial preparado para 2027: https://ugiccba.com.ar/muni360/ (rama local, sin publicar). Abrir `UGI.code-workspace` en VS Code. Fuentes, compilación, pendientes entre dominios y continuidad entre PC: [docs/muni360-dominio.md](docs/muni360-dominio.md).

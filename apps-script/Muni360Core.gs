@@ -150,7 +150,7 @@ function enviarAvisosAccesoUGI(){
       writeTablesUGI(c.id,userTablesUGI(data));
       try{
         MailApp.sendEmail({to:owner.email,subject:'Muni360: nueva solicitud de acceso',name:'Muni360 · UGI',
-          body:'Hay una solicitud de acceso pendiente en Muni360.\n\nNombre: '+String(u.nombre).replace(/[\r\n]/g,' ')+'\nCorreo: '+String(u.email).replace(/[\r\n]/g,' ')+'\n\nRevisar y autorizar:\nhttps://muni360-ugi-ensayo.web.app/admin/\n\nIngresá con la cuenta propietaria, revisá el rol y las actividades y activá el acceso si corresponde.\n\nLa persona no tiene acceso a los datos hasta que la autorices. Este aviso no habilita permisos.'});
+          body:'Hay una solicitud de acceso pendiente en Muni360.\n\nNombre: '+String(u.nombre).replace(/[\r\n]/g,' ')+'\nCorreo: '+String(u.email).replace(/[\r\n]/g,' ')+'\n\nRevisar y autorizar:\nhttps://ugiccba.com.ar/muni360/admin/\n\nIngresá con la cuenta propietaria, revisá el rol y las actividades y activá el acceso si corresponde.\n\nLa persona no tiene acceso a los datos hasta que la autorices. Este aviso no habilita permisos.'});
         u.avisoAcceso={estado:'enviado',fecha:new Date().toISOString()};sent++;
       }catch(_){u.avisoAcceso={estado:'revisar',fecha:new Date().toISOString()};review++;console.error('AVISO_ACCESO_REQUIERE_REVISION');}
       writeTablesUGI(c.id,userTablesUGI(data));

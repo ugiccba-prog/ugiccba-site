@@ -8,4 +8,4 @@ El panel se abre desde la tarjeta superior; no hace consultas agregadas mientras
 
 `/api/dashboard` vuelve a verificar autorización en servidor y sólo devuelve agregados, sin nombres, DNI, fichas privadas ni registros personales. Las lecturas se procesan con un máximo de tres solicitudes simultáneas. Los controles del sistema requieren la identidad propietaria aun cuando se intente llamar la API directamente.
 
-Fuentes: `assets/scripts/muni360-dashboard.js`, `server/supabase/functions/muni360/dashboard.mjs`, política y manejador de la misma carpeta. Regenerar el paquete público con `npm run build:ensayo360` antes de publicar. La sincronización y los datos de actividades continúan en el mismo proyecto existente.
+Fuentes: `assets/scripts/muni360-dashboard.js`, `server/supabase/functions/muni360/dashboard.mjs`, política y manejador de la misma carpeta. Regenerar el paquete público con `npm run build:muni360-public` antes de publicar. La sincronización y los datos de actividades continúan en el mismo proyecto existente.

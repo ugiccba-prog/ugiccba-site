@@ -10,7 +10,7 @@ function portal(file){
  for(const [id,value] of Object.entries({'sel-categoria':'Mini','sel-equipo':'A','input-fecha':'2026-11-10','sel-clima-clase':'N','sel-puntos-ciudad':''}))els.get(id).value=value;
  return {c,values,timers,els,events,run:s=>vm.runInContext(s,c)};
 }
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': autoguardado conserva borrador antes de la red y envía asistencia y semáforo',async()=>{
   const p=portal(file);p.run('markDraft()');
   const saved=JSON.parse(p.values.get('muni360_asistencia_borrador:teacher:Tenis'));
@@ -29,7 +29,7 @@ for(const file of ['muni360/index.html','muni360cyc/index.html']){
  });
 }
 
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': recuperar conexión retoma el borrador más reciente después de enviar pendientes',async()=>{
   const p=portal(file);p.run("markDraft();asistTempDep.Prueba='A';syncClient={queue:[{}],retry:async()=>{syncClient.queue=[];}};");
   await p.events.get('online')();p.timers.at(-1)();await new Promise(setImmediate);

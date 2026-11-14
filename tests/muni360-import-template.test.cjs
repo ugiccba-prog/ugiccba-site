@@ -9,7 +9,7 @@ function portal(file){
  vm.createContext(c);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),c);vm.runInContext(code,c);vm.runInContext("sesion={rol:'Dirección UGI',capabilities:{administrarPadron:true,verDni:true}};areaActiva='Tenis';toast=capture;",c);
  return {els,handlers,downloads,messages,run:s=>vm.runInContext(s,c)};
 }
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': plantilla se puede completar e importar con acentos sin guardar antes de confirmar',async()=>{
   const p=portal(file);p.els.get('descargar-plantilla-padron').onclick();assert.equal(p.downloads.length,1);
   const {wb,name}=p.downloads[0];assert.equal(name,'Muni360_plantilla_padron.xlsx');assert.deepEqual(XLSX.utils.sheet_to_json(wb.Sheets.Padron,{header:1}),[['Apellido','Nombre','DNI']]);

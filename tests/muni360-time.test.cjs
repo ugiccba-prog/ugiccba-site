@@ -46,7 +46,7 @@ test('Argentina: el editor de permisos muestra hora argentina y envia el vencimi
 
 
 test('Argentina: el historial de ambos portales renderiza el horario argentino y escapa el autor',async()=>{
- for(const file of ['muni360/index.html','muni360cyc/index.html']){
+ for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
   const html=fs.readFileSync(file,'utf8'),start=html.indexOf('async function renderAuditoria(){'),end=html.indexOf("    $('sync-sheets').onclick",start);
   assert.ok(start>0&&end>start);
   const output={innerHTML:''},esc=value=>String(value??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));

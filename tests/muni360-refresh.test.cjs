@@ -11,7 +11,7 @@ function portal(file){
  const payload=n=>({padron:Array.from({length:n},(_,i)=>({jugador:i<2?['Uno','Dos'][i]:'Tres'})),asistencia:[],evaluaciones:[{jugador:'Uno',notas:{Pase:6.5,Tiro:6.5}}],fichas:{},archivos:[],sheetsStatus:'synced'});
  return {calls,renders,run:s=>vm.runInContext(s,c),payload};
 }
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': refrescar sin caché conserva los jugadores confirmados mientras espera la red',async()=>{
   const p=portal(file),done=p.run('cargarAreaActiva()');
   assert.equal(p.run('datosDeporte.padron.length'),2);assert.ok(p.renders.every(rows=>rows.length===2));
@@ -33,7 +33,7 @@ for(const file of ['muni360/index.html','muni360cyc/index.html']){
  });
 }
 
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': cambiar a una actividad sin datos no muestra el padrón de la actividad anterior',async()=>{
   const p=portal(file);p.run("areaActiva='Golf';");const done=p.run('cargarAreaActiva()');
   assert.equal(p.run('datosDeporte.padron.length'),0);p.calls[0].resolve(p.payload(0));await done;
@@ -54,7 +54,7 @@ test('cliente: una lectura que termina después de cerrar sesión no repuebla lo
  assert.deepEqual(client.snapshots,{});
 });
 
-for(const file of ['muni360/index.html','muni360cyc/index.html']){
+for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': un pendiente de otra actividad no impide consultar ni cargar el padrón actual',async()=>{
   const p=portal(file);p.run("syncClient.queue=[{payload:{deporte:'Golf'},error:'Sin acceso',code:'PERMISOS'}];syncClient.status=()=>{};");
   const done=p.run('cargarAreaActiva()');assert.equal(p.calls.length,1);

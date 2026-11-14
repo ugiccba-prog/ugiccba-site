@@ -1,26 +1,27 @@
-# Muni360 en el dominio de UGI
+# Muni360 oficial 2027: destino y compilación local
 
-Entrada: https://ugiccba.com.ar/ensayo360muni/
+Destino único preparado: https://ugiccba.com.ar/muni360/ (todavía no publicado).
 
-- Deportes: `/ensayo360muni/deportes/`
-- Colonia / COYFD: `/ensayo360muni/colonia/`
-- Permisos: `/ensayo360muni/admin/`
+- Deportes: `/muni360/deportes/`
+- Colonia / COYFD: `/muni360/colonia/`
+- Usuarios y permisos: `/muni360/admin/`
+- Avisos de cambios de partido y entrenamiento: `/comunidad/`
 
-GitHub Pages continúa publicando `main` desde la raíz. No se modifican DNS, CNAME ni la portada institucional. Firebase y Supabase siguen en sus proyectos existentes y gratuitos. El login Google admite ugiccba.com.ar y www.ugiccba.com.ar; la API conserva su validación de tokens y permisos vigentes.
+La rama local `muni360/oficial-2027` compila este paquete sin publicar cambios. La versión que hoy está en el dominio queda intacta hasta completar la revisión y programar la salida 2027. No se modifican DNS, CNAME, permisos ni servicios externos. Firebase Authentication conserva el ingreso Google y Supabase sigue guardando los datos operativos y avisos de Comunidad.
 
 ## Código y publicación
 
-Abrir `UGI.code-workspace` en VS Code. Fuentes: `muni360/` (Deportes), `muni360cyc/` (Colonia), `admin/`, `assets/scripts/muni360-*.js`, `assets/styles/muni360-cancha.css`. Entrada común: `apps/muni360/entrada.html`. Backend y mantenimiento: `server/supabase/`; SQL histórico: `pilots/supabase/supabase/migrations/`. Los proyectos anteriores se conservan documentados, sin activarlos nuevamente.
+Abrir `UGI.code-workspace` en VS Code. Fuentes: `apps/muni360/source/deportes/`, `apps/muni360/source/colonia/`, `apps/muni360/source/admin/`, `assets/scripts/muni360-*.js`, `assets/styles/muni360-cancha.css`. Entrada común: `apps/muni360/entrada.html`. Backend y mantenimiento: `server/supabase/`; SQL histórico: `pilots/supabase/supabase/migrations/`.
 
-`ensayo360muni/` es un paquete generado: no editar allí a mano. Ejecutar `npm run build:ensayo360` tras cambios en las fuentes; `npm run check:ensayo360` comprueba que el paquete corresponda al código actual. Solo incluye recursos públicos enumerados y sus huellas. Nunca copiar carpetas privadas, credenciales, respaldos, node_modules o código del servidor al paquete.
+`muni360/` es el paquete generado: no editarlo a mano. Ejecutar `npm run build:muni360-public` tras cambios en las fuentes; `npm run check:muni360-public` comprueba que el paquete corresponda al código actual. Solo incluye recursos públicos enumerados y sus huellas. Nunca copiar carpetas privadas, credenciales, respaldos, node_modules o código del servidor al paquete.
 
 La configuración Firebase de navegador es pública por diseño. Las claves privadas y de servicio nunca forman parte de este repositorio. Los recursos JS/CSS del paquete llevan versión de contenido para evitar mezclar una página nueva con scripts cacheados de otra versión.
 
 ## Continuar desde ambas PC
 
-La copia de publicación de la PC del club es `C:\Users\Juan Machado\Projects\ugiccba-site-publicacion`. Se conservan `ugiccba-site` y `muni360-supabase-migracion`. Al volver a casa: primero `git status`, revisar/guardar los cambios locales y hacer `git fetch origin`. No usar `reset --hard` ni `clean` para actualizar. Si hay cambios sin resolver, crear otro worktree basado en `origin/main` para continuar, sin sobrescribir la copia anterior. Abrir el workspace de esa copia.
+La fuente única para preparar 2027 en esta PC es `C:\Users\Juan Machado\Projects\muni360-oficial-2027`, rama local `muni360/oficial-2027`, creada desde `origin/main` limpio (`d6e7e8f`). Seguir trabajando en esa copia. `ugiccba-site-publicacion` conserva la rama `main` publicada y no se modifica; `muni360-supabase-migracion` es una línea anterior divergente y no se debe mezclar completa porque no contiene la Comunidad actual. No usar `reset --hard` ni `clean` para actualizar. Antes de publicar, revisar `git status`, sincronizar la rama remota y volver a correr la aceptación.
 
-Verificación habitual: `npm run test:muni360`, `npm run check:ensayo360`, y pruebas de `server/supabase/tests/` con PGlite del lockfile de `pilots/supabase`. Las comprobaciones automáticas de interfaz con Google simulado no sustituyen la primera entrada real del usuario desde el dominio nuevo.
+Verificación habitual: `npm run test:muni360`, `npm run check:muni360-public`, y pruebas de `server/supabase/tests/` con PGlite del lockfile de `pilots/supabase`. Las comprobaciones automáticas de interfaz con Google simulado no sustituyen la primera entrada real del usuario desde el dominio nuevo.
 
 ## Sesiones y cargas pendientes
 

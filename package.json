@@ -7,8 +7,8 @@
     "lint:css": "stylelint \"**/*.css\"",
     "lint:js": "jshint assets/scripts apps/training",
     "test:muni360": "node scripts/build-apps-script.cjs --check && node --test tests/muni360*.test.cjs",
-    "build:ensayo360": "node scripts/build-ensayo360muni.cjs",
-    "check:ensayo360": "node scripts/build-ensayo360muni.cjs --check"
+    "build:muni360-public": "node scripts/build-muni360-public.cjs",
+    "check:muni360-public": "node scripts/build-muni360-public.cjs --check"
   },
   "devDependencies": {
     "playwright": "^1.40.0",
