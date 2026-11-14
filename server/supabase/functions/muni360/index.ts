@@ -1,4 +1,8 @@
 import {createHandler} from './core.mjs';
+declare const Deno: {
+  env: { get(key: string): string | undefined };
+  serve(handler: (req: Request) => Response | Promise<Response>): void;
+};
 const base=Deno.env.get('SUPABASE_URL')!;
 const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const publicKey=Deno.env.get('SUPABASE_ANON_KEY')!;
