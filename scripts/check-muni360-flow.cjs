@@ -35,6 +35,19 @@ const server=http.createServer(async(req,res)=>{
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
+async function elegirGrupoProfe(page, portal) {
+ if (portal !== 'muni360/deportes') return;
+ const categoria = page.locator('#sel-categoria');
+ const equipo = page.locator('#sel-equipo');
+ await categoria.locator('option').nth(1).waitFor({state:'attached'});
+ assert.equal(await categoria.inputValue(), '');
+ assert.equal(await page.locator('#tab-asistencia').isVisible(), false);
+ await categoria.selectOption({index:1});
+ assert.equal(await equipo.inputValue(), '');
+ assert.equal(await page.locator('#tab-asistencia').isVisible(), false);
+ await equipo.selectOption({index:1});
+ await page.locator('#tab-asistencia').waitFor({state:'visible'});
+}
 async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(await check())return;await new Promise(r=>setTimeout(r,100));}throw Error('Workflow condition not reached');}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));port=server.address().port;
@@ -45,7 +58,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
    page.on('dialog',d=>d.accept());page.on('pageerror',error=>errors.push(error.message));
    page.on('response',async r=>{if(r.url().endsWith('/api/backend'))responses.push(await r.text());});
-   await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});
+   await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});await elegirGrupoProfe(page,portal);
    await page.locator('#lista-asist .asist-row').first().waitFor();assert.equal(await page.locator('#lista-asist .asist-row').count(),2);
    assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false);
    assert.equal(await page.locator('#tab-btn-padron').isVisible(),false);
@@ -58,7 +71,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await until(()=>e.read(e.owner,deporte).asistencia.length===2);
    await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
    assert.equal(e.read(e.owner,deporte).sheetsStatus,'synced');
-   await page.reload();await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();
+   await page.reload();await elegirGrupoProfe(page,portal);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();
    await page.locator('[data-tab="evaluacion"]').click();await page.locator('#lista-eval button').first().click();
    await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
    await until(()=>e.read(e.owner,deporte).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));

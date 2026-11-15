@@ -48,6 +48,7 @@
     .hidden { display: none !important; }
 
     /* ================= PANTALLA DE LOGIN MUNI 360 ================= */
+    #app-screen.eligiendo-grupo #tab-asistencia, #app-screen.eligiendo-grupo #nav-tabs, #app-screen.eligiendo-grupo #btn-listo-filtros, #app-screen.eligiendo-grupo #barra-contexto-activo { display: none; }
     #login-screen {
       min-height: 100dvh;
       display: flex;
@@ -1671,6 +1672,7 @@
       $('input-fecha').value = fechaLocal(0);
 
       actualizarCabeceraYPestanas();
+      iniciarEleccionGrupo();
       cargarAreaActiva();
       renderGuiaUgi();
       renderPlanificadorDua();
@@ -1730,11 +1732,13 @@
     }
 
     $('sel-deporte').addEventListener('change', e => {
+      if (draftContext) { e.target.value = areaActiva; toast('Guardá la asistencia antes de cambiar de deporte.'); return; }
       areaActiva = e.target.value;
       try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360_ult_deporte', areaActiva); } catch(_) {}
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
       actualizarCabeceraYPestanas();
+      iniciarEleccionGrupo();
       cargarAreaActiva();
     });
 
@@ -2440,6 +2444,22 @@
     }
 
     let filtrosDesplegados = false;
+    let esperaEquipo = false;
+
+    function iniciarEleccionGrupo() {
+      esperaEquipo = sesion?.rol === 'Profe';
+      $('app-screen').classList.toggle('eligiendo-grupo', esperaEquipo);
+      if (!esperaEquipo) return;
+      $('sel-categoria').value = '';
+      $('sel-equipo').value = '';
+      filtrosDesplegados = true;
+      cambiarTab('asistencia');
+    }
+
+    function opcionesGrupo(opciones, indicacion) {
+      return '<option value="">' + indicacion + '</option>' +
+        opciones.map(valor => '<option value="' + esc(valor) + '">' + esc(valor) + '</option>').join('');
+    }
 
     function formatearFechaCorta(iso) {
       if (!iso) return 'Hoy';
@@ -2482,6 +2502,20 @@
 
     function renderFiltrosDeporte() {
       const cats = categoriasDep();
+      if (sesion?.rol === 'Profe' && !esperaEquipo &&
+          !equiposDep($('sel-categoria').value).includes($('sel-equipo').value)) iniciarEleccionGrupo();
+      if (esperaEquipo) {
+        const categoria = $('sel-categoria').value;
+        $('sel-categoria').innerHTML = opcionesGrupo(cats, cats.length ? 'Elegí la categoría o grupo' : 'Sin grupos cargados');
+        $('sel-categoria').value = cats.includes(categoria) ? categoria : '';
+        const equipos = equiposDep($('sel-categoria').value);
+        $('sel-equipo').innerHTML = opcionesGrupo(equipos, 'Elegí el equipo o tira');
+        $('sel-equipo').disabled = !equipos.length;
+        filtrosDesplegados = true;
+        actualizarBarraContexto();
+        return;
+      }
+      $('sel-equipo').disabled = false;
       const ultCat = almacen.getItem('muni360_ult_cat_' + areaActiva) || '';
       const prevCat = $('sel-categoria').value;
 
@@ -2534,6 +2568,13 @@
     });
 
     $('sel-categoria').addEventListener('change', () => {
+      if (sesion?.rol === 'Profe') {
+        esperaEquipo = true;
+        $('app-screen').classList.add('eligiendo-grupo');
+        cambiarTab('asistencia');
+        renderFiltrosDeporte();
+        return;
+      }
       const eqs = equiposDep($('sel-categoria').value);
       const ultEq = almacen.getItem('muni360_ult_eq_' + areaActiva) || '';
       $('sel-equipo').innerHTML = eqs.length ? eqs.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('') : `<option value="General">General</option>`;
@@ -2547,6 +2588,11 @@
     });
 
     $('sel-equipo').addEventListener('change', () => {
+      if (esperaEquipo) {
+        if (!equiposDep($('sel-categoria').value).includes($('sel-equipo').value)) return;
+        esperaEquipo = false;
+        $('app-screen').classList.remove('eligiendo-grupo');
+      }
       guardarUltimaSeleccionGrupo();
       filtrosDesplegados = false;
       actualizarBarraContexto();
