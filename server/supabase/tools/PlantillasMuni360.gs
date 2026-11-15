@@ -126,5 +126,39 @@ function instalarControlPlantillasUGI(){
   console.log('CONTROL_PLANTILLAS_INSTALADO '+JSON.stringify({total:result.targets.length,pendientes:result.pending,recuperadas:recovered,activadoresRetirados:removed}));
 }
 
+function organizarPlanillasEnCarpetaUGI(){
+  if(typeof DriveApp.getFolderById!=='function')return {ok:false};
+  var context=contextoPlantillasUGI(true);
+  if(context.props.getProperty('UGI_DRIVE_ORDEN_V1')==='true')return {ok:true,yaOrdenado:true};
+  var targets=rpcPlantillasUGI('mc_worker_targets',{},context),folder01=DriveApp.getFolderById('1nVmfokmq_DN4T-3o6xLX3r_saGO-W3Ai'),movidas=0;
+  targets.filter(function(t){return !!t.sheet_id;}).forEach(function(t){
+    try{var file=DriveApp.getFileById(t.sheet_id);if(file.isTrashed())file.setTrashed(false);file.moveTo(folder01);movidas++;}catch(e){console.log('AVISO_MOVER_PLANILLA '+t.activity+' '+String(e.message||e));}
+  });
+  var folder99=DriveApp.getFolderById('1VSTrDxDsUYsb-EJjFr7gP7past4YTpUI');
+  [
+    ['1zsqh7INbohd9CxJTGWR71_7ULmUHekcx','[ELIMINAR] _BACKUP_SEMANAL_UGI (59 backups viejos 13-11)'],
+    ['1OFydxaZ6H2Me8ccHOEtjng8MFTIRUQQy','[ELIMINAR] Muni360 - Respaldos de Ensayo'],
+    ['1FC_b0k0eFIOv0vnpTVfB55pwhkq27hSB','[ELIMINAR] Club 360 (Prototipo viejo 08-11)'],
+    ['1-Lpk7x-4tEBdmmzLX3xI2TMjdCI7Rqo6','[ELIMINAR] Planillas Viejas MUNI 360 (06-11 Pre-Supabase)'],
+    ['1b0h_AcIn6FesSgM0wvlpmr4QZnQzZz6D','[ELIMINAR] Scrips viejos'],
+    ['1PWWOiWpCB4tRXmzNbzWD86RS1cWDV6jk','[ELIMINAR] Contraseñas MUNI 360 (Viejo Pre-Google-Auth)'],
+    ['18CwojmM81o1soJdNXvSedaZiBunCJxIQ','[ELIMINAR] Pruebas y Scripts Piloto Retirados']
+  ].forEach(function(item){
+    try{var f=DriveApp.getFolderById(item[0]);f.setName(item[1]);f.moveTo(folder99);}catch(e){console.log('AVISO_ARCHIVAR_CARPETA '+item[0]+' '+String(e.message||e));}
+  });
+  try{DriveApp.getFileById('16szj2cvEW2AeTFc72n5Acp_OXZmHeAoDHxCxSBcBi9OjilbgDQb4U30P').setName('[ELIMINAR - RETIRADO] muni360 (Script viejo v1-v2)');}catch(_){}
+  try{DriveApp.getFolderById('1t89NTKaN33A-BeHv8rFMeTmv8dpbYpyg').setName('02 · Respaldos Privados Supabase (No borrar)');}catch(_){}
+  [
+    ['1sssZz9tELeOExf_PXJWJtCdJi3omIKVD','Muni360-Supabase-2026-11-15.json.gz'],
+    ['1Rtxzkkksid_FXfJ37K6g9oOGEwzvjCDL','Muni360-Supabase-2026-11-14.json.gz'],
+    ['1quZErfYzgKp_G46HNlwm7lwgjF-dFJkt','Muni360-Supabase-2026-11-13.json.gz'],
+    ['1gYNY-7Fv1hkevEAHy0_qX1GPqWEFFNec','Muni360-Supabase-2026-11-12.json.gz'],
+    ['13aAV0dTqkWXQbKE9ZRpDSiyPHt_3DUAJ','Muni360-Supabase-2026-11-11-corte.json.gz']
+  ].forEach(function(b){try{DriveApp.getFileById(b[0]).setName(b[1]);}catch(_){}});
+  if(movidas===targets.length)context.props.setProperty('UGI_DRIVE_ORDEN_V1','true');
+  console.log('DRIVE_ORDENADO_UGI '+JSON.stringify({movidas:movidas,total:targets.length}));
+  return {ok:movidas===targets.length,movidas:movidas,total:targets.length};
+}
+
 // A PNG avoids a new external image dependency and needs no additional OAuth scopes.
 var BOTON_PLANTILLAS_PNG_UGI='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';

@@ -14,14 +14,14 @@ function tareasSupabaseUGI(){
  }
  if(!tasks.freeze)return;
  // One-time control setup uses existing authorization; failures do not stop backups.
- if(typeof instalarControlPlantillasUGI==='function'){try{instalarControlPlantillasUGI();}catch(e){console.log('CONTROL_PLANTILLAS_PENDIENTE '+String(e.message||e));}}
+ if(typeof instalarControlPlantillasUGI==='function'){try{instalarControlPlantillasUGI();if(typeof organizarPlanillasEnCarpetaUGI==='function')organizarPlanillasEnCarpetaUGI();}catch(e){console.log('CONTROL_PLANTILLAS_PENDIENTE '+String(e.message||e));}}
  var today=Utilities.formatDate(new Date(),'America/Argentina/Buenos_Aires','yyyy-MM-dd');
  if(tasks.backupRequested||p.getProperty('UGI_SUPABASE_BACKUP_DAY')!==today){
   var snapshot=rpc('mc_backup',{});if(snapshot.format!=='MUNI360_SUPABASE_BACKUP_V1'||!Array.isArray(snapshot.units)||snapshot.units.length<2)throw Error('Respaldo incompleto.');
   var folderId=p.getProperty('UGI_SUPABASE_BACKUP_FOLDER'),folder=folderId?DriveApp.getFolderById(folderId):DriveApp.createFolder('Muni360 - Respaldos privados Supabase');
   if(folder.getSharingAccess()!==DriveApp.Access.PRIVATE||folder.getOwner().getEmail().toLowerCase()!==Session.getEffectiveUser().getEmail().toLowerCase())throw Error('La carpeta de respaldos debe ser privada y de la cuenta propietaria.');
   if(!folderId)p.setProperty('UGI_SUPABASE_BACKUP_FOLDER',folder.getId());
-  var raw=JSON.stringify(snapshot),digest=sha(raw),file=folder.createFile(Utilities.gzip(Utilities.newBlob(raw,'application/json','Muni360-Supabase-'+today+'.json')));
+  var raw=JSON.stringify(snapshot),digest=sha(raw),file=folder.createFile(Utilities.gzip(Utilities.newBlob(raw,'application/json','Muni360-Supabase-'+today+'.json'),'Muni360-Supabase-'+today+'.json.gz'));
   if(file.getSharingAccess()!==DriveApp.Access.PRIVATE)throw Error('El archivo de respaldo no quedó privado.');
   var recovered=Utilities.ungzip(file.getBlob()).getDataAsString();if(sha(recovered)!==digest)throw Error('No se verificó el respaldo; no se confirmó.');
   var report={ok:true,fecha:new Date().toISOString(),diaArgentina:today,sha256:digest,units:snapshot.units.length,url:file.getUrl()};

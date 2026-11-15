@@ -1,13 +1,13 @@
-# Muni360 oficial 2027: destino y compilación local
+# Muni360 oficial: destino publicado y compilación
 
-Destino único preparado: https://ugiccba.com.ar/muni360/ (todavía no publicado).
+Ruta oficial publicada en `main`: https://ugiccba.com.ar/muni360/.
 
 - Deportes: `/muni360/deportes/`
 - Colonia / COYFD: `/muni360/colonia/`
 - Usuarios y permisos: `/muni360/admin/`
 - Avisos de cambios de partido y entrenamiento: `/comunidad/`
 
-La rama local `muni360/oficial-2027` compila este paquete sin publicar cambios. La versión que hoy está en el dominio queda intacta hasta completar la revisión y programar la salida 2027. No se modifican DNS, CNAME, permisos ni servicios externos. Firebase Authentication conserva el ingreso Google y Supabase sigue guardando los datos operativos y avisos de Comunidad.
+El paquete `/muni360/` se sirve desde la rama `main` publicada en GitHub Pages, integrado con Firebase Authentication (ingreso con Google) y Supabase (`supabase-1.0.0`) para los datos operativos, planillas espejadas en Google Drive (`docs/muni360-planillas.md`) y avisos de Comunidad. No se modifican DNS ni CNAME.
 
 ## Código y publicación
 

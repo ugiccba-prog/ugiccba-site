@@ -2,7 +2,7 @@
 
 Actualización: 12 de noviembre de 2026. Esta decisión registra el corte aprobado desde `apps-script-3.0.0` hacia **Supabase (`supabase-1.0.0`)** manteniendo presupuesto cero.
 
-El sistema publicado utiliza **Firebase Authentication (Spark)** para identificar a cada persona con Google, **Supabase (Edge Function `muni360` + PostgreSQL con RLS en plan Free)** como API y almacenamiento privado principal, y **Apps Script + Google Sheets/Drive** como trabajador institucional. No requiere Cloud Run, Firestore, tarjetas ni habilitar facturación. La rama local `muni360/oficial-2027` prepara el paquete para GitHub Pages bajo `https://ugiccba.com.ar/muni360/`; todavía no se publicó.
+El sistema publicado en `https://ugiccba.com.ar/muni360/` utiliza **Firebase Authentication (Spark)** para identificar a cada persona con Google, **Supabase (Edge Function `muni360` + PostgreSQL con RLS en plan Free)** como API y almacenamiento privado principal, y **Apps Script + Google Sheets/Drive** como trabajador institucional (coordinado desde la Planilla Madre `1s8bmpNq_4RkxKQjm2Rn2_fBqZ7aWrI8suetSSxix-uA` en `Club / Muni360`). No requiere Cloud Run, Firestore, tarjetas ni habilitar facturación.
 
 Los originales, usuarios, revisiones, recibos de operaciones, legajos y auditorías viven en tablas privadas de PostgreSQL sin acceso directo desde el navegador. Un guardado se confirma atómicamente en una transacción (datos, revisión, recibo, autoría y cola de proyección), validando el token de Firebase y los permisos vigentes en cada solicitud. Las planillas de cada actividad en Google Sheets son vistas de consulta sin DNI, legajos privados ni notas de sesiones, actualizadas cada 5 minutos por el trabajador de Apps Script (o manualmente desde Dirección con `Actualizar vistas de Sheets`).
 
@@ -16,8 +16,8 @@ El plan gratuito impone límites de ejecución, transferencia, base y cuota diar
 
 El servidor Node/Firestore anterior (`server/muni360/`) y los candidatos previos de Apps Script (`archive/apps-script-v2/`) quedan archivados sin activar. Los módulos puros `domain.cjs` y `policy.cjs` se conservan como fuente de verificación para las pruebas locales de reglas de negocio (`npm run test:muni360`).
 
-Estado del backend: Supabase activo y autenticación Firebase vigente. Estado del paquete `/muni360/`: preparado en la rama local `muni360/oficial-2027`, sin publicar; la aceptación funcional de esta nueva ruta queda pendiente.
+Estado del backend: Supabase activo y autenticación Firebase vigente. Estado del paquete `/muni360/`: publicado en `main` (`https://ugiccba.com.ar/muni360/`), con mapa oficial de Google Drive y mantenimiento institucional ordenados según [planillas y Drive de Muni360](muni360-planillas.md).
 
 > **Trazabilidad histórica (10–11/11/2026):** La etapa previa ejecutó un piloto con `apps-script-3.0.0` como backend HTTP directo en Apps Script. Tras verificar la exportación final e importación exacta (`VERIFICACION_COMPLETA_OK`), se realizó el corte oficial a `supabase-1.0.0` el 12/11/2026.
 
-Ver [arquitectura y estado en Supabase](../server/supabase/README.md), [publicación en dominio UGI](muni360-dominio.md), [guía de uso](muni360-guia-uso.md) y [matriz de aceptación](muni360-pruebas-aceptacion.md).
+Ver [arquitectura y estado en Supabase](../server/supabase/README.md), [planillas y Drive](muni360-planillas.md), [publicación en dominio UGI](muni360-dominio.md), [guía de uso](muni360-guia-uso.md) y [matriz de aceptación](muni360-pruebas-aceptacion.md).
