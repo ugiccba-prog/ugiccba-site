@@ -413,27 +413,63 @@
       .reveal { opacity: 1; transform: none; }
     }
 
-    /* Accesos a los portales */
-    #comunidad .tarjetas-grid { gap: clamp(1.2rem, 2.5vw, 2rem); }
-    #comunidad .tarjeta {
-      padding: clamp(1.6rem, 3vw, 2.7rem);
-      border-radius: 2rem;
-      border-color: rgba(8,43,73,.14);
-      box-shadow: 0 3px 14px rgba(8,43,73,.025);
-      justify-content: flex-start;
-      gap: 1.5rem;
-      transition: border-color .2s ease, box-shadow .2s ease;
+    /* Accesos integrados al contenido */
+    #comunidad .tarjetas-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(2rem, 4vw, 4.5rem);
+      margin-top: 3.5rem;
     }
+    #comunidad .tarjeta,
     #comunidad .tarjeta:hover {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
       transform: none;
-      border-color: #9dbdcf;
-      box-shadow: 0 6px 20px rgba(8,43,73,.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1.4rem;
     }
-    #comunidad .tarjeta h3 { font-size: clamp(1.65rem,2.3vw,2rem); line-height: 1.2; font-weight: 700; }
-    #comunidad .tarjeta .nav-cta { margin-top: auto; padding: .8rem 1.25rem; min-height: 48px; border-radius: 999px; }
-    #comunidad .tarjeta .nav-cta:hover { background: var(--navy-soft) !important; }
-    #comunidad .tarjeta a:focus-visible { outline: 3px solid var(--sky-dark); outline-offset: 4px; }
-    @media (prefers-reduced-motion: reduce) { #comunidad .tarjeta { transition: none; } }
+    #comunidad .tarjeta h3 {
+      font-size: clamp(1.65rem, 2.3vw, 2rem);
+      line-height: 1.2;
+      font-weight: 700;
+      margin: .9rem 0 1.1rem;
+    }
+    #comunidad .tarjeta .portal-audience {
+      display: block;
+      color: var(--sky-dark);
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    #comunidad .tarjeta .portal-link {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      gap: .75rem;
+      margin-top: auto;
+      min-height: 44px;
+      padding: .25rem 0;
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 700;
+      text-decoration: underline !important;
+      text-decoration-thickness: 1px !important;
+      text-underline-offset: 7px;
+    }
+    #comunidad .tarjeta .portal-link:hover { color: var(--sky-dark); }
+    #comunidad .tarjeta a:focus-visible {
+      outline: 2px solid var(--sky-dark);
+      outline-offset: 6px;
+      border-radius: 3px;
+    }
+    @media (max-width: 760px) {
+      #comunidad .tarjetas-grid { grid-template-columns: 1fr; gap: 2.8rem; margin-top: 2.5rem; }
+      #comunidad .tarjeta { gap: .6rem; max-width: 38rem; }
+      #comunidad .tarjeta h3 { margin-top: .6rem; }
+    }
   </style>
   <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -619,27 +655,27 @@
       <div class="tarjetas-grid">
         <article class="tarjeta reveal">
           <div>
-            <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sky-dark); display: block; margin-bottom: 0.6rem;">Deportistas</span>
+            <span class="portal-audience">Deportistas</span>
             <h3>Jugadores y Jugadoras</h3>
             <p style="color: var(--muted); line-height: 1.55; margin-bottom: 1.5rem;">Concentración, toma de decisiones en cancha, check-in emocional con el Semáforo UGI y guías de desarrollo integral.</p>
           </div>
-          <a href="pages/jugadores.html" class="nav-cta" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--navy); color: white; border: 1px solid var(--navy); text-decoration: none !important; align-self: flex-start; font-weight: 700;">Ingresar al Portal &rarr;</a>
+          <a href="pages/jugadores.html" class="portal-link">Ingresar al Portal &rarr;</a>
         </article>
         <article class="tarjeta reveal">
           <div>
-            <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sky-dark); display: block; margin-bottom: 0.6rem;">Familias y Socios</span>
+            <span class="portal-audience">Familias y Socios</span>
             <h3>Familias</h3>
             <p style="color: var(--muted); line-height: 1.55; margin-bottom: 1.5rem;">Pautas para acompañar el crecimiento de los chicos, convivencia en los partidos, talleres y la guía práctica "El Otro Equipo".</p>
           </div>
-          <a href="pages/familias.html" class="nav-cta" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--navy); color: white; border: 1px solid var(--navy); text-decoration: none !important; align-self: flex-start; font-weight: 700;">Ingresar al Portal &rarr;</a>
+          <a href="pages/familias.html" class="portal-link">Ingresar al Portal &rarr;</a>
         </article>
         <article class="tarjeta reveal">
           <div>
-            <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sky-dark); display: block; margin-bottom: 0.6rem;">Cuerpo Técnico</span>
+            <span class="portal-audience">Cuerpo Técnico</span>
             <h3>Profesores y Entrenadores</h3>
             <p style="color: var(--muted); line-height: 1.55; margin-bottom: 1.5rem;">Plataforma Muni 360 para asistencia en cancha, seguimiento pedagógico, evaluaciones formativas y planillas oficiales.</p>
           </div>
-          <a href="muni360/index.html" class="nav-cta" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--navy); color: white; border: 1px solid var(--navy); text-decoration: none !important; align-self: flex-start; font-weight: 700;">Ingresar a Muni 360 &rarr;</a>
+          <a href="muni360/index.html" class="portal-link">Ingresar a Muni 360 &rarr;</a>
         </article>
       </div>
     </section>
