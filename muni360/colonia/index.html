@@ -1181,7 +1181,7 @@
         <div class="spread">
           <div>
             <h3>1. Subir listado desde Excel (.xlsx) o CSV</h3>
-            <p class="hint" style="margin:0;">Usá encabezados Apellido y Nombre, o Jugador; DNI es opcional. Se lee la primera hoja. Elegí abajo el grupo de destino. Máximo 500 filas y 2 MB.</p>
+            <p class="hint" style="margin:0;">Usá Apellido, Nombre y DNI; también podés agregar Categoría y Tira para cargar varios grupos. Tira vacía = General. Los archivos viejos siguen funcionando. Máximo 500 filas y 2 MB.</p>
           </div>
           <button type="button" class="btn-sec" id="descargar-plantilla-padron">Descargar plantilla de padrón</button>
           <input type="file" id="input-excel-file" accept=".xlsx,.xls,.csv" style="max-width:240px; font-size:0.78rem;">
@@ -1297,7 +1297,7 @@
   <script src="../assets/scripts/muni360-config.js?v=bd4e9f7a6bae"></script>
   <script src="../assets/scripts/muni360-google.js?v=cd5843f54895"></script>
   <script src="../assets/scripts/muni360-sync.js?v=a90df13757d8"></script>
-  <script src="../assets/scripts/muni360-import.js?v=b6e5aaa353ad"></script>
+  <script src="../assets/scripts/muni360-import.js?v=9bbd003767df"></script>
   <script src="../assets/scripts/muni360-dashboard.js?v=9dc235a94dc4"></script>
   <script>
     // =========================================================================
@@ -3163,23 +3163,26 @@
       }).join('');
     }
 
+    let pendingPadronGroups = null;
     $('form-padron').addEventListener('submit', async e => {
       e.preventDefault();
       const categoria=$('padron-cat').value.trim(),equipo=cfgActual().esBase?'General':($('padron-eq').value.trim()||'A');
       const jugadores=$('padron-lista').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(extraerNombreYDni);
-      if (!categoria || !jugadores.length) return;
-      if (await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria,equipo,jugadores})) {$('padron-lista').value='';await cargarAreaActiva();}
+      const grupos=pendingPadronGroups||(!categoria||!jugadores.length?null:[{categoria,equipo,jugadores}]);
+      if (!grupos?.length) return;
+      let ok=true;for(const grupo of grupos)if(!await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria:grupo.categoria,equipo:grupo.equipo,jugadores:grupo.jugadores})){ok=false;break;}
+      if (ok) {pendingPadronGroups=null;$('padron-lista').value='';await cargarAreaActiva();}
     });
 
     $('descargar-plantilla-padron').onclick=()=>{
       if(!permiso('administrarPadron')||esSoloConsulta())return toast('Tu cuenta no puede administrar el padrón.');
       if(!window.XLSX)return toast('No se pudo cargar el lector de planillas. Actualizá la página.');
       try{
-        const wb=XLSX.utils.book_new(),sheet=XLSX.utils.aoa_to_sheet([['Apellido','Nombre','DNI']]);
-        sheet['!cols']=[{wch:26},{wch:26},{wch:16}];
+        const wb=XLSX.utils.book_new(),sheet=XLSX.utils.aoa_to_sheet([['Apellido','Nombre','DNI','Categoría','Tira']]);
+        sheet['!cols']=[{wch:26},{wch:26},{wch:16},{wch:24},{wch:14}];
         XLSX.utils.book_append_sheet(wb,sheet,'Padron');
         XLSX.writeFile(wb,'Muni360_plantilla_padron.xlsx');
-        toast('Completá Apellido y Nombre. DNI es opcional. Luego elegí el grupo e importá el archivo.');
+        toast('Completá Apellido, Nombre y, si corresponde, Categoría y Tira. Tira vacía = General. Luego cargá el listado.');
       }catch(e){toast(e.message||'No se pudo descargar la plantilla.');}
     };
     $('input-excel-file').addEventListener('change', async e => {
@@ -3194,8 +3197,8 @@
         const people=MuniImport.parse(rows);
         if(context!==[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|'))throw Error('Cambió el grupo durante la lectura. Volvé a elegir el archivo.');
         if(!permiso('verDni')&&people.some(p=>p.dni))throw Error('Tu cuenta no tiene permiso para cargar DNI. Quitá esa columna.');
-        $('padron-lista').value=people.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n');
-        toast(`${people.length} deportistas leídos de ${wb.SheetNames[0]}. Revisá nombres y grupo antes de cargar.`);
+        const hasRouting=people.some(p=>p.categoria||p.equipo),fallbackCat=$('padron-cat').value.trim();
+        if(hasRouting){const groups=new Map();for(const p of people){const categoria=p.categoria||fallbackCat,equipo=cfgActual().esBase?'General':(p.equipo||'General');if(!categoria)throw Error('Completá Categoría en el Excel o elegila en el formulario.');const key=JSON.stringify([categoria,equipo]);if(!groups.has(key))groups.set(key,{categoria,equipo,jugadores:[]});groups.get(key).jugadores.push({jugador:p.jugador,...(p.dni?{dni:p.dni}:{})});}pendingPadronGroups=[...groups.values()];$('padron-cat').value=pendingPadronGroups[0].categoria;$('padron-eq').value=pendingPadronGroups[0].equipo;$('padron-lista').value=pendingPadronGroups.length===1?pendingPadronGroups[0].jugadores.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n'):'';toast(`${people.length} deportistas leídos en ${pendingPadronGroups.length} grupos. Pulsá “Cargar listado al grupo” para confirmar.`);}else{pendingPadronGroups=null;$('padron-lista').value=people.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n');toast(`${people.length} deportistas leídos de ${wb.SheetNames[0]}. Revisá nombres y grupo antes de cargar.`);}
       }catch(error){toast(error.message||'No se pudo leer el archivo.');}finally{e.target.value='';}
     });
 

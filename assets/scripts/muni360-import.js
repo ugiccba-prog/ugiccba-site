@@ -4,7 +4,8 @@
   function parse(rows){
     if(!Array.isArray(rows)||rows.length<2)throw Error('El archivo necesita encabezados y al menos un deportista.');
     const headers=rows[0].map(normalize),find=names=>headers.findIndex(h=>names.includes(h));
-    const full=find(['jugador','deportista','apellido y nombre','nombre completo']),last=find(['apellido','apellidos']),first=find(['nombre','nombres']),dni=find(['dni','documento']);
+    const full=find(['jugador','deportista','apellido y nombre','nombre completo']),last=find(['apellido','apellidos']),first=find(['nombre','nombres']),dni=find(['dni','documento']),category=find(['categoria','categoria / grupo','grupo']),team=find(['tira','equipo','equipo / tira']);
+    const hasRouting=category>=0&&team>=0;
     if(full<0&&first<0)throw Error('Usá las columnas Apellido, Nombre y DNI; o Jugador y DNI. El DNI es opcional.');
     const people=[],seen=new Set();
     rows.slice(1).forEach((r,i)=>{
@@ -13,8 +14,11 @@
       const doc=dni>=0?String(r[dni]??'').trim():'';
       if(!name||name.length>160)throw Error('Revisá el nombre de la fila '+(i+2)+'.');
       if(doc&&!/^\d{7,8}$/.test(doc))throw Error('DNI inválido en la fila '+(i+2)+'. Usá 7 u 8 dígitos sin puntos.');
-      if(seen.has(normalize(name)))throw Error('Hay un nombre duplicado en la fila '+(i+2)+'. Revisá antes de cargar.');
-      seen.add(normalize(name));people.push({jugador:name,...(dni>=0?{dni:doc}:{})});
+      const categoria=category>=0?String(r[category]??'').trim():'';
+      const equipo=team>=0?String(r[team]??'').trim():'';
+      const duplicateKey=hasRouting?[normalize(name),normalize(categoria),normalize(equipo||'General')].join('|'):normalize(name);
+      if(seen.has(duplicateKey))throw Error('Hay un nombre duplicado en la fila '+(i+2)+'. Revisá antes de cargar.');
+      seen.add(duplicateKey);people.push({jugador:name,...(dni>=0?{dni:doc}:{}),...(hasRouting?{categoria,equipo}:{})});
     });
     if(!people.length||people.length>500)throw Error('Cargá entre 1 y 500 deportistas por archivo.');
     return people;

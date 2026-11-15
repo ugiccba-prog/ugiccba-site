@@ -12,7 +12,7 @@ function portal(file){
 for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
  test(file+': plantilla se puede completar e importar con acentos sin guardar antes de confirmar',async()=>{
   const p=portal(file);p.els.get('descargar-plantilla-padron').onclick();assert.equal(p.downloads.length,1);
-  const {wb,name}=p.downloads[0];assert.equal(name,'Muni360_plantilla_padron.xlsx');assert.deepEqual(XLSX.utils.sheet_to_json(wb.Sheets.Padron,{header:1}),[['Apellido','Nombre','DNI']]);
+  const {wb,name}=p.downloads[0];assert.equal(name,'Muni360_plantilla_padron.xlsx');assert.deepEqual(XLSX.utils.sheet_to_json(wb.Sheets.Padron,{header:1}),[['Apellido','Nombre','DNI','Categoría','Tira']]);
   XLSX.utils.sheet_add_aoa(wb.Sheets.Padron,[['Ensayo','Lucía',''],['Ensayo','Tomás','']],{origin:'A2'});
   const buffer=XLSX.write(wb,{type:'array',bookType:'xlsx'}),target={files:[{size:buffer.byteLength,arrayBuffer:async()=>buffer}],value:'file'};
   p.els.get('padron-cat').value='Importación';p.els.get('padron-eq').value='Ensayo';
