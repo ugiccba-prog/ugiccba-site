@@ -97,6 +97,7 @@ function sincronizarActividadDesdeEditorUGI(){
 
 // Run once from the editor of a newly created, privately owned trial spreadsheet.
 function crearRecursosDeEnsayoUGI(){
+  if(PropertiesService.getScriptProperties().getProperty('UGI_SUPABASE_READONLY')==='true')throw new Error('El ensayo fue migrado. Usá Muni360 → Crear todas las plantillas desde la planilla de control.');
   var ss=SpreadsheetApp.getActiveSpreadsheet();
   if(!ss||!/^Muni360 - Ensayo de temporada - /.test(ss.getName()))throw new AccessError('CONFIGURACION','Esta funcion solo se usa en la planilla nueva de ensayo.');
   privateResourceUGI(DriveApp.getFileById(ss.getId()));

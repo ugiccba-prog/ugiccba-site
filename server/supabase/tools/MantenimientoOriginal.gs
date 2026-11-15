@@ -13,6 +13,8 @@ function tareasSupabaseUGI(){
   rpc('mc_source_tasks',{p_result:result});
  }
  if(!tasks.freeze)return;
+ // One-time control setup uses existing authorization; failures do not stop backups.
+ if(typeof instalarControlPlantillasUGI==='function'){try{instalarControlPlantillasUGI();}catch(e){console.log('CONTROL_PLANTILLAS_PENDIENTE '+String(e.message||e));}}
  var today=Utilities.formatDate(new Date(),'America/Argentina/Buenos_Aires','yyyy-MM-dd');
  if(tasks.backupRequested||p.getProperty('UGI_SUPABASE_BACKUP_DAY')!==today){
   var snapshot=rpc('mc_backup',{});if(snapshot.format!=='MUNI360_SUPABASE_BACKUP_V1'||!Array.isArray(snapshot.units)||snapshot.units.length<2)throw Error('Respaldo incompleto.');

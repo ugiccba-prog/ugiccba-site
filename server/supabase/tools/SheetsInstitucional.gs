@@ -13,7 +13,7 @@ function tablasSupabaseUGI(job){
  p.HistorialPadron=[['Temporada','Categoría','Equipo','Jugador','ID']].concat(hs.flatMap(function(h){return h.state.padron.map(function(r){return [h.id,r.categoria,r.equipo,r.jugador,r.id];});}));
  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',job.version],['Actualizado (Argentina)',fechaHoraSupabaseUGI(new Date())],['Uso','Vista de consulta. Cargar en la app o preparar nombres en CargaPadron.']];return p;
 }
-function sincronizarMuni360SupabaseOriginalUGI(){
+function sincronizarMuni360SupabaseOriginalUGI(opciones){
  var lock=LockService.getScriptLock();if(!lock.tryLock(1000))return {busy:true};
  try{
   var props=PropertiesService.getScriptProperties(),key='sb_publishable_TbXCJ2YSkmPcNDjio7kgAg_Kzzz1lSs',secret=props.getProperty('UGI_SUPABASE_MAINTENANCE_KEY')||props.getProperty('UGI_SUPABASE_IMPORT_KEY'),url='https://kaalffshnrkxviqaymhv.supabase.co';
@@ -60,7 +60,7 @@ function sincronizarMuni360SupabaseOriginalUGI(){
    var ack=rpc('mc_worker_ack',{p_activity:job.activity,p_version:job.version,p_sheet:sheet,p_staging:staging});if(ack.verified!==true||ack.version!==job.version)throw Error('Confirmación incompleta.');verified++;
   });
   // CargaPadron is the only editable tab; refresh even with no new app writes.
-  rpc('mc_worker_targets',{}).forEach(function(t){
+  if(!(opciones&&opciones.soloPlantillas))rpc('mc_worker_targets',{}).forEach(function(t){
    var rows=(Sheets.Spreadsheets.Values.get(t.sheet_id,"'CargaPadron'!A2:C502",{valueRenderOption:'UNFORMATTED_VALUE'}).values||[]).filter(function(r){return r[0]&&r[1]&&r[2];}).map(function(r){return {categoria:String(r[0]),equipo:String(r[1]),jugador:String(r[2])};});
    if(rows.length>500)throw Error('CargaPadron admite hasta 500 filas por revisión.');
    var hash=sha(JSON.stringify(rows)),prop='MC_CARGA_HASH_'+Utilities.base64EncodeWebSafe(t.activity);

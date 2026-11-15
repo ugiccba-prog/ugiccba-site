@@ -14,9 +14,12 @@ test('el inicio de ensayo crea recursos una sola vez y rechaza una planilla ajen
     if(mode==='ok'){
       assert.equal(e.ctx.crearRecursosDeEnsayoUGI().ok,true);
       const secret=e.props.get('UGI_ID_SECRET');assert.ok(secret);
+      assert.deepEqual(Object.keys(JSON.parse(e.props.get('UGI_SHEET_MAP'))).sort(),require('../server/supabase/activities.json').slice().sort());
       assert.equal(e.ctx.crearRecursosDeEnsayoUGI().ok,true);
-      assert.equal(views,2);assert.equal(folders,1);assert.equal(e.props.get('UGI_ID_SECRET'),secret);
-      e.props.set('UGI_DATA_SHEET_ID','different');assert.throws(()=>e.ctx.crearRecursosDeEnsayoUGI());assert.equal(views,2);
+      assert.equal(views,25);assert.equal(folders,1);assert.equal(e.props.get('UGI_ID_SECRET'),secret);
+      e.props.set('UGI_DATA_SHEET_ID','different');assert.throws(()=>e.ctx.crearRecursosDeEnsayoUGI());assert.equal(views,25);
     }else{assert.throws(()=>e.ctx.crearRecursosDeEnsayoUGI());assert.equal(views,0);assert.equal(folders,0);assert.equal(e.props.has('UGI_ID_SECRET'),false);}
   }
 });
+
+test('el ensayo migrado remite al botón institucional sin crear más recursos',()=>{const e=environment();e.props.set('UGI_SUPABASE_READONLY','true');const before=JSON.stringify([...e.props]);assert.throws(()=>e.ctx.crearRecursosDeEnsayoUGI(),/migrado/);assert.equal(JSON.stringify([...e.props]),before);});
