@@ -2982,7 +2982,7 @@
     // =========================================================================
     // 9. PESTAÑA 4: ANÁLISIS Y EXPORTACIÓN A EXCEL (.XLSX)
     // =========================================================================
-    let ultimaMatrizExport = [];
+    let ultimaMatrizExport = [], ultimaAsistenciaEquipos = [];
 
     function renderAnalisis() {
       const lista = plantelActualNombres();
@@ -3007,6 +3007,24 @@
         const fIso = normalizarFechaIso(item.fecha);
         return !fIso || fIso >= fechaCorte;
       };
+
+      const gruposExport = new Map();
+      const grupoExport = (categoria, equipo) => {
+        const key = JSON.stringify([categoria || 'Sin categoría', equipo || 'General']);
+        if (!gruposExport.has(key)) gruposExport.set(key, { categoria: categoria || 'Sin categoría', equipo: equipo || 'General', deportistas: 0, registros: 0, presentes: 0, verde: 0, amarillo: 0, rojo: 0 });
+        return gruposExport.get(key);
+      };
+      (datosDeporte.padron || []).forEach(p => { grupoExport(p.categoria, p.equipo).deportistas++; });
+      (datosDeporte.asistencia || []).filter(dentroDePeriodo).forEach(a => {
+        const g = grupoExport(a.categoria, a.equipo), estado = String(a.estado || ''), codigo = estado.charAt(0);
+        if (!['P', 'T', 'A'].includes(codigo)) return;
+        g.registros++; if (codigo === 'P' || codigo === 'T') g.presentes++;
+        if (estado.includes('Sem:V')) g.verde++; else if (estado.includes('Sem:A')) g.amarillo++; else if (estado.includes('Sem:R')) g.rojo++;
+      });
+      ultimaAsistenciaEquipos = [...gruposExport.values()].sort((a, b) => a.categoria.localeCompare(b.categoria, 'es', { numeric: true }) || a.equipo.localeCompare(b.equipo, 'es', { numeric: true })).map(g => {
+        const observados = g.verde + g.amarillo + g.rojo;
+        return { Categoria: g.categoria, Equipo: g.equipo, Deportistas: g.deportistas, Registros: g.registros, Presentes: g.presentes, Ausentes: g.registros - g.presentes, Asistencia: g.registros ? `${Math.round(g.presentes / g.registros * 1000) / 10}%` : '-', Verde: g.verde, Amarillo: g.amarillo, Rojo: g.rojo, 'Semáforo promedio': observados ? Math.round((g.verde * 3 + g.amarillo * 2 + g.rojo) / observados * 100) / 100 : '-', '% Verde': observados ? `${Math.round(g.verde / observados * 1000) / 10}%` : '-' };
+      });
 
       const evals = (datosDeporte.evaluaciones || []).filter(e => perteneceAlGrupo(e) && dentroDePeriodo(e));
       const asistGrupo = (datosDeporte.asistencia || []).filter(a => perteneceAlGrupo(a) && dentroDePeriodo(a));
@@ -3097,11 +3115,20 @@
     $('btn-exportar-excel').addEventListener('click', async () => {
       if (!permiso('exportar')) return toast('Dirección no habilitó exportaciones para esta cuenta.');
       if (syncClient) { try { await syncClient.request({tipo:'EXPORTAR',deporte:areaActiva}); } catch(e) {return toast(e.message);} }
-      if (!window.XLSX || !ultimaMatrizExport.length) { toast("No hay datos para exportar"); return; }
+      if (!window.XLSX || (!ultimaMatrizExport.length && !ultimaAsistenciaEquipos.length)) { toast("No hay datos para exportar"); return; }
       const filasLimpias = ultimaMatrizExport.map(({ enAlerta, ...resto }) => resto);
-      const ws = XLSX.utils.json_to_sheet(filasLimpias);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Reporte_UGI");
+      if (ultimaAsistenciaEquipos.length) {
+        const wsEquipos = XLSX.utils.json_to_sheet(ultimaAsistenciaEquipos);
+        wsEquipos['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 13 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 12 }];
+        wsEquipos['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(wsEquipos['!ref'])) };
+        XLSX.utils.book_append_sheet(wb, wsEquipos, "Resumen equipos");
+      }
+      if (filasLimpias.length) {
+        const ws = XLSX.utils.json_to_sheet(filasLimpias);
+        ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 42 }, { wch: 30 }];
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte individual");
+      }
       XLSX.writeFile(wb, `Muni360_${areaActiva.replace(/\s+/g, '_')}_${fechaLocal()}.xlsx`);
     });
 
