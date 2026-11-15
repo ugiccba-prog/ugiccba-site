@@ -26,7 +26,7 @@ const server=http.createServer(async(req,res)=>{
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
-async function elegirGrupoProfe(page, portal) {
+async function elegirGrupoDeportes(page, portal) {
  if (portal !== 'muni360/deportes') return;
  const categoria = page.locator('#sel-categoria');
  const equipo = page.locator('#sel-equipo');
@@ -52,7 +52,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
    page.on('dialog',d=>d.accept());page.on('pageerror',error=>errors.push(error.message));
    page.on('response',async r=>{if(r.url().endsWith('/api/backend'))responses.push(await r.text());});
-   await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});await elegirGrupoProfe(page,portal);
+   await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});await elegirGrupoDeportes(page,portal);
    await page.locator('#lista-asist .asist-row').first().waitFor();assert.equal(await page.locator('#lista-asist .asist-row').count(),2);
    assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false);
    assert.equal(await page.locator('#tab-btn-padron').isVisible(),false);
@@ -66,7 +66,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await until(async()=>(await e.read('owner',deporte)).asistencia.length===2);
    await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
    assert.equal((await e.read('owner',deporte)).sheetsStatus,'pending');
-   await page.reload();await elegirGrupoProfe(page,portal);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();assert.equal(await page.locator('#sel-clima-clase').inputValue(),'Fuego');assert.equal(await page.locator('#sel-puntos-ciudad').inputValue(),'0');
+   await page.reload();await elegirGrupoDeportes(page,portal);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();assert.equal(await page.locator('#sel-clima-clase').inputValue(),'Fuego');assert.equal(await page.locator('#sel-puntos-ciudad').inputValue(),'0');
    await page.locator('[data-tab="evaluacion"]').click();await page.locator('#lista-eval button').first().click();
    await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
    await until(async()=>(await e.read('owner',deporte)).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));
@@ -85,6 +85,9 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await context.close();
   }
   const context=await browser.newContext(),page=await context.newPage();await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
+  await page.goto('http://127.0.0.1:'+port+'/muni360/deportes/?qa=owner');
+  await elegirGrupoDeportes(page,'muni360/deportes');
+  assert.equal(await page.locator('#link-admin-ugi').isVisible(),true);
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
