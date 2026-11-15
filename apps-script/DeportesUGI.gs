@@ -1,5 +1,6 @@
 // Muni 360 v3 maintenance. No production IDs or secrets in source control.
 var TZ_UGI='America/Argentina/Buenos_Aires';
+var ACTIVIDADES_UGI=['B\u00e1squet Caballeros','B\u00e1squet Damas','COYFD','Cestoball','Colonia','F\u00fatbol Caballeros','F\u00fatbol Damas','Gimnasia Art\u00edstica','Gimnasia R\u00edtmica','Golf','Handball','Hockey sobre C\u00e9sped Caballeros','Hockey sobre C\u00e9sped Damas','Hockey sobre Patines Caballeros','Hockey sobre Patines Damas','Judo','Karate','Nataci\u00f3n Art\u00edstica','Pat\u00edn Art\u00edstico','Pelota Paleta','Rugby Caballeros','Rugby Damas','Tenis','V\u00f3ley Caballeros','V\u00f3ley Damas'];
 function fechaHoraArgentinaUGI(value){return Utilities.formatDate(new Date(value),TZ_UGI,'dd/MM/yyyy HH:mm:ss');}
 function projectionUGI(name,a){
   var s=a.state,p={};
@@ -110,7 +111,7 @@ function crearRecursosDeEnsayoUGI(){
     if(!folderId){var folder=DriveApp.createFolder('Muni360 - Respaldos - Ensayo');folderId=folder.getId();p.setProperty('UGI_BACKUP_FOLDER_ID',folderId);}
     privateResourceUGI(DriveApp.getFolderById(folderId));
     var map=JSON.parse(p.getProperty('UGI_SHEET_MAP')||'{}');
-    ['Hockey sobre Patines Caballeros','Colonia'].forEach(function(name){
+    ACTIVIDADES_UGI.forEach(function(name){
       if(!map[name]){var view=SpreadsheetApp.create('Muni360 - Ensayo - '+name);view.setSpreadsheetTimeZone(TZ_UGI);map[name]=view.getId();p.setProperty('UGI_SHEET_MAP',JSON.stringify(map));}
     });
     var result={ok:true,actividades:Object.keys(map).length,siguiente:'Configurar Google Authentication Spark antes de habilitar usuarios.'};
