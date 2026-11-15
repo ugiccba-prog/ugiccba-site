@@ -412,6 +412,28 @@
       *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
       .reveal { opacity: 1; transform: none; }
     }
+
+    /* Accesos a los portales */
+    #comunidad .tarjetas-grid { gap: clamp(1.2rem, 2.5vw, 2rem); }
+    #comunidad .tarjeta {
+      padding: clamp(1.6rem, 3vw, 2.7rem);
+      border-radius: 2rem;
+      border-color: rgba(8,43,73,.14);
+      box-shadow: 0 3px 14px rgba(8,43,73,.025);
+      justify-content: flex-start;
+      gap: 1.5rem;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    #comunidad .tarjeta:hover {
+      transform: none;
+      border-color: #9dbdcf;
+      box-shadow: 0 6px 20px rgba(8,43,73,.05);
+    }
+    #comunidad .tarjeta h3 { font-size: clamp(1.65rem,2.3vw,2rem); line-height: 1.2; font-weight: 700; }
+    #comunidad .tarjeta .nav-cta { margin-top: auto; padding: .8rem 1.25rem; min-height: 48px; border-radius: 999px; }
+    #comunidad .tarjeta .nav-cta:hover { background: var(--navy-soft) !important; }
+    #comunidad .tarjeta a:focus-visible { outline: 3px solid var(--sky-dark); outline-offset: 4px; }
+    @media (prefers-reduced-motion: reduce) { #comunidad .tarjeta { transition: none; } }
   </style>
   <!-- TIPOGRAFÍAS MODERNAS Y HUMANAS (OUTFIT + PLUS JAKARTA SANS) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
