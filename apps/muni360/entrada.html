@@ -45,9 +45,10 @@
     .card p { font-size: .8rem; color: var(--muted); margin: 0 0 24px; line-height: 1.65; max-width: 220px; }
     .card .action { margin-top: auto; width: fit-content; padding: 11px 17px; min-height: 44px; border-radius: 999px; background: var(--navy); color: var(--paper); display: flex; align-items: center; justify-content: space-between; gap: 14px; font-size: .72rem; font-weight: 700; }
     .arrow { font-size: 1rem; }
-    .community { background: var(--navy); color: var(--paper); }
-    .community p { color: #cee5ef; }
-    .community .action { background: var(--paper); color: var(--navy); }
+    .community { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-content: center; column-gap: 24px; min-height: 152px; background: var(--navy); color: var(--paper); }
+    .community h2 { grid-column: 1; margin-bottom: 6px; }
+    .community p { grid-column: 1; max-width: 38ch; margin: 0; color: #cee5ef; }
+    .community .action { grid-column: 2; grid-row: 1 / 3; align-self: center; margin-top: 0; background: var(--paper); color: var(--navy); }
     .colonia { background: #f5f1e8; }
     footer { max-width: 1440px; margin: auto; padding: 25px clamp(24px,5vw,80px); display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: .7rem; }
     footer a { text-decoration: underline; text-underline-offset: 4px; }
@@ -57,6 +58,7 @@
       .intro { max-width: 500px; }
       .club { display: none; }
       .card { min-height: 190px; }
+      .community { min-height: 144px; }
     }
     @media (max-width: 520px) {
       header { min-height: 84px; padding: 16px 22px; gap: 12px; }
@@ -68,11 +70,11 @@
       .card { min-height: 176px; padding: 24px; }
       .card h2 { font-size: 1.65rem; }
       .card p { max-width: none; margin-bottom: 16px; }
-      .community { background: var(--navy); color: var(--paper); }
-    .community p { color: #cee5ef; }
-    .community .action { background: var(--paper); color: var(--navy); }
-    .colonia { background: #f5f1e8; }
-    footer { flex-direction: column; gap: 8px; padding: 24px 22px; }
+      .community { display: flex; flex-direction: column; min-height: 176px; }
+      .community h2 { margin-bottom: 12px; }
+      .community p { max-width: none; margin-bottom: 16px; }
+      .community .action { align-self: flex-start; margin-top: auto; }
+      footer { flex-direction: column; gap: 8px; padding: 24px 22px; }
     }
     @media (prefers-reduced-motion: reduce) { .card,.back { transition: none; } .card:hover { transform: none; } }
   </style>
@@ -92,10 +94,6 @@
         <p class="club">Club Ciudad de Buenos Aires</p>
       </div>
       <nav id="accesos" aria-label="Secciones de Muni360">
-        <a class="card community" href="/comunidad/">
-          <h2>Comunidad</h2><p>Horarios y avisos de partidos y entrenamientos.</p>
-          <span class="action">Ver novedades <span class="arrow" aria-hidden="true">→</span></span>
-        </a>
         <a class="card" href="./deportes/">
           <h2>Deportes</h2><p>Asistencia, evaluaciones y seguimiento de cada equipo.</p>
           <span class="action">Entrar a Deportes <span class="arrow" aria-hidden="true">→</span></span>
@@ -103,6 +101,10 @@
         <a class="card colonia" href="./colonia/">
           <h2>Colonia y COYFD</h2><p>Grupos, asistencia y acompañamiento formativo.</p>
           <span class="action">Entrar al portal <span class="arrow" aria-hidden="true">→</span></span>
+        </a>
+        <a class="card community" href="/comunidad/">
+          <h2>Comunidad</h2><p>Horarios y avisos de partidos y entrenamientos.</p>
+          <span class="action">Ver novedades <span class="arrow" aria-hidden="true">→</span></span>
         </a>
       </nav>
     </div>
