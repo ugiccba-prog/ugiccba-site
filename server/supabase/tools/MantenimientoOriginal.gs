@@ -42,6 +42,12 @@ function tareasSupabaseUGI(){
   approvals.forEach(function(n){try{MailApp.sendEmail(mensajeAccesoHabilitadoUGI(n));approvalSent.push(n.id);}catch(e){approvalReview.push(n.id);}});
   if(approvals.length)rpc('mc_source_tasks',{p_result:{approvalSent:approvalSent,approvalReview:approvalReview}});
  }
+ var weeklyQuota=Math.max(0,Math.min(10,MailApp.getRemainingDailyQuota()));
+ if(weeklyQuota){
+  var weeklyAlerts=rpc('mc_source_tasks',{p_result:{weeklyClaim:weeklyQuota}}).weeklyAlerts||[],weeklySent=[],weeklyReview=[];
+  weeklyAlerts.forEach(function(w){try{MailApp.sendEmail(mensajeAlertaSemanalUGI(w));weeklySent.push(w.id);}catch(e){weeklyReview.push(w.id);}});
+  if(weeklyAlerts.length)rpc('mc_source_tasks',{p_result:{weeklySent:weeklySent,weeklyReview:weeklyReview}});
+ }
  p.setProperty('UGI_SUPABASE_MAINTENANCE_KEY',key);
  sincronizarMuni360SupabaseOriginalUGI();
  if(tasks.mode==='ready')p.deleteProperty('UGI_SUPABASE_IMPORT_KEY');
@@ -60,4 +66,11 @@ function mensajeAccesoHabilitadoUGI(n){
  if(n.expiresAt)body+='\nAutorización vigente hasta: '+Utilities.formatDate(new Date(n.expiresAt),'America/Argentina/Buenos_Aires','dd/MM/yyyy HH:mm')+' (hora argentina).';
  body+='\n\nUGI · Club Ciudad de Buenos Aires';
  return {to:n.email,subject:'Muni360 · Tu acceso fue habilitado',body:body};
+}
+
+
+function mensajeAlertaSemanalUGI(w){
+ if(!w||typeof w.email!=='string'||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(w.email)||typeof w.activity!=='string'||!w.activity||!Array.isArray(w.missingGroups)||!w.missingGroups.length)throw Error('Alerta semanal inválida.');
+ var body='Hola '+(w.nombre||'Coordinador')+',\n\nEl sistema detectó que estos grupos ('+w.activity+') NO registraron asistencia ni semáforo en los últimos 7 días:\n\n'+w.missingGroups.map(function(g){return '• '+g;}).join('\n')+'\n\nPor favor recordales a los profes que completen la carga en https://ugiccba.com.ar/muni360/ .\n\nClub Ciudad de Buenos Aires - Unidad de Gestión Integral';
+ return {to:w.email,subject:'⚠️ Muni360 ('+w.activity+'): grupos sin asistencia/semáforo esta semana',body:body};
 }
