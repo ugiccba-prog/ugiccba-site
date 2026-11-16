@@ -14,11 +14,12 @@ function metricas(inscripciones,registros){
 }
 function sortText(a,b){return a.localeCompare(b,'es',{numeric:true});}
 export function summarize(activity,state,days,now){
+ const data=state||{};
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Argentina/Buenos_Aires'}).format(new Date(now));
  const start=days?new Date(Date.parse(today+'T12:00:00Z')-(days-1)*86400000).toISOString().slice(0,10):'0000-01-01';
  const inPeriod=r=>typeof r.fecha==='string'&&r.fecha>=start&&r.fecha<=today;
- const attendance=state.asistencia.filter(inPeriod),evaluations=state.evaluaciones.filter(inPeriod),roster=state.padron||[];
- const sums={inscripciones:state.padron.length,grupos:new Set(state.padron.map(p=>JSON.stringify([p.categoria,p.equipo]))).size,registros:0,presentes:0,ausentes:0,sinRegistrar:0,observaciones:0,alertas:0,evaluaciones:evaluations.length,notas:0,sumaNotas:0,sesiones:state.sesiones.filter(inPeriod).length};
+ const attendance=(data.asistencia||[]).filter(inPeriod),evaluations=(data.evaluaciones||[]).filter(inPeriod),roster=data.padron||[],sesiones=data.sesiones||[];
+ const sums={inscripciones:roster.length,grupos:new Set(roster.map(p=>JSON.stringify([p.categoria,p.equipo]))).size,registros:0,presentes:0,ausentes:0,sinRegistrar:0,observaciones:0,alertas:0,evaluaciones:evaluations.length,notas:0,sumaNotas:0,sesiones:sesiones.filter(inPeriod).length};
  const trend={};
  for(const r of attendance){
   const e=String(r.estado||''),code=e.charAt(0),m=String(r.fecha).slice(0,7);
