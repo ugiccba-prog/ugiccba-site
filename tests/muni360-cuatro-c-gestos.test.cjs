@@ -27,3 +27,8 @@ test('el servidor limita la edición de gestos a coordinación o dirección, no 
  assert.doesNotThrow(()=>authorize(make('Coordinación',true),{tipo:'GESTOS',deporte:'Vóley'}));
  assert.throws(()=>authorize(make('Coordinación',true),{tipo:'GESTOS',deporte:'Hockey'}));
 });
+
+test('una 4C sin nota se presenta como No evaluada y no se transforma en cero',()=>{
+ assert.match(src,/esUgi && !tiene \? '<small class="hint"[^']*No evaluada/);
+ assert.match(src,/const tiene = val !== undefined && val !== null && val !== ''/);
+});

@@ -2895,7 +2895,7 @@
         const badge = esUgi ? '<em>4C UGI</em>' : (esArq ? '<em class="arq">ARQUERO</em>' : '');
         return `
           <div class="gesto">
-            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}</div>
+            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}${esUgi && !tiene ? '<small class="hint" style="display:block;font-weight:400">No evaluada</small>' : ''}</div>
             <div class="stepper ${tiene ? 'con-valor' : ''}" id="stepper-${gi}">
               <button type="button" class="step-btn" data-step="-0.5" data-gi="${gi}">−</button>
               <input type="number" class="nota-input" id="nota-input-${gi}" data-gi="${gi}" min="1" max="10" step="0.5" placeholder="-" value="${tiene ? val : ''}">
