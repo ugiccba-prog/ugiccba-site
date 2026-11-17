@@ -1,6 +1,6 @@
-# Portal visual de Deportes · 17/11/2026
+# Portal visual de Deportes, Colonia y COYFD · 17/11/2026
 
-La interfaz de Deportes conserva Firebase Google login, autorización del servidor y `Muni360Sync.Client`. No modifica el esquema de datos ni agrega credenciales o permisos.
+Las interfaces de Deportes, Colonia y COYFD conservan Firebase Google login, autorización del servidor y `Muni360Sync.Client`. No modifica el esquema de datos ni agrega credenciales o permisos.
 
 ## Funciones
 
@@ -18,11 +18,11 @@ La interfaz de Deportes conserva Firebase Google login, autorización del servid
 
 ## Archivos y compilación
 
-La fuente es `apps/muni360/source/deportes/index.html`. `muni360-portal.js` contiene los cálculos base y el comparador; `muni360-ui.js` agrega las vistas, gráficos y utilidades de presentación. `muni360-portal.css` contiene el diseño del portal. No utiliza los datos constantes del prototipo aportado.
+Las fuentes son `apps/muni360/source/deportes/index.html` y `apps/muni360/source/colonia/index.html`. `muni360-portal.js` contiene los cálculos base y el comparador; `muni360-ui.js` agrega las vistas, gráficos y utilidades de presentación. `muni360-portal.css` contiene el diseño del portal. No utiliza los datos constantes del prototipo aportado.
 
 `npm run build:muni360-public` genera `/muni360/`, incluyendo Comunidad y el catálogo derivado de `comunidad/catalogo.js`. `npm run check:muni360-public` verifica recursos y hashes. No editar el paquete generado a mano.
 
-Colonia y Administración conservan sus fuentes actuales y reciben los mismos recursos compartidos que antes. Las nuevas hojas de estilo se cargan únicamente en Deportes.
+Desde `f3dcdcd`, Colonia y COYFD también usan el portal visual completo y sus funciones adaptadas a grupos. Administración conserva su interfaz. El comparador, el seguimiento, la agenda y los avisos están disponibles en ambos portales operativos.
 
 ## Verificación realizada
 
@@ -34,4 +34,4 @@ Colonia y Administración conservan sus fuentes actuales y reciben los mismos re
 
 ## Publicación
 
-El código se integra en una rama separada del repositorio UGI. La publicación debe usar el alojamiento y la configuración vigentes de la institución. No se creó un sitio alternativo ni se cambiaron DNS, usuarios o claves.
+El código está integrado en `main` del repositorio UGI y se publica mediante GitHub Pages en la dirección habitual. Para continuar desde cualquiera de las computadoras, seguir `docs/muni360-continuidad.md`. No se creó un sitio alternativo ni se cambiaron DNS, usuarios o claves.

@@ -19,9 +19,9 @@ La configuración Firebase de navegador es pública por diseño. Las claves priv
 
 ## Continuar desde ambas PC
 
-La fuente única para preparar 2027 en esta PC es `C:\Users\Juan Machado\Projects\muni360-oficial-2027`, rama local `muni360/oficial-2027`, creada desde `origin/main` limpio (`d6e7e8f`). Seguir trabajando en esa copia. `ugiccba-site-publicacion` conserva la rama `main` publicada y no se modifica; `muni360-supabase-migracion` es una línea anterior divergente y no se debe mezclar completa porque no contiene la Comunidad actual. No usar `reset --hard` ni `clean` para actualizar. Antes de publicar, revisar `git status`, sincronizar la rama remota y volver a correr la aceptación.
+Referencia actualizada el 17/11/2026: trabajar desde `main` de `ugiccba-prog/ugiccba-site`. Copia de casa: `C:\Users\Juan\Repositorios\ugi`. Copia del club: `C:\Users\Juan Machado\Repo\ugiccba-site`. Las rutas de preparación 2027 y de migración que figuraban antes corresponden a etapas anteriores; no reemplazan estas copias vigentes.
 
-Verificación habitual: `npm run test:muni360`, `npm run check:muni360-public`, y pruebas de `server/supabase/tests/` con PGlite del lockfile de `pilots/supabase`. Las comprobaciones automáticas de interfaz con Google simulado no sustituyen la primera entrada real del usuario desde el dominio nuevo.
+Consultar `docs/muni360-continuidad.md` antes de retomar. Revisar cambios locales, sincronizar sin forzar ni borrar archivos, y ejecutar `npm run test:muni360` y `npm run check:muni360-public`. Las pruebas con Google simulado no sustituyen un ingreso institucional real.
 
 ## Sesiones y cargas pendientes
 

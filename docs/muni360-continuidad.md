@@ -1,3 +1,40 @@
+# Muni360 · Continuidad vigente al 17/11/2026
+
+Esta sección es la referencia actual para continuar. Las notas históricas de abajo documentan etapas anteriores y no indican la rama, el backend ni las carpetas que deben usarse hoy.
+
+## Repositorio y computadoras
+
+- Repositorio: https://github.com/ugiccba-prog/ugiccba-site · rama oficial: `main`.
+- PC de casa, DESKTOP-G6MFIIR: `C:\Users\Juan\Repositorios\ugi`.
+- PC del club, Juan-M: `C:\Users\Juan Machado\Repo\ugiccba-site`.
+- Última revisión funcional leída y comprobada: `f3dcdcdf87c37e26b956f2d119840c073ede9958`.
+- No retomar una copia antigua de ensayo, una rama anterior o un ZIP como base sin compararlos con `origin/main`. Revisar `git status` antes de sincronizar; conservar cambios locales y actualizar sin forzar ni borrar archivos.
+
+## Cambios recientes incorporados
+
+- `c998fa6`: integración del portal visual funcional y comparación de deportistas.
+- `0f47ac3`: correcciones del comparador, selección de grupo, modo de demostración, gráficos y recorridos de interfaz. El radar admite entre 3 y 16 dimensiones comunes y se muestra desplegado. Se agregó el service worker de Comunidad al paquete público.
+- `f3dcdcd`: Colonia y COYFD incorporan el portal visual completo, comparación, seguimiento, agenda y comunidad, con sus grupos y funciones propias. La versión visual ya no es exclusiva de Deportes.
+
+## Código y operación actuales
+
+- Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia/COYFD: `/muni360/colonia/` · administración: `/muni360/admin/`.
+- Fuentes canónicas: `apps/muni360/source/`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css`.
+- `muni360/` es generado: construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- Los tres portales usan el acceso vigente de Google/Firebase y el backend Supabase. El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`. Esta sincronización no cambia claves, permisos, planillas ni datos operativos.
+- Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
+- Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.
+
+## Comprobación de esta actualización
+
+En la PC de casa pasaron `npm run check:muni360-public` (26 archivos públicos) y las 149 pruebas de `npm run test:muni360` sobre `f3dcdcd`. Al cambiar de PC, confirmar que `main` y `origin/main` coincidan y no haya cambios pendientes. La sincronización no traslada sesiones del navegador ni cargas locales pendientes: éstas se resuelven en su dispositivo, cuenta y dominio originales.
+
+---
+
+## Historial de etapas anteriores (hasta noviembre de 2026)
+
+El contenido siguiente se conserva como antecedente. Sus instrucciones de ensayo y ramas antiguas quedan reemplazadas por el estado vigente de arriba.
+
 # Muni360: continuar desde otra PC
 
 Rama de trabajo: `revision/muni360-apps-script-cero-20261110`.
