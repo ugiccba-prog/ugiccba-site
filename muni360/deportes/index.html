@@ -1029,6 +1029,10 @@
           <button type="button" class="rol-btn" data-puesto="arquero" aria-pressed="false">🧤 Arquero/a</button>
         </div>
         <div id="contenedor-gestos"></div>
+        <div id="eval-agregar-gesto" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+          <input type="text" id="eval-nuevo-gesto" placeholder="Nuevo gesto técnico" aria-label="Nuevo gesto técnico" style="flex:1;min-width:160px;">
+          <button type="button" class="btn-sec" id="eval-btn-sumar-gesto">Agregar gesto</button>
+        </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
           <button type="button" class="btn ok" id="btn-guardar-eval" style="flex:2;">Guardar y pasar al siguiente</button>
@@ -2816,7 +2820,7 @@
       if (tieneArqueroActual() && puestoEval === 'arquero') {
         return [...cfg.arquero, ...GESTOS_COMUNES_UGI];
       }
-      const base = Array.isArray(datosDeporte.gestos) ? datosDeporte.gestos : cfg.gestos;
+      const base = Array.isArray(datosDeporte.gestos)&&datosDeporte.gestos.length ? datosDeporte.gestos : cfg.gestos;
       return [...base, ...GESTOS_COMUNES_UGI];
     }
 
@@ -2888,6 +2892,7 @@
       document.querySelectorAll('#switch-puesto .rol-btn').forEach(b => {
         b.setAttribute('aria-pressed', String(b.dataset.puesto === puestoEval));
       });
+      $('eval-agregar-gesto').classList.toggle('hidden',!puedeEditarGestos());
       $('contenedor-gestos').innerHTML = gestosActuales().map((g, gi) => {
         const val = notasTemp[g];
         const tiene = val !== undefined && val !== null && val !== '';
@@ -2907,6 +2912,22 @@
       }).join('');
     }
 
+    $('eval-btn-sumar-gesto').addEventListener('click', async () => {
+      if(!puedeEditarGestos())return toast('Sin permiso para administrar gestos.');
+      const nuevo=$('eval-nuevo-gesto').value.trim();
+      if(!nuevo)return toast('Escribí un gesto técnico.');
+      const base=Array.isArray(datosDeporte.gestos)&&datosDeporte.gestos.length?[...datosDeporte.gestos]:[...cfgActual().gestos];
+      if([...base,...GESTOS_COMUNES_UGI].some(g=>igual(g,nuevo)))return toast('Ese gesto ya existe.');
+      if(base.length>=60)return toast('Límite de 60 gestos técnicos.');
+      base.push(nuevo);
+      if(!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base}))return;
+      datosDeporte.gestos=base;
+      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+      $('eval-nuevo-gesto').value='';
+      renderFilasGestos();
+      toast('Gesto agregado a las próximas evaluaciones.');
+    });
+
     $('contenedor-gestos').addEventListener('click', async e => {
       const btn=e.target.closest('button[data-eval-quitar-gesto]');
       if(!btn)return;
@@ -2916,6 +2937,7 @@
       const base=Array.isArray(datosDeporte.gestos)?[...datosDeporte.gestos]:[...cfgActual().gestos];
       if(!base.includes(gesto))return toast('El gesto ya no está en la lista.');
       if(!confirm('¿Quitar "'+gesto+'" de las próximas evaluaciones? Las notas históricas se conservarán.'))return;
+      if(base.length===1)return toast('Para quitar el último gesto, primero agregá otro. Las 4C siguen obligatorias.');
       const nueva=base.filter(g=>g!==gesto);
       if(!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva}))return;
       datosDeporte.gestos=nueva;
