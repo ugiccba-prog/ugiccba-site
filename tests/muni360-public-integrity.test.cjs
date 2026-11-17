@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -22,4 +22,3 @@ test('Colonia y Deportes enlazan a la versiÃ³n actual del panel de coordinaci�
   assert.ok(html.includes('muni360-dashboard.js?v='+hash),area+' usa panel anterior');
  }
 });
-
