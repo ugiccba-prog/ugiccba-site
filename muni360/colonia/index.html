@@ -1222,6 +1222,8 @@
           <input type="text" id="input-nuevo-gesto" placeholder="Sumar nueva variable técnica...">
           <button type="button" class="btn" id="btn-sumar-gesto" style="width:auto; padding:0 18px;">Sumar</button>
         </div>
+        <button type="button" class="btn-sec" id="btn-restaurar-gestos" style="margin-top:10px;">Restaurar gestos técnicos por defecto</button>
+        <p class="hint">Los gestos retirados dejan de mostrarse para nuevas evaluaciones; las evaluaciones históricas permanecen.</p>
       </div>
 
       <!-- 5. ZONA DE PELIGRO: REINICIO DE TEMPORADA Y VACIADO -->
@@ -1308,10 +1310,19 @@
 
     // Variables transversales UGI (Las 4C + Convivencia)
     const GESTOS_COMUNES_UGI = [
+      "Competencia",
+      "Confianza",
+      "Conexión",
+      "Carácter"
+    ];
+
+    // Mantener clasificación formativa de las tres variables anteriores sin reescribir puntajes.
+    const GESTOS_FORMATIVOS_HISTORICOS = [
       "Actitud y compromiso (Carácter)",
       "Respeto y convivencia (Conexión)",
       "Tolerancia al error y frustración (Confianza)"
     ];
+    const GESTOS_FORMATIVOS_ESTADISTICA = [...GESTOS_COMUNES_UGI,...GESTOS_FORMATIVOS_HISTORICOS];
 
     // Bloques reutilizables de gestos técnicos y de Arquero
     const G_BASQUET = ["Dribbling con ambas manos", "Mecánica de tiro", "Bandeja / finalización", "Pase", "Postura defensiva", "Rebote", "Juego sin pelota", "Toma de decisión"];
@@ -1702,6 +1713,7 @@
       return CATALOGO_MUNI360.find(x => x.nombre === areaActiva) || CATALOGO_MUNI360[0];
     }
 
+    function puedeEditarGestos(){return !!sesion && ['Coordinación','Dirección UGI'].includes(sesion.rol) && permiso('administrarPadron') && !esSoloConsulta();}
     function esCoordOAdmin(){return !!sesion && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
     function puedeVerCambios(){return !!sesion && ['Dirección UGI','Coordinación'].includes(sesion.rol);}
@@ -2080,7 +2092,7 @@
       const evalsJ = (datosDeporte.evaluaciones || []).filter(e => claveNombreDni(e.jugador) === claveNombreDni(jugador));
       let s = 0, c = 0;
       evalsJ.forEach(e => Object.values(e.notas || {}).forEach(n => { if (Number(n) > 0) { s += Number(n); c++; } }));
-      const promsLegajo=Muni360Sync.splitAverage(evalsJ,GESTOS_COMUNES_UGI);
+      const promsLegajo=Muni360Sync.splitAverage(evalsJ,GESTOS_FORMATIVOS_ESTADISTICA);
       const promGral=promsLegajo.tecnico===null?'S/D':promsLegajo.tecnico.toFixed(1);
 
       const ficha = obtenerLegajoUnificado(jugador, dniActual);
@@ -2819,7 +2831,7 @@
         const badge = esUgi ? '<em>4C UGI</em>' : (esArq ? '<em class="arq">ARQUERO</em>' : '');
         return `
           <div class="gesto">
-            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}</div>
+            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}${esUgi && !tiene ? '<small class="hint" style="display:block;font-weight:400">No evaluada</small>' : ''}</div>
             <div class="stepper ${tiene ? 'con-valor' : ''}" id="stepper-${gi}">
               <button type="button" class="step-btn" data-step="-0.5" data-gi="${gi}">−</button>
               <input type="number" class="nota-input" id="nota-input-${gi}" data-gi="${gi}" min="1" max="10" step="0.5" placeholder="-" value="${tiene ? val : ''}">
@@ -3051,7 +3063,7 @@
             if (n < peorP) { peorP = n; peorG = g; }
           }
         }));
-        const promedios=Muni360Sync.splitAverage(evJ,GESTOS_COMUNES_UGI);
+        const promedios=Muni360Sync.splitAverage(evJ,GESTOS_FORMATIVOS_ESTADISTICA);
         const prom=promedios.tecnico;
 
         const regs = asistGrupo.filter(a => claveNombreDni(a.jugador) === kJ && /^[PAT]/.test(a.estado));
@@ -3081,7 +3093,7 @@
       });
 
       const pctGrupoGlobal = totalRegsGrupo ? Math.round((totalPresGrupo / totalRegsGrupo) * 100) + '%' : 'Sin registrar';
-      const promSeparado=Muni360Sync.splitAverage(evals,GESTOS_COMUNES_UGI);
+      const promSeparado=Muni360Sync.splitAverage(evals,GESTOS_FORMATIVOS_ESTADISTICA);
       $('kpi-promedio').textContent=promSeparado.tecnico===null?'-':promSeparado.tecnico.toFixed(1);
       $('kpi-formativo').textContent=promSeparado.formativo===null?'-':promSeparado.formativo.toFixed(1);
       $('kpi-asistencia').textContent = pctGrupoGlobal;
@@ -3130,6 +3142,7 @@
       $('count-plantel').textContent = String(lista.length);
       $('form-padron').closest('.card').classList.toggle('hidden',!permiso('administrarPadron'));
       $('card-reset-datos').classList.toggle('hidden',!permiso('archivar'));
+      $('card-variables-deporte').classList.toggle('hidden',!puedeEditarGestos());
       $('card-variables-deporte').classList.toggle('hidden',!permiso('administrarPadron'));
       $('recuperar-fichas-locales').classList.toggle('hidden',!permiso('verLegajo'));
       $('importar-sheets').classList.toggle('hidden',!permiso('administrarPadron'));
@@ -3218,7 +3231,19 @@
       }catch(error){toast(error.message||'No se pudo leer el archivo.');}finally{e.target.value='';}
     });
 
+    $('btn-restaurar-gestos').addEventListener('click', async () => {
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
+      if (!confirm('¿Restaurar los gestos técnicos originales? Las evaluaciones históricas no se borrarán.')) return;
+      const base=[...cfgActual().gestos];
+      if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base})) return;
+      datosDeporte.gestos=base;
+      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+      renderVistaActiva();
+      toast('Gestos técnicos por defecto restaurados.');
+    });
+
     $('btn-sumar-gesto').addEventListener('click', async () => {
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
@@ -3238,6 +3263,7 @@
     $('lista-gestos-config').addEventListener('click', async e => {
       const btn = e.target.closest('button[data-quitar-gesto]');
       if (!btn) return;
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
       const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
