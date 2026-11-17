@@ -11,7 +11,7 @@ function defaults(role) {
 function actorFrom(record, areas, now=Date.now(), owner=null) {
   if (!record || record.status!=='activo' || !ROLES.includes(record.rol)) throw new AccessError('PENDIENTE', 'Tu acceso está pendiente o suspendido.');
   if (record.expiresAt && (!Number.isFinite(Date.parse(record.expiresAt)) || Date.parse(record.expiresAt)<=now)) throw new AccessError('VENCIDO', 'Tu autorización venció. Dirección puede renovarla.');
-  return {id:record.uid,nombre:record.nombre,rol:record.rol,areas:record.uid===owner?areas:(record.areas||[]).filter(a=>areas.includes(a)),capabilities:{...defaults(record.rol),...record.capabilities},version:record.version};
+  return {id:record.uid,nombre:record.nombre,rol:record.rol,areas:record.uid===owner?areas:(record.areas||[]).filter(a=>areas.includes(a)),capabilities:{...defaults(record.rol),...record.capabilities,...(record.uid===owner||record.rol==='Dirección UGI'?Object.fromEntries(CAPS.map(k=>[k,true])):{})},version:record.version};
 }
 function authorize(actor, d) {
   if (!actor.areas.includes(d.deporte)) throw new AccessError('PERMISOS','No tenés acceso a esa actividad.');
