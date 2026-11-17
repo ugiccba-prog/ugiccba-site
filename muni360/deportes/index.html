@@ -1002,6 +1002,7 @@
                 </select>
               </div>
             </div>
+            <div id="clima-sugerencia-banco" class="hidden" style="margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef6ff;border:1px solid #bfdbfe;"></div>
           </div>
         </details>
 
@@ -2661,6 +2662,7 @@
         semTempDep = {};
         const clase=datosDeporte.asistencia.find(a=>a.categoria===cat&&(a.equipo||'General')===eq&&a.fecha===fecha);
         $('sel-clima-clase').value=clase?.clima||'N';
+        actualizarSugerenciaClima();
         const puntos=String(clase?.puntosCiudad??'');
         const selectPuntos=$('sel-puntos-ciudad');
         selectPuntos.querySelectorAll?.('[data-saved-points]').forEach(n=>n.remove());
@@ -3071,6 +3073,27 @@
       if (b) seleccionarGuiaUgi(b.dataset.guia);
     });
 
+    const SUGERENCIAS_CLIMA = {
+      Fuego: { guia: 'Roce o discusión', texto: '🔥 Exceso de Fuego: ¿querés ir al Banco de herramientas para destrabar el roce o conflicto?' },
+      Agua: { guia: 'Grupo disperso', texto: '💧 Exceso de Agua: ¿querés ir al Banco de herramientas para reenfocar al grupo?' },
+      Vapor: { guia: 'Toma de decisiones', texto: '💨 Estado Vapor: ¿querés ir al Banco de herramientas para potenciar el foco cognitivo o cerrar la clase?' }
+    };
+    function actualizarSugerenciaClima() {
+      const box = $('clima-sugerencia-banco');
+      if (!box) return;
+      const cfg = SUGERENCIAS_CLIMA[$('sel-clima-clase')?.value];
+      if (!cfg) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+      box.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span style="font-size:0.84rem;font-weight:600;color:#0b2545;">${esc(cfg.texto)}</span><button type="button" class="btn-sec" data-ir-banco="${esc(cfg.guia)}" style="min-height:36px;padding:6px 12px;font-size:0.82rem;">Ir al Banco de herramientas</button></div>`;
+      box.classList.remove('hidden');
+    }
+    $('sel-clima-clase').addEventListener('change', actualizarSugerenciaClima);
+    $('clima-sugerencia-banco')?.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-ir-banco]');
+      if (!btn) return;
+      seleccionarGuiaUgi(btn.dataset.irBanco);
+      cambiarTab('ugi');
+    });
+
     $('btn-registrar-ugi').addEventListener('click', async () => {
       const reg={fecha:new Date().toISOString(),profe:sesion.profeNombre,categoria:areaActiva,foco:situacionUgi+' ('+GUIAS_UGI[situacionUgi][indiceUgi].subtitulo+')',checklist:[$('chk-ugi-1').checked?'Consigna <2 min':'',$('chk-ugi-2').checked?'Variante aplicada':'',$('chk-ugi-3').checked?'Refuerzo positivo':''].filter(Boolean).join(', '),nota:$('nota-ugi-profe').value.trim()};
       if (!await enviarOperacion({tipo:'SESION_UGI',deporte:areaActiva,...reg})) return;
@@ -3358,11 +3381,12 @@
       if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
-      const base = Array.isArray(datosDeporte.gestos) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      const base = (Array.isArray(datosDeporte.gestos) && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
       if (base.some(g => igual(g, nuevo)) || GESTOS_COMUNES_UGI.some(g => igual(g, nuevo))) {
         toast("Esa variable ya existe en la lista");
         return;
       }
+      if (base.length >= 60) return toast('Límite de 60 gestos técnicos.');
       base.push(nuevo);
       if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base})) return;
       datosDeporte.gestos = base;
@@ -3378,7 +3402,10 @@
       if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
       if (GESTOS_COMUNES_UGI.includes(gQuitar)) return toast('Las 4 C son obligatorias.');
-      const base = Array.isArray(datosDeporte.gestos) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      const base = (Array.isArray(datosDeporte.gestos) && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      if (!base.includes(gQuitar)) return toast('Este gesto ya no está configurado.');
+      if (base.length === 1) return toast('Agregá otro gesto antes de quitar el último.');
+      if (!confirm('¿Quitar "' + gQuitar + '" de las próximas evaluaciones? Las notas históricas se conservarán.')) return;
       const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
       datosDeporte.gestos = nueva;
       almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
