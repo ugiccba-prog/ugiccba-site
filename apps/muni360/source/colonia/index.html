@@ -3220,13 +3220,13 @@
       $('padron-eq').value  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'A');
       const gLista = gestosActuales();
       $('lista-gestos-config').innerHTML = gLista.map(g => {
-        const esFijo = GESTOS_COMUNES_UGI.includes(g) || cfgActual().gestos.includes(g);
+        const esFijo = GESTOS_COMUNES_UGI.includes(g);
         return `
         <div class="item">
           <span>${esc(g)}</span>
           <div style="display:flex; align-items:center; gap:6px;">
             ${GESTOS_COMUNES_UGI.includes(g) ? '<span class="pill a">4C UGI</span>' : ''}
-            ${!esFijo ? `<button type="button" class="bitacora-del" data-quitar-gesto="${esc(g)}" title="Quitar variable personalizada">✕</button>` : ''}
+            ${!esFijo ? `<button type="button" class="bitacora-del" data-quitar-gesto="${esc(g)}" title="Quitar gesto t?cnico">✕</button>` : ''}
           </div>
         </div>`;
       }).join('');
@@ -3306,6 +3306,10 @@
       if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
       const base = Array.isArray(datosDeporte.gestos) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      if (GESTOS_COMUNES_UGI.includes(gQuitar)) return toast('Las 4C UGI son obligatorias.');
+      if (!base.includes(gQuitar)) return toast('Este gesto ya no est? configurado.');
+      if (base.length===1) return toast('Agreg? otro gesto antes de quitar el ?ltimo.');
+      if (!confirm('?Quitar este gesto de las pr?ximas evaluaciones? Se conservan las notas hist?ricas.')) return;
       const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
       datosDeporte.gestos = nueva;
       almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
