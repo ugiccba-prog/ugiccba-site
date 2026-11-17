@@ -30,12 +30,26 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>{const el=document.getElementById('toast');return !el||getComputedStyle(el).opacity==='0'||getComputedStyle(el).display==='none';},{},{timeout:6000});
    if(profile==='profe')await page.evaluate(()=>{sesion.rol='Profe';sesion.esAdminTotal=false;sesion.canManageUsers=false;sesion.capabilities={};actualizarCabeceraYPestanas();renderAsistencia();});
    if(profile==='profe'){
-    assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false,'professor audit tab hidden');
-    const tabs=page.locator('#nav-tabs .tab:visible');assert.equal(await tabs.count(),4);
-    assert.equal(await page.locator('#nav-tabs').evaluate(el=>el.scrollWidth>el.clientWidth),false,'operational tabs must not scroll');
-    const bounds=await tabs.evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,right:r.right,y:r.y};}));
-    assert.ok(bounds.every(r=>r.x>=0&&r.right<=width));
-    assert.ok(bounds.every(r=>Math.abs(r.y-bounds[0].y)<1),'four tabs on one row');
+    if(portal==='muni360/deportes'){
+     if(width<1050){
+      const mTabs=page.locator('#portal-mobile-nav button:visible');assert.equal(await mTabs.count(),4);
+      const mBounds=await mTabs.evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,right:r.right,y:r.y};}));
+      assert.ok(mBounds.every(r=>r.x>=0&&r.right<=width));
+      assert.ok(mBounds.every(r=>Math.abs(r.y-mBounds[0].y)<1),'four mobile nav buttons on one row');
+      await page.locator('#portal-menu').click();
+     }
+     assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false,'professor audit tab hidden');
+     assert.equal(await page.locator('#tab-btn-padron').isVisible(),false,'professor padron tab hidden');
+     assert.equal(await page.locator('#nav-tabs .tab:visible').count(),10);
+     if(width<1050)await page.locator('#portal-backdrop').click({position:{x:width-10,y:10}});
+    }else{
+     assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false,'professor audit tab hidden');
+     const tabs=page.locator('#nav-tabs .tab:visible');assert.equal(await tabs.count(),4);
+     assert.equal(await page.locator('#nav-tabs').evaluate(el=>el.scrollWidth>el.clientWidth),false,'operational tabs must not scroll');
+     const bounds=await tabs.evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,right:r.right,y:r.y};}));
+     assert.ok(bounds.every(r=>r.x>=0&&r.right<=width));
+     assert.ok(bounds.every(r=>Math.abs(r.y-bounds[0].y)<1),'four tabs on one row');
+    }
     await page.evaluate(()=>cambiarTab('auditoria'));assert.equal(await page.locator('#tab-auditoria').isVisible(),false);
    }else if(profile==='direccion'&&width>=1050)assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),true,'management retains changes');
    const rows=page.locator('#lista-asist .asist-row');assert.ok(await rows.count()>0);
@@ -60,7 +74,9 @@ const server=http.createServer((req,res)=>{
    await page.locator('#buscar-alumno-asist').fill(player);assert.equal(await rows.count(),1);
    await rows.first().locator('[data-e="A"]').click();assert.equal(await rows.first().locator('[data-e="A"]').getAttribute('aria-pressed'),'true');
    await rows.first().locator('[data-e="P"]').click();
+   await rows.first().locator('[data-sem="A"]').click();assert.equal(await rows.first().locator('[data-sem="A"]').getAttribute('aria-pressed'),'true');
    await rows.first().locator('[data-sem="V"]').click();assert.equal(await rows.first().locator('[data-sem="V"]').getAttribute('aria-pressed'),'true');
+   if(portal==='muni360/deportes'){await rows.first().locator('[data-sem="V"]').click();assert.equal(await rows.first().locator('[data-sem="V"]').getAttribute('aria-pressed'),'false');await rows.first().locator('[data-sem="V"]').click();assert.equal(await rows.first().locator('[data-sem="V"]').getAttribute('aria-pressed'),'true');}
    await page.locator('#buscar-alumno-asist').fill('');
    await rows.last().locator('[data-e="P"]').scrollIntoViewIfNeeded();
    const target=await rows.last().locator('[data-e="P"]').boundingBox(),save=await page.locator('#btn-guardar-asist').boundingBox();

@@ -47,7 +47,16 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === '/assets/scripts/muni360-config.js') {
       res.writeHead(200, { 'Content-Type': mime['.js'] });
-      return res.end('window.MUNI_CONFIG=' + JSON.stringify({ backend: 'supabase', apiBaseUrl: `http://127.0.0.1:${port}/api/backend` }) + ';');
+      return res.end('window.MUNI_CONFIG=' + JSON.stringify({
+        backend: 'supabase',
+        firebase: {
+          appId: '1:966447516538:web:test',
+          authDomain: 'muni360-ugi-ensayo.firebaseapp.com',
+          apiKey: 'AIzaSyTestOnlyKey',
+          projectId: 'muni360-ugi-ensayo'
+        },
+        apiBaseUrl: `http://127.0.0.1:${port}/api/backend`
+      }) + ';');
     }
 
     if (url.pathname === '/assets/scripts/muni360-google.js') {
@@ -139,6 +148,12 @@ const server = http.createServer(async (req, res) => {
     await page.route('**/*', r => {
       const u = new URL(r.request().url());
       if (u.hostname === '127.0.0.1') return r.continue();
+      if (u.href.endsWith('/firebase-app.js')) {
+        return r.fulfill({ status: 200, contentType: 'text/javascript; charset=utf-8', body: 'const apps=[];export const getApps=()=>apps;export const getApp=()=>apps[0];export const initializeApp=(c,n)=>{const a={c,n};apps.push(a);return a;};' });
+      }
+      if (u.href.endsWith('/firebase-messaging.js')) {
+        return r.fulfill({ status: 200, contentType: 'text/javascript; charset=utf-8', body: 'export const getMessaging=app=>({app});export const getToken=async()=>"fcm-qa-token-123";' });
+      }
       return r.fulfill({ status: 200, contentType: 'text/css', body: '' });
     });
     page.on('pageerror', e => errors.push(e.message));

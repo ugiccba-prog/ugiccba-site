@@ -705,6 +705,7 @@
 
     /* ================= KPIs Y TABLAS ================= */
     .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    #tab-analisis .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .kpi {
       background: var(--white);
       border-radius: 13px;
@@ -826,6 +827,7 @@
       #kpis-asist-dia .kpi { padding: 6px 4px; }
       #kpis-asist-dia .kpi b { font-size: 1.02rem; }
       #kpis-asist-dia .kpi span { font-size: 0.58rem; }
+      #tab-analisis .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
   <link rel="stylesheet" href="../assets/styles/muni360-cancha.css">
@@ -1704,7 +1706,8 @@
 
     function actualizarCabeceraYPestanas() {
       window.MuniDashboard?.mount(sesion);
-      $('owner-tools').classList.toggle('hidden',!sesion.canManageUsers);
+      const mostrarOwnerTools = Boolean(sesion.canManageUsers || (sesion.esAdminTotal && almacen.getItem('muni360_modo_demo')==='1'));
+      $('owner-tools').classList.toggle('hidden',!mostrarOwnerTools);
       const cfg = cfgActual();
       aplicarModoConsulta();
       $('header-activity').textContent = cfg.nombre;
@@ -3011,9 +3014,14 @@
         cant += vals.length;
         return { g, prom: vals.length ? sG / vals.length : 0 };
       });
+      const positivos = promsGesto.map(x => x.prom).filter(p => p > 0);
+      const minProm = positivos.length ? Math.min(...positivos) : 0;
+      const maxProm = positivos.length ? Math.max(...positivos) : 0;
+      const hayDiferencia = positivos.length > 1 && maxProm > minProm;
 
       $('grafico-gestos').innerHTML = promsGesto.map(({ g, prom }) => {
-        const color = prom >= 7.5 ? 'var(--ok)' : prom >= 6 ? 'var(--sky)' : 'var(--bad)';
+        const esMin = hayDiferencia && prom > 0 && Math.abs(prom - minProm) < 1e-9;
+        const color = (esMin || (prom > 0 && prom < 6)) ? 'var(--bad)' : prom >= 7.5 ? 'var(--ok)' : prom >= 6 ? 'var(--sky)' : 'var(--bad)';
         return `
           <div class="barra">
             <div class="barra-top"><span>${esc(g)}</span><span>${prom ? prom.toFixed(1) + ' / 10' : 'Sin datos'}</span></div>
@@ -3652,7 +3660,7 @@
       almacen.setItem('muni360_legajos_ugi_v2', JSON.stringify(mapaLegajosDemo));
 
       const sesionDemo = {
-        area: dep, esAdminTotal: true, modoDemo: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
+        usuario: "demo", areas: ["Colonia", "COYFD"], area: dep, esAdminTotal: true, modoDemo: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
       };
       almacen.setItem('muni360cyc_sesion_activa', JSON.stringify(sesionDemo));
       iniciarSesion(sesionDemo);

@@ -35,6 +35,7 @@ const server=http.createServer(async(req,res)=>{
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
+async function navegar(page,portal,id){if(portal==='muni360/deportes'&&await page.locator('#portal-menu').isVisible())await page.locator('#portal-menu').click();await page.locator('[data-tab="'+id+'"]').click();}
 async function elegirGrupoProfe(page, portal) {
  if (portal !== 'muni360/deportes') return;
  const categoria = page.locator('#sel-categoria');
@@ -68,14 +69,15 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    assert.ok(!(await page.locator('#dua-modal-body').textContent()).includes('NOTA_PRIVADA_FLUJO'));
    await page.locator('#dua-modal').click({position:{x:2,y:2}});
    await page.locator('#lista-asist [data-e="P"]').first().click();
+   if(portal==='muni360/deportes'){await page.locator('#lista-asist [data-e="P"]').last().click();await page.locator('#lista-asist [data-sem="V"]').first().click();await page.locator('#lista-asist [data-sem="V"]').last().click();}
    await until(()=>e.read(e.owner,deporte).asistencia.length===2);
    await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
    assert.equal(e.read(e.owner,deporte).sheetsStatus,'synced');
    await page.reload();await elegirGrupoProfe(page,portal);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();
-   await page.locator('[data-tab="evaluacion"]').click();await page.locator('#lista-eval button').first().click();
+   await navegar(page,portal,'evaluacion');await page.locator('#lista-eval button').first().click();
    await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
    await until(()=>e.read(e.owner,deporte).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));
-   await page.locator('[data-tab="asistencia"]').click();await context.setOffline(true);
+   await navegar(page,portal,'asistencia');await context.setOffline(true);
    await page.locator('#lista-asist [data-e="T"]').first().click();
    await until(async()=>await page.evaluate(()=>syncClient.queue.length>0));
    await context.setOffline(false);

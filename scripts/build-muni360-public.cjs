@@ -12,7 +12,7 @@ files.set('escudo-ccba.png',read('escudo-ccba.png'));
 function versionAssets(html){return html.replace(/((?:\.\.\/|\.\/)assets\/[^"'?]+\.(?:js|css))(?=["'])/g,(ref)=>{const b=files.get(ref.replace(/^\.\.?\//,''));if(!b)throw Error('Recurso no incluido: '+ref);return ref+'?v='+hash(b).slice(0,12);});}
 for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/admin/index.html','admin/index.html']]){let html=remap(read(src).toString());html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
 files.set('index.html',read('apps/muni360/entrada.html'));
-for(const name of ['index.html','comunidad.js','catalogo.js'])files.set('comunidad/'+name,read('comunidad/'+name));
+for(const name of ['index.html','comunidad.js','catalogo.js','sw.js'])files.set('comunidad/'+name,read('comunidad/'+name));
 for(const name of ['favicon.png','logo-header.png'])files.set('assets/images/'+name,read('assets/images/'+name));
 files.set('manifest.json',Buffer.from(JSON.stringify({format:'MUNI360_PUBLIC_BUNDLE_V1',base:'/muni360/',files:Object.fromEntries([...files].map(([p,b])=>[p,hash(b)]))},null,2)+'\n'));
 function list(dir){return fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?list(path.join(dir,e.name)):[path.relative(out,path.join(dir,e.name)).split(path.sep).join('/')]):[];}
