@@ -1,9 +1,9 @@
 name: Muni360 domain bundle
 on:
   push:
-    paths: ['muni360/**', 'apps/muni360/**', 'scripts/build-muni360-public.cjs', 'comunidad/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360-cancha.css', '.github/workflows/muni360-domain.yml']
+    paths: ['muni360/**', 'apps/muni360/**', 'scripts/build-muni360-public.cjs', 'comunidad/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360*.css', '.github/workflows/muni360-domain.yml']
   pull_request:
-    paths: ['muni360/**', 'apps/muni360/**', 'scripts/build-muni360-public.cjs', 'comunidad/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360-cancha.css']
+    paths: ['muni360/**', 'apps/muni360/**', 'scripts/build-muni360-public.cjs', 'comunidad/**', 'assets/scripts/muni360-*.js', 'assets/styles/muni360*.css']
 permissions:
   contents: read
 jobs:

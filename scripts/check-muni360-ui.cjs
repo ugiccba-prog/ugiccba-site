@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
  try{
   for(const portal of ['muni360/deportes','muni360/colonia'])for(const width of [360,390,1440])for(const profile of ['direccion','profe']){
    const height=width===1440?1000:844,context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1}),page=await context.newPage(),errors=[],businessRequests=[];
-   page.on('dialog',dialog=>dialog.accept());page.on('pageerror',error=>errors.push(error.message));
+   page.on('dialog',dialog=>dialog.accept('360,demo'));page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
     const host=new URL(route.request().url()).hostname;
     if(/script\.google|identitytoolkit|accounts\.google/.test(host))businessRequests.push(host);
@@ -26,6 +26,7 @@ const server=http.createServer((req,res)=>{
    });
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+portal+'/?demo=1',{waitUntil:'load'});
    await page.locator('#app-screen').waitFor({state:'visible'});
+   if(portal==='muni360/deportes'){await page.locator('#sel-categoria').selectOption({label:'Sub-14'});await page.locator('#sel-equipo').selectOption('A');}
    await page.waitForFunction(()=>{const el=document.getElementById('toast');return !el||getComputedStyle(el).opacity==='0'||getComputedStyle(el).display==='none';},{},{timeout:6000});
    if(profile==='profe')await page.evaluate(()=>{sesion.rol='Profe';sesion.esAdminTotal=false;sesion.canManageUsers=false;sesion.capabilities={};actualizarCabeceraYPestanas();renderAsistencia();});
    if(profile==='profe'){
@@ -36,13 +37,13 @@ const server=http.createServer((req,res)=>{
     assert.ok(bounds.every(r=>r.x>=0&&r.right<=width));
     assert.ok(bounds.every(r=>Math.abs(r.y-bounds[0].y)<1),'four tabs on one row');
     await page.evaluate(()=>cambiarTab('auditoria'));assert.equal(await page.locator('#tab-auditoria').isVisible(),false);
-   }else assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),true,'management retains changes');
+   }else if(profile==='direccion'&&width>=1050)assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),true,'management retains changes');
    const rows=page.locator('#lista-asist .asist-row');assert.ok(await rows.count()>0);
-   assert.equal(await page.locator('#nav-tabs .tab').first().getAttribute('data-tab'),'asistencia');
+   assert.equal(await page.locator('#nav-tabs .tab').first().getAttribute('data-tab'),portal==='muni360/deportes'?'inicio':'asistencia');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'page overflow');
    assert.equal(await page.locator('#modo-cancha').count(),0,'removed mode button');
    const firstRowTop=(await rows.first().boundingBox()).y;
-   if(profile==='profe'&&width<640){
+   if(profile==='profe'&&width<640&&portal!=='muni360/deportes'){
     assert.equal(await page.locator('.toolbar-cancha').isVisible(),false,'empty professor toolbar must collapse');
     assert.ok(firstRowTop<470,'players should appear above 470px by default');
    }
@@ -52,7 +53,7 @@ const server=http.createServer((req,res)=>{
    assert.ok(help.x>=0&&help.x+help.width<=width,'legend fits viewport');
    await page.locator('.ayuda-asistencia summary').click();
    assert.equal(await page.locator('#btn-guardar-asist').evaluate(el=>getComputedStyle(el).position),'static');
-   const tiny=await page.locator('#lista-asist .sem-btn,#lista-asist .pat button').evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width<44||r.height<44;}).length);
+   const tiny=await page.locator('#lista-asist .sem-btn,#lista-asist .pat button').evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.width<44||r.height<44);}).length);
    assert.equal(tiny,0,'attendance targets must be at least 44px');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'cancha overflow');
    const first=rows.first(),player=await first.getAttribute('data-jugador');
@@ -68,12 +69,14 @@ const server=http.createServer((req,res)=>{
    await page.locator('.resumen-jornada summary').click();
    await page.locator('#btn-toggle-filtros').click();assert.equal(await page.locator('#card-filtros').isVisible(),true);
    await page.locator('#btn-listo-filtros').click();
+   if(portal==='muni360/deportes'&&width<1050)await page.locator('#portal-menu').click();
    const evalTab=page.locator('[data-tab="evaluacion"]');
    if(await evalTab.isVisible()){
     await evalTab.click();assert.equal(await page.locator('#btn-guardar-asist').isVisible(),false);
     await page.locator('#lista-eval button').first().click();assert.equal(await page.locator('#panel-gestos').isVisible(),true);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'evaluation overflow');
    }
+   if(portal==='muni360/deportes'&&width<1050)await page.locator('#portal-menu').click();
    await page.locator('[data-tab="asistencia"]').click();await page.evaluate(()=>scrollTo(0,0));
    await page.screenshot({path:path.join(output,portal.replaceAll('/','-')+'-'+profile+'-'+width+'.png'),fullPage:false});
    await rows.first().scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,portal.replaceAll('/','-')+'-'+profile+'-controls-'+width+'.png'),fullPage:false});

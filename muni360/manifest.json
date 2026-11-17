@@ -7,15 +7,24 @@
     "assets/scripts/muni360-dashboard.js": "67e3bede7847bea41a478b2822ed037827f87a36f78310dbe6c7fb5917ba8d48",
     "assets/scripts/muni360-google.js": "cd5843f5489523d0cc55f83ee1079c4a03d0ee620539170c747e4f40855c55df",
     "assets/scripts/muni360-import.js": "9bbd003767dfe85d5b5337244706d50f6f4fafc6c773120799e33f561472e266",
+    "assets/scripts/muni360-portal.js": "7c82f466d55c5b1d0c04ff239ce7a8cee0f066f05b062aa06a395cad300e3861",
     "assets/scripts/muni360-sync.js": "a90df13757d86502417f3a9ce64d0db180720e0ad4e3e2a84c7c4273dc0f27cb",
     "assets/scripts/muni360-time.js": "d11baa34dcdc2b60eb71e0d22db9ac29518433f3c6daec4373d95f13658e353d",
+    "assets/scripts/muni360-ui.js": "41035e08cced98d6f90501315d7108dd8b5b0222f6257400daa5eafeacc90b1f",
     "assets/styles/muni360-cancha.css": "f304b2d059d62af26f8b242bf181c8568dfae0398f32d003786684c928e42686",
+    "assets/styles/muni360-portal.css": "491afd311e74789557897585370eccda19f56fef372a7eb0cf1ea29eebb0de68",
     "assets/vendor/SheetJS-LICENSE.txt": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64",
     "assets/vendor/xlsx-0.20.3.full.min.js": "cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41",
+    "assets/scripts/muni360-catalogo.js": "537aa0a916815d05eb44822ec8dc13755cfa137b48bea2fe0c73b944638951f3",
     "escudo-ccba.png": "5e8b27469509f931cc676026ec49116ded2f10617d17313b11c96c4d318d0793",
-    "deportes/index.html": "a710337d960bdbea763d4c5b9cfa1b4a69bd387d5a63068240fd6cf8b3098081",
+    "deportes/index.html": "6bd1706a901843281c4f6f4421beaad06c3e1878c3e128e07f34c8545141dd35",
     "colonia/index.html": "5f08bada2bba2900f0d91d24bce69d43c4c79a1fb7e7689d1536f987904934ac",
     "admin/index.html": "78800f85d143bf78deb9d65ee9bfb6743eb7f2eb00ce82b8631337541d4ae2a3",
-    "index.html": "27d513acaedc01e631a29395a3dadc00e94f4b27a81fb3e3d6dd1fa3772d1479"
+    "index.html": "27d513acaedc01e631a29395a3dadc00e94f4b27a81fb3e3d6dd1fa3772d1479",
+    "comunidad/index.html": "a96d59251dccb321b71a1514a250d002d5189c89e88192743a13ec9ba14e7ae5",
+    "comunidad/comunidad.js": "6fb9d7911c8b54486586de90c62f705b3dbac16a82557793a11d3c58c60756d4",
+    "comunidad/catalogo.js": "3d9810a97673cca3b04a7a3086c4bde6776d93c2c8a059f5bf3e39ba75fb29e6",
+    "assets/images/favicon.png": "0cf48d7900bed4190b169a3481cc22c4f26e70618990879efde4d64f8b5f7476",
+    "assets/images/logo-header.png": "12708c5709a0b71ae0aa9e4c6a67be9a7cca9f619b237a737311f9133856185a"
   }
 }
