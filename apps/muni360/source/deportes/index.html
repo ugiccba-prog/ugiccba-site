@@ -1208,6 +1208,8 @@
           <input type="text" id="input-nuevo-gesto" placeholder="Sumar nueva variable técnica...">
           <button type="button" class="btn" id="btn-sumar-gesto" style="width:auto; padding:0 18px;">Sumar</button>
         </div>
+        <button type="button" class="btn-sec" id="btn-restaurar-gestos" style="margin-top:10px;">Restaurar gestos técnicos por defecto</button>
+        <p class="hint">Los gestos desactivados conservan sus evaluaciones históricas. Las 4 C son comunes y obligatorias.</p>
       </div>
 
       <!-- 5. ZONA DE PELIGRO: REINICIO DE TEMPORADA Y VACIADO -->
@@ -1294,10 +1296,19 @@
 
     // Variables transversales UGI (Las 4C + Convivencia)
     const GESTOS_COMUNES_UGI = [
+      "Competencia",
+      "Confianza",
+      "Conexión",
+      "Carácter"
+    ];
+
+    // Mantener clasificación formativa de las tres variables anteriores sin reescribir puntajes.
+    const GESTOS_FORMATIVOS_HISTORICOS = [
       "Actitud y compromiso (Carácter)",
       "Respeto y convivencia (Conexión)",
       "Tolerancia al error y frustración (Confianza)"
     ];
+    const GESTOS_FORMATIVOS_ESTADISTICA = [...GESTOS_COMUNES_UGI,...GESTOS_FORMATIVOS_HISTORICOS];
 
     // Bloques reutilizables de gestos técnicos y de Arquero
     const G_BASQUET = ["Dribbling con ambas manos", "Mecánica de tiro", "Bandeja / finalización", "Pase", "Postura defensiva", "Rebote", "Juego sin pelota", "Toma de decisión"];
@@ -2074,7 +2085,7 @@
       const evalsJ = (datosDeporte.evaluaciones || []).filter(e => claveNombreDni(e.jugador) === claveNombreDni(jugador));
       let s = 0, c = 0;
       evalsJ.forEach(e => Object.values(e.notas || {}).forEach(n => { if (Number(n) > 0) { s += Number(n); c++; } }));
-      const promsLegajo=Muni360Sync.splitAverage(evalsJ,GESTOS_COMUNES_UGI);
+      const promsLegajo=Muni360Sync.splitAverage(evalsJ,GESTOS_FORMATIVOS_ESTADISTICA);
       const promGral=promsLegajo.tecnico===null?'S/D':promsLegajo.tecnico.toFixed(1);
 
       const ficha = obtenerLegajoUnificado(jugador, dniActual);
@@ -3121,7 +3132,7 @@
             if (n < peorP) { peorP = n; peorG = g; }
           }
         }));
-        const promedios=Muni360Sync.splitAverage(evJ,GESTOS_COMUNES_UGI);
+        const promedios=Muni360Sync.splitAverage(evJ,GESTOS_FORMATIVOS_ESTADISTICA);
         const prom=promedios.tecnico;
 
         const regs = asistGrupo.filter(a => claveNombreDni(a.jugador) === kJ && /^[PAT]/.test(a.estado));
@@ -3151,7 +3162,7 @@
       });
 
       const pctGrupoGlobal = totalRegsGrupo ? Math.round((totalPresGrupo / totalRegsGrupo) * 100) + '%' : 'Sin registrar';
-      const promSeparado=Muni360Sync.splitAverage(evals,GESTOS_COMUNES_UGI);
+      const promSeparado=Muni360Sync.splitAverage(evals,GESTOS_FORMATIVOS_ESTADISTICA);
       $('kpi-promedio').textContent=promSeparado.tecnico===null?'-':promSeparado.tecnico.toFixed(1);
       $('kpi-formativo').textContent=promSeparado.formativo===null?'-':promSeparado.formativo.toFixed(1);
       $('kpi-asistencia').textContent = pctGrupoGlobal;
@@ -3237,7 +3248,7 @@
       $('padron-eq').value  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'A');
       const gLista = gestosActuales();
       $('lista-gestos-config').innerHTML = gLista.map(g => {
-        const esFijo = GESTOS_COMUNES_UGI.includes(g) || cfgActual().gestos.includes(g);
+        const esFijo = GESTOS_COMUNES_UGI.includes(g);
         return `
         <div class="item">
           <span>${esc(g)}</span>
@@ -3288,7 +3299,19 @@
       }catch(error){toast(error.message||'No se pudo leer el archivo.');}finally{e.target.value='';}
     });
 
+    $('btn-restaurar-gestos').addEventListener('click', async () => {
+      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
+      if (!confirm('¿Restaurar los gestos técnicos originales? Las evaluaciones históricas no se borrarán.')) return;
+      const base=[...cfgActual().gestos];
+      if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base})) return;
+      datosDeporte.gestos=base;
+      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+      renderVistaActiva();
+      toast('Gestos técnicos por defecto restaurados.');
+    });
+
     $('btn-sumar-gesto').addEventListener('click', async () => {
+      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
@@ -3308,7 +3331,9 @@
     $('lista-gestos-config').addEventListener('click', async e => {
       const btn = e.target.closest('button[data-quitar-gesto]');
       if (!btn) return;
+      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
+      if (GESTOS_COMUNES_UGI.includes(gQuitar)) return toast('Las 4 C son obligatorias.');
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
       const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
       datosDeporte.gestos = nueva;
@@ -3987,5 +4012,6 @@
     if(demoParam==='1')window.cargarDemoVideoUGI();
     else if(window.MuniGoogle){MuniGoogle.observe((user,error)=>{if(error){$('login-error').textContent=error.message;return;}if(user)cargarPerfilGoogle(user);else if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden'));document.body?.classList.remove('portal-menu-open');$('portal-menu').setAttribute('aria-expanded','false');$('login-screen').classList.remove('hidden');}});}
   </script>
+<a href="../index.html" aria-label="Volver a la portada general de Muni360" style="position:fixed;bottom:12px;right:12px;z-index:1000;background:#0b2545;color:white;padding:10px 16px;border-radius:999px;font:600 13px system-ui;text-decoration:none;box-shadow:0 4px 16px #0003">← Ir a Muni360</a>
 </body>
 </html>

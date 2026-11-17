@@ -66,6 +66,16 @@
       outline-offset: 2px;
     }
 
+    /* Renovación visual Muni360: solo presentación, sin cambiar datos ni avisos. */
+    :root { --paper:#f4f7fb; --cream:#eaf2f9; --radius:1.2rem; --line:rgba(8,43,73,.12); }
+    body { background:linear-gradient(180deg,#e8f3fc 0,#f4f7fb 320px); }
+    .topbar { box-shadow:0 6px 24px rgba(8,43,73,.13); }
+    button, select, input { accent-color:var(--sky-dark); }
+    @media(max-width:600px) {
+      .topbar { padding:.7rem .85rem; }
+      button, select, input { min-height:42px; }
+    }
+
     /* HEADER */
     .topbar {
       background: var(--navy);
