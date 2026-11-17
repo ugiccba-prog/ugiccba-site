@@ -35,9 +35,13 @@ const server=http.createServer(async(req,res)=>{
   const bytes=fs.readFileSync(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(bytes);
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
-async function navegar(page,portal,id){if(portal==='muni360/deportes'&&await page.locator('#portal-menu').isVisible())await page.locator('#portal-menu').click();await page.locator('[data-tab="'+id+'"]').click();}
+async function navegar(page,portal,id){if(await page.locator('#portal-menu').isVisible())await page.locator('#portal-menu').click();await page.locator('[data-tab="'+id+'"]').click();}
 async function elegirGrupoProfe(page, portal) {
- if (portal !== 'muni360/deportes') return;
+ if (portal !== 'muni360/deportes') {
+  await navegar(page, portal, 'asistencia');
+  await page.locator('#tab-asistencia').waitFor({state:'visible'});
+  return;
+ }
  const categoria = page.locator('#sel-categoria');
  const equipo = page.locator('#sel-equipo');
  await categoria.locator('option').nth(1).waitFor({state:'attached'});
