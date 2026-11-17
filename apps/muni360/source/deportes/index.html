@@ -1707,6 +1707,8 @@
 
     function esCoordOAdmin(){return !!sesion && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
+    function puedeEditarGestos(){return !!sesion && ['Coordinación','Dirección UGI'].includes(sesion.rol) && permiso('administrarPadron') && !esSoloConsulta();}
+
     function puedeVerCambios(){return !!sesion && ['Dirección UGI','Coordinación'].includes(sesion.rol);}
 
     function actualizarCabeceraYPestanas() {
@@ -3211,7 +3213,7 @@
       $('count-plantel').textContent = String(lista.length);
       $('form-padron').closest('.card').classList.toggle('hidden',!permiso('administrarPadron'));
       $('card-reset-datos').classList.toggle('hidden',!permiso('archivar'));
-      $('card-variables-deporte').classList.toggle('hidden',!permiso('administrarPadron'));
+      $('card-variables-deporte').classList.toggle('hidden',!puedeEditarGestos());
       $('recuperar-fichas-locales').classList.toggle('hidden',!permiso('verLegajo'));
       $('importar-sheets').classList.toggle('hidden',!permiso('administrarPadron'));
       const b=datosDeporte.backup; $('backup-status').textContent=sesion?.canManageUsers?(b?`Último backup: ${Muni360Time.format(b.fecha)} · ${b.ok?'Completo':'Incompleto'} · ${b.copias} copia(s)`:'Backup: todavía no hay una ejecución verificada.'):'';
@@ -3300,7 +3302,7 @@
     });
 
     $('btn-restaurar-gestos').addEventListener('click', async () => {
-      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       if (!confirm('¿Restaurar los gestos técnicos originales? Las evaluaciones históricas no se borrarán.')) return;
       const base=[...cfgActual().gestos];
       if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:base})) return;
@@ -3311,7 +3313,7 @@
     });
 
     $('btn-sumar-gesto').addEventListener('click', async () => {
-      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
@@ -3331,7 +3333,7 @@
     $('lista-gestos-config').addEventListener('click', async e => {
       const btn = e.target.closest('button[data-quitar-gesto]');
       if (!btn) return;
-      if (!permiso('administrarPadron') || esSoloConsulta()) return toast('Sin permiso para administrar gestos.');
+      if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
       if (GESTOS_COMUNES_UGI.includes(gQuitar)) return toast('Las 4 C son obligatorias.');
       const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
