@@ -2816,7 +2816,7 @@
       if (tieneArqueroActual() && puestoEval === 'arquero') {
         return [...cfg.arquero, ...GESTOS_COMUNES_UGI];
       }
-      const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? datosDeporte.gestos : cfg.gestos;
+      const base = Array.isArray(datosDeporte.gestos) ? datosDeporte.gestos : cfg.gestos;
       return [...base, ...GESTOS_COMUNES_UGI];
     }
 
@@ -2897,7 +2897,7 @@
         const badge = esUgi ? '<em>4C UGI</em>' : (esArq ? '<em class="arq">ARQUERO</em>' : '');
         return `
           <div class="gesto">
-            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}${esUgi && !tiene ? '<small class="hint" style="display:block;font-weight:400">No evaluada</small>' : ''}</div>
+            <div class="gesto-nombre">${esc(nombreLimpio)}${badge}${!esUgi && !esArq && puedeEditarGestos() ? `<button type="button" class="btn-sec" data-eval-quitar-gesto="${esc(g)}" style="margin-left:8px;padding:4px 9px;min-height:30px;font-size:12px;" aria-label="Quitar gesto ${esc(g)} de futuras evaluaciones">Quitar</button>` : ""}${esUgi && !tiene ? '<small class="hint" style="display:block;font-weight:400">No evaluada</small>' : ''}</div>
             <div class="stepper ${tiene ? 'con-valor' : ''}" id="stepper-${gi}">
               <button type="button" class="step-btn" data-step="-0.5" data-gi="${gi}">−</button>
               <input type="number" class="nota-input" id="nota-input-${gi}" data-gi="${gi}" min="1" max="10" step="0.5" placeholder="-" value="${tiene ? val : ''}">
@@ -2906,6 +2906,24 @@
           </div>`;
       }).join('');
     }
+
+    $('contenedor-gestos').addEventListener('click', async e => {
+      const btn=e.target.closest('button[data-eval-quitar-gesto]');
+      if(!btn)return;
+      if(!puedeEditarGestos())return toast('Sin permiso para administrar gestos.');
+      const gesto=btn.dataset.evalQuitarGesto;
+      if(GESTOS_COMUNES_UGI.includes(gesto)||gesto.startsWith('Arquero:'))return toast('Este gesto es obligatorio o pertenece al puesto de arquero.');
+      const base=Array.isArray(datosDeporte.gestos)?[...datosDeporte.gestos]:[...cfgActual().gestos];
+      if(!base.includes(gesto))return toast('El gesto ya no está en la lista.');
+      if(!confirm('¿Quitar "'+gesto+'" de las próximas evaluaciones? Las notas históricas se conservarán.'))return;
+      const nueva=base.filter(g=>g!==gesto);
+      if(!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva}))return;
+      datosDeporte.gestos=nueva;
+      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+      delete notasTemp[gesto];
+      renderFilasGestos();
+      toast('Gesto quitado de las próximas evaluaciones.');
+    });
 
     $('switch-puesto').addEventListener('click', e => {
       const b = e.target.closest('.rol-btn');
@@ -3318,7 +3336,7 @@
       if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const nuevo = $('input-nuevo-gesto').value.trim();
       if (!nuevo) return;
-      const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      const base = Array.isArray(datosDeporte.gestos) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
       if (base.some(g => igual(g, nuevo)) || GESTOS_COMUNES_UGI.some(g => igual(g, nuevo))) {
         toast("Esa variable ya existe en la lista");
         return;
@@ -3338,7 +3356,7 @@
       if (!puedeEditarGestos()) return toast('Sin permiso para administrar gestos.');
       const gQuitar = btn.dataset.quitarGesto;
       if (GESTOS_COMUNES_UGI.includes(gQuitar)) return toast('Las 4 C son obligatorias.');
-      const base = (datosDeporte.gestos && datosDeporte.gestos.length) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
+      const base = Array.isArray(datosDeporte.gestos) ? [...datosDeporte.gestos] : [...cfgActual().gestos];
       const nueva=base.filter(g=>g!==gQuitar); if (!await enviarOperacion({tipo:'GESTOS',deporte:areaActiva,gestos:nueva})) return;
       datosDeporte.gestos = nueva;
       almacen.setItem('muni360_cache_' + areaActiva, JSON.stringify(datosDeporte));
