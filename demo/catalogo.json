@@ -1,0 +1,669 @@
+{
+  "startDate": "2026-07-27",
+  "sports": [
+    {
+      "name": "Básquet",
+      "kind": "equipo",
+      "categories": [
+        "Mosquitos",
+        "U9",
+        "U11 (Mini)",
+        "U13",
+        "U15",
+        "U17",
+        "U21",
+        "Superior",
+        "Máster"
+      ],
+      "divisions": [
+        {
+          "activity": "Básquet Caballeros",
+          "categories": [
+            "Mosquitos",
+            "U9",
+            "U11 (Mini)",
+            "U13",
+            "U15",
+            "U17",
+            "U21",
+            "Superior",
+            "Máster"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        },
+        {
+          "activity": "Básquet Damas",
+          "categories": [
+            "Mosquitos",
+            "U9",
+            "U11 (Mini)",
+            "U13",
+            "U15",
+            "U17",
+            "U21",
+            "Superior",
+            "Máster"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rugby",
+      "kind": "equipo",
+      "categories": [
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "Mayores"
+      ],
+      "divisions": [
+        {
+          "activity": "Rugby Caballeros",
+          "categories": [
+            "M5",
+            "M6",
+            "M7",
+            "M8",
+            "M9",
+            "M10",
+            "M11",
+            "M12",
+            "M13",
+            "M14",
+            "M15",
+            "M16",
+            "M17",
+            "M18",
+            "M19",
+            "Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        },
+        {
+          "activity": "Rugby Damas",
+          "categories": [
+            "M5",
+            "M6",
+            "M7",
+            "M8",
+            "M9",
+            "M10",
+            "M11",
+            "M12",
+            "M13",
+            "M14",
+            "M15",
+            "M16",
+            "M17",
+            "M18",
+            "M19",
+            "Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hockey sobre patines",
+      "kind": "equipo",
+      "categories": [
+        "Mini",
+        "Promo",
+        "Infantil",
+        "Prejuvenil",
+        "Juvenil",
+        "Junior",
+        "Primera"
+      ],
+      "divisions": [
+        {
+          "activity": "Hockey sobre Patines Caballeros",
+          "categories": [
+            "Mini",
+            "Promo",
+            "Infantil",
+            "Prejuvenil",
+            "Juvenil",
+            "Junior",
+            "Primera"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        },
+        {
+          "activity": "Hockey sobre Patines Damas",
+          "categories": [
+            "Mini",
+            "Promo",
+            "Infantil",
+            "Prejuvenil",
+            "Juvenil",
+            "Junior",
+            "Primera"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Karate",
+      "kind": "grupo",
+      "categories": [
+        "Sub 14",
+        "Cadetes",
+        "Junior",
+        "Sub 21",
+        "Senior"
+      ],
+      "divisions": [
+        {
+          "activity": "Karate",
+          "categories": [
+            "Sub 14",
+            "Cadetes",
+            "Junior",
+            "Sub 21",
+            "Senior"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gimnasia rítmica",
+      "kind": "grupo",
+      "categories": [
+        "Age Group AC2",
+        "AC3",
+        "AC4",
+        "Junior",
+        "Senior"
+      ],
+      "divisions": [
+        {
+          "activity": "Gimnasia Rítmica",
+          "categories": [
+            "Age Group AC2",
+            "AC3",
+            "AC4",
+            "Junior",
+            "Senior"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pelota paleta",
+      "kind": "equipo",
+      "categories": [
+        "Infantil",
+        "Menores",
+        "Juvenil",
+        "Sub 22",
+        "Primera/Mayores"
+      ],
+      "divisions": [
+        {
+          "activity": "Pelota Paleta",
+          "categories": [
+            "Infantil",
+            "Menores",
+            "Juvenil",
+            "Sub 22",
+            "Primera/Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patín artístico",
+      "kind": "grupo",
+      "categories": [
+        "Iniciación/Promocional",
+        "Quinta",
+        "Cuarta",
+        "Tercera",
+        "Segunda",
+        "Primera",
+        "Internacional"
+      ],
+      "divisions": [
+        {
+          "activity": "Patín Artístico",
+          "categories": [
+            "Iniciación/Promocional",
+            "Quinta",
+            "Cuarta",
+            "Tercera",
+            "Segunda",
+            "Primera",
+            "Internacional"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Judo",
+      "kind": "grupo",
+      "categories": [
+        "Iniciación",
+        "Juvenil Sub 13",
+        "Juvenil Sub 15",
+        "Cadetes Sub 18",
+        "Junior Sub 21",
+        "Senior",
+        "Máster"
+      ],
+      "divisions": [
+        {
+          "activity": "Judo",
+          "categories": [
+            "Iniciación",
+            "Juvenil Sub 13",
+            "Juvenil Sub 15",
+            "Cadetes Sub 18",
+            "Junior Sub 21",
+            "Senior",
+            "Máster"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Natación artística",
+      "kind": "grupo",
+      "categories": [
+        "Infantil A",
+        "Infantil B",
+        "Juvenil",
+        "Junior",
+        "Senior/Mayores",
+        "Máster"
+      ],
+      "divisions": [
+        {
+          "activity": "Natación Artística",
+          "categories": [
+            "Infantil A",
+            "Infantil B",
+            "Juvenil",
+            "Junior",
+            "Senior/Mayores",
+            "Máster"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Golf",
+      "kind": "grupo",
+      "categories": [
+        "Birdies",
+        "Eagles",
+        "Albatros",
+        "Prejuveniles (M15)",
+        "Juveniles (M18)",
+        "Aficionados/Mayores"
+      ],
+      "divisions": [
+        {
+          "activity": "Golf",
+          "categories": [
+            "Birdies",
+            "Eagles",
+            "Albatros",
+            "Prejuveniles (M15)",
+            "Juveniles (M18)",
+            "Aficionados/Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cestoball",
+      "kind": "equipo",
+      "categories": [
+        "Sub 10",
+        "Sub 12",
+        "Sub 14",
+        "Sub 17",
+        "Primera División",
+        "Maxi (+30)"
+      ],
+      "divisions": [
+        {
+          "activity": "Cestoball",
+          "categories": [
+            "Sub 10",
+            "Sub 12",
+            "Sub 14",
+            "Sub 17",
+            "Primera División",
+            "Maxi (+30)"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gimnasia artística",
+      "kind": "grupo",
+      "categories": [
+        "Premini",
+        "Mini",
+        "Preinfantil",
+        "Infantil",
+        "Juvenil",
+        "Mayores"
+      ],
+      "divisions": [
+        {
+          "activity": "Gimnasia Artística",
+          "categories": [
+            "Premini",
+            "Mini",
+            "Preinfantil",
+            "Infantil",
+            "Juvenil",
+            "Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tenis",
+      "kind": "grupo",
+      "categories": [
+        "Sub 10",
+        "Sub 12",
+        "Sub 14",
+        "Sub 16",
+        "Sub 18",
+        "Mayores"
+      ],
+      "divisions": [
+        {
+          "activity": "Tenis",
+          "categories": [
+            "Sub 10",
+            "Sub 12",
+            "Sub 14",
+            "Sub 16",
+            "Sub 18",
+            "Mayores"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vóley",
+      "kind": "equipo",
+      "categories": [
+        "Sub 12",
+        "Sub 14",
+        "Sub 16",
+        "Sub 18",
+        "Sub 21",
+        "Mayores/División de Honor"
+      ],
+      "divisions": [
+        {
+          "activity": "Vóley Caballeros",
+          "categories": [
+            "Sub 12",
+            "Sub 14",
+            "Sub 16",
+            "Sub 18",
+            "Sub 21",
+            "Mayores/División de Honor"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        },
+        {
+          "activity": "Vóley Damas",
+          "categories": [
+            "Sub 12",
+            "Sub 14",
+            "Sub 16",
+            "Sub 18",
+            "Sub 21",
+            "Mayores/División de Honor"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hockey sobre césped",
+      "kind": "equipo",
+      "categories": [
+        "Décima",
+        "Novena",
+        "Octava",
+        "Séptima",
+        "Sexta",
+        "Quinta",
+        "Intermedia",
+        "Primera",
+        "Cuarta"
+      ],
+      "divisions": [
+        {
+          "activity": "Hockey sobre Césped Caballeros",
+          "categories": [
+            "Décima",
+            "Novena",
+            "Octava",
+            "Séptima",
+            "Sexta",
+            "Quinta",
+            "Intermedia",
+            "Primera",
+            "Cuarta"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        },
+        {
+          "activity": "Hockey sobre Césped Damas",
+          "categories": [
+            "Décima",
+            "Novena",
+            "Octava",
+            "Séptima",
+            "Sexta",
+            "Quinta",
+            "Intermedia",
+            "Primera",
+            "Cuarta"
+          ],
+          "teams": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fútbol",
+      "kind": "equipo",
+      "categories": [
+        "18/19 C",
+        "18/19 B",
+        "18/19 N",
+        "18/19 A",
+        "18/19 R",
+        "16/17 C",
+        "16/17 B",
+        "16/17 N",
+        "16/17 A",
+        "16/17 R",
+        "16/17 AZ",
+        "16/17 V",
+        "14/15 C",
+        "14/15 B",
+        "14/15 N",
+        "14/15 A",
+        "14/15 R",
+        "14/15 AZ",
+        "14/15 V",
+        "14/15 NE",
+        "12/13 C",
+        "12/13 B",
+        "12/13 A",
+        "12/13 R",
+        "12/13 AZ",
+        "12/13 NE"
+      ],
+      "divisions": [
+        {
+          "activity": "Fútbol Caballeros",
+          "categories": [
+            "18/19 C",
+            "18/19 B",
+            "18/19 N",
+            "18/19 A",
+            "18/19 R",
+            "16/17 C",
+            "16/17 B",
+            "16/17 N",
+            "16/17 A",
+            "16/17 R",
+            "16/17 AZ",
+            "16/17 V",
+            "14/15 C",
+            "14/15 B",
+            "14/15 N",
+            "14/15 A",
+            "14/15 R",
+            "14/15 AZ",
+            "14/15 V",
+            "14/15 NE",
+            "12/13 C",
+            "12/13 B",
+            "12/13 A",
+            "12/13 R",
+            "12/13 AZ",
+            "12/13 NE"
+          ],
+          "teams": [
+            "FUTBOL TAFF MASC"
+          ]
+        },
+        {
+          "activity": "Fútbol Caballeros",
+          "categories": [
+            "Septima",
+            "Sexta",
+            "Quinta",
+            "Cuarta"
+          ],
+          "teams": [
+            "FUTBOL 11"
+          ]
+        },
+        {
+          "activity": "Fútbol Caballeros",
+          "categories": [
+            "C",
+            "B",
+            "AZ",
+            "NE"
+          ],
+          "teams": [
+            "FUTBOL TIFA"
+          ]
+        },
+        {
+          "activity": "Fútbol Damas",
+          "categories": [
+            "SUB 12/10 C",
+            "SUB 12/10 B",
+            "SUB 14",
+            "SUB 17 C",
+            "SUB 17 B"
+          ],
+          "teams": [
+            "FUTBOL FEMENINO"
+          ]
+        }
+      ]
+    }
+  ]
+}
