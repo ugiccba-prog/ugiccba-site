@@ -43,3 +43,13 @@ Los paneles existentes quedan preparados para ensayos con este contrato comparti
 Las alertas de ausencias consecutivas, caída de asistencia, intervenciones y escalamiento tras 48 horas no se implementan con este generador. Se preparan escenarios de asistencia para probarlas; la cola semanal existente no equivale al escalamiento solicitado. Pendiente definir contrato persistente de alerta/revisión/intervención y su proyección antes de incorporar esa funcionalidad. Las evaluaciones generadas tienen dos variables de prueba, no reemplazan la configuración deportiva real.
 
 No se modificó `main`, no se ejecutaron migraciones remotas, no se cargaron datos en Supabase/Sheets y no se desplegó producción. La carga futura necesita un adaptador revisado que use las operaciones autorizadas y conserve auditoría, recibos, revisiones y proyecciones; no insertar estos estados directamente en tablas.
+
+## Solicitud posterior: experiencia compartida en la web
+
+El propietario pidió usar el sistema compartido con datos ficticios y aprobar personalmente los accesos cuando los coordinadores los soliciten. Autorizó explícitamente el ingreso con la cuenta institucional. Se verificó en Chrome el ingreso real como Dirección UGI y la existencia de datos previos; no se guardaron tokens ni se exportaron registros personales.
+
+Se agregó `scripts/muni360-demo-plan.mjs`: prepara operaciones del contrato existente y un manifiesto de grupos, sólo cuando se proporcionan lecturas completas de las actividades. Rechaza cargar cualquier grupo que ya tenga padrón, asistencias o evaluaciones, incluso ante diferencias de mayúsculas. No ejecuta peticiones ni escrituras. Un plan requiere revalidación inmediatamente antes de ejecutar; no evita por sí mismo cambios concurrentes.
+
+Para el catálogo completo se requieren 22425 operaciones individuales (345 altas de grupo, 11040 clases, 11040 evaluaciones). Es necesario diseñar/revisar ejecución por lotes, recibos persistentes, recuperación de fallos y límites de servicio antes de iniciar una carga larga. El plan todavía no es un importador desplegado.
+
+La revisión del dominio confirmó que `BAJA_PADRON` conserva asistencias y evaluaciones. Borrar las vistas de Sheets tampoco retira datos de Supabase. No se promete una limpieza completa mediante ninguna de esas acciones. El acceso de Dirección en la aplicación no equivale a acceso administrativo al servidor: Supabase Dashboard mostró la pantalla de ingreso. Pendiente autenticar esa administración para preparar una separación del ensayo y una retirada verificable que preserve los datos existentes. No se inició la carga ni se cambiaron permisos.
