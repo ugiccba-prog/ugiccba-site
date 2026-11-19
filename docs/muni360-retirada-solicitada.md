@@ -4,7 +4,15 @@ El 19/11/2026 el propietario pidió quitar las cargas ficticias y conservar las 
 
 ## Estado comprobado de esta solicitud
 
-Retirada pendiente de ejecución. Chrome no respondió al intento de abrir el editor de Supabase: la conexión de control agotó su tiempo de espera. No se ejecutó SQL remoto ni se declaró que los datos ya estuvieran retirados. Se solicitó reconectar Chrome para continuar.
+Retirada ejecutada el 19/11/2026, después de recuperar la conexión con Chrome y recibir la confirmación final del propietario. La comprobación previa encontró los 22425 documentos del ensayo activos, sin modificaciones, y cero documentos anteriores modificados. Se ejecutó el procedimiento selectivo probado, conservando sus verificaciones y la copia privada.
+
+La comprobación posterior confirmó `status=retired`, **cero documentos del ensayo en operación y cero documentos anteriores modificados**. Los 22425 documentos permanecen únicamente en el manifiesto privado para trazabilidad/recuperación administrativa; no se borraron los registros anteriores ni las herramientas. No se purgó la copia privada.
+
+Se completó la actualización de las vistas con `sincronizarMuni360SupabaseOriginalUGI`, usando la cuenta institucional y sin ejecutar el envío de avisos. Cuatro lotes confirmaron cinco actividades cada uno; el último confirmó dos. Un intento intermedio encontró la cuota temporal de lecturas de Google Sheets y se reintentó después de transcurrir el intervalo, sin cambiar las cuotas ni el código publicado.
+
+La verificación final, posterior al lote de las 20:48, devolvió `retired / 22425 / 0 / 0 / 0 / 0`: manifiesto privado conservado, cero documentos del ensayo activos, cero documentos de prueba modificados, cero documentos anteriores modificados y **cero actividades pendientes de copiar a Sheets**. Se abrió la planilla oficial de Básquet Damas y se comprobó visualmente su pestaña `Padron`, con los encabezados y sin filas de prueba. La captura quedó como evidencia local. El ingreso adicional a Muni360 no se completó porque la selección de cuenta Google agotó el tiempo de espera; la limpieza de su fuente operativa sí se verificó directamente en la base.
+
+Las herramientas y los cambios preparados permanecen conservados; `main` y el código de producción no se modificaron. El parche de rendimiento sigue disponible para revisión futura: la limpieza permitió sincronizar las vistas con el trabajador existente, sin aplicar ese parche.
 
 ## Alcance de la retirada
 

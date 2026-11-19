@@ -1,5 +1,7 @@
 # Diagnóstico de sincronización a Sheets — 19/11/2026
 
+Actualización posterior: a pedido del propietario se retiró la carga de demostración. El trabajador existente confirmó nuevamente las 22 vistas y la comprobación final no encontró actividades pendientes. No se aplicó el parche de este informe. Se conserva preparado porque el problema de acumulación puede reaparecer al crecer una temporada real. Véase [retirada del ensayo](muni360-retirada-solicitada.md).
+
 ## Causa confirmada
 
 En los registros autenticados de Supabase se observan llamadas de Google Apps Script a `/rest/v1/rpc/mc_worker_jobs` que responden HTTP 500, junto con errores PostgreSQL SQLSTATE `57014`: `canceling statement due to statement timeout`. Se repiten en cada ciclo de cinco minutos. Las llamadas a `mc_source_tasks` responden 200. Por lo tanto, el fallo observado es el límite de ejecución de la consulta que prepara las vistas, no una prueba de credenciales inválidas ni un fallo de escritura de Google Sheets.

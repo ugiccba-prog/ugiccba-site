@@ -2,7 +2,11 @@
 
 Revisión: 19/11/2026. Rama: `dev/muni360-inteligencia-demo`.
 
-## Estado vigente: demostración cargada en la web
+## Estado vigente: demostración retirada
+
+El propietario solicitó quitar la carga ficticia y confirmó la retirada final. El 19/11/2026 se ejecutó la retirada selectiva: cero documentos del ensayo permanecen en la base operativa, cero documentos anteriores fueron modificados y las 22 vistas de Sheets quedaron actualizadas. Se conservaron las herramientas, la rama de desarrollo, el manifiesto y la copia privada de resguardo. No se purgaron esos respaldos ni se modificó `main`. Detalle: [retirada del ensayo](muni360-retirada-solicitada.md).
+
+## Estado anterior: demostración cargada en la web
 
 Con autorización explícita del propietario se ejecutaron primero el ensayo con `ROLLBACK` y después la carga con `COMMIT` en Supabase, desde su editor autenticado. Identificador: `ensayo-16s-20261119`. No se cambió `main` ni se desplegó código de aplicación.
 
