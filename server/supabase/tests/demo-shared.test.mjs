@@ -9,6 +9,11 @@ test('carga administrativa es atómica, conserva originales y alimenta el contra
  for(const s of catalog.sports)for(const d of s.divisions)await db.query('insert into mc_private.activities(name,enabled) values($1,true) on conflict do nothing',[d.activity]);
  const before=(await db.query('select * from mc_private.records order by activity,kind,key')).rows;
  await db.exec(sql);
+ const statusSql=fs.readFileSync(new URL('../tools/demo-shared-status.sql',import.meta.url),'utf8');
+ const active=(await db.query(statusSql)).rows[0];
+ assert.equal(active.status,'active');
+ assert.equal(Number(active.documentos_demo_en_operacion),22425);
+ assert.equal(Number(active.documentos_previos_modificados),0);
  const counts=(await db.query("select kind,sum(jsonb_array_length(data->'rows'))::integer as n from mc_private.demo_run_records group by kind order by kind")).rows;
  assert.deepEqual(counts,[{kind:'asistencia',n:88320},{kind:'evaluaciones',n:11040},{kind:'padron',n:2760}]);
  assert.equal((await db.query('select count(*)::int as n from mc_private.demo_run_records')).rows[0].n,22425);
@@ -28,5 +33,8 @@ test('carga administrativa es atómica, conserva originales y alimenta el contra
  await db.exec(retire);
  assert.deepEqual((await db.query('select * from mc_private.records order by activity,kind,key')).rows,before);
  assert.equal((await db.query("select status from mc_private.demo_runs")).rows[0].status,'retired');
+ const retired=(await db.query(statusSql)).rows[0];
+ assert.equal(Number(retired.documentos_demo_en_operacion),0);
+ assert.equal(Number(retired.documentos_previos_modificados),0);
  assert.equal((await db.query('select count(*)::int as n from mc_private.demo_run_records')).rows[0].n,22425);
 });
