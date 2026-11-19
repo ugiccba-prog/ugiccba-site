@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {db} from './browser-fixture.mjs';
+import {buildDemoSql} from '../../../scripts/build-muni360-demo-sql.mjs';
+const catalog=JSON.parse(fs.readFileSync(new URL('../../../demo/catalogo.json',import.meta.url),'utf8'));
+const sql=buildDemoSql(catalog);
+test('carga administrativa es atómica, conserva originales y alimenta el contrato compartido',async()=>{
+ for(const s of catalog.sports)for(const d of s.divisions)await db.query('insert into mc_private.activities(name,enabled) values($1,true) on conflict do nothing',[d.activity]);
+ const before=(await db.query('select * from mc_private.records order by activity,kind,key')).rows;
+ await db.exec(sql);
+ const counts=(await db.query("select kind,sum(jsonb_array_length(data->'rows'))::integer as n from mc_private.demo_run_records group by kind order by kind")).rows;
+ assert.deepEqual(counts,[{kind:'asistencia',n:88320},{kind:'evaluaciones',n:11040},{kind:'padron',n:2760}]);
+ assert.equal((await db.query('select count(*)::int as n from mc_private.demo_run_records')).rows[0].n,22425);
+ for(const r of before){const now=await db.query('select data from mc_private.records where activity=$1 and kind=$2 and key=$3',[r.activity,r.kind,JSON.stringify(r.key)]);assert.deepEqual(now.rows[0].data,r.data);}
+ const loaded=await db.query("select public.mc_service('load',$1) as value",[JSON.stringify({uid:'owner',activity:'Básquet Caballeros'})]);
+ const state=loaded.rows[0].value.state;
+ assert.equal(state.padron.filter(r=>r.equipo.endsWith(' · DEMO')).length,144);
+ assert.equal(state.asistencia.filter(r=>r.equipo.endsWith(' · DEMO')).length,4608);
+ await assert.rejects(()=>db.exec(sql),/ya fue cargado/);await db.exec('rollback');
+ assert.equal((await db.query('select count(*)::int as n from mc_private.demo_run_records')).rows[0].n,22425);
+ const rights=await db.query("select has_table_privilege('authenticated','mc_private.demo_runs','select') as allowed");assert.equal(rights.rows[0].allowed,false);
+ const retire=fs.readFileSync(new URL('../tools/demo-shared-retire.sql',import.meta.url),'utf8');
+ const first=(await db.query("select activity,kind,key,data from mc_private.demo_run_records where kind='asistencia' limit 1")).rows[0];
+ await db.query("update mc_private.records set data=jsonb_set(data,'{changed}','true') where activity=$1 and kind=$2 and key=$3",[first.activity,first.kind,JSON.stringify(first.key)]);
+ await assert.rejects(()=>db.exec(retire),/modificaciones/);await db.exec('rollback');
+ await db.query('update mc_private.records set data=$4 where activity=$1 and kind=$2 and key=$3',[first.activity,first.kind,JSON.stringify(first.key),JSON.stringify(first.data)]);
+ await db.exec(retire);
+ assert.deepEqual((await db.query('select * from mc_private.records order by activity,kind,key')).rows,before);
+ assert.equal((await db.query("select status from mc_private.demo_runs")).rows[0].status,'retired');
+ assert.equal((await db.query('select count(*)::int as n from mc_private.demo_run_records')).rows[0].n,22425);
+});

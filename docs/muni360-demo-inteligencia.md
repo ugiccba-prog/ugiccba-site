@@ -2,6 +2,26 @@
 
 Revisión: 19/11/2026. Rama: `dev/muni360-inteligencia-demo`.
 
+## Estado vigente: demostración cargada en la web
+
+Con autorización explícita del propietario se ejecutaron primero el ensayo con `ROLLBACK` y después la carga con `COMMIT` en Supabase, desde su editor autenticado. Identificador: `ensayo-16s-20261119`. No se cambió `main` ni se desplegó código de aplicación.
+
+La carga confirmó 345 grupos en 22 actividades: 2760 inscripciones, 88320 asistencias y 11040 evaluaciones, distribuidos en 22425 documentos. Ante la coincidencia con Mini A existente de hockey sobre patines, todos los grupos del ensayo usan el sufijo ` · DEMO` en el eje equipo/modalidad; las categorías y los 39 códigos de fútbol se mantienen literalmente. Los nombres de participantes son `DEMO 01` a `DEMO 08` dentro de cada grupo.
+
+La comprobación posterior confirmó **cero documentos anteriores modificados**. Se conservó una copia privada de registros y versiones previos en `mc_private.demo_runs`; el manifiesto y contenido de todos los documentos agregados están en `mc_private.demo_run_records`. Ambas tablas tienen RLS activo y no permiten acceso directo a `public`, `anon` ni `authenticated`. No contienen credenciales. La copia con información previa permanece en la base privada: no se exportó ni se incorporó a Git.
+
+La carga administrativa validada deja auditoría y recibos por actividad, incrementa sus versiones y encola la proyección hacia Sheets. Se revisó el contrato de lectura real con PGlite y después se verificó el portal publicado con la cuenta institucional, fuera del modo de demostración local: Básquet Damas → U13 → A · DEMO → Inicio → Todo el historial muestra ocho integrantes, 69% de asistencia redondeada, 32 evaluaciones y 256 observaciones. No se modificó ninguna asistencia desde la interfaz para hacer esta comprobación.
+
+Acceso: https://ugiccba.com.ar/muni360/deportes/ . Los coordinadores entran con Google y solicitan acceso; el propietario los aprueba desde https://ugiccba.com.ar/muni360/admin/ y asigna sus actividades. No se otorgaron permisos nuevos ni se enviaron invitaciones desde este trabajo.
+
+**Bloqueo de planillas:** la aplicación lee los datos confirmados de Supabase y funciona, pero la copia institucional a Sheets permanece pendiente. Apps Script registró `MANTENIMIENTO_SUPABASE_PENDIENTE` en el ciclo automático de las 18:15. Ejecutar únicamente la función de copia, con la cuenta institucional y sin invocar el envío de avisos, permitió localizar el fallo a las 18:20: `El puente no confirmó mc_worker_jobs`, `SheetsInstitucional.gs`, líneas 21–22. No se confirmó el estado HTTP ni la causa subyacente, por lo que no se atribuye todavía a credenciales, cuotas o tiempo de consulta. No se modificó el trabajador publicado ni se afirmó una sincronización completa.
+
+Validación final: 165 pruebas de aplicación y 61 de servidor aislado aprobadas; paquete público de 26 archivos verificado. La prueba de carga/retirada comprueba cantidades, lectura mediante `mc_service`, preservación de los originales, rechazo a repetir una carga, ausencia de permisos directos y bloqueo de retirada si cambió un documento de prueba.
+
+Retirada preparada, **no ejecutada**: `server/supabase/tools/demo-shared-retire.sql`. Conserva el manifiesto privado y la copia previa, detiene la retirada si hubo cambios o registros nuevos, quita sólo los documentos del lote revisado, mantiene auditoría y versiones y vuelve a encolar las vistas. Si los coordinadores modifican datos de prueba, se requiere reconciliar esas modificaciones antes de retirar. No borrar planillas oficiales ni ejecutar un reinicio general para limpiar este ensayo.
+
+Los apartados siguientes describen la preparación inicial y sus limitaciones antes de autorizar la carga; este estado vigente los actualiza.
+
 ## Resultado preparado
 
 Catálogo recibido del usuario: 16 deportes, 22 actividades al separar las ramas que ya existen en el catálogo institucional. No se reemplaza el catálogo oficial de 25 actividades: Handball, COYFD y Colonia quedan fuera del pedido de estos 16 deportes.
