@@ -26,6 +26,30 @@ Retirada preparada, **no ejecutada**: `server/supabase/tools/demo-shared-retire.
 
 Los apartados siguientes describen la preparación inicial y sus limitaciones antes de autorizar la carga; este estado vigente los actualiza.
 
+## Correcciones de carga pesada y próximos pasos (19/11/2026)
+
+Al consultar el panel con todas las actividades demo cargadas (22 actividades, 345 grupos, 22425 documentos / 102120 filas), se detectaron dos cuellos de botella:
+
+1. **Lectura `O(N²)` en `mc_private.service` (`load`):** el bucle `FOR rec ... LOOP` concatenaba `jsonb_set(state, array[k], (state->k) || ...)` documento por documento, copiando el arreglo completo en cada iteración.
+2. **Panel en una sola llamada:** `assets/scripts/muni360-dashboard.js` enviaba todas las actividades seleccionadas juntas en un único `POST /api/dashboard`, y `dashboard.mjs` ejecutaba `load` completo (incluyendo `fichas`, `versions`, `archives` e `identities`) para todas en una sola invocación de Edge Function.
+
+### Cambios aplicados en esta rama
+
+- `server/supabase/sql/013_fast_load_and_dashboard.sql`: reemplaza el bucle `jsonb_set` de `mc_private.service` (`load`) por agregación directa en SQL (`jsonb_agg` con `with ordinality`), y agrega `scope = 'dashboard'` para devolver sólo `padron`, `asistencia`, `evaluaciones`, `sesiones` y `actor`.
+- `server/supabase/functions/muni360/dashboard.mjs`: pasa `scope: 'dashboard'` en `service('load', ...)`.
+- `assets/scripts/muni360-dashboard.js` (y paquete reconstruido en `muni360/`): consulta `/api/dashboard` en tandas de a 2 actividades mostrando progreso (`X/Y`), evitando superar los límites de CPU/memoria/timeout de una sola invocación.
+
+### Qué aplicar al actualizar en producción/ensayo
+
+1. Ejecutar `server/supabase/sql/013_fast_load_and_dashboard.sql` en el SQL Editor de Supabase.
+2. Desplegar la Edge Function `muni360` actualizada (`server/supabase/functions/muni360/`).
+3. Publicar el sitio estático actualizado (`assets/scripts/muni360-dashboard.js` y `muni360/`).
+
+### Próximos módulos a definir
+
+- **Módulo de Inteligencia:** reglas de alertas (ausencias consecutivas, caída de asistencia), intervenciones, revisiones y escalamiento a 48 h calculados en SQL / sobre resúmenes persistidos.
+- **Cuestionario para jugadores y jugadoras:** constructor de cuestionarios administrado por Coordinación (por actividad/categoría/período) con respuesta simple para deportistas y proyección agregada hacia Inteligencia.
+
 ## Resultado preparado
 
 Catálogo recibido del usuario: 16 deportes, 22 actividades al separar las ramas que ya existen en el catálogo institucional. No se reemplaza el catálogo oficial de 25 actividades: Handball, COYFD y Colonia quedan fuera del pedido de estos 16 deportes.

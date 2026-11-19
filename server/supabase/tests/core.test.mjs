@@ -3,7 +3,7 @@ import {createHandler,prepare} from '../functions/muni360/core.mjs';import {sha,
 const require=createRequire(import.meta.url),{PGlite}=require(process.env.MUNI_PGLITE_MODULE||'@electric-sql/pglite');
 const db=new PGlite();await db.waitReady;
 await db.exec("create role anon;create role authenticated;create role service_role;create schema auth;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant usage on schema auth to anon,authenticated,service_role;grant execute on function auth.jwt() to anon,authenticated,service_role;");
-for(const name of ['001_core.sql','002_import.sql','003_projection.sql','004_import_checksums.sql','007_permission_contract.sql'])await db.exec(fs.readFileSync(new URL('../sql/'+name,import.meta.url),'utf8'));
+for(const name of ['001_core.sql','002_import.sql','003_projection.sql','004_import_checksums.sql','007_permission_contract.sql','013_fast_load_and_dashboard.sql'])await db.exec(fs.readFileSync(new URL('../sql/'+name,import.meta.url),'utf8'));
 await db.exec("create schema mp_private;create function mp_private.mp_worker_auth(p_secret text) returns void language plpgsql as $$begin if p_secret is distinct from 'worker-test' then raise exception using errcode='42501',message='Invalid worker';end if;end$$;revoke all on function mp_private.mp_worker_auth(text) from public;");
 const areas=['Actividad de prueba','Colonia'],secret='mci_'+'a'.repeat(64),idSecret='b'.repeat(64),users=[['owner','Dirección UGI'],['teacher','Profe'],['reader','Consulta']].map(([uid,rol])=>({uid,email:uid+'@example.invalid',nombre:uid,rol,status:'activo',areas,capabilities:{},version:'11111111-2222-4333-8444-555555555555',revision:0,expiresAt:null}));
 await db.query("insert into mc_private.settings values(true,'muni360-ugi-ensayo','owner',$1,$2,'preparing',$3,now()+interval '1 day')",[idSecret,JSON.stringify(areas),sha(secret)]);
@@ -41,4 +41,10 @@ await test('failure during audit insert rolls back attendance, receipt and versi
 });
 await test('roster change and season closure invalidate pending writes; archived data survives',async()=>{const stale=operation(await load(),'EVALUACION',{jugador:'Pedro ficticio',notas:{Tiro:7}});await call('owner',operation(await load('owner'),'BAJA_PADRON',{jugador:'Nuevo ficticio'}));await assert.rejects(()=>call('teacher',stale),e=>e.code==='CONFLICTO');const old=await load('owner');await call('owner',operation(old,'RESET_DATOS',{modo:'TEMPORADA'}));const current=await load('owner');assert.equal(current.temporada,2);assert.equal(current.padron.length,3);assert.equal(current.asistencia.length,0);const history=await call('owner',{tipo:'LECTURA',deporte:areas[0],temporada:current.archivos[0].id});assert.equal(history.asistencia.length,2);await assert.rejects(()=>call('teacher',{...attendance,requestId:randomUUID()}),e=>e.code==='CONFLICTO');});
 await test('missing Firebase issuer/audience/verification cannot pass SQL identity validation',async()=>{for(const claims of [{},{sub:'owner',email:'owner@example.invalid',exp:1999999999},{sub:'owner',email:'owner@example.invalid',exp:1999999999,aud:'wrong',iss:'wrong',email_verified:true,firebase:{sign_in_provider:'google.com'}}]){await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify(claims)]);await assert.rejects(()=>rpc('mc_identity',{},'anon'));}});
+await test('dashboard scope reads aggregate state without fichas or versions',async()=>{
+ const dash=await call('owner',{days:0,activities:[areas[0]]},'/api/dashboard');
+ assert.equal(dash.ok,true);assert.equal(dash.activities.length,1);assert.equal(dash.activities[0].inscripciones,3);
+ const scoped=await rpc('mc_service',{p_action:'load',p:{uid:'owner',activity:areas[0],scope:'dashboard'}});
+ assert.equal(scoped.state.padron.length,3);assert.equal('fichas' in scoped.state,false);assert.equal('versions' in scoped,false);
+});
 await db.close();

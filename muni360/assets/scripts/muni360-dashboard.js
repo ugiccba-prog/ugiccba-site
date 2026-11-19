@@ -21,15 +21,23 @@
   async function refresh(){
    const activities=checks().filter(x=>x.checked).map(x=>x.value),button=find('mm-update');if(!activities.length){find('mm-status').textContent='Seleccioná al menos una actividad.';return;}
    button.disabled=true;find('mm-results').replaceChildren();find('mm-status').textContent='Consultando datos confirmados…';
+   const BATCH_SIZE=2,days=Number(find('mm-days').value),collected=[];
+   let generatedAt=null;
    try{
-    const r=await MuniGoogle.call('/api/dashboard',{days:Number(find('mm-days').value),activities});if(local!==generation||!box.isConnected)return;
-    const filter=find('mm-filter').value,rows=(r.activities||[]).filter(x=>filter==='with'?x.inscripciones>0:filter==='empty'?x.inscripciones===0:true);
+    for(let i=0;i<activities.length;i+=BATCH_SIZE){
+     const chunk=activities.slice(i,i+BATCH_SIZE);
+     find('mm-status').textContent='Consultando datos confirmados… ('+Math.min(i+chunk.length,activities.length)+'/'+activities.length+')';
+     const r=await MuniGoogle.call('/api/dashboard',{days,activities:chunk});if(local!==generation||!box.isConnected)return;
+     if(Array.isArray(r.activities))collected.push(...r.activities);
+     generatedAt=r.generatedAt||generatedAt;
+    }
+    const filter=find('mm-filter').value,rows=collected.filter(x=>filter==='with'?x.inscripciones>0:filter==='empty'?x.inscripciones===0:true);
     const totals=rows.reduce((t,x)=>{for(const k of ['inscripciones','registros','presentes','evaluaciones','notas','sumaNotas'])t[k]+=x[k]||0;for(const k of ['verde','amarillo','rojo'])t.semaforo[k]+=x.semaforo?.[k]||0;return t;},{inscripciones:0,registros:0,presentes:0,evaluaciones:0,notas:0,sumaNotas:0,semaforo:{verde:0,amarillo:0,rojo:0}});
     const obs=totals.semaforo.verde+totals.semaforo.amarillo+totals.semaforo.rojo,sem={...totals.semaforo,observados:obs,promedio:obs?(totals.semaforo.verde*3+totals.semaforo.amarillo*2+totals.semaforo.rojo)/obs:null,pctVerde:obs?Math.round(totals.semaforo.verde/obs*1000)/10:null};
     const cards=[['Deportistas',totals.inscripciones+' · '+rows.filter(x=>x.inscripciones>0).length+'/'+rows.length+' actividades con datos'],['Asistencia general',totals.registros?pct(Math.round(totals.presentes/totals.registros*1000)/10):'Sin datos'],['Semáforo general',semText({...sem,promedio:sem.promedio==null?null:Math.round(sem.promedio*100)/100})]];
     const activityRows=rows.map(x=>{const cats=x.categoriasDetalle||[],groups=x.gruposDetalle||[];return '<details class="mm-activity"><summary><span><strong>'+esc(x.activity)+'</strong><small>'+cats.length+' categorías · '+groups.length+' tiras</small></span><b>'+x.inscripciones+'</b><b>'+pct(x.asistencia)+'</b><b>'+semCell(x.semaforo)+'</b></summary><div class="mm-nested"><table><thead><tr><th>Nivel</th><th>Deportistas</th><th>Asistencia</th><th>Semáforo</th></tr></thead><tbody>'+cats.map(c=>'<tr class="mm-category"><th>↳ '+esc(c.categoria)+'</th><td>'+c.inscripciones+'</td><td>'+pct(c.asistencia)+'</td><td>'+semCell(c.semaforo)+'</td></tr>'+groups.filter(g=>g.categoria===c.categoria).map(g=>metricRow('↳↳ '+g.tira,g,'mm-team')).join('')).join('')+'</tbody></table></div></details>';}).join('');
     find('mm-results').innerHTML='<div class="mm-kpis">'+cards.map(([k,v])=>'<article><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></article>').join('')+'</div><p class="mm-note">Total de actividades consultadas: '+rows.length+' · Con deportistas: '+rows.filter(x=>x.inscripciones>0).length+' · Vacías: '+rows.filter(x=>x.inscripciones===0).length+'. La asistencia usa registros P, T y A; el semáforo sólo observa Sem:V, Sem:A y Sem:R.</p><div class="mm-hierarchy"><div class="mm-head"><span>Actividad</span><span>Deportistas</span><span>Asistencia</span><span>Semáforo</span></div>'+activityRows+(rows.length?'':'<p>Sin actividades para este filtro.</p>')+'</div>';
-    find('mm-status').textContent=(owner?'Datos del club':'Datos de actividades autorizadas')+' · Actualizados '+new Date(r.generatedAt).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})+' (Argentina).';
+    find('mm-status').textContent=(owner?'Datos del club':'Datos de actividades autorizadas')+' · Actualizados '+new Date(generatedAt||Date.now()).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})+' (Argentina).';
    }catch(e){if(local===generation){loaded=false;find('mm-status').textContent=e.message||'No se pudo consultar el panel.';}}finally{if(box.isConnected)button.disabled=false;}
   }
  }};

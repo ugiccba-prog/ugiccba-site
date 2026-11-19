@@ -48,7 +48,7 @@ export async function dashboard(actor,owner,body,service,now){
  // Bound concurrent reads; no per-athlete data leaves this endpoint.
  for(let i=0;i<selected.length;i+=3){
   const batch=await Promise.all(selected.slice(i,i+3).map(async activity=>{
-   const loaded=await service('load',{uid:actor.id,activity});
+   const loaded=await service('load',{uid:actor.id,activity,scope:'dashboard'});
    if(loaded.actor.status!=='activo'||loaded.actor.expiresAt&&Date.parse(loaded.actor.expiresAt)<=now||actor.id!==owner&&(!['Coordinación','Dirección UGI'].includes(loaded.actor.rol)||!loaded.actor.areas.includes(activity)))throw new AccessError('PERMISOS','Cambió tu autorización. Actualizá el panel.');
    return summarize(activity,loaded.state,days,now);
   }));rows.push(...batch);
