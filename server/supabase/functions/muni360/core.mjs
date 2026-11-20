@@ -1,4 +1,5 @@
 import {dashboard} from './dashboard.mjs';
+import {handleInteligencia} from './inteligencia.mjs';
 import {handleComunidad} from './comunidad.mjs';
 import {AccessError,actorFrom,authorize,validateAccess,ROLES,CAPS} from './policy.mjs';
 import {sha,copy,resource,empty,applyOperation,visible,auditSlice} from './domain.mjs';
@@ -51,6 +52,7 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify}){
    throw new AccessError('RUTA','Ruta inexistente.',404);
   }
   if(input.path==='/api/dashboard')return dashboard(actor,owner,d,service,now());
+  if(input.path.startsWith('/api/inteligencia/'))return handleInteligencia({actor,owner,path:input.path,body:d,rpc,now:now()});
   if(input.path==='/api/sheets/sync'&&actor.id!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra la sincronización.');
   if(input.path==='/api/sheets/automation'){if(actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección configura el puente.');return {ok:true,enabled:true,automatico:true,intervaloMinutos:5,mensaje:'El puente de Sheets se configura desde el proyecto de mantenimiento.'};}
   if(input.path!=='/api/operations'&&!input.path.startsWith('/api/sheets/'))throw new AccessError('RUTA','Ruta inexistente.',404);

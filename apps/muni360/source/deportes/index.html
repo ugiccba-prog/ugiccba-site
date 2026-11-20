@@ -1292,6 +1292,7 @@
   <script src="../assets/scripts/muni360-sync.js"></script>
   <script src="../assets/scripts/muni360-import.js"></script>
   <script src="../assets/scripts/muni360-dashboard.js"></script>
+  <script src="../assets/scripts/muni360-inteligencia.js"></script>
   <script src="../assets/scripts/muni360-portal.js"></script>
   <script src="../assets/scripts/muni360-ui.js"></script>
   <script src="../assets/scripts/muni360-catalogo.js"></script>
@@ -1720,7 +1721,9 @@
 
     function actualizarCabeceraYPestanas() {
       window.MuniDashboard?.mount(sesion);
+      window.MuniInteligencia?.mount(sesion);
       document.getElementById('management-panel')?.classList.toggle('hidden',tabActual!=='inicio');
+      document.getElementById('inteligencia-panel')?.classList.toggle('hidden',tabActual!=='inicio');
       $('portal-nav-role').textContent=sesion.rol||'Perfil autorizado';
       window.MuniPortal?.hydrate?.();
       const mostrarOwnerTools=Boolean(sesion.canManageUsers||(sesion.esAdminTotal&&almacen.getItem('muni360_modo_demo')==='1'));

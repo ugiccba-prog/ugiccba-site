@@ -41,14 +41,23 @@ Al consultar el panel con todas las actividades demo cargadas (22 actividades, 3
 
 ### Qué aplicar al actualizar en producción/ensayo
 
-1. Ejecutar `server/supabase/sql/013_fast_load_and_dashboard.sql` en el SQL Editor de Supabase.
+1. Ejecutar `server/supabase/sql/013_fast_load_and_dashboard.sql` y `server/supabase/sql/014_inteligencia.sql` en el SQL Editor de Supabase.
 2. Desplegar la Edge Function `muni360` actualizada (`server/supabase/functions/muni360/`).
-3. Publicar el sitio estático actualizado (`assets/scripts/muni360-dashboard.js` y `muni360/`).
+3. Publicar el sitio estático actualizado (`assets/scripts/muni360-dashboard.js`, `assets/scripts/muni360-inteligencia.js`, portales y `muni360/`).
 
-### Próximos módulos a definir
+### Módulo de Inteligencia implementado (base determinística en SQL)
 
-- **Módulo de Inteligencia:** reglas de alertas (ausencias consecutivas, caída de asistencia), intervenciones, revisiones y escalamiento a 48 h calculados en SQL / sobre resúmenes persistidos.
-- **Cuestionario para jugadores y jugadoras:** constructor de cuestionarios administrado por Coordinación (por actividad/categoría/período) con respuesta simple para deportistas y proyección agregada hacia Inteligencia.
+- `server/supabase/sql/014_inteligencia.sql`: tabla privada `mc_private.inteligencia_cases` (con RLS y sin acceso directo para `anon`/`authenticated`) y RPC `public.mc_inteligencia` (`scan`, `list`, `update`).
+- Reglas calculadas en SQL por actividad (sin cargar filas masivas en Deno):
+  - `CAIDA_ASISTENCIA`: compara asistencia de los últimos 14 días contra las 4 semanas previas por grupo/tira.
+  - `AUSENCIAS_CONSECUTIVAS`: detecta integrantes con 3 o más ausencias seguidas en los últimos 45 días.
+  - `SEMAFORO_ALERTA`: detecta acumulación de observaciones amarillas/rojas en los últimos 21 días.
+- Escalamiento automático a **48 h** (`escalada`) para casos `abierta` o `en_revision` sin intervención.
+- `server/supabase/functions/muni360/inteligencia.mjs` + `assets/scripts/muni360-inteligencia.js`: rutas `/api/inteligencia/list`, `/api/inteligencia/scan` (una actividad por vez) y `/api/inteligencia/update`, y panel en Deportes y Colonia para Coordinación y Dirección UGI.
+
+### Próximo módulo
+
+- **Cuestionario liviano anónimo para jugadores y jugadoras:** constructor de cuestionarios en Coordinación (escala 1–5, opción única/múltiple, texto breve) y formulario público sin login guardado directo en Supabase, con visibilidad desde la primera respuesta y cruce con Inteligencia.
 
 ## Resultado preparado
 
