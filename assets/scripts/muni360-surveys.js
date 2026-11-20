@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- let identity='',generation=0,activePrefill=null;
+ let identity='',generation=0,activePrefill=null,activeOpen=null;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const STATUS_LABELS={draft:'Borrador',active:'Activa',closed:'Cerrada'};
  const TYPE_LABELS={scale:'Escala 1–5',single:'Opción única',multi:'Opción múltiple',text:'Texto breve'};
@@ -48,12 +48,14 @@
   generation++;
   document.getElementById('surveys-panel')?.remove();
   activePrefill=null;
+  activeOpen=null;
   if(!allowed)return;
 
   const areas=Array.isArray(session.areas)?session.areas:[];
   const box=document.createElement('details');
   box.id='surveys-panel';
   box.className='card muni-surveys';
+  box.open=true;
   box.innerHTML=
    '<summary><strong>Cuestionarios anónimos (Jugadores/as)</strong><span>Armá encuestas livianas por actividad o grupo y mirá respuestas desde la primera carga</span></summary>'+
    '<div class="ms-content">'+
@@ -81,14 +83,16 @@
     '<div id="ms-list" class="ms-list"></div>'+
    '</div>';
 
-  const appScreen=document.getElementById('app-screen');
-  const anchor=document.getElementById('inteligencia-panel')||document.getElementById('management-panel');
-  if(anchor&&anchor.parentNode===appScreen)anchor.after(box);
-  else appScreen.prepend(box);
+  const target=document.getElementById('tab-encuestas')||document.getElementById('app-screen');
+  target.append(box);
 
   const local=generation,find=id=>box.querySelector('#'+id);
   let draftQuestions=[{id:'q1',type:'scale',label:'¿Cómo te sentís con los entrenamientos?',options:[],required:true}];
   let loaded=false;
+  activeOpen=()=>{
+   box.open=true;
+   if(!loaded){loaded=true;loadList();}
+  };
 
   function renderDraftQuestions(){
    const container=find('ms-questions');
@@ -143,6 +147,7 @@
   });
 
   activePrefill=({activity,categoria='',equipo='',template='ausencias'}={})=>{
+   document.getElementById('tab-btn-encuestas')?.click();
    box.open=true;
    if(!loaded){loaded=true;loadList();}
    const actSel=find('ms-activity');
@@ -248,6 +253,9 @@
  },
  prefill(opts){
   if(typeof activePrefill==='function')activePrefill(opts);
+ },
+ open(){
+  if(typeof activeOpen==='function')activeOpen();
  }};
 
  const style=document.createElement('style');

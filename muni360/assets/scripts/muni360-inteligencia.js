@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- let identity='',generation=0;
+ let identity='',generation=0,activeOpen=null;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const STATUS_LABELS={abierta:'Abierta',en_revision:'En revisión',intervenida:'Intervenida',escalada:'Escalada +48 h',resuelta:'Resuelta'};
  const RULE_LABELS={CAIDA_ASISTENCIA:'Caída de asistencia',AUSENCIAS_CONSECUTIVAS:'Ausencias consecutivas',SEMAFORO_ALERTA:'Semáforo en alerta'};
@@ -26,11 +26,13 @@
   identity=key;
   generation++;
   document.getElementById('inteligencia-panel')?.remove();
+  activeOpen=null;
   if(!allowed)return;
 
   const box=document.createElement('details');
   box.id='inteligencia-panel';
   box.className='card muni-inteligencia';
+  box.open=true;
   const areas=Array.isArray(session.areas)?session.areas:[];
   box.innerHTML=
    '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span></summary>'+
@@ -56,13 +58,15 @@
     '<div id="mi-cases" class="mi-cases"></div>'+
    '</div>';
 
-  const appScreen=document.getElementById('app-screen');
-  const dash=document.getElementById('management-panel');
-  if(dash&&dash.parentNode===appScreen)dash.after(box);
-  else appScreen.prepend(box);
+  const target=document.getElementById('tab-inteligencia')||document.getElementById('app-screen');
+  target.append(box);
 
   const local=generation,find=id=>box.querySelector('#'+id);
   let loaded=false;
+  activeOpen=()=>{
+   box.open=true;
+   if(!loaded){loaded=true;loadList();}
+  };
   box.addEventListener('toggle',()=>{if(box.open&&!loaded){loaded=true;loadList();}});
   find('mi-status').onchange=loadList;
   find('mi-activity').onchange=loadList;
@@ -215,6 +219,9 @@
     if(box.isConnected){find('mi-scan').disabled=false;find('mi-refresh').disabled=false;}
    }
   }
+ },
+ open(){
+  if(typeof activeOpen==='function')activeOpen();
  }};
 
  const style=document.createElement('style');
