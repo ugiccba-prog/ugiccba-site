@@ -13,7 +13,7 @@ $$;
 revoke all on function mc_private.sanitize(jsonb) from public,anon,authenticated;
 create function mc_private.worker_jobs(p_secret text,p_limit integer default 5) returns jsonb language plpgsql security definer set search_path='' as $$
 #variable_conflict use_variable
-declare job record;s jsonb;rec record;out jsonb:='[]'::jsonb;hs jsonb;begin
+declare job record;s jsonb;rec record;out jsonb:='[]'::jsonb;hs jsonb;sv jsonb;begin
  perform mp_private.mp_worker_auth(p_secret);
  for job in select o.activity,o.version,a.epoch,t.sheet_id from mc_private.outbox o join mc_private.activities a on a.name=o.activity left join mc_private.sheet_targets t on t.activity=o.activity order by o.updated_at limit greatest(0,least(p_limit,10)) for share of o,a loop
   s:=jsonb_build_object('padron','[]'::jsonb,'asistencia','[]'::jsonb,'evaluaciones','[]'::jsonb,'gestos','[]'::jsonb,'fichas','{}'::jsonb);
@@ -23,7 +23,39 @@ declare job record;s jsonb;rec record;out jsonb:='[]'::jsonb;hs jsonb;begin
   end loop;
   s:=jsonb_set(s,'{fichas}',coalesce((select jsonb_object_agg(id,value) from mc_private.fichas where activity=job.activity),'{}'::jsonb));
   hs:=coalesce((select jsonb_agg(jsonb_set(value,'{state}',mc_private.sanitize(value->'state'))) from mc_private.archives where activity=job.activity),'[]'::jsonb);
-  out:=out||jsonb_build_array(jsonb_build_object('activity',job.activity,'version',job.version,'sheet_id',job.sheet_id,'epoch',job.epoch,'state',mc_private.sanitize(s),'archives',hs,'audit',coalesce((select jsonb_agg(event-'antes'-'despues'-'uid'-'rol') from mc_private.audit where activity=job.activity and event->>'tipo' in('ASISTENCIA','EVALUACION','RECONOCIMIENTO')),'[]'::jsonb)));
+  sv:='[]'::jsonb;
+  if to_regclass('mc_private.surveys') is not null then
+   execute $q$
+    select coalesce((
+     select jsonb_agg(
+      jsonb_build_object(
+       'id',s.id,
+       'title',s.title,
+       'categoria',s.categoria,
+       'equipo',s.equipo,
+       'status',s.status,
+       'created_at',s.created_at,
+       'questions',s.questions,
+       'responseCount',(select count(*) from mc_private.survey_responses sr where sr.survey_id=s.id),
+       'responses',coalesce((
+        select jsonb_agg(sr.answers order by sr.submitted_at desc)
+        from (
+         select answers,submitted_at
+         from mc_private.survey_responses
+         where survey_id=s.id
+         order by submitted_at desc
+         limit 100
+        ) sr
+       ),'[]'::jsonb)
+      )
+      order by s.created_at desc
+     )
+     from mc_private.surveys s
+     where s.activity=$1 and s.status in ('active','closed')
+    ),'[]'::jsonb)
+   $q$ into sv using job.activity;
+  end if;
+  out:=out||jsonb_build_array(jsonb_build_object('activity',job.activity,'version',job.version,'sheet_id',job.sheet_id,'epoch',job.epoch,'state',mc_private.sanitize(s),'archives',hs,'surveys',coalesce(sv,'[]'::jsonb),'audit',coalesce((select jsonb_agg(event-'antes'-'despues'-'uid'-'rol') from mc_private.audit where activity=job.activity and event->>'tipo' in('ASISTENCIA','EVALUACION','RECONOCIMIENTO')),'[]'::jsonb)));
  end loop;return out;
 end$$;
 revoke all on function mc_private.worker_jobs(text,integer) from public;grant execute on function mc_private.worker_jobs(text,integer) to anon,authenticated;

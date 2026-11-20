@@ -3,7 +3,7 @@
  let identity='',generation=0,activeOpen=null;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const STATUS_LABELS={abierta:'Abierta',en_revision:'En revisión',intervenida:'Intervenida',escalada:'Escalada +48 h',resuelta:'Resuelta'};
- const RULE_LABELS={CAIDA_ASISTENCIA:'Caída de asistencia',AUSENCIAS_CONSECUTIVAS:'Ausencias consecutivas',SEMAFORO_ALERTA:'Semáforo en alerta'};
+ const RULE_LABELS={CAIDA_ASISTENCIA:'Caída de asistencia',AUSENCIAS_CONSECUTIVAS:'Ausencias consecutivas',SEMAFORO_ALERTA:'Semáforo en alerta',CUESTIONARIO_ALERTA:'Señal en cuestionario'};
  const fmtDate=iso=>{
   if(!iso)return '';
   try{return new Date(iso).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
@@ -35,7 +35,7 @@
   box.open=true;
   const areas=Array.isArray(session.areas)?session.areas:[];
   box.innerHTML=
-   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span><span id="mi-summary-pill" class="mi-summary-pill">3 reglas activas</span></summary>'+
+   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span><span id="mi-summary-pill" class="mi-summary-pill">4 reglas activas</span></summary>'+
    '<div class="mi-content">'+
     '<div class="mi-controls">'+
      '<label>Estado<select id="mi-status">'+
@@ -116,13 +116,14 @@
     {label:'Caída de asistencia',hint:'14 d vs. 4 sem.',count:rc.CAIDA_ASISTENCIA||0},
     {label:'Ausencias consecutivas',hint:'3+ seguidas en 45 d',count:rc.AUSENCIAS_CONSECUTIVAS||0},
     {label:'Semáforo en alerta',hint:'🟡/🔴 21 d',count:rc.SEMAFORO_ALERTA||0},
+    {label:'Señal en cuestionario',hint:'escala < 3.2 o ≤ 2',count:rc.CUESTIONARIO_ALERTA||0},
     {label:'Escalamiento 48 h',hint:'sin intervención',count:counts.escalada||0,warn:true}
    ];
-   const activeRulesSum=(rc.CAIDA_ASISTENCIA||0)+(rc.AUSENCIAS_CONSECUTIVAS||0)+(rc.SEMAFORO_ALERTA||0);
+   const activeRulesSum=(rc.CAIDA_ASISTENCIA||0)+(rc.AUSENCIAS_CONSECUTIVAS||0)+(rc.SEMAFORO_ALERTA||0)+(rc.CUESTIONARIO_ALERTA||0);
    if(summaryPill){
     summaryPill.textContent=hasData
      ?(activeRulesSum?activeRulesSum+' alerta(s) activa(s) ahora':'Monitoreo activo · 0 en curso')
-     :'3 reglas activas';
+     :'4 reglas activas';
     summaryPill.classList.toggle('is-live',activeRulesSum>0);
    }
    const activeCases=(r?.cases||[]).filter(c=>c.status!=='resuelta');
@@ -203,9 +204,15 @@
    return '<div class="mi-survey-link"><strong>Cuestionarios anónimos vinculados:</strong><ul>'+
     matched.map(s=>{
      const scales=(s.summary||[]).filter(q=>q.type==='scale'&&q.avg!=null).map(q=>esc(q.label)+': <b>'+q.avg+'/5</b>');
-     return '<li><strong>'+esc(s.title)+'</strong> · '+s.responseCount+' resp.'+(scales.length?' · '+scales.join(' · '):'')+'</li>';
+     const choices=(s.summary||[]).filter(q=>(q.type==='single'||q.type==='multi')&&q.count>0).map(q=>{
+      const top=Object.entries(q.counts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>esc(k)+' ('+v+')');
+      return top.length?esc(q.label)+': <em>'+top.join(', ')+'</em>':'';
+     }).filter(Boolean);
+     const comments=(s.summary||[]).filter(q=>q.type==='text'&&Array.isArray(q.texts)&&q.texts.length).flatMap(q=>q.texts.slice(0,2).map(t=>'“'+esc(t)+'”')).slice(0,2);
+     const details=[].concat(scales,choices).join(' · ');
+     return '<li><strong>'+esc(s.title)+'</strong> · '+s.responseCount+' resp.'+(details?' · '+details:'')+(comments.length?'<div class="mi-survey-quotes">Comentarios: '+comments.join(' · ')+'</div>':'')+'</li>';
     }).join('')+
-   '</div>';
+   '</ul></div>';
   }
 
   function renderCases(cases,surveys){
@@ -420,6 +427,7 @@
   '.mi-btn-row .mi-btn-survey{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}'+
   '.mi-survey-link{margin:8px 0;padding:8px 10px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:.82rem;color:#134e4a}'+
   '.mi-survey-link ul{margin:4px 0 0 18px;padding:0}'+
+  '.mi-survey-quotes{margin-top:3px;font-size:.78rem;color:#0f766e}'+
   '.mi-notes{margin-top:10px;font-size:.8rem;color:#475569}'+
   '.mi-notes ul{margin:6px 0 0 18px;padding:0}'+
   '.mi-empty{color:#526477;font-size:.88rem}';

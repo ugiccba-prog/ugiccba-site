@@ -109,7 +109,7 @@ await test('intervention workflow updates status and notes; 48h escalation promo
  const list1=await call('coord','/api/inteligencia/list',{status:'activas'});
  assert.equal(list1.counts.abierta,3);
  assert.equal(list1.aiConfigured,false);
- assert.deepEqual(list1.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:1});
+ assert.deepEqual(list1.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:1,CUESTIONARIO_ALERTA:0});
 
  const dropCase=list1.cases.find(c=>c.rule_code==='CAIDA_ASISTENCIA');
  const semCase=list1.cases.find(c=>c.rule_code==='SEMAFORO_ALERTA');
@@ -129,7 +129,7 @@ await test('intervention workflow updates status and notes; 48h escalation promo
  assert.equal(list2.counts.escalada,1);
  assert.equal(list2.counts.intervenida,1);
  assert.equal(list2.counts.resuelta,1);
- assert.deepEqual(list2.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:0});
+ assert.deepEqual(list2.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:0,CUESTIONARIO_ALERTA:0});
  const escalated=list2.cases.find(c=>c.rule_code==='AUSENCIAS_CONSECUTIVAS');
  assert.equal(escalated.status,'escalada');
  assert.ok(escalated.escalated_at);
@@ -171,6 +171,31 @@ await test('AI key storage is owner-only, never leaked to client, and /api/intel
  const consec=captured.cases.find(c=>c.rule_code==='AUSENCIAS_CONSECUTIVAS');
  assert.equal('jugadores' in consec.metrics,false);
  assert.equal(consec.metrics.jugadoresCount,2);
+});
+
+await test('scan detects CUESTIONARIO_ALERTA when anonymous questionnaire receives low scale scores',async()=>{
+ await db.exec(fs.readFileSync(new URL('../sql/015_surveys.sql',import.meta.url),'utf8'));
+ const created=await call('coord','/api/surveys/create',{
+  activity:'Básquet Damas',
+  categoria:'U13',
+  equipo:'A',
+  title:'Clima post partido',
+  questions:[{id:'q1',type:'scale',label:'¿Cómo te sentís?',required:true}]
+ });
+ await createHandler({rpc:(n,a)=>rpc(n,a),verify:async()=>({uid:null}),now:()=>currentNow})({
+  token:'',path:'/api/surveys/submit',body:{code:created.survey.public_code,answers:{q1:1}}
+ });
+ await createHandler({rpc:(n,a)=>rpc(n,a),verify:async()=>({uid:null}),now:()=>currentNow})({
+  token:'',path:'/api/surveys/submit',body:{code:created.survey.public_code,answers:{q1:2}}
+ });
+ const scan=await call('coord','/api/inteligencia/scan',{activity:'Básquet Damas'});
+ const qCase=scan.cases.find(c=>c.rule_code==='CUESTIONARIO_ALERTA');
+ assert.ok(qCase);
+ assert.equal(qCase.severity,'alta');
+ assert.equal(qCase.metrics.avgScale,1.5);
+ assert.equal(qCase.metrics.lowCount,2);
+ const list=await call('coord','/api/inteligencia/list',{status:'activas'});
+ assert.equal(list.ruleCounts.CUESTIONARIO_ALERTA,1);
 });
 
 await db.close();

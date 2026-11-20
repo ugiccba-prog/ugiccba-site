@@ -65,6 +65,7 @@ declare
  a mc_private.activities%rowtype;
  v_today date;
  v_upserted integer:=0;
+ v_survey_upserted integer:=0;
 begin
  select * into strict c from mc_private.settings where id;
  select record into u from mc_private.users where uid=p_uid for share;
@@ -208,6 +209,70 @@ begin
  )
  select count(*) into v_upserted from upserted;
 
+ if to_regclass('mc_private.surveys') is not null then
+  execute $q$
+   with scale_vals as (
+    select
+     s.id,
+     s.activity,
+     trim(coalesce(s.categoria,'')) as categoria,
+     trim(coalesce(s.equipo,'')) as equipo,
+     s.title,
+     (sr.answers->>(q.elem->>'id'))::numeric as val,
+     sr.id as resp_id
+    from mc_private.surveys s
+    join mc_private.survey_responses sr on sr.survey_id=s.id
+    cross join lateral jsonb_array_elements(coalesce(s.questions,'[]'::jsonb)) q(elem)
+    where s.activity=$1
+      and s.status in ('active','closed')
+      and q.elem->>'type'='scale'
+      and coalesce(sr.answers->>(q.elem->>'id'),'') ~ '^[1-5](?:\.0+)?$'
+   ),
+   survey_agg as (
+    select
+     id as survey_id,
+     activity,
+     max(categoria) as categoria,
+     max(equipo) as equipo,
+     max(title) as title,
+     count(distinct resp_id) as resp_count,
+     round(avg(val),2) as avg_scale,
+     count(*) filter (where val <= 2) as low_count
+    from scale_vals
+    group by id, activity
+    having avg(val) < 3.2 or count(*) filter (where val <= 2) >= 2
+   ),
+   survey_upserted as (
+    insert into mc_private.inteligencia_cases(
+     case_key,activity,categoria,equipo,rule_code,severity,title,summary,metrics,
+     status,opened_at,due_at,updated_at
+    )
+    select
+     sa.activity||'|CUESTIONARIO_ALERTA|'||sa.survey_id,
+     sa.activity,
+     sa.categoria,
+     sa.equipo,
+     'CUESTIONARIO_ALERTA',
+     case when sa.avg_scale < 2.5 or sa.low_count >= 3 then 'alta' else 'media' end,
+     'Señal en cuestionario: '||sa.title,
+     'Promedio de escala '||sa.avg_scale||' / 5 en '||sa.resp_count||' respuesta(s) ('||sa.low_count||' valoración(es) baja(s) ≤ 2).',
+     jsonb_build_object('surveyId',sa.survey_id,'responseCount',sa.resp_count,'avgScale',sa.avg_scale,'lowCount',sa.low_count),
+     'abierta',$2,$2 + interval '48 hours',$2
+    from survey_agg sa
+    on conflict (case_key) where status in ('abierta','en_revision','intervenida','escalada')
+    do update set
+     severity=excluded.severity,
+     title=excluded.title,
+     summary=excluded.summary,
+     metrics=excluded.metrics,
+     updated_at=$2
+    returning id
+   )
+   select count(*) from survey_upserted
+  $q$ into v_survey_upserted using p_activity, p_now;
+  v_upserted:=v_upserted + coalesce(v_survey_upserted,0);
+ end if;
+
  return jsonb_build_object(
   'ok',true,
   'activity',p_activity,
@@ -287,7 +352,8 @@ begin
     select jsonb_build_object(
      'CAIDA_ASISTENCIA',count(*) filter (where rule_code='CAIDA_ASISTENCIA'),
      'AUSENCIAS_CONSECUTIVAS',count(*) filter (where rule_code='AUSENCIAS_CONSECUTIVAS'),
-     'SEMAFORO_ALERTA',count(*) filter (where rule_code='SEMAFORO_ALERTA')
+     'SEMAFORO_ALERTA',count(*) filter (where rule_code='SEMAFORO_ALERTA'),
+     'CUESTIONARIO_ALERTA',count(*) filter (where rule_code='CUESTIONARIO_ALERTA')
     )
     from mc_private.inteligencia_cases ic
     where v_areas ? ic.activity

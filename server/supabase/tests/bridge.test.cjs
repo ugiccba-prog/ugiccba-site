@@ -10,3 +10,47 @@ test('export is pinned, preserves Unicode across chunks and sends no credentials
 function institutional(){const e=setup(),props={UGI_SUPABASE_MAINTENANCE_KEY:'mci_fake'};e.c.PropertiesService.getScriptProperties=()=>({getProperty:k=>props[k],setProperty:(k,v)=>props[k]=v});e.c.sha=s=>crypto.createHash('sha256').update(s).digest('hex');const old=e.c.UrlFetchApp.fetch;e.c.UrlFetchApp.fetch=(url,opt)=>url.endsWith('mc_worker_targets')?{getResponseCode:()=>200,getContentText:()=>"[]"}:old(url,opt);vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../tools/SheetsInstitucional.gs'),'utf8'),e.c);return e;}
 test('institutional copy handles a large season in bounded batches without duplicating rows',()=>{const e=institutional();e.job.state.asistencia=Array.from({length:5000},(_,i)=>({fecha:'2026-11-01',categoria:'Mini',equipo:'A',jugador:'Ficticio '+i,estado:'P | Sem:N',clima:'N',puntosCiudad:0}));assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,1);assert.equal(e.saved.Asistencia.length,5001);assert.ok(e.writes>1);assert.equal(e.saved.Asistencia[1][7],0);assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,1);assert.equal(e.saved.Asistencia.length,5001);});
 test('CargaPadron refresh runs even when no attendance or evaluation changed',()=>{const e=institutional();let staging=0;e.c.UrlFetchApp.fetch=(url,opt)=>{const target=url.split('/').at(-1);if(target==='mc_worker_staging')staging++;return {getResponseCode:()=>200,getContentText:()=>JSON.stringify(target==='mc_worker_jobs'?[]:target==='mc_worker_targets'?[{activity:'Test',sheet_id:'TEST_NEW_SHEET_ID_123456789'}]:{ok:true})};};assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,0);assert.equal(staging,1);e.c.sincronizarMuni360SupabaseOriginalUGI();assert.equal(staging,1);});
+test('reorganized Sheets put Resumen and Cuestionarios first, summarize surveys and add missing tabs on existing books',()=>{
+ const e=institutional();
+ e.job.state.padron=[{id:'p1',categoria:'U13',equipo:'A',jugador:'Ana Prueba'}];
+ e.job.state.asistencia=[
+  {fecha:'2026-11-10',categoria:'U13',equipo:'A',jugador:'Ana Prueba',jugadorId:'p1',estado:'A | Sem:R',clima:'',puntosCiudad:''},
+  {fecha:'2026-11-18',categoria:'U13',equipo:'A',jugador:'Ana Prueba',jugadorId:'p1',estado:'P | Sem:V',clima:'Vapor',puntosCiudad:5}
+ ];
+ e.job.state.evaluaciones=[{fecha:'2026-11-18',categoria:'U13',equipo:'A',jugador:'Ana Prueba',jugadorId:'p1',notas:{Pase:8,Actitud:9}}];
+ e.job.surveys=[{
+  id:'s1',title:'Clima U13',status:'active',categoria:'U13',equipo:'A',responseCount:2,
+  questions:[
+   {id:'q1',type:'scale',label:'Ambiente'},
+   {id:'q2',type:'single',label:'Horario',options:['Bien','Tarde']},
+   {id:'q3',type:'text',label:'Comentario'}
+  ],
+  responses:[{q1:4,q2:'Bien',q3:'Muy buen grupo'},{q1:2,q2:'Tarde',q3:'Horarios justos'}]
+ }];
+ const tables=e.c.tablasSupabaseUGI(e.job);
+ assert.deepEqual(Object.keys(tables).slice(0,5),['Resumen','Cuestionarios','Padron','Asistencia','Evaluaciones']);
+ assert.ok(tables.Resumen.some(r=>r[0]==='U13'&&r[1]==='A'&&r[6]==='50%'));
+ assert.ok(tables.Cuestionarios.some(r=>r[0]==='Clima U13'&&String(r[7]).includes('3 / 5 ★')));
+ assert.ok(tables.Cuestionarios.some(r=>r[0]==='Clima U13'&&String(r[8]).includes('Muy buen grupo')));
+ assert.equal(tables.Padron[1][6],'50%');
+ assert.equal(tables.Asistencia[1][0],'2026-11-18');
+ assert.equal(tables.Asistencia[1][8],'Presente');
+ assert.equal(tables.Asistencia[1][9],'🟢 Verde');
+ assert.equal(tables.Evaluaciones[1][6],8.5);
+ // Simulate an older spreadsheet missing Resumen & Cuestionarios tabs
+ const legacyTitles=Object.keys(tables).filter(t=>t!=='Resumen'&&t!=='Cuestionarios');
+ const sheetList=legacyTitles.map(title=>({properties:{title,sheetId:title,gridProperties:{rowCount:1000,columnCount:14}}}));
+ const oldBatchUpdate=e.c.Sheets.Spreadsheets.batchUpdate;
+ e.c.Sheets.Spreadsheets.get=()=>({sheets:sheetList});
+ e.c.Sheets.Spreadsheets.batchUpdate=body=>{
+  for(const req of body.requests.filter(r=>r.addSheet)){
+   const p=req.addSheet.properties;
+   sheetList.push({properties:{title:p.title,sheetId:p.title,gridProperties:p.gridProperties}});
+  }
+  return oldBatchUpdate(body);
+ };
+ assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,1);
+ assert.ok(sheetList.some(s=>s.properties.title==='Resumen'));
+ assert.ok(sheetList.some(s=>s.properties.title==='Cuestionarios'));
+ assert.equal(e.saved.Cuestionarios.length,4);
+});

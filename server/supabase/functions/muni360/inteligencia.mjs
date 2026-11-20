@@ -76,6 +76,9 @@ function buildFallbackAnalysis(cases,surveys,single){
  if(rules.has('SEMAFORO_ALERTA')){
   lines.push('• Semáforo en alerta: revisá el clima grupal, apoyos DUA y dinámica de clase junto al profe; un cuestionario anónimo de clima ayuda a detectar barreras tempranas.');
  }
+ if(rules.has('CUESTIONARIO_ALERTA')){
+  lines.push('• Señal en cuestionario anónimo: revisá las preguntas con puntaje bajo y los comentarios anónimos del grupo para ajustar horarios, clima o acompañamientos DUA.');
+ }
  const withResp=surveys.filter(s=>(s.responseCount||0)>0);
  if(withResp.length){
   lines.push(`• Cuestionarios vinculados: ${withResp.length} cuestionario(s) ya cuentan con respuestas anónimas para cruzar con el seguimiento del grupo.`);

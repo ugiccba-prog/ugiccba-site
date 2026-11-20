@@ -31,6 +31,18 @@ alter table mc_private.surveys enable row level security;
 alter table mc_private.survey_responses enable row level security;
 revoke all on mc_private.surveys, mc_private.survey_responses from public,anon,authenticated;
 
+create or replace function mc_private.surveys_enqueue_outbox(p_activity text,p_now timestamptz default now())
+returns void language plpgsql security definer set search_path='' as $$
+begin
+ if to_regclass('mc_private.outbox') is not null and to_regclass('mc_private.activities') is not null then
+  insert into mc_private.outbox(activity,version,updated_at)
+  select a.name,a.version,p_now from mc_private.activities a where a.name=p_activity
+  on conflict(activity) do update set version=greatest(mc_private.outbox.version,excluded.version),updated_at=excluded.updated_at;
+ end if;
+end$$;
+
+revoke all on function mc_private.surveys_enqueue_outbox(text,timestamptz) from public,anon,authenticated;
+
 create or replace function public.mc_surveys(p_action text,p jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $$
 #variable_conflict use_variable
@@ -69,6 +81,7 @@ begin
   end if;
   insert into mc_private.survey_responses(survey_id,answers,submitted_at)
   values(v_survey.id,coalesce(p->'answers','{}'::jsonb),v_now);
+  perform mc_private.surveys_enqueue_outbox(v_survey.activity,v_now);
   return jsonb_build_object('ok',true);
  end if;
 
@@ -103,6 +116,7 @@ begin
    v_now,
    v_now
   ) returning * into v_survey;
+  perform mc_private.surveys_enqueue_outbox(v_survey.activity,v_now);
   return jsonb_build_object('ok',true,'survey',to_jsonb(v_survey));
  end if;
 
@@ -113,6 +127,7 @@ begin
   v_status:=p->>'status';
   if v_status not in ('draft','active','closed') then raise exception using errcode='PT409',message='Estado inválido.'; end if;
   update mc_private.surveys set status=v_status,updated_at=v_now where id=v_survey.id returning * into v_survey;
+  perform mc_private.surveys_enqueue_outbox(v_survey.activity,v_now);
   return jsonb_build_object('ok',true,'survey',to_jsonb(v_survey));
  end if;
 

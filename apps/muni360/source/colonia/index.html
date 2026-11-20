@@ -1172,6 +1172,12 @@
           </table>
         </div>
       </div>
+
+      <div class="card hidden" id="card-cuestionarios-analisis">
+        <h3>Cuestionarios anónimos del grupo</h3>
+        <p class="hint">Respuestas y clima percibido en los cuestionarios vinculados a esta actividad y grupo.</p>
+        <div id="lista-cuestionarios-analisis"></div>
+      </div>
     </section>
 
     <!-- ===================================================================
@@ -1753,7 +1759,7 @@
       $('tab-btn-inteligencia').classList.toggle('hidden',!verCambios);
       $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
-      if(!verCambios){$('audit-list').textContent='';if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');}
+      if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');}
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
@@ -2467,6 +2473,7 @@
         $('estado-txt').textContent=j.sheetsStatus==='pending'?(window.MUNI_CONFIG.backend==='supabase'?'✓ Guardado en la base · Copia a Sheets pendiente':'✓ Guardado en Sheets privado · Vistas de actividad pendientes'):'✓ Guardado · Vistas de Sheets actualizadas'; $('estado-acciones').innerHTML='';
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(Muni360Time.format(a.fecha))} · ${esc(a.modo)}</option>`).join('');
         $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
+        cargarCuestionariosAnalisis(true);
         if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
       } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
     }
@@ -3049,7 +3056,79 @@
     // =========================================================================
     // 9. PESTAÑA 4: ANÁLISIS Y EXPORTACIÓN A EXCEL (.XLSX)
     // =========================================================================
-    let ultimaMatrizExport = [], ultimaAsistenciaEquipos = [];
+    let ultimaMatrizExport = [], ultimaAsistenciaEquipos = [], cuestionariosActividad = [], cuestionariosAreaCargada = '';
+
+    function cuestionariosParaGrupo(cat, eq) {
+      const catNorm = String(cat || '').trim().toLowerCase();
+      const eqNorm = String(eq || '').trim().toLowerCase();
+      return (cuestionariosActividad || []).filter(s => {
+        if (s.activity && s.activity !== areaActiva) return false;
+        const sc = String(s.categoria || '').trim().toLowerCase();
+        const se = String(s.equipo || '').trim().toLowerCase();
+        return (!sc || !catNorm || sc === catNorm) && (!se || !eqNorm || se === eqNorm);
+      });
+    }
+
+    async function cargarCuestionariosAnalisis(forzar = false) {
+      const esDemo = sesion?.modoDemo === true || almacen.getItem('muni360_modo_demo') === '1';
+      if (!puedeVerCambios() || esDemo || !window.MuniGoogle?.call) {
+        cuestionariosActividad = [];
+        cuestionariosAreaCargada = '';
+        $('card-cuestionarios-analisis')?.classList.add('hidden');
+        return;
+      }
+      if (!forzar && cuestionariosAreaCargada === areaActiva) return;
+      const targetAct = areaActiva;
+      try {
+        const res = await MuniGoogle.call('/api/surveys/list', { activity: targetAct });
+        if (targetAct !== areaActiva || !puedeVerCambios()) return;
+        cuestionariosActividad = Array.isArray(res?.surveys) ? res.surveys : [];
+        cuestionariosAreaCargada = targetAct;
+        renderAnalisis();
+      } catch (_) {}
+    }
+
+    function renderCuestionariosAnalisis(cat, eq) {
+      const card = $('card-cuestionarios-analisis');
+      const box = $('lista-cuestionarios-analisis');
+      if (!card || !box) return;
+      const esDemo = sesion?.modoDemo === true || almacen.getItem('muni360_modo_demo') === '1';
+      if (!puedeVerCambios() || esDemo) {
+        card.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      card.classList.remove('hidden');
+      const matched = cuestionariosParaGrupo(cat, eq);
+      if (!matched.length) {
+        box.innerHTML = '<p class="hint" style="margin:0;">Todavía no hay cuestionarios anónimos vinculados a este grupo. Podés crear uno desde ☰ Menú → Cuestionarios.</p>';
+        return;
+      }
+      const stLabels = { active: 'Activo', closed: 'Cerrado', draft: 'Borrador' };
+      box.innerHTML = matched.map(s => {
+        const qsHtml = (s.summary || []).map(q => {
+          if (q.type === 'scale') {
+            const pctW = q.avg != null ? Math.min(100, Math.max(0, (q.avg / 5) * 100)) : 0;
+            const color = q.avg == null ? 'var(--muted)' : q.avg >= 4 ? 'var(--ok)' : q.avg >= 3.2 ? 'var(--sky)' : 'var(--bad)';
+            return `<div class="barra" style="margin:6px 0;"><div class="barra-top"><span>${esc(q.label)}</span><span>${q.avg != null ? esc(q.avg + ' / 5 ★ (' + q.count + ' resp.)') : 'Sin respuestas'}</span></div><div class="barra-bg"><div style="width:${pctW}%;background:${color};"></div></div></div>`;
+          }
+          if (q.type === 'single' || q.type === 'multi') {
+            const top = Object.entries(q.counts || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)}: <b>${v}</b>`).join(' · ');
+            return `<p class="hint" style="margin:5px 0;"><strong>${esc(q.label)}:</strong> ${top || 'Sin respuestas'}</p>`;
+          }
+          const texts = Array.isArray(q.texts) ? q.texts.slice(0, 5) : [];
+          return `<div style="margin:6px 0;"><p class="hint" style="margin:0 0 3px;"><strong>${esc(q.label)} (${texts.length} comentarios):</strong></p>${texts.length ? '<ul style="margin:0 0 0 18px;font-size:0.8rem;color:var(--text);">' + texts.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>' : '<p class="hint" style="margin:0;">Sin comentarios de texto.</p>'}</div>`;
+        }).join('');
+        const scope = [s.categoria || 'Toda la actividad', s.equipo || 'Todos'].join(' · ');
+        return `<div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:10px;background:#f8fafc;">
+          <div class="spread" style="margin-bottom:6px;">
+            <div><strong>${esc(s.title)}</strong> <span class="pill ${s.status === 'active' ? 'v' : 'a'}">${esc(stLabels[s.status] || s.status)}</span></div>
+            <span class="hint" style="margin:0;">${esc(scope)} · <b>${Number(s.responseCount || 0)} resp.</b></span>
+          </div>
+          ${s.responseCount ? qsHtml : '<p class="hint" style="margin:0;">Aún sin respuestas enviadas.</p>'}
+        </div>`;
+      }).join('');
+    }
 
     function renderAnalisis() {
       const lista = plantelActualNombres();
@@ -3090,7 +3169,9 @@
       });
       ultimaAsistenciaEquipos = [...gruposExport.values()].sort((a, b) => a.categoria.localeCompare(b.categoria, 'es', { numeric: true }) || a.equipo.localeCompare(b.equipo, 'es', { numeric: true })).map(g => {
         const observados = g.verde + g.amarillo + g.rojo;
-        return { Categoria: g.categoria, Equipo: g.equipo, Deportistas: g.deportistas, Registros: g.registros, Presentes: g.presentes, Ausentes: g.registros - g.presentes, Asistencia: g.registros ? `${Math.round(g.presentes / g.registros * 1000) / 10}%` : '-', Verde: g.verde, Amarillo: g.amarillo, Rojo: g.rojo, 'Semáforo promedio': observados ? Math.round((g.verde * 3 + g.amarillo * 2 + g.rojo) / observados * 100) / 100 : '-', '% Verde': observados ? `${Math.round(g.verde / observados * 1000) / 10}%` : '-' };
+        const matchedSv = cuestionariosParaGrupo(g.categoria, g.equipo);
+        const respSv = matchedSv.reduce((acc, s) => acc + Number(s.responseCount || 0), 0);
+        return { Categoria: g.categoria, Equipo: g.equipo, Deportistas: g.deportistas, Registros: g.registros, Presentes: g.presentes, Ausentes: g.registros - g.presentes, Asistencia: g.registros ? `${Math.round(g.presentes / g.registros * 1000) / 10}%` : '-', Verde: g.verde, Amarillo: g.amarillo, Rojo: g.rojo, 'Semáforo promedio': observados ? Math.round((g.verde * 3 + g.amarillo * 2 + g.rojo) / observados * 100) / 100 : '-', '% Verde': observados ? `${Math.round(g.verde / observados * 1000) / 10}%` : '-', 'Cuestionarios (resp.)': matchedSv.length ? `${matchedSv.length} (${respSv} resp.)` : '-' };
       });
 
       const evals = (datosDeporte.evaluaciones || []).filter(e => perteneceAlGrupo(e) && dentroDePeriodo(e));
@@ -3180,6 +3261,7 @@
               <td><span class="pill ${f.enAlerta ? 'r' : 'v'}">${esc(f.Estado)}</span></td>
             </tr>`).join('')
         : `<tr><td colspan="6" class="hint" style="text-align:center;">Sin deportistas cargados.</td></tr>`;
+      renderCuestionariosAnalisis(cat, eq);
     }
 
     $('sel-periodo').addEventListener('change', renderAnalisis);
@@ -3187,12 +3269,12 @@
     $('btn-exportar-excel').addEventListener('click', async () => {
       if (!permiso('exportar')) return toast('Dirección no habilitó exportaciones para esta cuenta.');
       if (syncClient) { try { await syncClient.request({tipo:'EXPORTAR',deporte:areaActiva}); } catch(e) {return toast(e.message);} }
-      if (!window.XLSX || (!ultimaMatrizExport.length && !ultimaAsistenciaEquipos.length)) { toast("No hay datos para exportar"); return; }
+      if (!window.XLSX || (!ultimaMatrizExport.length && !ultimaAsistenciaEquipos.length && !cuestionariosActividad.length)) { toast("No hay datos para exportar"); return; }
       const filasLimpias = ultimaMatrizExport.map(({ enAlerta, ...resto }) => resto);
       const wb = XLSX.utils.book_new();
       if (ultimaAsistenciaEquipos.length) {
         const wsEquipos = XLSX.utils.json_to_sheet(ultimaAsistenciaEquipos);
-        wsEquipos['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 13 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 12 }];
+        wsEquipos['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 13 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 12 }, { wch: 20 }];
         wsEquipos['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(wsEquipos['!ref'])) };
         XLSX.utils.book_append_sheet(wb, wsEquipos, "Resumen equipos");
       }
@@ -3200,6 +3282,62 @@
         const ws = XLSX.utils.json_to_sheet(filasLimpias);
         ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 42 }, { wch: 30 }];
         XLSX.utils.book_append_sheet(wb, ws, "Reporte individual");
+      }
+      if (cuestionariosActividad.length) {
+        const stLabels = { active: 'Activo', closed: 'Cerrado', draft: 'Borrador' };
+        const tLabels = { scale: 'Escala 1–5', single: 'Opción única', multi: 'Opción múltiple', text: 'Texto breve' };
+        const filasCuest = [];
+        cuestionariosActividad.forEach(s => {
+          (s.summary || []).forEach(q => {
+            let resTxt = 'Sin respuestas';
+            let comTxt = '';
+            if (q.type === 'scale') {
+              resTxt = q.avg != null ? `${q.avg} / 5 ★` : 'Sin respuestas';
+            } else if (q.type === 'single' || q.type === 'multi') {
+              resTxt = Object.entries(q.counts || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}: ${v}`).join(' · ') || 'Sin respuestas';
+            } else {
+              const txts = Array.isArray(q.texts) ? q.texts : [];
+              resTxt = `${txts.length} comentario(s)`;
+              comTxt = txts.slice(0, 5).join(' | ');
+            }
+            filasCuest.push({
+              Cuestionario: s.title || '',
+              Estado: stLabels[s.status] || s.status || '',
+              Categoria: s.categoria || 'Toda la actividad',
+              Equipo: s.equipo || 'Todos',
+              Respuestas: Number(s.responseCount || 0),
+              Pregunta: q.label || '',
+              Tipo: tLabels[q.type] || q.type || '',
+              Resultado: resTxt,
+              Comentarios: comTxt
+            });
+          });
+        });
+        if (filasCuest.length) {
+          const wsCuest = XLSX.utils.json_to_sheet(filasCuest);
+          wsCuest['!cols'] = [{ wch: 28 }, { wch: 11 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 36 }, { wch: 16 }, { wch: 32 }, { wch: 42 }];
+          wsCuest['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(wsCuest['!ref'])) };
+          XLSX.utils.book_append_sheet(wb, wsCuest, "Cuestionarios");
+        }
+      }
+      const asistReciente = (datosDeporte.asistencia || []).slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || ''))).slice(0, 1000).map(r => {
+        const est = String(r.estado || ''), code = est.charAt(0), mSem = est.match(/Sem:([VAR])/);
+        return {
+          Fecha: r.fecha || '',
+          Categoria: r.categoria || '',
+          Equipo: r.equipo || 'General',
+          Deportista: r.jugador || '',
+          Asistencia: code === 'P' ? 'Presente' : code === 'T' ? 'Tarde' : code === 'A' ? 'Ausente' : 'Sin registrar',
+          Semaforo: mSem ? (mSem[1] === 'V' ? 'Verde' : mSem[1] === 'A' ? 'Amarillo' : 'Rojo') : 'Sin observar',
+          Clima: r.clima || '',
+          PuntosCiudad: r.puntosCiudad ?? ''
+        };
+      });
+      if (asistReciente.length) {
+        const wsAsist = XLSX.utils.json_to_sheet(asistReciente);
+        wsAsist['!cols'] = [{ wch: 13 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }];
+        wsAsist['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(wsAsist['!ref'])) };
+        XLSX.utils.book_append_sheet(wb, wsAsist, "Asistencia reciente");
       }
       XLSX.writeFile(wb, `Muni360_${areaActiva.replace(/\s+/g, '_')}_${fechaLocal()}.xlsx`);
     });
@@ -3426,6 +3564,7 @@
       window.MuniPortal?.hydrate?.();
       document.getElementById('management-panel')?.classList.toggle('hidden',id!=='inicio');
       if(id==='auditoria')renderAuditoria();
+      if(id==='analisis'){cargarCuestionariosAnalisis();renderAnalisis();}
       if(id==='inteligencia')window.MuniInteligencia?.open?.();
       if(id==='encuestas')window.MuniSurveys?.open?.();
     }

@@ -17,6 +17,10 @@ for(const name of ['001_core.sql','002_import.sql','003_projection.sql','004_imp
 
 const areas=['Básquet Damas','Vóley Caballeros'],idSecret='b'.repeat(64);
 await db.query("insert into mc_private.settings values(true,'muni360-ugi-ensayo','owner',$1,$2,'ready',$3,now()+interval '1 day')",[idSecret,JSON.stringify(areas),sha('s'.repeat(64))]);
+await db.exec("create schema if not exists mp_private;create or replace function mp_private.mp_worker_auth(p_secret text) returns void language plpgsql as $$begin if p_secret is distinct from 'worker-test' then raise exception using errcode='42501',message='Invalid worker';end if;end$$;revoke all on function mp_private.mp_worker_auth(text) from public;");
+for(const name of areas){
+ await db.query('insert into mc_private.activities(name,enabled,version,projected_version,epoch) values($1,true,1,1,1)',[name]);
+}
 const users=[
  {uid:'owner',email:'owner@example.invalid',nombre:'Dirección',rol:'Dirección UGI',status:'activo',areas,capabilities:{},version:'v1',revision:0,expiresAt:null},
  {uid:'coord',email:'coord@example.invalid',nombre:'Coord Básquet',rol:'Coordinación',status:'activo',areas:['Básquet Damas'],capabilities:{},version:'v1',revision:0,expiresAt:null},
@@ -92,13 +96,20 @@ await test('create, public anonymous submit, immediate first-response summary, a
  const sub=await call(null,'/api/surveys/submit',{code,answers:{q1:5,q2:'Bien',q3:'Muy bueno el grupo'}});
  assert.equal(sub.ok,true);
 
- // Visible immediately from 1st response
+ // Visible immediately from 1st response and queued for Sheets worker projection
  const list=await call('coord','/api/surveys/list');
  assert.equal(list.surveys.length,1);
  assert.equal(list.surveys[0].responseCount,1);
  assert.equal(list.surveys[0].summary[0].avg,5);
  assert.equal(list.surveys[0].summary[1].counts.Bien,1);
  assert.deepEqual(list.surveys[0].summary[2].texts,['Muy bueno el grupo']);
+
+ const jobs=await rpc('mc_worker_jobs',{p_secret:'worker-test',p_limit:5},'anon');
+ assert.equal(jobs.length,1);
+ assert.equal(jobs[0].activity,'Básquet Damas');
+ assert.equal(jobs[0].surveys.length,1);
+ assert.equal(jobs[0].surveys[0].responseCount,1);
+ assert.equal(jobs[0].surveys[0].responses[0].q3,'Muy bueno el grupo');
 
  // Close survey -> blocks new submissions
  const closed=await call('coord','/api/surveys/status',{surveyId:created.survey.id,status:'closed'});
