@@ -88,7 +88,7 @@ Deno.serve(async(req:Request)=>{
   if(Number(req.headers.get('content-length')||0)>1000000)throw Object.assign(Error('Carga demasiado grande.'),{status:413,code:'VALIDACION'});
   const raw=await req.text();if(new TextEncoder().encode(raw).length>1000000)throw Object.assign(Error('Carga demasiado grande.'),{status:413,code:'VALIDACION'});
   const body=JSON.parse(raw),path=body.path||'/api/operations',token=body.idToken||req.headers.get('authorization')?.replace(/^Bearer /,'')||'';
-  if(path!=='/api/comunidad/feed'&&(typeof token!=='string'||!token||token.length>16000))throw Object.assign(Error('Ingresá con Google.'),{status:401,code:'SESION'});
+  if(!['/api/comunidad/feed','/api/surveys/public','/api/surveys/submit'].includes(path)&&(typeof token!=='string'||!token||token.length>16000))throw Object.assign(Error('Ingresá con Google.'),{status:401,code:'SESION'});
   // Firebase tokens are verified cryptographically by configured PostgREST
   // third-party auth. Never decode an unverified JWT to establish identity.
   const handle=createHandler({rpc:(n:string,a:unknown)=>call(n,a),verify:async()=>{try{return await call('mc_identity',{},publicKey,token);}catch(_){throw Object.assign(Error('Sesión Google inválida. Volvé a ingresar.'),{status:401,code:'SESION'});}},notify:sendComunidadPush});

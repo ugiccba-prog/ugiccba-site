@@ -44,7 +44,7 @@
   const base=(window.MUNI_CONFIG&&window.MUNI_CONFIG.apiBaseUrl)||'';
 
   async function api(path,body){
-   const res=await fetch(base+path,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+   const res=await fetch(base,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...body,path})});
    const data=await res.json().catch(()=>({}));
    if(!res.ok||data.ok===false)throw new Error(data.error||data.message||'No se pudo completar la operación.');
    return data;
