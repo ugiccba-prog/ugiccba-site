@@ -1,7 +1,8 @@
 (function(){
  'use strict';
- let identity='',generation=0,activePrefill=null,activeOpen=null;
+ let identity='',generation=0,activePrefill=null,activeOpen=null,activeRefreshGroups=null;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const sortText=(a,b)=>String(a||'').localeCompare(String(b||''),'es',{numeric:true});
  const STATUS_LABELS={draft:'Borrador',active:'Activa',closed:'Cerrada'};
  const TYPE_LABELS={scale:'Escala 1–5',single:'Opción única',multi:'Opción múltiple',text:'Texto breve'};
  const TEMPLATES={
@@ -40,6 +41,20 @@
   return base+'?c='+encodeURIComponent(code);
  }
 
+ function normalizeGroups(rawGroups){
+  const seen=new Map();
+  for(const g of Array.isArray(rawGroups)?rawGroups:[]){
+   const cat=String(g?.categoria||'').trim();
+   const eq=String(g?.tira||g?.equipo||'General').trim()||'General';
+   if(!cat||cat==='Sin categoría')continue;
+   const k=cat+'\0'+eq;
+   if(!seen.has(k))seen.set(k,{categoria:cat,equipo:eq});
+  }
+  return [...seen.values()].sort((a,b)=>sortText(a.categoria,b.categoria)||sortText(a.equipo,b.equipo));
+ }
+
+ const groupKey=g=>g.categoria+'\0'+g.equipo;
+
  window.MuniSurveys={mount(session){
   const allowed=session&&session.modoDemo!==true&&(session.canManageUsers||['Coordinación','Dirección UGI'].includes(session.rol));
   const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers]):'';
@@ -49,9 +64,12 @@
   document.getElementById('surveys-panel')?.remove();
   activePrefill=null;
   activeOpen=null;
+  activeRefreshGroups=null;
   if(!allowed)return;
 
   const areas=Array.isArray(session.areas)?session.areas:[];
+  const localSnap=typeof window.MuniPortalGroups==='function'?window.MuniPortalGroups():null;
+  const initialActivity=(localSnap?.activity&&areas.includes(localSnap.activity))?localSnap.activity:(areas[0]||'');
   const box=document.createElement('details');
   box.id='surveys-panel';
   box.className='card muni-surveys';
@@ -66,11 +84,29 @@
       '<button type="button" data-tpl="ausencias">Motivos de inasistencia</button>'+
       '<button type="button" data-tpl="cierre">Balance de etapa</button>'+
      '</div>'+
-     '<div class="ms-form-grid">'+
-      '<label>Actividad<select id="ms-activity">'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('')+'</select></label>'+
-      '<label>Categoría (opcional)<input id="ms-categoria" type="text" maxlength="80" placeholder="Ej: U13 (vacío = toda)"></label>'+
-      '<label>Equipo / Tira (opcional)<input id="ms-equipo" type="text" maxlength="80" placeholder="Ej: A (vacío = todos)"></label>'+
+     '<div class="ms-scope-field">'+
+      '<span class="ms-field-label">Alcance de equipos / tiras</span>'+
+      '<div class="ms-scope-toggle" role="group" aria-label="Modo de selección de equipos">'+
+       '<button type="button" class="ms-scope-btn is-active" data-scope-mode="single" aria-pressed="true">Desplegable (uno o todos)</button>'+
+       '<button type="button" class="ms-scope-btn" data-scope-mode="multi" aria-pressed="false">Elegir varios equipos</button>'+
+      '</div>'+
      '</div>'+
+     '<div class="ms-form-grid">'+
+      '<label>Actividad<select id="ms-activity">'+areas.map(a=>'<option value="'+esc(a)+'"'+(a===initialActivity?' selected':'')+'>'+esc(a)+'</option>').join('')+'</select></label>'+
+      '<label class="ms-single-only">Categoría<select id="ms-categoria"><option value="">Todas las categorías (toda la actividad)</option></select></label>'+
+      '<label class="ms-single-only">Equipo / Tira<select id="ms-equipo"><option value="">Todos los equipos / tiras</option></select></label>'+
+     '</div>'+
+     '<div id="ms-multi-wrap" class="ms-multi-wrap" hidden>'+
+      '<div class="ms-multi-bar">'+
+       '<span id="ms-multi-count" class="ms-multi-count">0 equipos seleccionados</span>'+
+       '<button type="button" id="ms-multi-all">Seleccionar todos</button>'+
+       '<button type="button" id="ms-multi-none">Limpiar</button>'+
+       '<div id="ms-multi-tiras" class="ms-multi-tiras"></div>'+
+      '</div>'+
+      '<div id="ms-multi-list" class="ms-multi-list"></div>'+
+      '<p class="ms-scope-note">Se creará 1 cuestionario con enlace propio por cada equipo marcado. Para un único enlace compartido para toda la actividad, usá «Desplegable» con Todas / Todos.</p>'+
+     '</div>'+
+     '<p id="ms-groups-hint" class="ms-scope-hint" role="status"></p>'+
      '<label>Título<input id="ms-title" type="text" maxlength="120" placeholder="Ej: Cuestionario de clima · U13"></label>'+
      '<label>Descripción breve (opcional)<input id="ms-desc" type="text" maxlength="400" placeholder="Texto de bienvenida para jugadores/as"></label>'+
      '<div id="ms-questions" class="ms-questions"></div>'+
@@ -89,9 +125,194 @@
   const local=generation,find=id=>box.querySelector('#'+id);
   let draftQuestions=[{id:'q1',type:'scale',label:'¿Cómo te sentís con los entrenamientos?',options:[],required:true}];
   let loaded=false;
+  let scopeMode='single';
+  let userChangedActivity=false;
+  let activeGroups=[];
+  let groupsReqId=0;
+  const groupsCache=new Map();
+  const selectedMulti=new Set();
+
+  function updateCreateButtonLabel(){
+   const btn=find('ms-create');
+   if(!btn)return;
+   if(scopeMode==='single'){
+    btn.textContent='Crear y activar enlace';
+    return;
+   }
+   const n=activeGroups.filter(g=>selectedMulti.has(groupKey(g))).length;
+   if(n===0)btn.textContent='Crear y activar enlace';
+   else if(n===1)btn.textContent='Crear y activar enlace (1 equipo)';
+   else btn.textContent='Crear '+n+' cuestionarios y activar enlaces';
+  }
+
+  function updateEquipoSelect(desiredEq){
+   const catSel=find('ms-categoria');
+   const eqSel=find('ms-equipo');
+   if(!catSel||!eqSel)return;
+   const cat=catSel.value;
+   const prev=desiredEq!==undefined?desiredEq:eqSel.value;
+   const pool=cat?activeGroups.filter(g=>g.categoria===cat):activeGroups;
+   const equipos=[...new Set(pool.map(g=>g.equipo))].sort(sortText);
+   if(prev&&!equipos.includes(prev))equipos.push(prev);
+   equipos.sort(sortText);
+   eqSel.innerHTML='<option value="">Todos los equipos / tiras</option>'+
+    equipos.map(e=>'<option value="'+esc(e)+'">'+esc(e)+'</option>').join('');
+   eqSel.value=prev&&equipos.includes(prev)?prev:'';
+  }
+
+  function renderSingleSelects(opts={}){
+   const catSel=find('ms-categoria');
+   if(!catSel)return;
+   const prevCat=opts.selectCat!==undefined?opts.selectCat:catSel.value;
+   const cats=[...new Set(activeGroups.map(g=>g.categoria))].sort(sortText);
+   if(prevCat&&!cats.includes(prevCat))cats.push(prevCat);
+   cats.sort(sortText);
+   catSel.innerHTML='<option value="">Todas las categorías (toda la actividad)</option>'+
+    cats.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+   catSel.value=prevCat&&cats.includes(prevCat)?prevCat:'';
+   updateEquipoSelect(opts.selectEq);
+  }
+
+  function renderMultiSelector(){
+   const listEl=find('ms-multi-list');
+   const countEl=find('ms-multi-count');
+   const tirasEl=find('ms-multi-tiras');
+   if(!listEl||!countEl||!tirasEl)return;
+
+   const validKeys=new Set(activeGroups.map(groupKey));
+   for(const k of [...selectedMulti])if(!validKeys.has(k))selectedMulti.delete(k);
+
+   const selectedCount=activeGroups.filter(g=>selectedMulti.has(groupKey(g))).length;
+   countEl.textContent=selectedCount+' de '+activeGroups.length+' equipo(s) seleccionados';
+
+   const tiras=[...new Set(activeGroups.map(g=>g.equipo))].sort(sortText);
+   if(tiras.length>=2){
+    tirasEl.innerHTML=tiras.map(t=>{
+     const tiraGroups=activeGroups.filter(g=>g.equipo===t);
+     const allOn=tiraGroups.length>0&&tiraGroups.every(g=>selectedMulti.has(groupKey(g)));
+     return '<button type="button" class="ms-tira-btn'+(allOn?' is-active':'')+'" data-tira="'+esc(t)+'" aria-pressed="'+allOn+'">'+esc(t)+'</button>';
+    }).join('');
+    tirasEl.querySelectorAll('.ms-tira-btn').forEach(btn=>{
+     btn.onclick=()=>{
+      const t=btn.dataset.tira;
+      const tiraGroups=activeGroups.filter(g=>g.equipo===t);
+      const allOn=tiraGroups.length>0&&tiraGroups.every(g=>selectedMulti.has(groupKey(g)));
+      tiraGroups.forEach(g=>{
+       const k=groupKey(g);
+       if(allOn)selectedMulti.delete(k);
+       else selectedMulti.add(k);
+      });
+      renderMultiSelector();
+     };
+    });
+   }else{
+    tirasEl.innerHTML='';
+   }
+
+   if(!activeGroups.length){
+    listEl.innerHTML='<p class="ms-multi-empty">Esta actividad todavía no tiene categorías ni equipos cargados en padrón.</p>';
+   }else{
+    listEl.innerHTML=activeGroups.map((g,i)=>{
+     const k=groupKey(g);
+     const checked=selectedMulti.has(k);
+     return '<label class="ms-multi-item"><input type="checkbox" data-idx="'+i+'"'+(checked?' checked':'')+'><span><strong>'+esc(g.categoria)+'</strong> · '+esc(g.equipo)+'</span></label>';
+    }).join('');
+    listEl.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+     cb.onchange=()=>{
+      const g=activeGroups[Number(cb.dataset.idx)];
+      if(!g)return;
+      const k=groupKey(g);
+      if(cb.checked)selectedMulti.add(k);
+      else selectedMulti.delete(k);
+      renderMultiSelector();
+     };
+    });
+   }
+   updateCreateButtonLabel();
+  }
+
+  function setScopeMode(mode){
+   scopeMode=mode==='multi'?'multi':'single';
+   box.querySelectorAll('.ms-scope-btn').forEach(b=>{
+    const on=b.dataset.scopeMode===scopeMode;
+    b.classList.toggle('is-active',on);
+    b.setAttribute('aria-pressed',String(on));
+   });
+   box.querySelectorAll('.ms-single-only').forEach(el=>el.classList.toggle('ms-hidden',scopeMode!=='single'));
+   const multiWrap=find('ms-multi-wrap');
+   if(multiWrap)multiWrap.hidden=scopeMode!=='multi';
+   updateCreateButtonLabel();
+  }
+
+  function applyGroups(groups,activity,opts={}){
+   activeGroups=groups;
+   renderSingleSelects(opts);
+   renderMultiSelector();
+   const hint=find('ms-groups-hint');
+   if(hint){
+    hint.textContent=groups.length
+     ? groups.length+' equipo(s) disponibles en '+activity+'.'
+     : 'No hay equipos cargados en padrón para '+activity+' todavía; podés crear el cuestionario para toda la actividad.';
+   }
+  }
+
+  async function loadGroupsForActivity(activity,opts={}){
+   if(!activity)return;
+   const localPortal=typeof window.MuniPortalGroups==='function'?window.MuniPortalGroups():null;
+   if(!opts.forceRemote&&localPortal&&localPortal.activity===activity&&Array.isArray(localPortal.groups)&&localPortal.groups.length){
+    const normalized=normalizeGroups(localPortal.groups);
+    groupsCache.set(activity,normalized);
+    applyGroups(normalized,activity,opts);
+    return;
+   }
+   if(!opts.force&&groupsCache.has(activity)){
+    applyGroups(groupsCache.get(activity),activity,opts);
+    return;
+   }
+   if(opts.selectCat!==undefined||opts.selectEq!==undefined){
+    activeGroups=[];
+    renderSingleSelects(opts);
+   }
+   const hint=find('ms-groups-hint');
+   if(hint)hint.textContent='Cargando equipos y tiras de '+activity+'…';
+   if(!window.MuniGoogle?.call){
+    applyGroups([],activity,opts);
+    return;
+   }
+   const reqId=++groupsReqId;
+   try{
+    const r=await MuniGoogle.call('/api/dashboard',{days:0,activities:[activity]});
+    if(local!==generation||!box.isConnected||reqId!==groupsReqId||find('ms-activity')?.value!==activity)return;
+    const raw=r?.activities?.[0]?.gruposDetalle||[];
+    const normalized=normalizeGroups(raw);
+    groupsCache.set(activity,normalized);
+    applyGroups(normalized,activity,opts);
+   }catch(_){
+    if(local===generation&&box.isConnected&&reqId===groupsReqId&&find('ms-activity')?.value===activity){
+     applyGroups([],activity,opts);
+     if(hint)hint.textContent='No se pudieron cargar los equipos; igual podés crear el cuestionario para toda la actividad.';
+    }
+   }
+  }
+
   activeOpen=()=>{
    box.open=true;
    if(!loaded){loaded=true;loadList();}
+   const act=find('ms-activity')?.value;
+   if(act)loadGroupsForActivity(act);
+  };
+
+  activeRefreshGroups=(activity)=>{
+   if(!activity)return;
+   groupsCache.delete(activity);
+   const actSel=find('ms-activity');
+   if(!actSel)return;
+   if(!userChangedActivity&&[...actSel.options].some(o=>o.value===activity)){
+    actSel.value=activity;
+   }
+   if(actSel.value===activity){
+    loadGroupsForActivity(activity);
+   }
   };
 
   function renderDraftQuestions(){
@@ -132,6 +353,35 @@
   }
 
   renderDraftQuestions();
+  if(localSnap?.activity===initialActivity&&Array.isArray(localSnap.groups)&&localSnap.groups.length){
+   const normalized=normalizeGroups(localSnap.groups);
+   groupsCache.set(initialActivity,normalized);
+   applyGroups(normalized,initialActivity);
+  }
+
+  box.querySelectorAll('.ms-scope-btn').forEach(btn=>{
+   btn.onclick=()=>setScopeMode(btn.dataset.scopeMode);
+  });
+
+  find('ms-activity').onchange=()=>{
+   userChangedActivity=true;
+   selectedMulti.clear();
+   loadGroupsForActivity(find('ms-activity').value,{selectCat:'',selectEq:''});
+  };
+
+  find('ms-categoria').onchange=()=>{
+   updateEquipoSelect('');
+  };
+
+  find('ms-multi-all').onclick=()=>{
+   activeGroups.forEach(g=>selectedMulti.add(groupKey(g)));
+   renderMultiSelector();
+  };
+
+  find('ms-multi-none').onclick=()=>{
+   selectedMulti.clear();
+   renderMultiSelector();
+  };
 
   function applyTemplate(tplKey){
    const tpl=TEMPLATES[tplKey];
@@ -149,11 +399,14 @@
   activePrefill=({activity,categoria='',equipo='',template='ausencias'}={})=>{
    document.getElementById('tab-btn-encuestas')?.click();
    box.open=true;
+   setScopeMode('single');
    if(!loaded){loaded=true;loadList();}
    const actSel=find('ms-activity');
-   if(activity&&[...actSel.options].some(o=>o.value===activity))actSel.value=activity;
-   find('ms-categoria').value=categoria||'';
-   find('ms-equipo').value=equipo||'';
+   if(activity&&[...actSel.options].some(o=>o.value===activity)){
+    actSel.value=activity;
+    userChangedActivity=true;
+   }
+   loadGroupsForActivity(actSel.value,{selectCat:categoria||'',selectEq:equipo||''});
    applyTemplate(TEMPLATES[template]?template:'ausencias');
    box.scrollIntoView({behavior:'smooth',block:'start'});
   };
@@ -164,20 +417,74 @@
    renderDraftQuestions();
   };
 
-  box.addEventListener('toggle',()=>{if(box.open&&!loaded){loaded=true;loadList();}});
+  box.addEventListener('toggle',()=>{
+   if(box.open){
+    if(!loaded){loaded=true;loadList();}
+    const act=find('ms-activity')?.value;
+    if(act)loadGroupsForActivity(act);
+   }
+  });
 
   find('ms-create').onclick=async()=>{
+   const activity=find('ms-activity').value;
+   const title=find('ms-title').value.trim();
+   const description=find('ms-desc').value;
+   if(!title){
+    find('ms-status').textContent='Ingresá un título para el cuestionario.';
+    find('ms-title').focus?.();
+    return;
+   }
+   const questions=draftQuestions.map((q,i)=>({...q,id:'q'+(i+1)}));
    const btn=find('ms-create');
+
+   if(scopeMode==='multi'){
+    const targets=activeGroups.filter(g=>selectedMulti.has(groupKey(g)));
+    if(!targets.length){
+     find('ms-status').textContent='Seleccioná al menos un equipo o cambiá a «Desplegable» para toda la actividad.';
+     return;
+    }
+    btn.disabled=true;
+    try{
+     for(let i=0;i<targets.length;i++){
+      const g=targets[i];
+      find('ms-status').textContent='Creando cuestionario ('+(i+1)+'/'+targets.length+'): '+g.categoria+' · '+g.equipo+'…';
+      await MuniGoogle.call('/api/surveys/create',{
+       activity,
+       categoria:g.categoria,
+       equipo:g.equipo,
+       title,
+       description,
+       questions,
+       status:'active'
+      });
+      if(local!==generation||!box.isConnected)return;
+     }
+     find('ms-title').value='';
+     find('ms-desc').value='';
+     selectedMulti.clear();
+     renderMultiSelector();
+     const createdMsg=targets.length===1
+      ? 'Cuestionario creado y activado.'
+      : targets.length+' cuestionarios creados y activados.';
+     find('ms-status').textContent=createdMsg;
+     await loadList(createdMsg);
+    }catch(e){
+     if(local===generation)find('ms-status').textContent=e.message||'No se pudo crear el cuestionario.';
+    }finally{
+     if(box.isConnected){btn.disabled=false;updateCreateButtonLabel();}
+    }
+    return;
+   }
+
    btn.disabled=true;
    find('ms-status').textContent='Guardando cuestionario…';
    try{
-    const questions=draftQuestions.map((q,i)=>({...q,id:'q'+(i+1)}));
     await MuniGoogle.call('/api/surveys/create',{
-     activity:find('ms-activity').value,
+     activity,
      categoria:find('ms-categoria').value,
      equipo:find('ms-equipo').value,
-     title:find('ms-title').value,
-     description:find('ms-desc').value,
+     title,
+     description,
      questions,
      status:'active'
     });
@@ -185,11 +492,11 @@
     find('ms-title').value='';
     find('ms-desc').value='';
     find('ms-status').textContent='Cuestionario creado y activado.';
-    await loadList();
+    await loadList('Cuestionario creado y activado.');
    }catch(e){
     if(local===generation)find('ms-status').textContent=e.message||'No se pudo crear el cuestionario.';
    }finally{
-    if(box.isConnected)btn.disabled=false;
+    if(box.isConnected){btn.disabled=false;updateCreateButtonLabel();}
    }
   };
 
@@ -209,13 +516,13 @@
    }).join('')+'</div>';
   }
 
-  async function loadList(){
-   find('ms-status').textContent='Cargando cuestionarios…';
+  async function loadList(bannerPrefix=''){
+   if(!bannerPrefix)find('ms-status').textContent='Cargando cuestionarios…';
    try{
     const r=await MuniGoogle.call('/api/surveys/list',{});
     if(local!==generation||!box.isConnected)return;
     const surveys=r.surveys||[];
-    find('ms-status').textContent='Total de cuestionarios: '+surveys.length;
+    find('ms-status').textContent=(bannerPrefix?bannerPrefix+' · ':'')+'Total de cuestionarios: '+surveys.length;
     const list=find('ms-list');
     if(!surveys.length){list.innerHTML='<p class="ms-no-resp">Todavía no creaste cuestionarios.</p>';return;}
     list.innerHTML=surveys.map(s=>{
@@ -256,6 +563,9 @@
  },
  open(){
   if(typeof activeOpen==='function')activeOpen();
+ },
+ refreshGroups(activity){
+  if(typeof activeRefreshGroups==='function')activeRefreshGroups(activity);
  }};
 
  const style=document.createElement('style');
@@ -268,7 +578,23 @@
   '.ms-builder{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px}'+
   '.ms-builder h4{margin:0 0 10px;color:#0b2545}'+
   '.ms-templates{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:.82rem;color:#475569}'+
-  '.ms-templates button,.ms-builder-actions button,.ms-link-row button{border:1px solid #cbd5e1;border-radius:8px;padding:7px 11px;background:#fff;color:#0f172a;font:600 .78rem Inter,Arial,sans-serif;cursor:pointer}'+
+  '.ms-templates button,.ms-builder-actions button,.ms-link-row button,.ms-scope-btn,.ms-multi-bar button{border:1px solid #cbd5e1;border-radius:8px;padding:7px 11px;background:#fff;color:#0f172a;font:600 .78rem Inter,Arial,sans-serif;cursor:pointer}'+
+  '.ms-scope-field{margin-bottom:10px}'+
+  '.ms-field-label{display:block;font-size:.78rem;font-weight:700;color:#334155;margin-bottom:6px}'+
+  '.ms-scope-toggle{display:flex;gap:8px;flex-wrap:wrap}'+
+  '.ms-scope-btn.is-active{background:#0b2545;color:#fff;border-color:#0b2545}'+
+  '.ms-hidden{display:none !important}'+
+  '.ms-multi-wrap{background:#fff;border:1px solid #dce5ee;border-radius:10px;padding:10px;margin:4px 0 8px}'+
+  '.ms-multi-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}'+
+  '.ms-multi-count{font-size:.8rem;font-weight:700;color:#0b2545;margin-right:auto}'+
+  '.ms-multi-tiras{display:flex;gap:6px;flex-wrap:wrap;align-items:center}'+
+  '.ms-tira-btn.is-active{background:#0f766e;color:#fff;border-color:#0f766e}'+
+  '.ms-multi-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:6px;max-height:220px;overflow-y:auto;padding:2px}'+
+  '.ms-multi-item{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-size:.81rem;font-weight:500;color:#0f172a;cursor:pointer;margin:0}'+
+  '.ms-multi-item input{width:auto;min-width:16px;height:16px;margin:0;accent-color:#0f766e}'+
+  '.ms-multi-empty{margin:4px 0;font-size:.82rem;color:#526477}'+
+  '.ms-scope-note{margin:8px 0 0;font-size:.76rem;color:#526477}'+
+  '.ms-scope-hint{margin:2px 0 10px;font-size:.78rem;color:#475569;min-height:1.1em}'+
   '.ms-builder-actions .ms-primary{background:#0f766e;color:#fff;border-color:#0f766e}'+
   '.ms-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:8px}'+
   '.ms-questions{display:grid;gap:8px;margin:10px 0}'+

@@ -2473,6 +2473,7 @@
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(Muni360Time.format(a.fecha))} · ${esc(a.modo)}</option>`).join('');
         $('comparacion-temporada').textContent=''; ofrecerBorradorAsistencia();
         cargarCuestionariosAnalisis(true);
+        window.MuniSurveys?.refreshGroups?.(d);
         if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
       } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
     }
@@ -2483,6 +2484,22 @@
     function equiposDep(cat) {
       return [...new Set(datosDeporte.padron.filter(p => p.categoria === cat).map(p => p.equipo || 'General'))].sort(orden);
     }
+    window.MuniPortalGroups = function () {
+      const seen = new Map();
+      const add = (cat, eq) => {
+        const c = String(cat || '').trim();
+        const e = String(eq || 'General').trim() || 'General';
+        if (!c || c === 'Sin categoría') return;
+        const k = c + '\0' + e;
+        if (!seen.has(k)) seen.set(k, { categoria: c, equipo: e });
+      };
+      (datosDeporte?.padron || []).forEach(p => add(p.categoria, p.equipo));
+      (datosDeporte?.asistencia || []).forEach(a => add(a.categoria, a.equipo));
+      return {
+        activity: areaActiva,
+        groups: [...seen.values()].sort((a, b) => orden(a.categoria, b.categoria) || orden(a.equipo, b.equipo))
+      };
+    };
 
     let filtrosDesplegados = false;
     let esperaEquipo = false;
