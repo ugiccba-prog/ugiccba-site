@@ -48,7 +48,7 @@ begin
   v_code:=trim(coalesce(p->>'code',''));
   select * into v_survey from mc_private.surveys where public_code=v_code;
   if v_survey.id is null or v_survey.status='draft' then
-   raise exception using errcode='PT409',message='Encuesta no disponible.';
+   raise exception using errcode='PT409',message='Cuestionario no disponible.';
   end if;
   if v_survey.status='closed' then
    return jsonb_build_object('ok',true,'closed',true,'survey',jsonb_build_object(
@@ -65,7 +65,7 @@ begin
   v_code:=trim(coalesce(p->>'code',''));
   select * into v_survey from mc_private.surveys where public_code=v_code for share;
   if v_survey.id is null or v_survey.status<>'active' then
-   raise exception using errcode='PT409',message='Esta encuesta ya no recibe respuestas.';
+   raise exception using errcode='PT409',message='Este cuestionario ya no recibe respuestas.';
   end if;
   insert into mc_private.survey_responses(survey_id,answers,submitted_at)
   values(v_survey.id,coalesce(p->'answers','{}'::jsonb),v_now);
@@ -108,7 +108,7 @@ begin
 
  if p_action='set_status' then
   select * into v_survey from mc_private.surveys where id=p->>'surveyId' for update;
-  if v_survey.id is null then raise exception using errcode='PT409',message='Encuesta inexistente.'; end if;
+  if v_survey.id is null then raise exception using errcode='PT409',message='Cuestionario inexistente.'; end if;
   if not (v_areas ? v_survey.activity) then raise exception using errcode='42501',message='No tenés acceso a esa actividad.'; end if;
   v_status:=p->>'status';
   if v_status not in ('draft','active','closed') then raise exception using errcode='PT409',message='Estado inválido.'; end if;
@@ -138,7 +138,7 @@ begin
   );
  end if;
 
- raise exception 'Acción de encuestas desconocida.';
+ raise exception 'Acción de cuestionarios desconocida.';
 end$$;
 
 revoke all on function public.mc_surveys(text,jsonb) from public,anon,authenticated;

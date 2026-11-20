@@ -59,9 +59,10 @@ await test('Profe cannot create or list surveys; Coordinación only accesses aut
  await assert.rejects(()=>call('profe','/api/surveys/list'),e=>e.code==='PERMISOS');
  await assert.rejects(()=>call('coord','/api/surveys/create',{
   activity:'Vóley Caballeros',
-  title:'Encuesta',
+  title:'Cuestionario',
   questions:[{id:'q1',type:'scale',label:'¿Cómo estás?',required:true}]
  }),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>call(null,'/api/surveys/public',{code:'bad'}),e=>e.code==='VALIDACION'&&/cuestionario/i.test(e.message));
 });
 
 await test('create, public anonymous submit, immediate first-response summary, and close flow',async()=>{

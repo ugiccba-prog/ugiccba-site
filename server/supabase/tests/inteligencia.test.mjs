@@ -70,10 +70,11 @@ async function rpc(name,args,role='service_role'){
 }
 
 let currentNow=Date.parse('2026-11-19T15:00:00Z');
-const call=(uid,path,body={})=>createHandler({
+const call=(uid,path,body={},opts={})=>createHandler({
  rpc:(name,args)=>rpc(name,args),
  verify:async()=>({uid}),
- now:()=>currentNow
+ now:()=>currentNow,
+ ...opts
 })({token:'FICTITIOUS',path,body});
 
 await test('anon/authenticated cannot access inteligencia tables or RPC',async()=>{
@@ -107,6 +108,8 @@ await test('scan detects drop, consecutive absences and semaphore alerts without
 await test('intervention workflow updates status and notes; 48h escalation promotes unattended cases only',async()=>{
  const list1=await call('coord','/api/inteligencia/list',{status:'activas'});
  assert.equal(list1.counts.abierta,3);
+ assert.equal(list1.aiConfigured,false);
+ assert.deepEqual(list1.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:1});
 
  const dropCase=list1.cases.find(c=>c.rule_code==='CAIDA_ASISTENCIA');
  const semCase=list1.cases.find(c=>c.rule_code==='SEMAFORO_ALERTA');
@@ -126,9 +129,48 @@ await test('intervention workflow updates status and notes; 48h escalation promo
  assert.equal(list2.counts.escalada,1);
  assert.equal(list2.counts.intervenida,1);
  assert.equal(list2.counts.resuelta,1);
+ assert.deepEqual(list2.ruleCounts,{CAIDA_ASISTENCIA:1,AUSENCIAS_CONSECUTIVAS:1,SEMAFORO_ALERTA:0});
  const escalated=list2.cases.find(c=>c.rule_code==='AUSENCIAS_CONSECUTIVAS');
  assert.equal(escalated.status,'escalada');
  assert.ok(escalated.escalated_at);
+});
+
+await test('AI key storage is owner-only, never leaked to client, and /api/inteligencia/ai uses sanitized context',async()=>{
+ await assert.rejects(()=>call('profe','/api/inteligencia/ai'),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>call('coord','/api/inteligencia/ai',{activities:['Vóley Caballeros']}),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>rpc('mc_inteligencia',{p_action:'set_ai_key',p:{uid:'coord',apiKey:'FAKE_TEST_KEY'}}),e=>e.code==='PERMISOS');
+
+ // Fallback works cleanly when no API key is configured
+ const fallbackRes=await call('coord','/api/inteligencia/ai');
+ assert.equal(fallbackRes.ok,true);
+ assert.equal(fallbackRes.source,'asistente');
+ assert.ok(fallbackRes.analysis.includes('Panorama activo'));
+
+ // Configure API key as owner
+ const cfg=await rpc('mc_inteligencia',{p_action:'set_ai_key',p:{uid:'owner',apiKey:'FAKE_TEST_KEY',model:'gemini-2.5-flash'}});
+ assert.deepEqual(cfg,{ok:true,aiConfigured:true});
+
+ const listWithAi=await call('coord','/api/inteligencia/list',{status:'activas'});
+ assert.equal(listWithAi.aiConfigured,true);
+ assert.equal('apiKey' in listWithAi,false);
+
+ let captured=null;
+ const aiRes=await call('coord','/api/inteligencia/ai',{},{
+  aiGenerate:async payload=>{
+   captured=payload;
+   return '• Priorizar contacto con familias de U13 · A.\n• Activar cuestionario anónimo.';
+  }
+ });
+ assert.equal(aiRes.ok,true);
+ assert.equal(aiRes.source,'ia');
+ assert.equal(aiRes.model,'gemini-2.5-flash');
+ assert.equal('apiKey' in aiRes,false);
+ assert.equal(JSON.stringify(aiRes).includes('FAKE_TEST_KEY'),false);
+ assert.equal(captured.apiKey,'FAKE_TEST_KEY');
+ assert.equal(captured.cases.length,2);
+ const consec=captured.cases.find(c=>c.rule_code==='AUSENCIAS_CONSECUTIVAS');
+ assert.equal('jugadores' in consec.metrics,false);
+ assert.equal(consec.metrics.jugadoresCount,2);
 });
 
 await db.close();

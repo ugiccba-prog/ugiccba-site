@@ -3,7 +3,7 @@
 <head>
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
- <title>Muni360 · Encuesta anónima</title>
+ <title>Muni360 · Cuestionario anónimo</title>
  <style>
   :root{--navy:#0b2545;--teal:#0f766e;--bg:#f1f5f9;--card:#fff;--muted:#475569;--border:#dce5ee}
   *{box-sizing:border-box}
@@ -30,8 +30,8 @@
 </head>
 <body>
  <main id="root">
-  <span class="anon-pill">100% anónima · No pide nombre ni DNI</span>
-  <p id="loading">Cargando encuesta…</p>
+  <span class="anon-pill">100% anónimo · No pide nombre ni DNI</span>
+  <p id="loading">Cargando cuestionario…</p>
  </main>
  <script src="../assets/scripts/muni360-config.js"></script>
  <script>
@@ -51,7 +51,7 @@
   }
 
   if(!code||!base){
-   root.innerHTML='<span class="anon-pill">Encuesta anónima</span><h1>Enlace incompleto</h1><p class="desc">Pedile a tu coordinador/a el enlace completo de la encuesta.</p>';
+   root.innerHTML='<span class="anon-pill">Cuestionario anónimo</span><h1>Enlace incompleto</h1><p class="desc">Pedile a tu coordinador/a el enlace completo del cuestionario.</p>';
    return;
   }
 
@@ -59,13 +59,13 @@
    const s=data.survey||{};
    const scope=[s.activity,s.categoria,s.equipo].filter(Boolean).join(' · ');
    if(data.closed){
-    root.innerHTML='<span class="anon-pill">Encuesta cerrada</span><p class="meta">'+esc(scope)+'</p><h1>'+esc(s.title)+'</h1><p class="desc">Esta encuesta ya finalizó y no recibe más respuestas.</p>';
+    root.innerHTML='<span class="anon-pill">Cuestionario cerrado</span><p class="meta">'+esc(scope)+'</p><h1>'+esc(s.title)+'</h1><p class="desc">Este cuestionario ya finalizó y no recibe más respuestas.</p>';
     return;
    }
    const answers={};
    const questions=Array.isArray(s.questions)?s.questions:[];
    root.innerHTML=
-    '<span class="anon-pill">100% anónima · No pide nombre ni DNI</span>'+
+    '<span class="anon-pill">100% anónimo · No pide nombre ni DNI</span>'+
     '<p class="meta">'+esc(scope)+'</p>'+
     '<h1>'+esc(s.title)+'</h1>'+
     (s.description?'<p class="desc">'+esc(s.description)+'</p>':'')+
@@ -125,7 +125,7 @@
     }
    };
   }).catch(ex=>{
-   root.innerHTML='<span class="anon-pill">Encuesta anónima</span><h1>Encuesta no disponible</h1><p class="desc">'+esc(ex.message||'Verificá el enlace con tu coordinador/a.')+'</p>';
+   root.innerHTML='<span class="anon-pill">Cuestionario anónimo</span><h1>Cuestionario no disponible</h1><p class="desc">'+esc(ex.message||'Verificá el enlace con tu coordinador/a.')+'</p>';
   });
  })();
  </script>

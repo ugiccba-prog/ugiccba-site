@@ -60,7 +60,7 @@ Al consultar el panel con todas las actividades demo cargadas (22 actividades, 3
 - `server/supabase/sql/015_surveys.sql`: tablas privadas `mc_private.surveys` y `mc_private.survey_responses` (sin `uid`, DNI ni nombre) y RPC `public.mc_surveys`.
 - `server/supabase/functions/muni360/surveys.mjs`: rutas públicas sin login (`/api/surveys/public`, `/api/surveys/submit`) y rutas de Coordinación/Dirección (`/api/surveys/list`, `/api/surveys/create`, `/api/surveys/status`), con resultados visibles desde la primera respuesta.
 - `assets/scripts/muni360-surveys.js` + `apps/muni360/source/encuesta/index.html` (`/muni360/encuesta/?c=...`): constructor con 3 plantillas rápidas, preguntas tipadas (escala 1–5, opción única, múltiple, texto breve), enlace copiable para WhatsApp y vista móvil liviana.
-- **Integración Inteligencia ↔ Cuestionarios:** al listar alertas, cada tarjeta de Inteligencia consulta las encuestas activas/vinculadas del mismo grupo o actividad (mostrando cantidad de respuestas y promedios de escala) e incluye el botón **Crear encuesta para el grupo** (`window.MuniSurveys.prefill(...)`), que preselecciona actividad/categoría/equipo y carga la plantilla adecuada (`clima` o `ausencias`).
+- **Integración Inteligencia ↔ Cuestionarios:** al listar alertas, cada tarjeta de Inteligencia consulta los cuestionarios activos/vinculados del mismo grupo o actividad (mostrando cantidad de respuestas y promedios de escala) e incluye el botón **Crear cuestionario para el grupo** (`window.MuniSurveys.prefill(...)`), que preselecciona actividad/categoría/equipo y carga la plantilla adecuada (`clima` o `ausencias`).
 - Integrado y publicado en la rama oficial `main`.
 
 ## Resultado preparado

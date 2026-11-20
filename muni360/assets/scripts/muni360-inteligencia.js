@@ -35,7 +35,7 @@
   box.open=true;
   const areas=Array.isArray(session.areas)?session.areas:[];
   box.innerHTML=
-   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span></summary>'+
+   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span><span id="mi-summary-pill" class="mi-summary-pill">3 reglas activas</span></summary>'+
    '<div class="mi-content">'+
     '<div class="mi-controls">'+
      '<label>Estado<select id="mi-status">'+
@@ -52,7 +52,10 @@
      '</select></label>'+
      '<button type="button" id="mi-refresh">Actualizar lista</button>'+
      '<button type="button" id="mi-scan">Analizar actividades</button>'+
+     '<button type="button" id="mi-ai-btn" class="mi-btn-ai">✨ Resumen IA</button>'+
     '</div>'+
+    '<div id="mi-active-now" class="mi-active-now" aria-live="polite"></div>'+
+    '<div id="mi-ai-box" class="mi-ai-box" hidden></div>'+
     '<div class="mi-kpis" id="mi-kpis"></div>'+
     '<p id="mi-status-text" role="status">Abrí el panel o presioná «Analizar actividades» para detectar alertas.</p>'+
     '<div id="mi-cases" class="mi-cases"></div>'+
@@ -72,6 +75,104 @@
   find('mi-activity').onchange=loadList;
   find('mi-refresh').onclick=loadList;
   find('mi-scan').onclick=runScan;
+  find('mi-ai-btn').onclick=runGlobalAi;
+  renderActiveNow(null);
+  if(box.open&&!loaded&&window.MuniGoogle?.call){loaded=true;loadList();}
+
+  function formatAiHtml(text){
+   const lines=String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+   if(!lines.length)return '<p>Sin recomendaciones adicionales por el momento.</p>';
+   let html='',inList=false;
+   for(const line of lines){
+    const bullet=line.match(/^(?:[•\-*]|\d+[.)])\s+(.*)$/);
+    if(bullet){
+     if(!inList){html+='<ul>';inList=true;}
+     html+='<li>'+esc(bullet[1])+'</li>';
+    }else{
+     if(inList){html+='</ul>';inList=false;}
+     html+='<p>'+esc(line)+'</p>';
+    }
+   }
+   if(inList)html+='</ul>';
+   return html;
+  }
+
+  function renderAiResult(container,res){
+   const badge=res.source==='ia'?'✨ Análisis IA'+(res.model?' · '+res.model:''):'Sugerencia automática';
+   container.innerHTML=
+    '<div class="mi-ai-head"><span class="mi-ai-tag">'+esc(badge)+'</span><button type="button" class="mi-ai-close" aria-label="Ocultar sugerencia">Ocultar</button></div>'+
+    '<div class="mi-ai-body">'+formatAiHtml(res.analysis)+'</div>';
+   container.hidden=false;
+   container.querySelector('.mi-ai-close').onclick=()=>{container.hidden=true;};
+  }
+
+  function renderActiveNow(r){
+   const container=find('mi-active-now');
+   const summaryPill=find('mi-summary-pill');
+   const rc=r?.ruleCounts||{};
+   const counts=r?.counts||{};
+   const hasData=Boolean(r);
+   const items=[
+    {label:'Caída de asistencia',hint:'14 d vs. 4 sem.',count:rc.CAIDA_ASISTENCIA||0},
+    {label:'Ausencias consecutivas',hint:'3+ seguidas en 45 d',count:rc.AUSENCIAS_CONSECUTIVAS||0},
+    {label:'Semáforo en alerta',hint:'🟡/🔴 21 d',count:rc.SEMAFORO_ALERTA||0},
+    {label:'Escalamiento 48 h',hint:'sin intervención',count:counts.escalada||0,warn:true}
+   ];
+   const activeRulesSum=(rc.CAIDA_ASISTENCIA||0)+(rc.AUSENCIAS_CONSECUTIVAS||0)+(rc.SEMAFORO_ALERTA||0);
+   if(summaryPill){
+    summaryPill.textContent=hasData
+     ?(activeRulesSum?activeRulesSum+' alerta(s) activa(s) ahora':'Monitoreo activo · 0 en curso')
+     :'3 reglas activas';
+    summaryPill.classList.toggle('is-live',activeRulesSum>0);
+   }
+   const activeCases=(r?.cases||[]).filter(c=>c.status!=='resuelta');
+   let statusLine='Consultando estado de alertas en tiempo real…';
+   if(hasData){
+    if(activeCases.length){
+     const preview=activeCases.slice(0,3).map(c=>esc(c.activity)+(c.categoria?' · '+esc(c.categoria):'')+(c.equipo?' · '+esc(c.equipo):'')+' ('+esc(RULE_LABELS[c.rule_code]||c.rule_code)+')').join(' · ');
+     const extra=activeCases.length>3?' y '+(activeCases.length-3)+' más':'';
+     statusLine='<strong>En curso ahora:</strong> '+preview+extra+'.';
+    }else if(activeRulesSum>0){
+     statusLine='<strong>En curso ahora:</strong> '+activeRulesSum+' alerta(s) activa(s) · cambiá el filtro Estado a «Activas» para verlas.';
+    }else{
+     statusLine='Sin alertas abiertas en este momento · monitoreo continuo activo.';
+    }
+   }
+   container.innerHTML=
+    '<div class="mi-active-top">'+
+     '<span class="mi-active-label">Alertas activas ahora</span>'+
+     (r?.aiConfigured?'<span class="mi-rule-pill mi-rule-ai">✨ IA conectada</span>':'')+
+    '</div>'+
+    '<div class="mi-rule-pills">'+
+     items.map(it=>{
+      const live=hasData&&it.count>0;
+      const cls='mi-rule-pill'+(live?(it.warn?' is-warn':' is-live'):'');
+      return '<span class="'+cls+'"><span class="mi-dot" aria-hidden="true"></span><strong>'+esc(it.label)+'</strong><small>'+esc(it.hint)+'</small><b>'+(hasData?it.count:'—')+'</b></span>';
+     }).join('')+
+    '</div>'+
+    '<p class="mi-active-line">'+statusLine+'</p>';
+  }
+
+  async function runGlobalAi(){
+   const btn=find('mi-ai-btn');
+   const aiBox=find('mi-ai-box');
+   const selectedAct=find('mi-activity').value;
+   const activities=selectedAct?[selectedAct]:null;
+   btn.disabled=true;
+   aiBox.hidden=false;
+   aiBox.innerHTML='<p class="mi-ai-loading">Analizando alertas activas con IA…</p>';
+   try{
+    const res=await MuniGoogle.call('/api/inteligencia/ai',{activities});
+    if(local!==generation||!box.isConnected)return;
+    renderAiResult(aiBox,res);
+   }catch(e){
+    if(local===generation){
+     aiBox.innerHTML='<p class="mi-ai-err">'+esc(e.message||'No se pudo generar el análisis IA.')+'</p>';
+    }
+   }finally{
+    if(box.isConnected)btn.disabled=false;
+   }
+  }
 
   function renderCounts(counts){
    const c=counts||{};
@@ -99,7 +200,7 @@
   function renderSurveyBox(c,surveys){
    const matched=matchSurveys(c,surveys);
    if(!matched.length)return '';
-   return '<div class="mi-survey-link"><strong>Encuestas anónimas vinculadas:</strong><ul>'+
+   return '<div class="mi-survey-link"><strong>Cuestionarios anónimos vinculados:</strong><ul>'+
     matched.map(s=>{
      const scales=(s.summary||[]).filter(q=>q.type==='scale'&&q.avg!=null).map(q=>esc(q.label)+': <b>'+q.avg+'/5</b>');
      return '<li><strong>'+esc(s.title)+'</strong> · '+s.responseCount+' resp.'+(scales.length?' · '+scales.join(' · '):'')+'</li>';
@@ -120,10 +221,11 @@
     const surveyHtml=renderSurveyBox(c,surveys);
     const notes=Array.isArray(c.notes)?c.notes:[];
     const notesHtml=notes.length?'<details class="mi-notes"><summary>Historial de intervenciones ('+notes.length+')</summary><ul>'+notes.slice().reverse().map(n=>'<li><strong>'+esc(fmtDate(n.at))+'</strong> · '+esc(n.autor||n.uid)+' ('+esc(n.rol||'')+') → <em>'+esc(STATUS_LABELS[n.action]||n.action)+'</em>'+(n.note?': '+esc(n.note):'')+'</li>').join('')+'</ul></details>':'';
-    const surveyBtn='<button type="button" class="mi-btn-survey" data-survey-case="'+esc(c.id)+'">Crear encuesta para el grupo</button>';
+    const aiBtn='<button type="button" class="mi-btn-ai-case" data-ai-case="'+esc(c.id)+'">✨ Sugerencia IA</button>';
+    const surveyBtn='<button type="button" class="mi-btn-survey" data-survey-case="'+esc(c.id)+'">Crear cuestionario para el grupo</button>';
     const actions=c.status==='resuelta'
-     ?'<button type="button" data-action="abierta">Reabrir</button>'+surveyBtn
-     :'<button type="button" data-action="en_revision">En revisión</button><button type="button" data-action="intervenida">Intervenida</button><button type="button" data-action="resuelta" class="mi-btn-resolve">Resolver</button>'+surveyBtn;
+     ?'<button type="button" data-action="abierta">Reabrir</button>'+aiBtn+surveyBtn
+     :'<button type="button" data-action="en_revision">En revisión</button><button type="button" data-action="intervenida">Intervenida</button><button type="button" data-action="resuelta" class="mi-btn-resolve">Resolver</button>'+aiBtn+surveyBtn;
     return '<article class="mi-case mi-sev-'+esc(c.severity)+' mi-st-'+esc(c.status)+'" data-case-id="'+esc(c.id)+'">'+
      '<header>'+
       '<div class="mi-badges">'+
@@ -142,9 +244,32 @@
       '<input type="text" class="mi-note-input" maxlength="500" placeholder="Nota de intervención (opcional)">'+
       '<div class="mi-btn-row">'+actions+'</div>'+
      '</div>'+
+     '<div class="mi-case-ai" hidden></div>'+
      notesHtml+
     '</article>';
    }).join('');
+
+   container.querySelectorAll('.mi-btn-ai-case').forEach(btn=>{
+    btn.onclick=async()=>{
+     const card=btn.closest('.mi-case');
+     const caseId=btn.dataset.aiCase;
+     const boxEl=card.querySelector('.mi-case-ai');
+     btn.disabled=true;
+     boxEl.hidden=false;
+     boxEl.innerHTML='<p class="mi-ai-loading">Generando sugerencia IA para esta alerta…</p>';
+     try{
+      const res=await MuniGoogle.call('/api/inteligencia/ai',{caseId});
+      if(local!==generation||!box.isConnected)return;
+      renderAiResult(boxEl,res);
+     }catch(e){
+      if(local===generation){
+       boxEl.innerHTML='<p class="mi-ai-err">'+esc(e.message||'No se pudo obtener la sugerencia IA.')+'</p>';
+      }
+     }finally{
+      if(box.isConnected)btn.disabled=false;
+     }
+    };
+   });
 
    container.querySelectorAll('.mi-btn-survey').forEach(btn=>{
     btn.onclick=()=>{
@@ -190,6 +315,7 @@
      MuniGoogle.call('/api/surveys/list',selectedAct?{activity:selectedAct}:{}).catch(()=>({surveys:[]}))
     ]);
     if(local!==generation||!box.isConnected)return;
+    renderActiveNow(r);
     renderCounts(r.counts);
     renderCases(r.cases,surveysRes.surveys||[]);
     find('mi-status-text').textContent='Actualizado '+fmtDate(r.generatedAt||new Date().toISOString())+' (Argentina).';
@@ -227,15 +353,44 @@
  const style=document.createElement('style');
  style.textContent=
   '.muni-inteligencia{border-top:4px solid #7c3aed;margin-bottom:18px}'+
-  '.muni-inteligencia>summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}'+
+  '.muni-inteligencia>summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}'+
   '.muni-inteligencia>summary strong{font-size:1.15rem;color:#0b2545}'+
   '.muni-inteligencia>summary span{color:#526477;font-size:.85rem}'+
+  '.mi-summary-pill{margin-left:auto;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;border-radius:999px;padding:3px 10px;font-size:.75rem !important;font-weight:600}'+
+  '.mi-summary-pill.is-live{background:#f5f3ff;border-color:#ddd6fe;color:#5b21b6}'+
   '.mi-content{padding-top:18px}'+
   '.mi-controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}'+
   '.mi-controls label{min-width:190px}'+
   '.mi-controls button{border:1px solid #c9dce8;border-radius:10px;padding:10px 13px;background:#edf6fa;color:#173954;font:600 .8rem Inter,Arial,sans-serif;cursor:pointer}'+
   '.mi-controls #mi-scan{background:#4c1d95;color:#fff;border-color:#4c1d95}'+
+  '.mi-controls .mi-btn-ai{background:#f5f3ff;color:#5b21b6;border-color:#ddd6fe}'+
   '.mi-controls button:disabled{opacity:.6;cursor:wait}'+
+  '.mi-active-now{background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px;margin-bottom:12px}'+
+  '.mi-active-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap}'+
+  '.mi-active-label{font-size:.69rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#64748b}'+
+  '.mi-rule-pills{display:flex;flex-wrap:wrap;gap:6px}'+
+  '.mi-rule-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:4px 10px;font-size:.76rem;color:#475569}'+
+  '.mi-rule-pill strong{font-weight:600;color:#1e293b}'+
+  '.mi-rule-pill small{font-size:.7rem;color:#64748b}'+
+  '.mi-rule-pill b{background:#f1f5f9;color:#334155;border-radius:999px;padding:1px 7px;font-size:.72rem}'+
+  '.mi-rule-pill .mi-dot{width:7px;height:7px;border-radius:50%;background:#94a3b8;flex:0 0 auto}'+
+  '.mi-rule-pill.is-live{background:#faf5ff;border-color:#ddd6fe;color:#4c1d95}'+
+  '.mi-rule-pill.is-live .mi-dot{background:#7c3aed}'+
+  '.mi-rule-pill.is-live b{background:#ede9fe;color:#4c1d95}'+
+  '.mi-rule-pill.is-warn{background:#fef2f2;border-color:#fecaca;color:#991b1b}'+
+  '.mi-rule-pill.is-warn .mi-dot{background:#dc2626}'+
+  '.mi-rule-pill.is-warn b{background:#fee2e2;color:#991b1b}'+
+  '.mi-rule-pill.mi-rule-ai{background:#f0fdfa;border-color:#99f6e4;color:#0f766e;font-weight:600}'+
+  '.mi-active-line{margin:7px 0 0;font-size:.78rem;color:#475569}'+
+  '.mi-ai-box,.mi-case-ai{background:#faf5ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:.83rem;color:#1e293b}'+
+  '.mi-case-ai{margin:10px 0 0}'+
+  '.mi-ai-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}'+
+  '.mi-ai-tag{font-size:.72rem;font-weight:700;color:#5b21b6}'+
+  '.mi-ai-close{border:0;background:transparent;color:#64748b;font-size:.75rem;cursor:pointer;padding:2px 6px}'+
+  '.mi-ai-body p{margin:4px 0;line-height:1.45}'+
+  '.mi-ai-body ul{margin:4px 0 4px 18px;padding:0;line-height:1.45}'+
+  '.mi-ai-loading{margin:0;color:#5b21b6;font-size:.8rem}'+
+  '.mi-ai-err{margin:0;color:#b42318;font-size:.8rem}'+
   '.mi-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}'+
   '.mi-kpis article{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:12px}'+
   '.mi-kpis article.mi-kpi-escalada{background:#fef2f2;border-color:#fecaca}'+
@@ -261,6 +416,7 @@
   '.mi-btn-row{display:flex;gap:6px;flex-wrap:wrap}'+
   '.mi-btn-row button{border:1px solid #cbd5e1;border-radius:8px;padding:7px 11px;background:#f8fafc;color:#0f172a;font:600 .78rem Inter,Arial,sans-serif;cursor:pointer}'+
   '.mi-btn-row .mi-btn-resolve{background:#166534;color:#fff;border-color:#166534}'+
+  '.mi-btn-row .mi-btn-ai-case{background:#f5f3ff;color:#5b21b6;border-color:#ddd6fe}'+
   '.mi-btn-row .mi-btn-survey{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}'+
   '.mi-survey-link{margin:8px 0;padding:8px 10px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:.82rem;color:#134e4a}'+
   '.mi-survey-link ul{margin:4px 0 0 18px;padding:0}'+

@@ -5,7 +5,7 @@ const STATUS_SET=new Set(['draft','active','closed']);
 
 function validateQuestions(questions){
  if(!Array.isArray(questions)||questions.length<1||questions.length>20){
-  throw new AccessError('VALIDACION','La encuesta debe tener entre 1 y 20 preguntas.',400);
+  throw new AccessError('VALIDACION','El cuestionario debe tener entre 1 y 20 preguntas.',400);
  }
  return questions.map((q,idx)=>{
   if(!q||typeof q!=='object')throw new AccessError('VALIDACION','Pregunta inválida.',400);
@@ -24,7 +24,7 @@ function validateQuestions(questions){
  });
 }
 
-function summarizeSurvey(survey){
+export function summarizeSurvey(survey){
  const questions=Array.isArray(survey.questions)?survey.questions:[];
  const responses=Array.isArray(survey.responses)?survey.responses:[];
  const summary=questions.map(q=>{
@@ -65,12 +65,12 @@ export async function handlePublicSurveys({path,body,rpc,now}){
  const nowIso=new Date(now).toISOString();
  if(path==='/api/surveys/public'){
   const code=typeof body.code==='string'?body.code.trim():'';
-  if(!/^[a-zA-Z0-9_-]{6,32}$/.test(code))throw new AccessError('VALIDACION','Código de encuesta inválido.',400);
+  if(!/^[a-zA-Z0-9_-]{6,32}$/.test(code))throw new AccessError('VALIDACION','Código de cuestionario inválido.',400);
   return rpc('mc_surveys',{p_action:'public_get',p:{code,now:nowIso}});
  }
  if(path==='/api/surveys/submit'){
   const code=typeof body.code==='string'?body.code.trim():'';
-  if(!/^[a-zA-Z0-9_-]{6,32}$/.test(code))throw new AccessError('VALIDACION','Código de encuesta inválido.',400);
+  if(!/^[a-zA-Z0-9_-]{6,32}$/.test(code))throw new AccessError('VALIDACION','Código de cuestionario inválido.',400);
   const raw=body.answers;
   if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new AccessError('VALIDACION','Respuestas inválidas.',400);
   const entries=Object.entries(raw);
@@ -84,7 +84,7 @@ export async function handlePublicSurveys({path,body,rpc,now}){
   }
   return rpc('mc_surveys',{p_action:'public_submit',p:{code,answers,now:nowIso}});
  }
- throw new AccessError('RUTA','Ruta de encuesta inexistente.',404);
+ throw new AccessError('RUTA','Ruta de cuestionario inexistente.',404);
 }
 
 export async function handleSurveys({actor,owner,path,body,rpc,now}){
@@ -104,7 +104,7 @@ export async function handleSurveys({actor,owner,path,body,rpc,now}){
   const activity=typeof body.activity==='string'?body.activity:'';
   if(!activity||!actor.areas.includes(activity))throw new AccessError('PERMISOS','No tenés acceso a esa actividad.');
   const title=String(body.title||'').trim();
-  if(!title)throw new AccessError('VALIDACION','Ingresá un título para la encuesta.',400);
+  if(!title)throw new AccessError('VALIDACION','Ingresá un título para el cuestionario.',400);
   const questions=validateQuestions(body.questions);
   const status=body.status==='draft'?'draft':'active';
   return rpc('mc_surveys',{p_action:'create',p:{
@@ -123,10 +123,10 @@ export async function handleSurveys({actor,owner,path,body,rpc,now}){
  if(path==='/api/surveys/status'){
   const surveyId=typeof body.surveyId==='string'?body.surveyId.trim():'';
   const status=typeof body.status==='string'?body.status:'';
-  if(!surveyId)throw new AccessError('VALIDACION','Falta el identificador de encuesta.',400);
+  if(!surveyId)throw new AccessError('VALIDACION','Falta el identificador de cuestionario.',400);
   if(!STATUS_SET.has(status))throw new AccessError('VALIDACION','Estado inválido.',400);
   return rpc('mc_surveys',{p_action:'set_status',p:{uid:actor.id,surveyId,status,now:nowIso}});
  }
 
- throw new AccessError('RUTA','Ruta de encuestas inexistente.',404);
+ throw new AccessError('RUTA','Ruta de cuestionarios inexistente.',404);
 }

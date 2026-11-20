@@ -33,6 +33,16 @@ create index if not exists idx_inteligencia_activity_status
 alter table mc_private.inteligencia_cases enable row level security;
 revoke all on mc_private.inteligencia_cases from public,anon,authenticated;
 
+create table if not exists mc_private.inteligencia_config(
+ id boolean primary key default true check(id),
+ api_key text not null default '',
+ model text not null default 'gemini-2.5-flash',
+ updated_at timestamptz not null default now()
+);
+
+alter table mc_private.inteligencia_config enable row level security;
+revoke all on mc_private.inteligencia_config from public,anon,authenticated;
+
 create or replace function mc_private.inteligencia_escalate(p_now timestamptz default now())
 returns integer language plpgsql security definer set search_path='' as $$
 declare n integer;
@@ -222,9 +232,13 @@ declare
  v_now timestamptz:=coalesce((p->>'now')::timestamptz,now());
  v_areas jsonb;
  v_case mc_private.inteligencia_cases%rowtype;
+ v_cfg mc_private.inteligencia_config%rowtype;
  v_next text;
  v_note text;
  v_entry jsonb;
+ v_case_id text;
+ v_cases jsonb;
+ v_surveys jsonb:='[]'::jsonb;
 begin
  select * into strict c from mc_private.settings where id;
  select record into u from mc_private.users where mc_private.users.uid=uid for share;
@@ -246,6 +260,7 @@ begin
   return jsonb_build_object(
    'ok',true,
    'generatedAt',v_now,
+   'aiConfigured',exists(select 1 from mc_private.inteligencia_config where id and length(trim(api_key))>0),
    'cases',coalesce((
     select jsonb_agg(to_jsonb(ic) order by
      case ic.status when 'escalada' then 0 when 'abierta' then 1 when 'en_revision' then 2 when 'intervenida' then 3 else 4 end,
@@ -267,8 +282,97 @@ begin
     )
     from mc_private.inteligencia_cases ic
     where v_areas ? ic.activity
+   ),
+   'ruleCounts',(
+    select jsonb_build_object(
+     'CAIDA_ASISTENCIA',count(*) filter (where rule_code='CAIDA_ASISTENCIA'),
+     'AUSENCIAS_CONSECUTIVAS',count(*) filter (where rule_code='AUSENCIAS_CONSECUTIVAS'),
+     'SEMAFORO_ALERTA',count(*) filter (where rule_code='SEMAFORO_ALERTA')
+    )
+    from mc_private.inteligencia_cases ic
+    where v_areas ? ic.activity
+      and (coalesce(jsonb_typeof(p->'activities'),'null')='null' or p->'activities' ? ic.activity)
+      and status in ('abierta','en_revision','intervenida','escalada')
    )
   );
+ end if;
+
+ if p_action='ai_context' then
+  perform mc_private.inteligencia_escalate(v_now);
+  select * into v_cfg from mc_private.inteligencia_config where id;
+  v_case_id:=nullif(trim(coalesce(p->>'caseId','')),'');
+  if v_case_id is not null then
+   select * into v_case from mc_private.inteligencia_cases where id=v_case_id;
+   if v_case.id is null then
+    raise exception using errcode='PT409',message='Caso inexistente.';
+   end if;
+   if not (v_areas ? v_case.activity) then
+    raise exception using errcode='42501',message='No tenés acceso a esa actividad.';
+   end if;
+   v_cases:=jsonb_build_array(to_jsonb(v_case));
+  else
+   v_cases:=coalesce((
+    select jsonb_agg(to_jsonb(ic) order by
+     case ic.status when 'escalada' then 0 when 'abierta' then 1 when 'en_revision' then 2 when 'intervenida' then 3 else 4 end,
+     ic.updated_at desc)
+    from mc_private.inteligencia_cases ic
+    where v_areas ? ic.activity
+      and (coalesce(jsonb_typeof(p->'activities'),'null')='null' or p->'activities' ? ic.activity)
+      and ic.status in ('abierta','en_revision','intervenida','escalada')
+   ),'[]'::jsonb);
+  end if;
+  if to_regclass('mc_private.surveys') is not null then
+   execute $q$
+    select coalesce((
+     select jsonb_agg(
+      to_jsonb(s) || jsonb_build_object(
+       'responseCount',(select count(*) from mc_private.survey_responses sr where sr.survey_id=s.id),
+       'responses',coalesce((
+        select jsonb_agg(sr.answers order by sr.submitted_at desc)
+        from (
+         select answers, submitted_at
+         from mc_private.survey_responses
+         where survey_id=s.id
+         order by submitted_at desc
+         limit 50
+        ) sr
+       ),'[]'::jsonb)
+      )
+      order by s.created_at desc
+     )
+     from mc_private.surveys s
+     where $1 ? s.activity
+       and s.status in ('active','closed')
+       and ($2 is null or s.activity=$2)
+       and (coalesce(jsonb_typeof($3),'null')='null' or $3 ? s.activity)
+    ),'[]'::jsonb)
+   $q$ into v_surveys using v_areas, case when v_case_id is not null then v_case.activity else null end, p->'activities';
+  end if;
+  return jsonb_build_object(
+   'ok',true,
+   'apiKey',coalesce(v_cfg.api_key,''),
+   'model',coalesce(nullif(v_cfg.model,''),'gemini-2.5-flash'),
+   'cases',v_cases,
+   'surveys',coalesce(v_surveys,'[]'::jsonb)
+  );
+ end if;
+
+ if p_action='set_ai_key' then
+  if uid<>c.owner_uid then
+   raise exception using errcode='42501',message='Sólo el propietario configura la clave de IA.';
+  end if;
+  insert into mc_private.inteligencia_config(id,api_key,model,updated_at)
+  values(
+   true,
+   trim(coalesce(p->>'apiKey','')),
+   coalesce(nullif(trim(p->>'model'),''),'gemini-2.5-flash'),
+   v_now
+  )
+  on conflict (id) do update set
+   api_key=excluded.api_key,
+   model=excluded.model,
+   updated_at=v_now;
+  return jsonb_build_object('ok',true,'aiConfigured',length(trim(coalesce(p->>'apiKey','')))>0);
  end if;
 
  if p_action='update' then

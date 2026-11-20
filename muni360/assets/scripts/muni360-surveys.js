@@ -7,7 +7,7 @@
  const TEMPLATES={
   clima:{
    title:'Clima y bienestar del grupo',
-   description:'Encuesta 100% anónima para conocer cómo te sentís entrenando en el club.',
+   description:'Cuestionario 100% anónimo para conocer cómo te sentís entrenando en el club.',
    questions:[
     {id:'q1',type:'scale',label:'¿Cómo te sentís con el grupo y tus compañeros/as?',required:true},
     {id:'q2',type:'scale',label:'¿Qué tan cómodo/a te sentís con el cuerpo técnico?',required:true},
@@ -57,7 +57,7 @@
   box.className='card muni-surveys';
   box.open=true;
   box.innerHTML=
-   '<summary><strong>Cuestionarios anónimos (Jugadores/as)</strong><span>Armá encuestas livianas por actividad o grupo y mirá respuestas desde la primera carga</span></summary>'+
+   '<summary><strong>Cuestionarios anónimos (Jugadores/as)</strong><span>Armá cuestionarios livianos por actividad o grupo y mirá respuestas desde la primera carga</span></summary>'+
    '<div class="ms-content">'+
     '<div class="ms-builder">'+
      '<h4>Nuevo cuestionario anónimo</h4>'+
@@ -71,7 +71,7 @@
       '<label>Categoría (opcional)<input id="ms-categoria" type="text" maxlength="80" placeholder="Ej: U13 (vacío = toda)"></label>'+
       '<label>Equipo / Tira (opcional)<input id="ms-equipo" type="text" maxlength="80" placeholder="Ej: A (vacío = todos)"></label>'+
      '</div>'+
-     '<label>Título<input id="ms-title" type="text" maxlength="120" placeholder="Ej: Encuesta de clima · U13"></label>'+
+     '<label>Título<input id="ms-title" type="text" maxlength="120" placeholder="Ej: Cuestionario de clima · U13"></label>'+
      '<label>Descripción breve (opcional)<input id="ms-desc" type="text" maxlength="400" placeholder="Texto de bienvenida para jugadores/as"></label>'+
      '<div id="ms-questions" class="ms-questions"></div>'+
      '<div class="ms-builder-actions">'+
@@ -169,7 +169,7 @@
   find('ms-create').onclick=async()=>{
    const btn=find('ms-create');
    btn.disabled=true;
-   find('ms-status').textContent='Guardando encuesta…';
+   find('ms-status').textContent='Guardando cuestionario…';
    try{
     const questions=draftQuestions.map((q,i)=>({...q,id:'q'+(i+1)}));
     await MuniGoogle.call('/api/surveys/create',{
@@ -184,10 +184,10 @@
     if(local!==generation||!box.isConnected)return;
     find('ms-title').value='';
     find('ms-desc').value='';
-    find('ms-status').textContent='Encuesta creada y activada.';
+    find('ms-status').textContent='Cuestionario creado y activado.';
     await loadList();
    }catch(e){
-    if(local===generation)find('ms-status').textContent=e.message||'No se pudo crear la encuesta.';
+    if(local===generation)find('ms-status').textContent=e.message||'No se pudo crear el cuestionario.';
    }finally{
     if(box.isConnected)btn.disabled=false;
    }

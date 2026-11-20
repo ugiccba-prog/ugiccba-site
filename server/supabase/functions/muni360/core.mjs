@@ -31,7 +31,7 @@ export function prepare(loaded,d,actor,now=()=>new Date().toISOString()){
  const stamp=now(),clean=copy(d);delete clean.accessVersion;
  return {uid:actor.id,actorVersion:actor.version,activity:d.deporte,operation:d,hash:sha(clean),resource:key,rosterKey:groupKey,checkRoster:groupTypes.includes(d.tipo),rosterChanged:!equal(before.padron,after.padron),baseVersion:meta.version,changes:deltas(before,after),fichas:Object.entries(after.fichas).filter(([id,f])=>!equal(f,before.fichas[id])).map(([id,f])=>({id,before:before.fichas[id]||null,after:f})),archive:d.tipo==='RESET_DATOS'?{id:'temporada_'+d.requestId,fecha:stamp,modo:d.modo,autor:actor.id,state:before,temporada:meta.temporada}:null,audit:{id:d.requestId,fecha:stamp,uid:actor.id,autor:actor.nombre,rol:actor.rol,tipo:d.tipo,deporte:d.deporte,categoria:d.categoria||'',equipo:d.equipo||'',jugador:d.jugador||'',antes:auditSlice(before,d),despues:auditSlice(after,d)}};
 }
-export function createHandler({rpc,verify,now=()=>Date.now(),notify}){
+export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate}){
  const service=(action,p)=>rpc('mc_service',{p_action:action,p});
  return async function handle(input){
   if(typeof input.path==='string'&&input.path.startsWith('/api/comunidad/'))return handleComunidad({rpc,verify,notify},input);
@@ -54,7 +54,7 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify}){
    throw new AccessError('RUTA','Ruta inexistente.',404);
   }
   if(input.path==='/api/dashboard')return dashboard(actor,owner,d,service,now());
-  if(input.path.startsWith('/api/inteligencia/'))return handleInteligencia({actor,owner,path:input.path,body:d,rpc,now:now()});
+  if(input.path.startsWith('/api/inteligencia/'))return handleInteligencia({actor,owner,path:input.path,body:d,rpc,now:now(),aiGenerate});
   if(input.path.startsWith('/api/surveys/'))return handleSurveys({actor,owner,path:input.path,body:d,rpc,now:now()});
   if(input.path==='/api/sheets/sync'&&actor.id!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra la sincronización.');
   if(input.path==='/api/sheets/automation'){if(actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección configura el puente.');return {ok:true,enabled:true,automatico:true,intervaloMinutos:5,mensaje:'El puente de Sheets se configura desde el proyecto de mantenimiento.'};}
