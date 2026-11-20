@@ -81,20 +81,45 @@
    find('mi-kpis').innerHTML=items.map(([label,n,cls])=>'<article class="mi-kpi-'+cls+'"><span>'+esc(label)+'</span><strong>'+n+'</strong></article>').join('');
   }
 
-  function renderCases(cases){
+  function matchSurveys(c,surveys){
+   const cat=(c.categoria||'').trim().toLowerCase();
+   const eq=(c.equipo||'').trim().toLowerCase();
+   return (surveys||[]).filter(s=>{
+    if(s.activity!==c.activity)return false;
+    const sc=(s.categoria||'').trim().toLowerCase();
+    const se=(s.equipo||'').trim().toLowerCase();
+    return (!sc||sc===cat)&&(!se||se===eq);
+   });
+  }
+
+  function renderSurveyBox(c,surveys){
+   const matched=matchSurveys(c,surveys);
+   if(!matched.length)return '';
+   return '<div class="mi-survey-link"><strong>Encuestas anónimas vinculadas:</strong><ul>'+
+    matched.map(s=>{
+     const scales=(s.summary||[]).filter(q=>q.type==='scale'&&q.avg!=null).map(q=>esc(q.label)+': <b>'+q.avg+'/5</b>');
+     return '<li><strong>'+esc(s.title)+'</strong> · '+s.responseCount+' resp.'+(scales.length?' · '+scales.join(' · '):'')+'</li>';
+    }).join('')+
+   '</div>';
+  }
+
+  function renderCases(cases,surveys){
    const container=find('mi-cases');
    if(!cases||!cases.length){
     container.innerHTML='<p class="mi-empty">No hay alertas para el filtro seleccionado.</p>';
     return;
    }
+   const caseMap=new Map(cases.map(c=>[c.id,c]));
    container.innerHTML=cases.map(c=>{
     const players=Array.isArray(c.metrics?.jugadores)?c.metrics.jugadores:[];
     const playersHtml=players.length?'<div class="mi-players"><strong>Integrantes detectados:</strong> '+players.map(p=>'<span class="mi-chip">'+esc(p.nombre)+' ('+esc(p.racha)+' aus.)</span>').join(' ')+'</div>':'';
+    const surveyHtml=renderSurveyBox(c,surveys);
     const notes=Array.isArray(c.notes)?c.notes:[];
     const notesHtml=notes.length?'<details class="mi-notes"><summary>Historial de intervenciones ('+notes.length+')</summary><ul>'+notes.slice().reverse().map(n=>'<li><strong>'+esc(fmtDate(n.at))+'</strong> · '+esc(n.autor||n.uid)+' ('+esc(n.rol||'')+') → <em>'+esc(STATUS_LABELS[n.action]||n.action)+'</em>'+(n.note?': '+esc(n.note):'')+'</li>').join('')+'</ul></details>':'';
+    const surveyBtn='<button type="button" class="mi-btn-survey" data-survey-case="'+esc(c.id)+'">Crear encuesta para el grupo</button>';
     const actions=c.status==='resuelta'
-     ?'<button type="button" data-action="abierta">Reabrir</button>'
-     :'<button type="button" data-action="en_revision">En revisión</button><button type="button" data-action="intervenida">Intervenida</button><button type="button" data-action="resuelta" class="mi-btn-resolve">Resolver</button>';
+     ?'<button type="button" data-action="abierta">Reabrir</button>'+surveyBtn
+     :'<button type="button" data-action="en_revision">En revisión</button><button type="button" data-action="intervenida">Intervenida</button><button type="button" data-action="resuelta" class="mi-btn-resolve">Resolver</button>'+surveyBtn;
     return '<article class="mi-case mi-sev-'+esc(c.severity)+' mi-st-'+esc(c.status)+'" data-case-id="'+esc(c.id)+'">'+
      '<header>'+
       '<div class="mi-badges">'+
@@ -108,6 +133,7 @@
      '<p class="mi-meta"><strong>'+esc(c.activity)+'</strong>'+(c.categoria?' · '+esc(c.categoria):'')+(c.equipo?' · '+esc(c.equipo):'')+'</p>'+
      '<p class="mi-summary">'+esc(c.summary)+'</p>'+
      playersHtml+
+     surveyHtml+
      '<div class="mi-actions">'+
       '<input type="text" class="mi-note-input" maxlength="500" placeholder="Nota de intervención (opcional)">'+
       '<div class="mi-btn-row">'+actions+'</div>'+
@@ -115,6 +141,19 @@
      notesHtml+
     '</article>';
    }).join('');
+
+   container.querySelectorAll('.mi-btn-survey').forEach(btn=>{
+    btn.onclick=()=>{
+     const c=caseMap.get(btn.dataset.surveyCase);
+     if(!c)return;
+     window.MuniSurveys?.prefill({
+      activity:c.activity,
+      categoria:c.categoria||'',
+      equipo:c.equipo||'',
+      template:c.rule_code==='SEMAFORO_ALERTA'?'clima':'ausencias'
+     });
+    };
+   });
 
    container.querySelectorAll('.mi-case button[data-action]').forEach(btn=>{
     btn.onclick=async()=>{
@@ -142,10 +181,13 @@
    find('mi-refresh').disabled=true;
    find('mi-status-text').textContent='Consultando alertas e intervenciones…';
    try{
-    const r=await MuniGoogle.call('/api/inteligencia/list',{status,activities});
+    const [r,surveysRes]=await Promise.all([
+     MuniGoogle.call('/api/inteligencia/list',{status,activities}),
+     MuniGoogle.call('/api/surveys/list',selectedAct?{activity:selectedAct}:{}).catch(()=>({surveys:[]}))
+    ]);
     if(local!==generation||!box.isConnected)return;
     renderCounts(r.counts);
-    renderCases(r.cases);
+    renderCases(r.cases,surveysRes.surveys||[]);
     find('mi-status-text').textContent='Actualizado '+fmtDate(r.generatedAt||new Date().toISOString())+' (Argentina).';
    }catch(e){
     if(local===generation){loaded=false;find('mi-status-text').textContent=e.message||'No se pudo consultar Inteligencia.';}
@@ -212,6 +254,9 @@
   '.mi-btn-row{display:flex;gap:6px;flex-wrap:wrap}'+
   '.mi-btn-row button{border:1px solid #cbd5e1;border-radius:8px;padding:7px 11px;background:#f8fafc;color:#0f172a;font:600 .78rem Inter,Arial,sans-serif;cursor:pointer}'+
   '.mi-btn-row .mi-btn-resolve{background:#166534;color:#fff;border-color:#166534}'+
+  '.mi-btn-row .mi-btn-survey{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}'+
+  '.mi-survey-link{margin:8px 0;padding:8px 10px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:.82rem;color:#134e4a}'+
+  '.mi-survey-link ul{margin:4px 0 0 18px;padding:0}'+
   '.mi-notes{margin-top:10px;font-size:.8rem;color:#475569}'+
   '.mi-notes ul{margin:6px 0 0 18px;padding:0}'+
   '.mi-empty{color:#526477;font-size:.88rem}';

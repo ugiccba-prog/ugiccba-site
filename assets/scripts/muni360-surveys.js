@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- let identity='',generation=0;
+ let identity='',generation=0,activePrefill=null;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const STATUS_LABELS={draft:'Borrador',active:'Activa',closed:'Cerrada'};
  const TYPE_LABELS={scale:'Escala 1–5',single:'Opción única',multi:'Opción múltiple',text:'Texto breve'};
@@ -47,6 +47,7 @@
   identity=key;
   generation++;
   document.getElementById('surveys-panel')?.remove();
+  activePrefill=null;
   if(!allowed)return;
 
   const areas=Array.isArray(session.areas)?session.areas:[];
@@ -128,16 +129,29 @@
 
   renderDraftQuestions();
 
+  function applyTemplate(tplKey){
+   const tpl=TEMPLATES[tplKey];
+   if(!tpl)return;
+   find('ms-title').value=tpl.title;
+   find('ms-desc').value=tpl.description;
+   draftQuestions=tpl.questions.map(q=>({...q,options:q.options?[...q.options]:[]}));
+   renderDraftQuestions();
+  }
+
   box.querySelectorAll('[data-tpl]').forEach(btn=>{
-   btn.onclick=()=>{
-    const tpl=TEMPLATES[btn.dataset.tpl];
-    if(!tpl)return;
-    find('ms-title').value=tpl.title;
-    find('ms-desc').value=tpl.description;
-    draftQuestions=tpl.questions.map(q=>({...q,options:q.options?[...q.options]:[]}));
-    renderDraftQuestions();
-   };
+   btn.onclick=()=>applyTemplate(btn.dataset.tpl);
   });
+
+  activePrefill=({activity,categoria='',equipo='',template='ausencias'}={})=>{
+   box.open=true;
+   if(!loaded){loaded=true;loadList();}
+   const actSel=find('ms-activity');
+   if(activity&&[...actSel.options].some(o=>o.value===activity))actSel.value=activity;
+   find('ms-categoria').value=categoria||'';
+   find('ms-equipo').value=equipo||'';
+   applyTemplate(TEMPLATES[template]?template:'ausencias');
+   box.scrollIntoView({behavior:'smooth',block:'start'});
+  };
 
   find('ms-add-q').onclick=()=>{
    if(draftQuestions.length>=20)return;
@@ -231,6 +245,9 @@
     if(local===generation){loaded=false;find('ms-status').textContent=e.message||'No se pudieron cargar los cuestionarios.';}
    }
   }
+ },
+ prefill(opts){
+  if(typeof activePrefill==='function')activePrefill(opts);
  }};
 
  const style=document.createElement('style');
