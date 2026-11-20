@@ -1074,14 +1074,24 @@
     const STORAGE_KEY_COUNT = 'ugi_ansiedad_sesiones_v2';
     const STORAGE_KEY_AGENDA = 'ugi_ansiedad_agenda_v2';
 
+    function safeGet(k, fallback) {
+      try { const v = localStorage.getItem(k); return v === null ? fallback : v; } catch (_) { return fallback; }
+    }
+    function safeSet(k, v) {
+      try { localStorage.setItem(k, v); } catch (_) {}
+    }
+    function safeRemove(k) {
+      try { localStorage.removeItem(k); } catch (_) {}
+    }
+
     function updateCounterDisplay() {
-      const count = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || '0', 10);
+      const count = parseInt(safeGet(STORAGE_KEY_COUNT, '0'), 10) || 0;
       document.getElementById('session-counter').textContent = count;
     }
 
     function incrementCounter() {
-      const count = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || '0', 10) + 1;
-      localStorage.setItem(STORAGE_KEY_COUNT, count);
+      const count = (parseInt(safeGet(STORAGE_KEY_COUNT, '0'), 10) || 0) + 1;
+      safeSet(STORAGE_KEY_COUNT, String(count));
       updateCounterDisplay();
     }
 
@@ -1479,7 +1489,11 @@
 
     // 4. AGENDA VISUAL (DUA)
     function loadAgenda() {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_AGENDA) || '[]');
+      let saved = [];
+      try {
+        const parsed = JSON.parse(safeGet(STORAGE_KEY_AGENDA, '[]'));
+        if (Array.isArray(parsed)) saved = parsed;
+      } catch (_) {}
       const steps = document.querySelectorAll('.agenda-step');
       steps.forEach((step, idx) => {
         if (saved.includes(idx)) step.classList.add('completed');
@@ -1492,12 +1506,12 @@
       document.querySelectorAll('.agenda-step').forEach((step, i) => {
         if (step.classList.contains('completed')) completedIdx.push(i);
       });
-      localStorage.setItem(STORAGE_KEY_AGENDA, JSON.stringify(completedIdx));
+      safeSet(STORAGE_KEY_AGENDA, JSON.stringify(completedIdx));
       if (completedIdx.length === 5) incrementCounter();
     }
 
     function resetAgenda() {
-      localStorage.removeItem(STORAGE_KEY_AGENDA);
+      safeRemove(STORAGE_KEY_AGENDA);
       document.querySelectorAll('.agenda-step').forEach(s => s.classList.remove('completed'));
     }
 

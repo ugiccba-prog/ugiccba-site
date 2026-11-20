@@ -18,7 +18,7 @@
   <!-- OPEN GRAPH / WHATSAPP / REDES -->
   <meta property="og:title" content="Portal de Familias y Socios | UGI CCBA" />
   <meta property="og:description" content="Guía oficial descargable 'El Otro Equipo', pautas de convivencia en la tribuna y autodiagnóstico interactivo para familias." />
-  <meta property="og:image" content="../assets/images/logo-header.png" />
+  <meta property="og:image" content="https://ugiccba.com.ar/assets/images/logo-header.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
 
@@ -566,7 +566,7 @@
             <div class="guide-actions">
               <a href="../assets/docs/El-Otro-Equipo-Guia-Familias-UGI.pdf" download="El-Otro-Equipo-Guia-Familias-UGI.pdf" class="btn-download-pdf">
                 <span>Descargar Guía Oficial en PDF</span>
-                <small style="opacity: 0.8; font-size: 0.75rem;">(4.7 MB)</small>
+                <small style="opacity: 0.8; font-size: 0.75rem;">(4.5 MB)</small>
               </a>
               <a href="#capitulos-detalle" style="color: var(--navy); font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.5rem 0.8rem;">
                 Ver los 10 capítulos &darr;
@@ -1130,7 +1130,8 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <img src="../assets/images/logo-header.png" alt="UGI Club Ciudad de Buenos Aires">
-    <p>&copy; Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+    <p style="opacity: 1; margin: 0 0 0.8rem;"><a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer" style="color: var(--sky-light); font-weight: 600;">Seguinos en Instagram @ugiccba</a></p>
+    <p>&copy; <span data-year>2026</span> Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
   </footer>
 
   <!-- SCRIPTS -->
@@ -1244,6 +1245,10 @@
       document.getElementById("ws-confirm").style.display = "block";
       window.location.href = "mailto:ugiccba@gmail.com?subject=" + subject + "&body=" + body;
     }
+
+    document.querySelectorAll("[data-year]").forEach((el) => {
+      el.textContent = String(new Date().getFullYear());
+    });
   </script>
 </body>
 </html>

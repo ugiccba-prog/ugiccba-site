@@ -888,7 +888,7 @@
        ===================================================================== -->
   <header id="app-header" class="hidden">
     <div class="brand">
-      <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='escudo-ccba.png'" alt="C.C.B.A.">
+      <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='../../escudo-ccba.png'" alt="C.C.B.A.">
       <div>
         <h2>MUNI 360<span class="brand-tagline">Colonia y COYFD</span></h2>
       </div>
@@ -1755,11 +1755,13 @@
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
       $('nav-tabs').classList.toggle('cuatro', !puedePadron);
       const verCambios=puedeVerCambios();
+      const verModulosOnline=verCambios&&sesion?.modoDemo!==true;
       $('tab-btn-auditoria').classList.toggle('hidden',!verCambios);
-      $('tab-btn-inteligencia').classList.toggle('hidden',!verCambios);
-      $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
+      $('tab-btn-inteligencia').classList.toggle('hidden',!verModulosOnline);
+      $('tab-btn-encuestas').classList.toggle('hidden',!verModulosOnline);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');}
+      else if(!verModulosOnline&&['inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
@@ -3543,7 +3545,8 @@
     }
 
     function cambiarTab(id) {
-      if(['auditoria','inteligencia','encuestas'].includes(id)&&!puedeVerCambios())return;
+      if(id==='auditoria'&&!puedeVerCambios())return;
+      if(['inteligencia','encuestas'].includes(id)&&(!puedeVerCambios()||sesion?.modoDemo===true))return;
       if (id === 'padron' && !esCoordOAdmin()) return;
       if(!['inicio','equipos','comparar','seguimiento','agenda','avisos','asistencia','evaluacion','ugi','analisis','padron','auditoria','inteligencia','encuestas'].includes(id))return;
       tabActual = id;

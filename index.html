@@ -18,11 +18,11 @@
   <!-- OPEN GRAPH / WHATSAPP / REDES -->
   <meta property="og:title" content="UGI | Club Ciudad de Buenos Aires" />
   <meta property="og:description" content="Unidad de Gestión Integral: formación deportiva, convivencia, valores y portales oficiales para Jugadores y Familias." />
-  <meta property="og:image" content="assets/images/logo-header.png" />
+  <meta property="og:image" content="https://ugiccba.com.ar/assets/images/logo-header.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <title>Unidad de Gestion Integral | Club Ciudad de Buenos Aires</title>
+  <title>Unidad de Gestión Integral | Club Ciudad de Buenos Aires</title>
   <link rel="icon" type="image/png" href="assets/images/favicon.png" />
   
   <style>
@@ -245,7 +245,9 @@
     .program-copy { display: flex; flex-direction: column; justify-content: center; padding: clamp(2rem, 5vw, 5rem); }
     .card-kicker { margin: 0 0 1rem; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.17em; text-transform: uppercase; }
     .program-copy h3 { margin: 0; font-family: var(--display); font-size: clamp(2.4rem, 4vw, 4.7rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; }
-    .program-copy > p:last-child { max-width: 36rem; margin: 1.5rem 0 0; color: rgba(255, 253, 248, 0.68); }
+    .program-copy > p:not(.card-kicker) { max-width: 36rem; margin: 1.5rem 0 0; color: rgba(255, 253, 248, 0.78); }
+    .program-link { display: inline-block; margin-top: 1.25rem; color: var(--sky); font-weight: 700; text-decoration: none; }
+    .program-link:hover { text-decoration: underline; text-underline-offset: 0.3rem; }
 
     /* NUEVAS SECCIONES UGI */
     .tarjetas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 2rem; margin-top: 3rem; }
@@ -415,7 +417,7 @@
 
     /* Accesos integrados al contenido */
     #comunidad .tarjetas-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: clamp(2rem, 4vw, 4.5rem);
       margin-top: 3.5rem;
     }
@@ -587,7 +589,7 @@
             <p class="card-kicker">Convivencia</p><h3>Semáforo de la UGI</h3>
             <p>Una guía visual de convivencia y autorregulación para sostener el estándar Ciudad en cada entrenamiento y partido.</p>
             
-            <a href="pages/semaforo-ugi.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+            <a href="pages/semaforo-ugi.html" class="program-link">Ver más info &rarr;</a>
             
           </div>
         </article>
@@ -602,7 +604,7 @@
             <p class="card-kicker">Familias</p><h3>El deporte de mis hijos</h3>
             <p>Claves para ofrecer sostén emocional, disfrutar el proceso y respetar el espacio del entrenador durante la competencia.</p>
             
-            <a href="pages/deportehijos.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+            <a href="pages/deportehijos.html" class="program-link">Ver más info &rarr;</a>
             
           </div>
         </article>
@@ -617,7 +619,7 @@
             <p class="card-kicker">Rendimiento</p><h3>Entrenamiento mental</h3>
             <p>Ejercicios prácticos para entrenar la concentración, la toma de decisiones, la calma y el manejo de la presión en el juego.</p>
             
-            <a href="pages/entrenamiento-mental.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+            <a href="pages/entrenamiento-mental.html" class="program-link">Ver más info &rarr;</a>
             
           </div>
         </article> 
@@ -636,7 +638,7 @@
             <p class="card-kicker">Inclusión</p><h3>Ciudad Integrado</h3>
             <p>Espacio para chicos y chicas con discapacidad, fomentando el sentido de pertenencia y el desarrollo a través del deporte.</p>
             
-            <a href="pages/ciudad-integrado.html" style="display: inline-block; margin-top: 1rem; color: var(--sky-dark); font-weight: 700; text-decoration: none;">Ver más info &rarr;</a>
+            <a href="pages/ciudad-integrado.html" class="program-link">Ver más info &rarr;</a>
             
           </div>
         </article>
@@ -752,25 +754,25 @@
        blanco: mejor mostrar todo de una que no mostrar nada. */
     if (!("IntersectionObserver" in window)) {
       document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+    } else {
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("visible");
+            revealObserver.unobserve(entry.target);
+          });
+        },
+        // Se dispara apenas asoma: en el celular, con 14% y textos altos, el título
+        // aparecía cuando ya lo estabas leyendo.
+        { threshold: 0.02, rootMargin: "0px 0px -4% 0px" }
+      );
+
+      document.querySelectorAll(".reveal").forEach((element, index) => {
+        element.style.transitionDelay = `${Math.min(index % 3, 2) * 90}ms`;
+        revealObserver.observe(element);
+      });
     }
-
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("visible");
-          revealObserver.unobserve(entry.target);
-        });
-      },
-      // Se dispara apenas asoma: en el celular, con 14% y textos altos, el título
-      // aparecía cuando ya lo estabas leyendo.
-      { threshold: 0.02, rootMargin: "0px 0px -4% 0px" }
-    );
-
-    document.querySelectorAll(".reveal").forEach((element, index) => {
-      element.style.transitionDelay = `${Math.min(index % 3, 2) * 90}ms`;
-      revealObserver.observe(element);
-    });
 
     const year = document.querySelector("[data-year]");
     if (year) year.textContent = String(new Date().getFullYear());

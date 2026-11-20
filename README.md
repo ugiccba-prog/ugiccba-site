@@ -44,7 +44,9 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `stroop.html`: Test de atención selectiva y agilidad mental.
   * `vision.html`: Test de visión periférica y atención dividida.
 * **`ansiedad/index.html`**: Zona de respiración guiada, foco y autorregulación emocional.
-* **`hockeysc/index.html`**: Plataforma de Selectividad de Menores para Hockey CCBA.
+* **`comunidad/index.html`** (y `/muni360/comunidad/`): Cartelera de avisos, partidos, cambios, suspensiones, horarios habituales y suscripción a alertas.
+* **`muni360/encuesta/index.html`**: Cuestionarios anónimos por enlace para jugadores y jugadoras.
+* **`archive/hockeysc-deshabilitado/`**: Archivo histórico de la plataforma de Selectividad de Menores para Hockey CCBA (deshabilitada en producción).
 
 ---
 
@@ -61,7 +63,7 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
 * **Paleta Oficial:** Azul Marino (`#082b49`), Celeste Institucional (`#59bde9`) y Fondo Papel (`#fffdf8`).
 * **Tipografías:** *Outfit* (títulos de gran impacto) y *Plus Jakarta Sans* (lectura nítida y moderna).
 * **Tecnología:** HTML5 semántico, CSS3 nativo y JavaScript Vanilla sin dependencias pesadas.
-* **Hosting:** GitHub Pages con dominio propio configurado en `CNAME` (`www.ugiccba.com.ar`).
+* **Hosting:** GitHub Pages con dominio propio configurado en `CNAME` (`ugiccba.com.ar`).
 
 
 ## Muni360 · Supabase, Firebase Auth y Google Sheets (presupuesto cero)

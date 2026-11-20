@@ -12,6 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Programa de Entrenamiento Mental UGI del Club Ciudad de Buenos Aires: Escuela de Capitanes, gestión de la calma, cultura del jugador y ADN Ciudad." />
   <title>Entrenamiento Mental | UGI</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
   <style>
@@ -113,6 +114,8 @@
     .bg-rose-500 { background-color: #f43f5e; }
     .font-bold { font-weight: 700; }
     .font-semibold { font-weight: 600; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-wider { letter-spacing: 0.05em; }
     .subpage-content .mt-8 h3, .subpage-content .mt-8 h4 { margin: 0; }
     .subpage-content .mt-8 p { margin-bottom: 0; }
     .subpage-content .text-xs { font-size: 0.78rem; line-height: 1.6; }
@@ -299,7 +302,8 @@
       <p>Club Ciudad de Buenos Aires</p>
     </div>
     <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
-    <p class="copyright">&copy; 2026 C.C.B.A.</p>
+    <p class="copyright">&copy; <span data-year>2026</span> C.C.B.A.</p>
   </footer>
+  <script>document.querySelectorAll("[data-year]").forEach(function(el){el.textContent=String(new Date().getFullYear());});</script>
 </body>
 </html>

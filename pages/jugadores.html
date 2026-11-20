@@ -11,6 +11,7 @@
     gtag('config', 'G-HPX70B00SH');
   </script>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Portal oficial de Jugadores y Jugadoras UGI - Club Ciudad de Buenos Aires. Gimnasio mental interactivo, guías descargables y herramientas formativas." />
   <meta name="theme-color" content="#59bde9" />
   <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
@@ -18,7 +19,7 @@
   <!-- OPEN GRAPH / WHATSAPP / REDES -->
   <meta property="og:title" content="Portal de Jugadores | UGI CCBA" />
   <meta property="og:description" content="Gimnasio Mental interactivo, guías de formación 'Tu Equipo', cuadernillo 'Mi Equipo' y herramientas para deportistas." />
-  <meta property="og:image" content="../assets/images/logo-header.png" />
+  <meta property="og:image" content="https://ugiccba.com.ar/assets/images/logo-header.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
 
@@ -670,7 +671,7 @@
               <div class="btn-group" style="margin-top: 0;">
                 <a href="../assets/docs/Tu-Equipo-Guia-Jugadores-UGI.pdf" download="Tu-Equipo-Guia-Jugadores-UGI.pdf" class="btn-main btn-navy" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <span>DESCARGAR GUÍA EN PDF</span>
-                  <small style="opacity: 0.8; font-size: 0.75rem;">(4.4 MB)</small>
+                  <small style="opacity: 0.8; font-size: 0.75rem;">(4.2 MB)</small>
                 </a>
               </div>
             </div>
@@ -835,7 +836,8 @@
 
   <footer style="background: var(--navy); color: var(--paper); padding: 4rem 7vw; text-align: center;">
     <img src="../assets/images/logo-header.png" alt="UGI" style="max-height: 50px; margin-bottom: 1.5rem;">
-    <p style="font-size: 0.8rem; opacity: 0.6;">© Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
+    <p style="font-size: 0.85rem; margin: 0 0 0.8rem;"><a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer" style="color: var(--sky-light); font-weight: 600;">Seguinos en Instagram @ugiccba</a></p>
+    <p style="font-size: 0.8rem; opacity: 0.6; margin: 0;">&copy; <span data-year>2026</span> Unidad de Gestión Integral - Club Ciudad de Buenos Aires</p>
   </footer>
 
   <script src="../apps/training/ugi-envio.js"></script>
@@ -907,16 +909,21 @@
     function startBreathingExercise(seconds) {
       breathingBox.style.display = "block";
       let remaining = seconds;
+      let elapsed = 0;
+
+      const setPhase = (inhale) => {
+        breathCircle.classList.toggle("inhale", inhale);
+        breathCircle.classList.toggle("exhale", !inhale);
+        breathCircle.textContent = inhale ? "Inhalá" : "Exhalá";
+        breathInst.textContent = inhale ? "Olé una flor... (inhalá profundo)" : "Soplá una vela... (exhalá despacio)";
+      };
+
+      setPhase(true);
       breathTimer.textContent = remaining + " segundos restantes";
-      
-      let isInhale = true;
-      breathCircle.classList.remove("exhale");
-      breathCircle.classList.add("inhale");
-      breathCircle.textContent = "Inhalá";
-      breathInst.textContent = "Olé una flor... (inhalá profundo)";
 
       breathingInterval = setInterval(() => {
-        remaining -= 4;
+        remaining -= 1;
+        elapsed += 1;
         if (remaining <= 0) {
           clearInterval(breathingInterval);
           breathingInterval = null;
@@ -926,20 +933,9 @@
           breathTimer.textContent = "Ejercicio completado con éxito";
           return;
         }
-        isInhale = !isInhale;
-        if (isInhale) {
-          breathCircle.classList.remove("exhale");
-          breathCircle.classList.add("inhale");
-          breathCircle.textContent = "Inhalá";
-          breathInst.textContent = "Olé una flor... (inhalá profundo)";
-        } else {
-          breathCircle.classList.remove("inhale");
-          breathCircle.classList.add("exhale");
-          breathCircle.textContent = "Exhalá";
-          breathInst.textContent = "Soplá una vela... (exhalá despacio)";
-        }
+        setPhase(Math.floor(elapsed / 4) % 2 === 0);
         breathTimer.textContent = remaining + " segundos restantes";
-      }, 4000);
+      }, 1000);
     }
 
     // ==========================================
@@ -971,9 +967,13 @@
     }
     if (inputFirma) {
       inputFirma.addEventListener("input", (e) => {
-        displayFirma.innerHTML = e.target.value.trim() || "Staff UGI &middot; C.C.B.A.";
+        displayFirma.textContent = e.target.value.trim() || "Staff UGI · C.C.B.A.";
       });
     }
+
+    document.querySelectorAll("[data-year]").forEach((el) => {
+      el.textContent = String(new Date().getFullYear());
+    });
   </script>
 </body>
 </html>

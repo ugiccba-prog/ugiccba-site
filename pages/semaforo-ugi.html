@@ -12,6 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="El Semáforo UGI: guía visual de convivencia, autorregulación emocional y Tarjeta Verde para entrenamientos y partidos en el Club Ciudad de Buenos Aires." />
   <title>Semáforo UGI | Convivencia en Cancha</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
   <style>
@@ -164,7 +165,8 @@
       <p>Club Ciudad de Buenos Aires</p>
     </div>
     <a href="https://www.instagram.com/ugiccba/" target="_blank" rel="noopener noreferrer">Seguinos en Instagram @ugiccba</a>
-    <p class="copyright">&copy; 2026 C.C.B.A.</p>
+    <p class="copyright">&copy; <span data-year>2026</span> C.C.B.A.</p>
   </footer>
+  <script>document.querySelectorAll("[data-year]").forEach(function(el){el.textContent=String(new Date().getFullYear());});</script>
 </body>
 </html>

@@ -445,7 +445,8 @@ async function obtenerTokenDispositivo() {
           import("https://www.gstatic.com/firebasejs/13.2.0/firebase-messaging.js")
         ]);
         const fbConfig = { ...window.MUNI_CONFIG.firebase, messagingSenderId: PUSH_CONFIG.messagingSenderId };
-        const fbApp = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(fbConfig, "comunidad-msg");
+        const existingMsgApp = appMod.getApps().find(a => a && (a.name === "comunidad-msg" || a.n === "comunidad-msg"));
+        const fbApp = existingMsgApp || appMod.initializeApp(fbConfig, "comunidad-msg");
         const messaging = msgMod.getMessaging(fbApp);
         const fcmToken = await msgMod.getToken(messaging, {
           vapidKey: PUSH_CONFIG.vapidKey,
