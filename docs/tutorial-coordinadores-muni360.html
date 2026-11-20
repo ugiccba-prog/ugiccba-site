@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <title>Tutorial para Coordinadores · Muni360 (C.C.B.A.)</title>
+ <style>
+  @page {
+   size: letter;
+   margin: 18mm 20mm;
+  }
+  * {
+   box-sizing: border-box;
+  }
+  body {
+   margin: 0;
+   font-family: Arial, Helvetica, "Segoe UI Emoji", sans-serif;
+   font-size: 10.6pt;
+   line-height: 1.46;
+   color: #111827;
+   background: #fff;
+  }
+  h1 {
+   margin: 0 0 8px;
+   font-size: 19pt;
+   font-weight: 400;
+   color: #0f172a;
+  }
+  .lead {
+   margin: 0 0 14px;
+   color: #1f2937;
+  }
+  h2 {
+   margin: 18px 0 8px;
+   font-size: 13.5pt;
+   font-weight: 400;
+   color: #0f172a;
+   break-after: avoid;
+  }
+  h3 {
+   margin: 13px 0 5px;
+   font-size: 11.2pt;
+   font-weight: 700;
+   color: #0f172a;
+   break-after: avoid;
+  }
+  p {
+   margin: 6px 0 9px;
+  }
+  ul, ol {
+   margin: 5px 0 10px 22px;
+   padding: 0;
+  }
+  li {
+   margin: 4px 0;
+  }
+  ul ul, ol ul {
+   margin: 3px 0 4px 18px;
+  }
+  hr {
+   border: 0;
+   border-top: 1px solid #9ca3af;
+   margin: 16px 0;
+  }
+  a {
+   color: #1d4ed8;
+   text-decoration: underline;
+  }
+  code {
+   font-family: Consolas, "Courier New", monospace;
+   font-size: 9.8pt;
+   color: #047857;
+   background: #f3f4f6;
+   padding: 1px 4px;
+   border-radius: 3px;
+  }
+  .notice {
+   margin: 8px 0 10px 20px;
+  }
+  table {
+   width: 100%;
+   border-collapse: collapse;
+   margin: 10px 0 14px;
+   font-size: 10pt;
+  }
+  thead {
+   display: table-header-group;
+  }
+  tr {
+   break-inside: avoid;
+   page-break-inside: avoid;
+  }
+  th, td {
+   border: 1px solid #111827;
+   padding: 7px 9px;
+   vertical-align: top;
+   text-align: left;
+  }
+  th {
+   font-weight: 700;
+   background: #f8fafc;
+  }
+  td:first-child, th:first-child {
+   width: 34%;
+  }
+  .badge-new {
+   display: inline-block;
+   margin-top: 3px;
+   padding: 1px 6px;
+   font-size: 8.3pt;
+   font-weight: 700;
+   color: #5b21b6;
+   background: #f3e8ff;
+   border: 1px solid #ddd6fe;
+   border-radius: 4px;
+  }
+  .callout {
+   margin: 12px 0;
+   padding: 10px 13px;
+   background: #f5f3ff;
+   border: 1px solid #c4b5fd;
+   border-left: 4px solid #6d28d9;
+   border-radius: 6px;
+   break-inside: avoid;
+  }
+  .callout-feb {
+   margin: 12px 0;
+   padding: 10px 13px;
+   background: #ecfdf5;
+   border: 1px solid #a7f3d0;
+   border-left: 4px solid #047857;
+   border-radius: 6px;
+   break-inside: avoid;
+  }
+  .checklist {
+   list-style: none;
+   margin-left: 4px;
+  }
+  .checklist li {
+   margin: 6px 0;
+  }
+  .box {
+   display: inline-block;
+   width: 13px;
+   height: 13px;
+   border: 1.4px solid #374151;
+   border-radius: 2px;
+   vertical-align: -2px;
+   margin-right: 7px;
+  }
+  .green-txt {
+   color: #15803d;
+   font-weight: 700;
+  }
+  .muted {
+   color: #4b5563;
+   font-size: 9.6pt;
+  }
+  .section-block {
+   break-inside: avoid;
+  }
+ </style>
+</head>
+<body>
+ <h1>Tutorial para Coordinadores · Muni360 (C.C.B.A.)</h1>
+ <p class="lead">Guía práctica paso a paso para ingresar por primera vez, saber qué pantallas vas a ver y qué esperar de cada herramienta dentro de <strong>Muni360</strong>.</p>
+
+ <div class="notice">
+  <p><strong>Aclaración importante sobre roles y privacidad:</strong></p>
+  <ul>
+   <li><strong>Esta guía describe la vista de Coordinación. Los profes no ven lo mismo:</strong> tienen una vista enfocada en la cancha/clase (asistencia, evaluaciones, comparador, apoyos DUA visibles, banco metodológico y análisis básico) y <strong>no ven el Padrón completo, los DNI, los Legajos privados ni la pestaña Cambios</strong> (salvo permisos específicos).</li>
+   <li><strong>Cada deporte o actividad es independiente:</strong> todo lo que se carga o consulta en un deporte o actividad (padrón, asistencia, evaluaciones, seguimientos, análisis y cambios) <strong>lo ve únicamente ese deporte o actividad</strong> entre las cuentas habilitadas para esa área. Otros deportes no tienen acceso ni se mezclan datos entre sí.</li>
+  </ul>
+ </div>
+
+ <hr>
+
+ <h2>1. ¿Por dónde entrar?</h2>
+ <ul>
+  <li><strong>Entrada principal:</strong> <a href="https://ugiccba.com.ar/muni360/">https://ugiccba.com.ar/muni360/</a> Desde ahí elegís el portal que te corresponde:
+   <ul>
+    <li><strong>Deportes</strong> (<code>/muni360/deportes/</code>) — Deportes federados y formativos por categoría y tira.</li>
+    <li><strong>Colonia y COYFD</strong> (<code>/muni360/colonia/</code>) — Base formativa (Colonia con control de comedor y COYFD).</li>
+    <li><strong>Comunidad</strong> (<code>/comunidad/</code>) — Horarios, avisos y novedades para familias y socios.</li>
+   </ul>
+  </li>
+ </ul>
+ <p class="notice">Si entrás desde el celular, podés guardar el enlace en la pantalla de inicio para abrirlo rápido todos los días.</p>
+
+ <hr>
+
+ <h2>2. Cómo entrar paso a paso (primer ingreso)</h2>
+ <ol>
+  <li>Abrí <strong>Deportes</strong> o <strong>Colonia y COYFD</strong> según tu área.</li>
+  <li>Tocá <strong>Continuar con Google</strong> e iniciá sesión con tu cuenta de Google institucional o personal (la misma que informaste a Dirección UGI).</li>
+  <li><strong>Si es tu primera vez y todavía no tenés el permiso activo</strong>, la pantalla te va a avisar que tu acceso está pendiente de aprobación:
+   <ul>
+    <li>Avisale a <strong>Dirección UGI</strong> para que te habilite las actividades y permisos de Coordinación.</li>
+    <li>Una vez que te confirmen, no hace falta cerrar todo: tocá <strong>Ya me autorizaron · Revisar acceso</strong> (o recargá la página).</li>
+   </ul>
+  </li>
+  <li><strong>Si querés practicar antes sin tocar datos reales</strong>, en la pantalla de ingreso tenés el botón <strong>Entrar con Modelo de Prueba (Reunión / Video)</strong> (clave de prueba: <code>360,demo</code>). Todo lo que cargues ahí es ficticio y <strong>no se guarda</strong> en las planillas reales.</li>
+  <li style="break-inside: avoid;"><strong>Elegir actividad, categoría y equipo/tira:</strong>
+   <ul>
+    <li>Si coordinás más de una actividad (por ejemplo Colonia y COYFD, o más de un deporte), vas a ver el selector arriba para cambiar entre tus actividades habilitadas.</li>
+    <li>En <strong>Deportes</strong>, la primera vez que entrás te pide seleccionar <strong>Categoría</strong> y <strong>Tira/Equipo</strong> antes de abrir la lista. Después recuerda tu último grupo.</li>
+    <li>Para cambiar de categoría, tira o fecha en cualquier momento, tocá el botón <strong>Grupo / fecha</strong> en la barra superior.</li>
+   </ul>
+  </li>
+ </ol>
+
+ <hr>
+
+ <h2>3. ¿Qué vas a ver como Coordinador/a? (Qué esperar)</h2>
+ <p>Según tu rol y los permisos que te asigne Dirección UGI, estas son las secciones del menú lateral (en computadora) o del botón <strong>☰ Menú</strong> y la barra inferior (en celular):</p>
+
+ <table>
+  <thead>
+   <tr>
+    <th>Sección</th>
+    <th>Qué vas a encontrar</th>
+   </tr>
+  </thead>
+  <tbody>
+   <tr>
+    <td><strong>Inicio</strong></td>
+    <td>Resumen del grupo seleccionado (asistencia, evaluaciones, observaciones), gráfico de evolución, accesos rápidos y, arriba, el <strong>Panel de Coordinación</strong> con los totales agregados de tus actividades habilitadas.</td>
+   </tr>
+   <tr>
+    <td><strong>Mis equipos / Mis grupos</strong></td>
+    <td>Tabla con todos los grupos de la actividad y el plantel del grupo actual, con botones directos para <strong>Evaluar</strong> o <strong>Comparar</strong> a cada deportista.</td>
+   </tr>
+   <tr>
+    <td><strong>Asistencia y semáforo</strong></td>
+    <td>Toma de lista (<code>P</code> Presente, <code>A</code> Ausente, <code>T</code> Tarde), <strong>Semáforo UGI</strong> (🟢🟡🔴), <strong>Comida</strong> (🍴) en Colonia, y acordeón opcional para <strong>Clima de la clase</strong> y <strong>Puntos Ciudad</strong>.</td>
+   </tr>
+   <tr>
+    <td><strong>Evaluaciones</strong></td>
+    <td>Carga de notas de <strong>1 a 10</strong> (admite decimales como <code>7.5</code>) en variables técnicas + las <strong>3 transversales 4C UGI</strong>, selector de <strong>Arquero/a</strong> si el deporte tiene puesto específico, y botón 🟢 <strong>Tarjeta Verde Digital</strong> para reconocimientos.</td>
+   </tr>
+   <tr>
+    <td><strong>Comparar jugadores</strong></td>
+    <td>Comparativa cara a cara entre <strong>2 deportistas</strong> del mismo grupo: porcentaje de asistencia, semáforo, gráfico <strong>Radar</strong> de competencias, barras por dimensión, <strong>Evolución</strong> en el tiempo y referencia promedio del equipo.</td>
+   </tr>
+   <tr>
+    <td><strong>Seguimiento y DUA</strong></td>
+    <td>Lista rápida de deportistas con observaciones amarillas/rojas en el período o con <strong>apoyo DUA</strong> cargado, con acceso directo a su ficha o evaluación.</td>
+   </tr>
+   <tr>
+    <td><strong>Planificador y banco</strong></td>
+    <td><strong>Banco metodológico</strong> con variantes prácticas de cancha según la situación del grupo + <strong>Planificador Express DUA</strong> para adaptar ejercicios.</td>
+   </tr>
+   <tr>
+    <td><strong>Horarios y agenda</strong></td>
+    <td>Horarios publicados de entrenamiento para tu actividad.</td>
+   </tr>
+   <tr>
+    <td><strong>Comunidad y avisos</strong></td>
+    <td>Cartelera de avisos filtrados para tu actividad/grupo y acceso directo a <strong>Comunidad</strong> (si tenés permiso de publicación, podés emitir avisos desde ahí).</td>
+   </tr>
+   <tr>
+    <td><strong>Análisis del grupo / equipo</strong></td>
+    <td>KPIs separados de <strong>Técnica</strong>, <strong>Formación y convivencia</strong>, <strong>Asistencia y Alertas (&lt;70%)</strong>; gráfico de variables (marca en rojo la más baja para trabajar en la semana); matriz individual; comparación con temporadas archivadas; y descarga a <strong>Excel (<code>.xlsx</code>)</strong> si tenés permiso de exportación.</td>
+   </tr>
+   <tr>
+    <td><strong>Cambios</strong></td>
+    <td>Historial real de auditoría: quién cargó o modificó cada registro, fecha/hora argentina y detalle <strong>antes / después</strong>.</td>
+   </tr>
+   <tr>
+    <td>
+     <strong>Inteligencia</strong><br>
+     <span class="badge-new">Recién agregada · En desarrollo</span>
+    </td>
+    <td>Detección automática de alertas por <strong>caída de asistencia</strong>, <strong>3+ ausencias consecutivas</strong> y <strong>semáforo amarillo/rojo sostenido</strong>; registro de intervenciones (<em>En revisión</em>, <em>Intervenida</em>, <em>Resolver</em>) con historial de notas; escalamiento automático a Dirección UGI a las <strong>48 h</strong> si no fue intervenida; y botón <strong>Crear encuesta para el grupo</strong> vinculado a la alerta.</td>
+   </tr>
+   <tr>
+    <td>
+     <strong>Encuestas</strong><br>
+     <span class="badge-new">Recién agregada · En desarrollo</span>
+    </td>
+    <td>Constructor liviano de cuestionarios <strong>100% anónimos</strong> para jugadores y jugadoras (sin login, sin nombre ni DNI), con <strong>3 plantillas rápidas</strong> (<em>Clima del grupo</em>, <em>Motivos de inasistencia</em>, <em>Balance de etapa</em>) o preguntas personalizadas (escala 1–5, opción única, opción múltiple y texto breve), botón <strong>Copiar enlace</strong> (<code>/muni360/encuesta/?c=...</code>) para enviar por WhatsApp y resultados visibles <strong>desde la primera respuesta</strong>.</td>
+   </tr>
+   <tr>
+    <td><strong>Padrón</strong></td>
+    <td>Altas y bajas de deportistas (uno por uno, pegando lista o importando planilla Excel <code>.xlsx</code> con plantilla descargable), edición de <strong>Pasaporte DUA</strong>, <strong>Legajo privado UGI</strong> (con DNI e historial), ajuste de variables técnicas y cierre/archivo de temporada.</td>
+   </tr>
+  </tbody>
+ </table>
+
+ <h3>Qué es normal NO ver (para no asustarse)</h3>
+ <ul>
+  <li><strong>Usuarios y permisos</strong> (<code>/muni360/admin/</code>) y los botones globales de sincronización/respaldo del club son exclusivos de <strong>Dirección UGI</strong>.</li>
+  <li>Si alguna herramienta dentro de <strong>Padrón</strong> o <strong>Exportar Excel</strong> no te aparece o te indica que no tenés permiso, significa que Dirección UGI todavía no activó esa capacidad puntual para tu usuario.</li>
+ </ul>
+
+ <hr>
+
+ <h2>4. Cómo usar las funciones clave del día a día</h2>
+
+ <div class="section-block">
+  <h3>Tomar asistencia y semáforo</h3>
+  <ol>
+   <li>Verificá arriba que estés en el grupo y fecha correctos (<code>Grupo / fecha</code>).</li>
+   <li>Marcá <code>P</code> / <code>A</code> / <code>T</code> (tocar de nuevo el mismo botón lo deja en <code>—</code> sin registrar).</li>
+   <li>Marcá el <strong>Semáforo UGI</strong> (🟢 / 🟡 / 🔴) cuando haya observación (el guion <code>—</code> significa sin observar).</li>
+   <li>En <strong>Colonia</strong>, marcá 🍴 <strong>Comida</strong> en quienes almuerzan (si alguien está <code>A</code> Ausente, la comida se desmarca automáticamente).</li>
+   <li><strong>Guardado:</strong>
+    <ul>
+     <li>En <strong>Deportes</strong>, el guardado automático (y el botón <strong>Guardar asistencia</strong>) se habilitan cuando <strong>todo el grupo tiene asistencia y semáforo marcados</strong>.</li>
+     <li>Si cerrás sin terminar, el borrador queda guardado en ese navegador para que no pierdas el trabajo.</li>
+    </ul>
+   </li>
+  </ol>
+ </div>
+
+ <div class="section-block">
+  <h3>Evaluar y enviar Tarjeta Verde</h3>
+  <ol>
+   <li>Entrá a <strong>Evaluaciones</strong> y tocá el nombre del deportista.</li>
+   <li>Puntuá con <code>-</code> / <code>+</code> o escribiendo directo el número (de <code>1</code> a <code>10</code>, con decimales).</li>
+   <li>Tocá <strong>Guardar y pasar al siguiente</strong> para confirmar y avanzar al próximo deportista pendiente de ese día.</li>
+   <li>Si querés destacar una conducta positiva, dentro de la ficha tocá 🟢 <strong>Tarjeta Verde Digital</strong>, elegí el motivo y confirmá.</li>
+  </ol>
+ </div>
+
+ <div class="section-block">
+  <h3>Cargar padrón desde Excel</h3>
+  <ol>
+   <li>Entrá a <strong>Padrón</strong>.</li>
+   <li>Tocá <strong>Descargar plantilla</strong> si querés el formato exacto (<code>Apellido, Nombre, DNI, Categoría, Tira</code>).</li>
+   <li>Seleccioná el archivo con <strong>Importar Excel (.xlsx)</strong>, revisá la vista previa de deportistas y grupos que leyó el sistema y tocá <strong>Cargar listado al grupo</strong> para confirmar.</li>
+   <li>No te preocupes por duplicados al reimportar: el sistema valida nombres y DNI antes de guardar.</li>
+  </ol>
+ </div>
+
+ <hr>
+
+ <div class="section-block">
+  <h2>5. Qué significan los carteles de estado (barra superior)</h2>
+  <ul>
+   <li><span class="green-txt">✓ Guardado · Vistas de Sheets actualizadas:</span> todo confirmado en la base de datos y reflejado en Google Sheets.</li>
+   <li><span class="green-txt">✓ Guardado en la base · Copia a Sheets pendiente:</span> tus datos ya están <strong>100% seguros en la base</strong>. La copia visual a Google Sheets se actualiza sola cada ~5 minutos.</li>
+   <li><strong>Carga pendiente / sin confirmar:</strong> se cortó internet o hubo una demora de red. <strong>No borres los datos del navegador ni cambies de cuenta:</strong> al volver la conexión se reintenta solo.</li>
+   <li><strong>Otra persona modificó el registro / cambió el padrón:</strong> alguien guardó cambios sobre ese mismo grupo mientras estabas editando. Revisá el aviso para actualizar antes de volver a enviar.</li>
+  </ul>
+ </div>
+
+ <hr>
+
+ <div class="section-block">
+  <h2>6. Checklist rápido para el primer día</h2>
+  <ul class="checklist">
+   <li><span class="box"></span>Ingresé con Google en <code>ugiccba.com.ar/muni360/</code> y veo mis actividades habilitadas.</li>
+   <li><span class="box"></span>Probé cambiar entre <strong>Inicio</strong>, <strong>Mis equipos/grupos</strong>, <strong>Comparar jugadores</strong> y <strong>Análisis</strong>.</li>
+   <li><span class="box"></span>Verifiqué en <strong>Padrón</strong> que las categorías, tiras y deportistas cargados sean correctos (y con sus DUA al día si corresponde).</li>
+   <li><span class="box"></span>Confirmé con Dirección UGI si necesito permiso extra (por ejemplo: publicar en <strong>Comunidad</strong>, exportar Excel, o editar Legajo/DNI).</li>
+   <li><span class="box"></span>Exploré <strong>Inteligencia</strong> y <strong>Encuestas</strong> desde <strong>☰ Menú</strong> y anoté sugerencias o ajustes para compartir con Dirección UGI.</li>
+   <li><span class="box"></span>Al terminar en una computadora compartida, toqué <strong>Cambiar / Salir</strong> para cerrar sesión.</li>
+  </ul>
+ </div>
+
+ <hr>
+
+ <h2>7. Funciones recién agregadas: Inteligencia y Encuestas (en desarrollo)</h2>
+
+ <div class="callout">
+  <strong>Aclaración importante:</strong> <strong>Inteligencia</strong> y <strong>Encuestas</strong> son <strong>funciones recién agregadas</strong> a Muni360 y, <strong>al igual que todas las herramientas de la plataforma, se encuentran en desarrollo</strong>. Algunas opciones, reglas o vistas pueden ajustarse o ampliarse según lo que vayamos probando juntos; la disponibilidad depende de la etapa de implementación y de los permisos de Coordinación o Dirección UGI.
+ </div>
+
+ <h3>Módulo de Inteligencia (<code>☰ Menú → Inteligencia</code>)</h3>
+ <ol>
+  <li>Abrí <strong>☰ Menú</strong> y tocá <strong>Inteligencia</strong> para ver los contadores de casos (<em>Abiertas</em>, <em>Escaladas +48 h</em>, <em>En revisión</em>, <em>Intervenidas</em>, <em>Resueltas</em>) y filtrar por estado o actividad.</li>
+  <li>Tocá <strong>Analizar actividades</strong> para que el sistema evalúe actividad por actividad con tres reglas automáticas:
+   <ul>
+    <li><strong>Caída de asistencia:</strong> compara las últimas 2 semanas contra las 4 semanas previas de cada grupo/tira.</li>
+    <li><strong>Ausencias consecutivas:</strong> detecta integrantes con 3 o más ausencias seguidas en los últimos 45 días.</li>
+    <li><strong>Semáforo en alerta:</strong> advierte acumulación de observaciones amarillas o rojas recientes.</li>
+   </ul>
+  </li>
+  <li>En cada tarjeta podés escribir una nota breve y registrar el estado (<strong>En revisión</strong>, <strong>Intervenida</strong> o <strong>Resolver</strong>), dejando historial con autor, rol y hora argentina.</li>
+  <li><strong>Plazo de 48 horas:</strong> si una alerta abierta o en revisión supera las <strong>48 horas</strong> sin registrarse una intervención, escala automáticamente a <strong>Escalada +48 h</strong> para visibilidad prioritaria de Dirección UGI.</li>
+  <li><strong>Vínculo con encuestas:</strong> si ya existen encuestas anónimas para ese grupo, la alerta muestra la cantidad de respuestas y promedios; también podés tocar <strong>Crear encuesta para el grupo</strong> para abrir el constructor ya precargado.</li>
+ </ol>
+
+ <div class="section-block">
+  <h3>Encuestas anónimas a jugadores y jugadoras (<code>☰ Menú → Encuestas</code>)</h3>
+  <ol>
+   <li>Abrí <strong>☰ Menú</strong> y tocá <strong>Encuestas</strong>.</li>
+   <li>Elegí una de las <strong>3 plantillas rápidas</strong> (<em>Clima del grupo</em>, <em>Motivos de inasistencia</em>, <em>Balance de etapa</em>) o armá tus preguntas combinando <strong>Escala 1–5</strong>, <strong>Opción única</strong>, <strong>Opción múltiple</strong> y <strong>Texto breve</strong>.</li>
+   <li>Indicá la actividad (y opcionalmente categoría y equipo/tira) y tocá <strong>Crear y activar enlace</strong>.</li>
+   <li>Usá <strong>Copiar enlace</strong> (formato <code>/muni360/encuesta/?c=...</code>) para mandarlo por WhatsApp. Los jugadores y jugadoras responden desde el celular <strong>sin iniciar sesión, sin nombre y sin DNI</strong>.</li>
+   <li>Podés abrir <strong>Ver resultados</strong> dentro de cada encuesta para consultar promedios, conteos por opción y textos anónimos <strong>desde la primera respuesta</strong>, y cerrarla o reactivarla cuando quieras.</li>
+  </ol>
+ </div>
+
+ <hr>
+
+ <div class="section-block">
+  <h2>8. Una plataforma en desarrollo permanente · Tu feedback para llegar listos a febrero</h2>
+  <div class="callout-feb">
+   <p><strong>Todas las funciones de Muni360 están en desarrollo:</strong> Muni360 no es un producto cerrado, sino una herramienta viva de la UGI que seguimos construyendo, corrigiendo y mejorando sobre el uso real.</p>
+   <p><strong>Tu feedback es importantísimo para llegar a febrero listos:</strong> probá las pantallas, revisá cómo responde cada función en tu deporte o grupo y compartí con <strong>Dirección UGI</strong> todo lo que veas —errores, textos confusos, ideas, pasos que se puedan simplificar o datos que falten—. Cada devolución nos permite ajustar el sistema antes del arranque fuerte de febrero.</p>
+  </div>
+  <p>La participación de quienes lo usan todos los días es parte central de este proceso. <strong>Queremos construir Muni360 con ustedes, para llegar a febrero con una herramienta clara, confiable y práctica para todo el club.</strong></p>
+ </div>
+</body>
+</html>
