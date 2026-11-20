@@ -36,9 +36,9 @@
   }
  };
 
- function surveyUrl(code){
+ function surveyUrl(code,isDemo){
   const base=location.origin&&location.origin!=='null'?location.origin+'/muni360/encuesta/':'https://ugiccba.com.ar/muni360/encuesta/';
-  return base+'?c='+encodeURIComponent(code);
+  return base+'?c='+encodeURIComponent(code)+(isDemo||String(code||'').startsWith('demo_')?'&demo=1':'');
  }
 
  function normalizeGroups(rawGroups){
@@ -56,8 +56,9 @@
  const groupKey=g=>g.categoria+'\0'+g.equipo;
 
  window.MuniSurveys={mount(session){
-  const allowed=session&&session.modoDemo!==true&&(session.canManageUsers||['Coordinación','Dirección UGI'].includes(session.rol));
-  const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers]):'';
+  const isDemo=session?.modoDemo===true;
+  const allowed=session&&(session.canManageUsers||(isDemo&&session.esAdminTotal)||['Coordinación','Dirección UGI'].includes(session.rol));
+  const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers,isDemo]):'';
   if(identity===key)return;
   identity=key;
   generation++;
@@ -67,6 +68,14 @@
   activeRefreshGroups=null;
   if(!allowed)return;
 
+  const callApi=(path,body)=>{
+   if(isDemo){
+    if(!window.MuniDemoRuntime?.call)return Promise.reject(Error('Falta el módulo de demostración local.'));
+    return window.MuniDemoRuntime.call(path,body,session);
+   }
+   return MuniGoogle.call(path,body);
+  };
+
   const areas=Array.isArray(session.areas)?session.areas:[];
   const localSnap=typeof window.MuniPortalGroups==='function'?window.MuniPortalGroups():null;
   const initialActivity=(localSnap?.activity&&areas.includes(localSnap.activity))?localSnap.activity:(areas[0]||'');
@@ -75,7 +84,7 @@
   box.className='card muni-surveys';
   box.open=true;
   box.innerHTML=
-   '<summary><strong>Cuestionarios anónimos (Jugadores/as)</strong><span>Armá cuestionarios livianos por actividad o grupo y mirá respuestas desde la primera carga</span></summary>'+
+   '<summary><strong>Cuestionarios anónimos (Jugadores/as)</strong><span>Armá cuestionarios livianos por actividad o grupo y mirá respuestas desde la primera carga'+(isDemo?' (Demostración local)':'')+'</span></summary>'+
    '<div class="ms-content">'+
     '<div class="ms-builder">'+
      '<h4>Nuevo cuestionario anónimo</h4>'+
@@ -275,13 +284,14 @@
    }
    const hint=find('ms-groups-hint');
    if(hint)hint.textContent='Cargando equipos y tiras de '+activity+'…';
-   if(!window.MuniGoogle?.call){
+   const canRemote=isDemo?Boolean(window.MuniDemoRuntime?.call):Boolean(window.MuniGoogle?.call);
+   if(!canRemote){
     applyGroups([],activity,opts);
     return;
    }
    const reqId=++groupsReqId;
    try{
-    const r=await MuniGoogle.call('/api/dashboard',{days:0,activities:[activity]});
+    const r=await callApi('/api/dashboard',{days:0,activities:[activity]});
     if(local!==generation||!box.isConnected||reqId!==groupsReqId||find('ms-activity')?.value!==activity)return;
     const raw=r?.activities?.[0]?.gruposDetalle||[];
     const normalized=normalizeGroups(raw);
@@ -448,7 +458,7 @@
      for(let i=0;i<targets.length;i++){
       const g=targets[i];
       find('ms-status').textContent='Creando cuestionario ('+(i+1)+'/'+targets.length+'): '+g.categoria+' · '+g.equipo+'…';
-      await MuniGoogle.call('/api/surveys/create',{
+      await callApi('/api/surveys/create',{
        activity,
        categoria:g.categoria,
        equipo:g.equipo,
@@ -479,7 +489,7 @@
    btn.disabled=true;
    find('ms-status').textContent='Guardando cuestionario…';
    try{
-    await MuniGoogle.call('/api/surveys/create',{
+    await callApi('/api/surveys/create',{
      activity,
      categoria:find('ms-categoria').value,
      equipo:find('ms-equipo').value,
@@ -519,14 +529,14 @@
   async function loadList(bannerPrefix=''){
    if(!bannerPrefix)find('ms-status').textContent='Cargando cuestionarios…';
    try{
-    const r=await MuniGoogle.call('/api/surveys/list',{});
+    const r=await callApi('/api/surveys/list',{});
     if(local!==generation||!box.isConnected)return;
     const surveys=r.surveys||[];
     find('ms-status').textContent=(bannerPrefix?bannerPrefix+' · ':'')+'Total de cuestionarios: '+surveys.length;
     const list=find('ms-list');
     if(!surveys.length){list.innerHTML='<p class="ms-no-resp">Todavía no creaste cuestionarios.</p>';return;}
     list.innerHTML=surveys.map(s=>{
-     const url=surveyUrl(s.public_code);
+     const url=surveyUrl(s.public_code,isDemo);
      const nextStatus=s.status==='active'?'closed':'active';
      const nextLabel=s.status==='active'?'Cerrar':'Activar';
      return '<article class="ms-card" data-id="'+esc(s.id)+'">'+
@@ -550,7 +560,7 @@
     });
     list.querySelectorAll('.ms-toggle').forEach(btn=>btn.onclick=async()=>{
      btn.disabled=true;
-     try{await MuniGoogle.call('/api/surveys/status',{surveyId:btn.dataset.id,status:btn.dataset.next});await loadList();}
+     try{await callApi('/api/surveys/status',{surveyId:btn.dataset.id,status:btn.dataset.next});await loadList();}
      catch(e){find('ms-status').textContent=e.message||'No se pudo cambiar el estado.';btn.disabled=false;}
     });
    }catch(e){

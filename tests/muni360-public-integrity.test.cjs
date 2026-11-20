@@ -6,10 +6,10 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 const normalized=(file,bytes)=>file.endsWith('.png')?bytes:Buffer.from(bytes.toString('utf8').replace(/\r\n/g,'\n'));
-test('manifest del sitio publicado corresponde a los 29 archivos generados',()=>{
+test('manifest del sitio publicado corresponde a los 30 archivos generados',()=>{
  const manifest=JSON.parse(fs.readFileSync(path.join(root,'muni360/manifest.json'),'utf8'));
  assert.equal(manifest.format,'MUNI360_PUBLIC_BUNDLE_V1');
- assert.equal(Object.keys(manifest.files).length,28);
+ assert.equal(Object.keys(manifest.files).length,29);
  for(const [file,hash] of Object.entries(manifest.files)){
   const bytes=normalized(file,fs.readFileSync(path.join(root,'muni360',file)));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),hash,file);

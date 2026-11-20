@@ -42,19 +42,42 @@
   const root=document.getElementById('root');
   const params=new URLSearchParams(location.search);
   const code=(params.get('c')||location.hash.replace(/^#/,'')||'').trim();
+  const isDemo=params.get('demo')==='1'||code.startsWith('demo_');
   const base=(window.MUNI_CONFIG&&window.MUNI_CONFIG.apiBaseUrl)||'';
+  const DEMO_KEY='muni360_demo_surveys_v1';
 
   async function api(path,body){
+   if(isDemo){
+    let list=[];
+    try{const raw=localStorage.getItem(DEMO_KEY);if(raw)list=JSON.parse(raw)||[];}catch(_){}
+    const idx=list.findIndex(x=>x.public_code===body.code);
+    if(idx<0)throw new Error('Cuestionario de demostración no encontrado. Abrí primero el Modo Demo en Muni360.');
+    const s=list[idx];
+    if(path==='/api/surveys/public'){
+     if(s.status==='draft')throw new Error('Cuestionario no disponible.');
+     return {ok:true,closed:s.status==='closed',survey:s};
+    }
+    if(path==='/api/surveys/submit'){
+     if(s.status!=='active')throw new Error('Este cuestionario ya no recibe respuestas.');
+     s.responses=Array.isArray(s.responses)?s.responses:[];
+     s.responses.unshift(body.answers||{});
+     s.updated_at=new Date().toISOString();
+     try{localStorage.setItem(DEMO_KEY,JSON.stringify(list));}catch(_){}
+     return {ok:true};
+    }
+   }
    const res=await fetch(base,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...body,path})});
    const data=await res.json().catch(()=>({}));
    if(!res.ok||data.ok===false)throw new Error(data.error||data.message||'No se pudo completar la operación.');
    return data;
   }
 
-  if(!code||!base){
+  if(!code||(!isDemo&&!base)){
    root.innerHTML='<span class="anon-pill">Cuestionario anónimo</span><h1>Enlace incompleto</h1><p class="desc">Pedile a tu coordinador/a el enlace completo del cuestionario.</p>';
    return;
   }
+
+  const anonLabel=isDemo?'Modo Demo · 100% anónimo (respuesta local)':'100% anónimo · No pide nombre ni DNI';
 
   api('/api/surveys/public',{code}).then(data=>{
    const s=data.survey||{};
@@ -66,7 +89,7 @@
    const answers={};
    const questions=Array.isArray(s.questions)?s.questions:[];
    root.innerHTML=
-    '<span class="anon-pill">100% anónimo · No pide nombre ni DNI</span>'+
+    '<span class="anon-pill">'+esc(anonLabel)+'</span>'+
     '<p class="meta">'+esc(scope)+'</p>'+
     '<h1>'+esc(s.title)+'</h1>'+
     (s.description?'<p class="desc">'+esc(s.description)+'</p>':'')+

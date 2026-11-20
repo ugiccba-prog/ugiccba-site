@@ -1299,9 +1299,10 @@
   <script src="../assets/scripts/muni360-google.js?v=cd5843f54895"></script>
   <script src="../assets/scripts/muni360-sync.js?v=a90df13757d8"></script>
   <script src="../assets/scripts/muni360-import.js?v=9bbd003767df"></script>
-  <script src="../assets/scripts/muni360-dashboard.js?v=d072ab011e66"></script>
-  <script src="../assets/scripts/muni360-inteligencia.js?v=63ef82826832"></script>
-  <script src="../assets/scripts/muni360-surveys.js?v=2bdae3270e0e"></script>
+  <script src="../assets/scripts/muni360-demo-runtime.js?v=1f08a57984d4"></script>
+  <script src="../assets/scripts/muni360-dashboard.js?v=4d2332270223"></script>
+  <script src="../assets/scripts/muni360-inteligencia.js?v=7ff4a5d40513"></script>
+  <script src="../assets/scripts/muni360-surveys.js?v=78a6afd90ee8"></script>
   <script src="../assets/scripts/muni360-portal.js?v=bd4bc3d34029"></script>
   <script src="../assets/scripts/muni360-ui.js?v=8dd9457f65be"></script>
   <script src="../assets/scripts/muni360-catalogo.js?v=537aa0a91681"></script>
@@ -1750,13 +1751,11 @@
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
       $('nav-tabs').classList.toggle('cuatro', !puedePadron);
       const verCambios=puedeVerCambios();
-      const verModulosOnline=verCambios&&sesion?.modoDemo!==true;
       $('tab-btn-auditoria').classList.toggle('hidden',!verCambios);
-      $('tab-btn-inteligencia').classList.toggle('hidden',!verModulosOnline);
-      $('tab-btn-encuestas').classList.toggle('hidden',!verModulosOnline);
+      $('tab-btn-inteligencia').classList.toggle('hidden',!verCambios);
+      $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');}
-      else if(!verModulosOnline&&['inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
@@ -2451,6 +2450,8 @@
       if (almacen.getItem('muni360_modo_demo') === '1') {
         datosDeporte=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null') || {padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
         renderFiltrosDeporte(); renderVistaActiva();
+        cargarCuestionariosAnalisis(true);
+        window.MuniSurveys?.refreshGroups?.(d);
         $('estado-txt').textContent='🎬 DEMOSTRACIÓN · Datos ficticios · Sin envíos a Google'; return;
       }
       const client=syncClient,uid=sesion?.usuario;
@@ -3163,7 +3164,7 @@
 
     async function cargarCuestionariosAnalisis(forzar = false) {
       const esDemo = sesion?.modoDemo === true || almacen.getItem('muni360_modo_demo') === '1';
-      if (!puedeVerCambios() || esDemo || !window.MuniGoogle?.call) {
+      if (!puedeVerCambios() || (esDemo ? !window.MuniDemoRuntime?.call : !window.MuniGoogle?.call)) {
         cuestionariosActividad = [];
         cuestionariosAreaCargada = '';
         $('card-cuestionarios-analisis')?.classList.add('hidden');
@@ -3172,7 +3173,9 @@
       if (!forzar && cuestionariosAreaCargada === areaActiva) return;
       const targetAct = areaActiva;
       try {
-        const res = await MuniGoogle.call('/api/surveys/list', { activity: targetAct });
+        const res = esDemo
+          ? await window.MuniDemoRuntime.call('/api/surveys/list', { activity: targetAct }, sesion)
+          : await MuniGoogle.call('/api/surveys/list', { activity: targetAct });
         if (targetAct !== areaActiva || !puedeVerCambios()) return;
         cuestionariosActividad = Array.isArray(res?.surveys) ? res.surveys : [];
         cuestionariosAreaCargada = targetAct;
@@ -3184,8 +3187,7 @@
       const card = $('card-cuestionarios-analisis');
       const box = $('lista-cuestionarios-analisis');
       if (!card || !box) return;
-      const esDemo = sesion?.modoDemo === true || almacen.getItem('muni360_modo_demo') === '1';
-      if (!puedeVerCambios() || esDemo) {
+      if (!puedeVerCambios()) {
         card.classList.add('hidden');
         box.innerHTML = '';
         return;
@@ -3635,8 +3637,7 @@
     }
 
     function cambiarTab(id) {
-      if(id==='auditoria'&&!puedeVerCambios())return;
-      if(['inteligencia','encuestas'].includes(id)&&(!puedeVerCambios()||sesion?.modoDemo===true))return;
+      if(['auditoria','inteligencia','encuestas'].includes(id)&&!puedeVerCambios())return;
       if (id === 'padron' && !esCoordOAdmin()) return;
       if(!['inicio','equipos','comparar','seguimiento','agenda','avisos','asistencia','evaluacion','ugi','analisis','padron','auditoria','inteligencia','encuestas'].includes(id))return;
       if(['comparar','evaluacion','seguimiento','analisis'].includes(id)&&(esperaEquipo||!$('sel-categoria').value)){
@@ -3667,7 +3668,7 @@
       window.MuniPortal?.hydrate?.();
       document.getElementById('management-panel')?.classList.toggle('hidden',id!=='inicio');
       if(id==='auditoria')renderAuditoria();
-      if(id==='analisis'){cargarCuestionariosAnalisis();renderAnalisis();}
+      if(id==='analisis'){cargarCuestionariosAnalisis(sesion?.modoDemo===true);renderAnalisis();}
       if(id==='inteligencia')window.MuniInteligencia?.open?.();
       if(id==='encuestas')window.MuniSurveys?.open?.();
     }
@@ -4061,6 +4062,7 @@
         usuario: "demo", areas: [dep, "Hockey sobre Césped Damas"], area: dep, esAdminTotal: true, modoDemo: true, rol: "Dirección UGI", profeNombre: "Juan Machado"
       };
       almacen.setItem('muni360_sesion_activa', JSON.stringify(sesionDemo));
+      window.MuniDemoRuntime?.reset?.();
       iniciarSesion(sesionDemo);
       toast("🎭 Modo Demo activado con éxito");
     };
@@ -4072,6 +4074,7 @@
       almacen.removeItem('muni360_cache_COYFD');
       almacen.removeItem('muni360_cache_Hockey sobre Césped Damas');
       almacen.removeItem('muni360_sesion_activa');
+      window.MuniDemoRuntime?.clear?.();
       sesion = null;
 
       ['app-header', 'barra-estado', 'app-screen', 'portal-mobile-nav'].forEach(id => $(id).classList.add('hidden'));

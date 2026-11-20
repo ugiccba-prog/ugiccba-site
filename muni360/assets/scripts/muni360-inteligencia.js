@@ -20,8 +20,9 @@
  };
 
  window.MuniInteligencia={mount(session){
-  const allowed=session&&session.modoDemo!==true&&(session.canManageUsers||['Coordinación','Dirección UGI'].includes(session.rol));
-  const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers]):'';
+  const isDemo=session?.modoDemo===true;
+  const allowed=session&&(session.canManageUsers||(isDemo&&session.esAdminTotal)||['Coordinación','Dirección UGI'].includes(session.rol));
+  const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers,isDemo]):'';
   if(identity===key)return;
   identity=key;
   generation++;
@@ -29,13 +30,21 @@
   activeOpen=null;
   if(!allowed)return;
 
+  const callApi=(path,body)=>{
+   if(isDemo){
+    if(!window.MuniDemoRuntime?.call)return Promise.reject(Error('Falta el módulo de demostración local.'));
+    return window.MuniDemoRuntime.call(path,body,session);
+   }
+   return MuniGoogle.call(path,body);
+  };
+
   const box=document.createElement('details');
   box.id='inteligencia-panel';
   box.className='card muni-inteligencia';
   box.open=true;
   const areas=Array.isArray(session.areas)?session.areas:[];
   box.innerHTML=
-   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h</span><span id="mi-summary-pill" class="mi-summary-pill">4 reglas activas</span></summary>'+
+   '<summary><strong>Módulo de Inteligencia</strong><span>Alertas automáticas, intervenciones y escalamiento a 48 h'+(isDemo?' (Demostración local)':'')+'</span><span id="mi-summary-pill" class="mi-summary-pill">4 reglas activas</span></summary>'+
    '<div class="mi-content">'+
     '<div class="mi-controls">'+
      '<label>Estado<select id="mi-status">'+
@@ -77,7 +86,7 @@
   find('mi-scan').onclick=runScan;
   find('mi-ai-btn').onclick=runGlobalAi;
   renderActiveNow(null);
-  if(box.open&&!loaded&&window.MuniGoogle?.call){loaded=true;loadList();}
+  if(box.open&&!loaded&&(isDemo?window.MuniDemoRuntime?.call:window.MuniGoogle?.call)){loaded=true;loadList();}
 
   function formatAiHtml(text){
    const lines=String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
@@ -163,7 +172,7 @@
    aiBox.hidden=false;
    aiBox.innerHTML='<p class="mi-ai-loading">Analizando alertas activas con IA…</p>';
    try{
-    const res=await MuniGoogle.call('/api/inteligencia/ai',{activities});
+    const res=await callApi('/api/inteligencia/ai',{activities});
     if(local!==generation||!box.isConnected)return;
     renderAiResult(aiBox,res);
    }catch(e){
@@ -265,7 +274,7 @@
      boxEl.hidden=false;
      boxEl.innerHTML='<p class="mi-ai-loading">Generando sugerencia IA para esta alerta…</p>';
      try{
-      const res=await MuniGoogle.call('/api/inteligencia/ai',{caseId});
+      const res=await callApi('/api/inteligencia/ai',{caseId});
       if(local!==generation||!box.isConnected)return;
       renderAiResult(boxEl,res);
      }catch(e){
@@ -299,7 +308,7 @@
      const note=card.querySelector('.mi-note-input')?.value||'';
      card.querySelectorAll('button').forEach(b=>b.disabled=true);
      try{
-      await MuniGoogle.call('/api/inteligencia/update',{caseId,status,note});
+      await callApi('/api/inteligencia/update',{caseId,status,note});
       if(local!==generation||!box.isConnected)return;
       await loadList();
      }catch(e){
@@ -318,14 +327,14 @@
    find('mi-status-text').textContent='Consultando alertas e intervenciones…';
    try{
     const [r,surveysRes]=await Promise.all([
-     MuniGoogle.call('/api/inteligencia/list',{status,activities}),
-     MuniGoogle.call('/api/surveys/list',selectedAct?{activity:selectedAct}:{}).catch(()=>({surveys:[]}))
+     callApi('/api/inteligencia/list',{status,activities}),
+     callApi('/api/surveys/list',selectedAct?{activity:selectedAct}:{}).catch(()=>({surveys:[]}))
     ]);
     if(local!==generation||!box.isConnected)return;
     renderActiveNow(r);
     renderCounts(r.counts);
     renderCases(r.cases,surveysRes.surveys||[]);
-    find('mi-status-text').textContent='Actualizado '+fmtDate(r.generatedAt||new Date().toISOString())+' (Argentina).';
+    find('mi-status-text').textContent=(isDemo?'Demostración local · ':'')+'Actualizado '+fmtDate(r.generatedAt||new Date().toISOString())+' (Argentina).';
    }catch(e){
     if(local===generation){loaded=false;find('mi-status-text').textContent=e.message||'No se pudo consultar Inteligencia.';}
    }finally{
@@ -342,7 +351,7 @@
    try{
     for(let i=0;i<targets.length;i++){
      find('mi-status-text').textContent='Analizando ('+(i+1)+'/'+targets.length+'): '+targets[i]+'…';
-     await MuniGoogle.call('/api/inteligencia/scan',{activity:targets[i]});
+     await callApi('/api/inteligencia/scan',{activity:targets[i]});
      if(local!==generation||!box.isConnected)return;
     }
     await loadList();
