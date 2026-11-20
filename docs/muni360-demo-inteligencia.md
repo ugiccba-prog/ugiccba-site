@@ -41,9 +41,9 @@ Al consultar el panel con todas las actividades demo cargadas (22 actividades, 3
 
 ### Qué aplicar al actualizar en producción/ensayo
 
-1. Ejecutar `server/supabase/sql/013_fast_load_and_dashboard.sql` y `server/supabase/sql/014_inteligencia.sql` en el SQL Editor de Supabase.
+1. Ejecutar `server/supabase/sql/013_fast_load_and_dashboard.sql`, `server/supabase/sql/014_inteligencia.sql` y `server/supabase/sql/015_surveys.sql` en el SQL Editor de Supabase.
 2. Desplegar la Edge Function `muni360` actualizada (`server/supabase/functions/muni360/`).
-3. Publicar el sitio estático actualizado (`assets/scripts/muni360-dashboard.js`, `assets/scripts/muni360-inteligencia.js`, portales y `muni360/`).
+3. Publicar el sitio estático actualizado (`assets/scripts/muni360-dashboard.js`, `assets/scripts/muni360-inteligencia.js`, `assets/scripts/muni360-surveys.js`, `encuesta/`, portales y `muni360/`).
 
 ### Módulo de Inteligencia implementado (base determinística en SQL)
 
@@ -55,9 +55,11 @@ Al consultar el panel con todas las actividades demo cargadas (22 actividades, 3
 - Escalamiento automático a **48 h** (`escalada`) para casos `abierta` o `en_revision` sin intervención.
 - `server/supabase/functions/muni360/inteligencia.mjs` + `assets/scripts/muni360-inteligencia.js`: rutas `/api/inteligencia/list`, `/api/inteligencia/scan` (una actividad por vez) y `/api/inteligencia/update`, y panel en Deportes y Colonia para Coordinación y Dirección UGI.
 
-### Próximo módulo
+### Cuestionarios anónimos implementados (Jugadores/as)
 
-- **Cuestionario liviano anónimo para jugadores y jugadoras:** constructor de cuestionarios en Coordinación (escala 1–5, opción única/múltiple, texto breve) y formulario público sin login guardado directo en Supabase, con visibilidad desde la primera respuesta y cruce con Inteligencia.
+- `server/supabase/sql/015_surveys.sql`: tablas privadas `mc_private.surveys` y `mc_private.survey_responses` (sin `uid`, DNI ni nombre) y RPC `public.mc_surveys`.
+- `server/supabase/functions/muni360/surveys.mjs`: rutas públicas sin login (`/api/surveys/public`, `/api/surveys/submit`) y rutas de Coordinación/Dirección (`/api/surveys/list`, `/api/surveys/create`, `/api/surveys/status`), con resultados visibles desde la primera respuesta.
+- `assets/scripts/muni360-surveys.js` + `apps/muni360/source/encuesta/index.html` (`/muni360/encuesta/?c=...`): constructor con 3 plantillas rápidas, preguntas tipadas (escala 1–5, opción única, múltiple, texto breve), enlace copiable para WhatsApp y vista móvil liviana.
 
 ## Resultado preparado
 

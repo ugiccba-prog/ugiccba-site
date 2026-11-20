@@ -5,10 +5,10 @@ const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
-test('manifest del sitio publicado corresponde a los 27 archivos generados',()=>{
+test('manifest del sitio publicado corresponde a los 29 archivos generados',()=>{
  const manifest=JSON.parse(fs.readFileSync(path.join(root,'muni360/manifest.json'),'utf8'));
  assert.equal(manifest.format,'MUNI360_PUBLIC_BUNDLE_V1');
- assert.equal(Object.keys(manifest.files).length,26);
+ assert.equal(Object.keys(manifest.files).length,28);
  for(const [file,hash] of Object.entries(manifest.files)){
   const bytes=fs.readFileSync(path.join(root,'muni360',file));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),hash,file);

@@ -10,7 +10,7 @@ for(const dir of ['assets/scripts','assets/styles','assets/vendor'])for(const na
 files.set('assets/scripts/muni360-catalogo.js',Buffer.from('(function(){\n'+read('comunidad/catalogo.js').toString().replace(/export const /g,'const ')+'\nwindow.MuniCommunityCatalog={horarios:HORARIOS_ENTRENAMIENTO};\n})();\n'));
 files.set('escudo-ccba.png',read('escudo-ccba.png'));
 function versionAssets(html){return html.replace(/((?:\.\.\/|\.\/)assets\/[^"'?]+\.(?:js|css))(?=["'])/g,(ref)=>{const b=files.get(ref.replace(/^\.\.?\//,''));if(!b)throw Error('Recurso no incluido: '+ref);return ref+'?v='+hash(b).slice(0,12);});}
-for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/admin/index.html','admin/index.html']]){let html=remap(read(src).toString());html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
+for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/admin/index.html','admin/index.html'],['apps/muni360/source/encuesta/index.html','encuesta/index.html']]){let html=remap(read(src).toString());html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
 files.set('index.html',read('apps/muni360/entrada.html'));
 for(const name of ['index.html','comunidad.js','catalogo.js','sw.js'])files.set('comunidad/'+name,read('comunidad/'+name));
 for(const name of ['favicon.png','logo-header.png'])files.set('assets/images/'+name,read('assets/images/'+name));

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Muni360 · Encuesta anónima</title>
+ <style>
+  :root{--navy:#0b2545;--teal:#0f766e;--bg:#f1f5f9;--card:#fff;--muted:#475569;--border:#dce5ee}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:#0f172a;padding:18px}
+  main{max-width:620px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-top:5px solid var(--teal);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+  h1{margin:0 0 6px;font-size:1.35rem;color:var(--navy)}
+  .meta{font-size:.85rem;color:var(--teal);font-weight:600;margin:0 0 8px}
+  .desc{font-size:.92rem;color:var(--muted);margin:0 0 18px}
+  .anon-pill{display:inline-block;background:#f0fdfa;color:var(--teal);border:1px solid #99f6e4;border-radius:999px;padding:4px 10px;font-size:.76rem;font-weight:700;margin-bottom:14px}
+  .q{border-top:1px solid var(--border);padding:14px 0}
+  .q legend,.q label.q-title{display:block;font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:10px}
+  .scale{display:flex;gap:8px;flex-wrap:wrap}
+  .scale button{flex:1 1 48px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;font-weight:700;cursor:pointer;font-size:1rem}
+  .scale button.selected{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .opts{display:grid;gap:8px}
+  .opts label{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:.92rem}
+  textarea{width:100%;min-height:84px;padding:10px;border:1px solid var(--border);border-radius:10px;font:inherit;resize:vertical}
+  .submit{width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;background:var(--navy);color:#fff;font:700 1rem inherit;cursor:pointer}
+  .submit:disabled{opacity:.6;cursor:wait}
+  .status{margin-top:12px;font-size:.9rem;color:#b42318}
+  .done{text-align:center;padding:24px 8px}
+  .done h2{color:var(--teal);margin:0 0 8px}
+ </style>
+</head>
+<body>
+ <main id="root">
+  <span class="anon-pill">100% anónima · No pide nombre ni DNI</span>
+  <p id="loading">Cargando encuesta…</p>
+ </main>
+ <script src="../assets/scripts/muni360-config.js"></script>
+ <script>
+ (function(){
+  'use strict';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const root=document.getElementById('root');
+  const params=new URLSearchParams(location.search);
+  const code=(params.get('c')||location.hash.replace(/^#/,'')||'').trim();
+  const base=(window.MUNI_CONFIG&&window.MUNI_CONFIG.apiBaseUrl)||'';
+
+  async function api(path,body){
+   const res=await fetch(base+path,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok||data.ok===false)throw new Error(data.error||data.message||'No se pudo completar la operación.');
+   return data;
+  }
+
+  if(!code||!base){
+   root.innerHTML='<span class="anon-pill">Encuesta anónima</span><h1>Enlace incompleto</h1><p class="desc">Pedile a tu coordinador/a el enlace completo de la encuesta.</p>';
+   return;
+  }
+
+  api('/api/surveys/public',{code}).then(data=>{
+   const s=data.survey||{};
+   const scope=[s.activity,s.categoria,s.equipo].filter(Boolean).join(' · ');
+   if(data.closed){
+    root.innerHTML='<span class="anon-pill">Encuesta cerrada</span><p class="meta">'+esc(scope)+'</p><h1>'+esc(s.title)+'</h1><p class="desc">Esta encuesta ya finalizó y no recibe más respuestas.</p>';
+    return;
+   }
+   const answers={};
+   const questions=Array.isArray(s.questions)?s.questions:[];
+   root.innerHTML=
+    '<span class="anon-pill">100% anónima · No pide nombre ni DNI</span>'+
+    '<p class="meta">'+esc(scope)+'</p>'+
+    '<h1>'+esc(s.title)+'</h1>'+
+    (s.description?'<p class="desc">'+esc(s.description)+'</p>':'')+
+    '<form id="survey-form">'+
+     questions.map(q=>{
+      const req=q.required?' *':'';
+      if(q.type==='scale'){
+       return '<fieldset class="q" data-qid="'+esc(q.id)+'"><legend>'+esc(q.label+req)+'</legend><div class="scale">'+[1,2,3,4,5].map(n=>'<button type="button" data-val="'+n+'">'+n+'</button>').join('')+'</div></fieldset>';
+      }
+      if(q.type==='single'||q.type==='multi'){
+       const inputType=q.type==='single'?'radio':'checkbox';
+       return '<fieldset class="q" data-qid="'+esc(q.id)+'"><legend>'+esc(q.label+req)+'</legend><div class="opts">'+(q.options||[]).map(o=>'<label><input type="'+inputType+'" name="'+esc(q.id)+'" value="'+esc(o)+'"><span>'+esc(o)+'</span></label>').join('')+'</div></fieldset>';
+      }
+      return '<div class="q" data-qid="'+esc(q.id)+'"><label class="q-title" for="t-'+esc(q.id)+'">'+esc(q.label+req)+'</label><textarea id="t-'+esc(q.id)+'" maxlength="500" placeholder="Escribí tu respuesta breve…"></textarea></div>';
+     }).join('')+
+     '<button class="submit" type="submit">Enviar respuesta anónima</button>'+
+     '<p class="status" id="err" role="status"></p>'+
+    '</form>';
+
+   root.querySelectorAll('.scale button').forEach(btn=>{
+    btn.onclick=()=>{
+     const fs=btn.closest('fieldset');
+     fs.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+     btn.classList.add('selected');
+     answers[fs.dataset.qid]=Number(btn.dataset.val);
+    };
+   });
+
+   const form=document.getElementById('survey-form');
+   form.onsubmit=async e=>{
+    e.preventDefault();
+    const err=document.getElementById('err');
+    err.textContent='';
+    for(const q of questions){
+     if(q.type==='single'){
+      const checked=form.querySelector('input[name="'+CSS.escape(q.id)+'"]:checked');
+      if(checked)answers[q.id]=checked.value;
+     }else if(q.type==='multi'){
+      answers[q.id]=[...form.querySelectorAll('input[name="'+CSS.escape(q.id)+'"]:checked')].map(x=>x.value);
+     }else if(q.type==='text'){
+      answers[q.id]=(document.getElementById('t-'+q.id)?.value||'').trim();
+     }
+     if(q.required){
+      const val=answers[q.id];
+      const empty=val==null||val===''||(Array.isArray(val)&&!val.length);
+      if(empty){err.textContent='Respondé las preguntas obligatorias (*).';return;}
+     }
+    }
+    const btn=form.querySelector('.submit');
+    btn.disabled=true;
+    try{
+     await api('/api/surveys/submit',{code,answers});
+     root.innerHTML='<div class="done"><h2>¡Gracias por responder!</h2><p class="desc">Tu respuesta anónima quedó registrada.</p></div>';
+    }catch(ex){
+     err.textContent=ex.message||'No se pudo enviar la respuesta.';
+     btn.disabled=false;
+    }
+   };
+  }).catch(ex=>{
+   root.innerHTML='<span class="anon-pill">Encuesta anónima</span><h1>Encuesta no disponible</h1><p class="desc">'+esc(ex.message||'Verificá el enlace con tu coordinador/a.')+'</p>';
+  });
+ })();
+ </script>
+</body>
+</html>
