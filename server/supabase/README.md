@@ -76,3 +76,12 @@ La migración `009_access_notifications.sql` agrega una cola privada para las pr
 El trabajador institucional ya autorizado procesa hasta diez avisos por ciclo y respeta la cuota diaria restante. Reserva los mensajes y solo envía las reservas que recibió esa ejecución; dos trabajadores no toman el mismo aviso. Revocar o vencer el permiso antes de reservar cancela el aviso. Un resultado de correo ambiguo queda en revisión y nunca se reenvía automáticamente; las reservas sin confirmación pasan a revisión después de quince minutos. Esto evita duplicaciones automáticas, sin prometer entrega al buzón o reintento sin revisión. Los avisos al propietario por solicitudes nuevas siguen funcionando.
 
 Se conservó una copia del proyecto Apps Script y la versión inmutable 9 antes de cambiar únicamente `MantenimientoOriginal.js`; el manifiesto y los permisos de Google no se modificaron. Las pruebas de notificaciones utilizan correos ficticios y MailApp simulado: no se envió un correo de prueba a personas reales. Pasaron 32 pruebas de Supabase, seis específicas de esta función, y el asesor de seguridad no informó hallazgos.
+
+## Telemetría en producción (`ugiccba.com.ar/muni360`) y simulación de tráfico — 20/11/2026
+
+El paquete público `/muni360/` publicado en `https://ugiccba.com.ar/muni360/` opera contra `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360` (30 archivos públicos verificados con `npm run check:muni360-public` y 172 pruebas aprobadas en `npm run test:muni360`).
+
+- **Disco actual en Supabase (`kaalffshnrkxviqaymhv`):** **85 MB** sobre 500 MB del plan Free (**17%**), repartidos en `~8 MB` del esquema productivo `mc_private` (25 actividades, 25 planillas en `sheet_targets`, 7 usuarios, 178 auditorías, 156 recibos, `outbox` en 0), `29 MB` de `mc_private.demo_run_records` (22.425 filas del Modo Demo), `36 MB` del histórico separado `mp_private` y `~12 MB` del motor base PostgreSQL.
+- **Simulación de tráfico semanal y de temporada completa (Semana 16, 23 actividades, 22.466 registros):**
+  - 1 grupo/actividad inicial consume **`~1,06 MB/semana`** en JSON crudo (**`~169 KB/semana`** con gzip), es decir **`~4,5 MB/mes`** (< 0,1% de los 5 GB de Egress de Supabase Free).
+  - Las 23 actividades completas en la Semana 16 proyectan **`~190 MB/mes`** comprimido con gzip (**3,8%** de 5 GB) o **`~1,63 GB/mes`** sin comprimir (**32%** de 5 GB), y **`~120 MB`** de almacenamiento en disco (**24%** de 500 MB). El detalle completo consta en `docs/muni360-pruebas-aceptacion.md`.

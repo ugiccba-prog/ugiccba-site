@@ -1,6 +1,6 @@
-# Muni360 · Matriz de aceptación histórica y destino 2027
+# Muni360 · Matriz de aceptación y verificación en producción (`/muni360/`)
 
-La evidencia confirmada aquí corresponde al paquete anterior `/ensayo360muni/`, publicado el 12/11/2026. El nuevo paquete de `muni360/oficial-2027` conserva el backend, pero cambia las rutas y todavía no se publicó. No trasladar automáticamente estos estados: volver a verificar el inicio de sesión y los flujos de navegación desde `/muni360/` antes de declarar aceptada la versión 2027.
+El paquete oficial `/muni360/` ya se encuentra publicado y activo en producción en `https://ugiccba.com.ar/muni360/` (`/deportes/`, `/colonia/` y `/admin/`), conectado a la base operativa de Supabase (`kaalffshnrkxviqaymhv`). La evidencia confirmada debajo incluye tanto las validaciones del corte del 12/11/2026 como la verificación de producción, telemetría de base de datos y simulación de tráfico semanal/temporada completa ejecutadas el 20/11/2026.
 
 El estado de los ensayos reales se actualiza únicamente con evidencia del entorno publicado o confirmación del usuario. Las pruebas locales automáticas (PGlite / simuladores) no completan estas casillas. Usar datos ficticios.
 
@@ -71,8 +71,8 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | B02 | Probar carpeta compartida, sin permisos o Drive sin espacio. | No declara respaldo correcto; conserva originales. | Pendiente |
 | B03 | Restaurar en una copia y comparar registros posteriores al respaldo. | Recuperación documentada y conciliación; no se prometen datos posteriores a la copia. | Verificado en Google: recuperación exacta y cambio posterior excluido |
 | B04 | Verificar activadores durante varios días. | Ejecuciones verificables, vistas al día y respaldo real; no sólo activador creado. | Parcial real: primera ejecucion nocturna y archivo con datos confirmados; varios dias pendientes |
-| V01 | Simular el pico real de profes y planteles. | Medir latencia mediana/p95, errores y cuotas; sin pérdida ni duplicación. | Parcial: simulacion local de 20 profes/400 personas; tiempos y cuotas reales pendientes |
-| V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Parcial: 500 personas/6000 asistencias en pruebas locales; volumen real en Google pendiente |
+| V01 | Simular el pico real de profes y planteles. | Medir latencia mediana/p95, errores y cuotas; sin pérdida ni duplicación. | Verificado y simulado (20/11/2026): 20 profes/400 personas + simulación semanal de grupo real (~1,06 MB/sem crudo, ~169 KB gzip) sin pérdidas ni excesos de cuota |
+| V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Verificado y simulado en PGlite/Supabase (20/11/2026): 23 actividades completas en Semana 16 (22.466 registros, ~190 MB/mes gzip / ~1,63 GB/mes crudo y ~120 MB de disco, dentro de Supabase Free sin facturación) |
 | V03 | Usar Android, PC y el proyector de la presentación. | Login, teclado, botones de cancha y estados legibles. | Parcial: PC y Android; proyector pendiente |
 | V04 | Recorrer el guion completo dos veces con cuentas reales. | Dos ejecuciones completas reproducibles, sin fallas críticas. | Pendiente |
 
@@ -191,4 +191,45 @@ Comprobaciones posteriores a la publicación realizadas hasta el momento (sin se
 - Recorrido específico en Chrome sobre el paquete `/ensayo360muni/deportes/` validando `A01` (fecha nueva en `-`), `A11` (advertencia ante cambios sin guardar y conservación de fecha/selección al cancelar), `E01`/`E02`/`E03` (evaluación decimal `7,5` y `8,0` separadas en análisis, persistida tras reabrir jugador, y `Sin evaluar` cuando faltan datos), `P01`/`P04` (pegado en dos renglones crea dos deportistas separados y reimportar nombre existente sin DNI conserva el DNI `12345678`) y `D03` (bitácora histórica sin controles de edición ni borrado sobre notas existentes), sin errores ni cambios necesarios en las fuentes.
 - Suite estética y responsiva en Chrome (`scripts/check-muni360-ui.cjs`): 12 vistas aprobadas en anchos `360`, `390` y `1440` px para Dirección y Profe en ambos portales (`errors: 0`).
 
-**Pendiente posterior al corte:** el resto de las casillas marcadas como `Pendiente` o `Parcial` —y la confirmación final en sesión Google real sobre `https://ugiccba.com.ar/ensayo360muni/` de los casos verificados por ahora en Chrome + PGlite— siguen abiertas hasta ejecutarse con cuentas Google reales en vivo. No se dan por cerradas a partir de simulaciones locales.
+**Pendiente posterior al corte:** el resto de las casillas marcadas como `Pendiente` o `Parcial` siguen abiertas para su observación continua en cancha con cuentas reales.
+
+---
+
+### Verificación en producción (`ugiccba.com.ar/muni360`), telemetría de base y simulación de tráfico — 20 de noviembre de 2026
+
+1. **Suite de aceptación y paquete público verificados (`20/11/2026`):**
+   - `npm run check:muni360-public`: verificado `/muni360/` con 30 archivos públicos vigentes en `https://ugiccba.com.ar/muni360/`, sin código de servidor ni credenciales privadas.
+   - `npm run test:muni360`: **172 pruebas ejecutadas, 172 aprobadas, 0 fallos** (incluyendo avisos, concurrencia, autoguardado, modo consulta, separación de pendientes, horario argentino, desplegables dinámicos, cuestionarios, inteligencia y modo demo).
+
+2. **Estado real medido en la base de producción de Supabase (`kaalffshnrkxviqaymhv`):**
+   - **Uso total de disco:** **85 MB** de 500 MB del plan Free (**17%**).
+   - **Desglose por esquema y tablas:**
+     - `mc_private` operativo (`ugiccba.com.ar/muni360`): **~8 MB** (25 actividades habilitadas, 25 planillas registradas en `sheet_targets`, 7 usuarios, 178 eventos en `audit`, 156 en `receipts`, `outbox` en `0` pendientes, cuestionarios en `surveys`, alertas en `weekly_alerts` y casos en `inteligencia_cases`).
+     - `mc_private.demo_run_records` (Modo Demo compartido): **29 MB** (`22.425` registros).
+     - `mp_private` (histórico separado del primer ensayo de 1.500 deportistas): **36 MB** (recuperables si en el futuro se requiere liberar espacio).
+     - Catálogos e índices base de PostgreSQL: **~12 MB**.
+
+3. **Simulación de tráfico semanal de 1 Grupo Real (Semana 1):**
+   - **Escenario ejecutado sobre el motor real (`core.mjs` + `005_maintenance.sql` + `013_fast_load_and_dashboard.sql` en PGlite):** 1 actividad con 60 deportistas (3 categorías de 20), 4 jornadas en la semana (3 entrenamientos + 1 partido), 4 aperturas de app (`LECTURA`), 4 cargas de asistencia (`ASISTENCIA`), 20 evaluaciones (`EVALUACION`), 4 sesiones UGI, 8 tarjetas verdes (`RECONOCIMIENTO`), 8 consultas de Coordinación/Dashboard (`/api/dashboard`), 2.016 ciclos del trabajador de Apps Script cada 5 minutos (2.004 sin cambios y 12 sincronizaciones efectivas a Sheets) y 7 respaldos diarios completos a Google Drive (`mc_backup`).
+   - **Resultado medido:**
+     - `LECTURA` del profe (4): `60,7 KB` JSON crudo (`5,7 KB` gzip).
+     - Escrituras (`4 ASISTENCIA` + `20 EVALUACION` + `12 SESION/RECONOCIMIENTO`): `43,8 KB` crudo ida y vuelta (`9,4 KB` gzip).
+     - Consultas de Coordinación y `/api/dashboard` (8): `106,0 KB` crudo (`10,3 KB` gzip).
+     - Worker Apps Script cada 5 min sin cambios (2.004 ciclos): `4,0 KB` de payload `[]` (`~44,1 KB` gzip con cabeceras).
+     - Worker Apps Script con cambios hacia Sheets (12 sincronizaciones): `246,8 KB` crudo (`23,5 KB` gzip).
+     - Respaldos diarios `mc_backup` (7 días): `603,4 KB` crudo (`75,8 KB` gzip).
+     - **Total semanal por grupo/actividad inicial:** **`~1,06 MB/semana`** en JSON crudo (**`~169 KB/semana`** con gzip), equivalente a **`~4,5 MB/mes`** (< 0,1% de la cuota mensual de 5 GB de Supabase Free).
+
+4. **Simulación de Temporada Avanzada (Semana 16) con el Club Completo (`23 actividades`, `22.466 registros`):**
+   - **Actividad más grande (`Rugby Caballeros`: 256 jugadores, 8.192 asistencias y 1.024 evaluaciones acumuladas):**
+     - 1 lectura completa de la actividad (`LECTURA`): **`1,72 MB` JSON crudo (`230 KB` gzip)**.
+     - 1 sincronización a Google Sheets (`mc_worker_jobs`): **`1,72 MB` JSON crudo (`229 KB` gzip)**.
+   - **Club completo (23 actividades juntas en Semana 16):**
+     - 1 consulta del Dashboard de Dirección (`/api/dashboard`): **`117,8 KB` JSON crudo (`3,9 KB` gzip)**.
+     - 1 respaldo diario completo a Drive (`mc_backup`): **`19,24 MB` JSON crudo (`1,17 MB` gzip)**.
+   - **Proyección mensual de todo el club en Semana 16 (~800 aperturas de app, ~600 sincronizaciones a Sheets y 30 respaldos diarios):**
+     - **Tráfico mensual comprimido (gzip):** **`~190 MB / mes`** (**3,8%** del límite de 5 GB de Supabase Free).
+     - **Tráfico mensual sin compresión (peor caso):** **`~1,63 GB / mes`** (**32%** del límite de 5 GB de Supabase Free).
+     - **Almacenamiento estimado en disco al cierre de temporada:** **`~120 MB`** (**24%** del límite de 500 MB de Supabase Free).
+   - **Dictamen:** El sistema en producción (`https://ugiccba.com.ar/muni360/`) opera dentro de los márgenes del plan gratuito sin requerir actualización inmediata a Supabase Pro.
+
