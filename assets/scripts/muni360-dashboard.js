@@ -8,6 +8,7 @@
  const semCell=s=>'<span class="mm-sem mm-'+semClass(s)+'">'+esc(semText(s))+'</span>';
  const metricRow=(label,x,extra)=>'<tr class="'+(extra||'')+'"><th>'+esc(label)+'</th><td>'+x.inscripciones+'</td><td>'+pct(x.asistencia)+'</td><td>'+semCell(x.semaforo)+'</td></tr>';
  window.MuniDashboard={mount(session){
+  window.MuniPresence?.mount(session);
   const isDemo=session?.modoDemo===true;
   const allowed=session&&(session.canManageUsers||(isDemo&&session.esAdminTotal)||['Coordinación','Dirección UGI'].includes(session.rol));
   const key=allowed?JSON.stringify([session.usuario,session.rol,session.areas,session.canManageUsers,isDemo]):'';

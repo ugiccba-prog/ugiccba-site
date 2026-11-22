@@ -1315,7 +1315,8 @@
   <script src="../assets/scripts/muni360-sync.js?v=a90df13757d8"></script>
   <script src="../assets/scripts/muni360-import.js?v=319abd041778"></script>
   <script src="../assets/scripts/muni360-demo-runtime.js?v=1f08a57984d4"></script>
-  <script src="../assets/scripts/muni360-dashboard.js?v=4d2332270223"></script>
+  <script src="../assets/scripts/muni360-presence.js?v=165efdd2d608"></script>
+  <script src="../assets/scripts/muni360-dashboard.js?v=9fb3d633fb95"></script>
   <script src="../assets/scripts/muni360-inteligencia.js?v=7ff4a5d40513"></script>
   <script src="../assets/scripts/muni360-surveys.js?v=78a6afd90ee8"></script>
   <script src="../assets/scripts/muni360-portal.js?v=bd4bc3d34029"></script>
@@ -1482,7 +1483,7 @@
 
     // Caché privada de esta pestaña; la cola durable se separa por cuenta autenticada.
     let syncClient = null;
-    let draftContext=null,autosaveTimer=null;
+    let draftContext=null,autosaveTimer=null,savedNoticeTimer=null;
     let storageScope = 'sin-sesion';
     const almacen = {
       getItem(k) { return sessionStorage.getItem('ugi-v2:' + storageScope + ':' + k); },
@@ -1738,6 +1739,7 @@
         window.history.replaceState({...window.history.state,muni360Nav:null},'');
       }
       syncClient=null; sesion=null; datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};
+      window.MuniDashboard?.mount(null);clearTimeout(savedNoticeTimer);
       avisosGeneration++;avisosPortal={items:[],loaded:false,loading:false,error:''};draftContext=null;clearTimeout(autosaveTimer);window._asistKeyActual=null;
       sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
       try{Object.keys(localStorage).filter(k=>k.startsWith('muni360_perfil_cache:')||k.startsWith('muni360cyc_perfil_cache:')).forEach(k=>localStorage.removeItem(k));}catch(_){}
@@ -2815,6 +2817,8 @@
       }
       if(ok || syncClient?.queue.some(entry=>JSON.stringify(entry.payload.datos)===JSON.stringify(registro)&&entry.payload.deporte===payload.deporte&&entry.payload.categoria===cat&&entry.payload.equipo===eq&&entry.payload.fecha===fecha)){
         draftContext=null;localStorage.removeItem(claveBorradorAsistencia());$('draft-status').textContent=ok?'Asistencia guardada.':'Asistencia pendiente de confirmación; se conserva en este dispositivo.';
+        clearTimeout(savedNoticeTimer);
+        if(ok){window.dispatchEvent(new Event('muni360-attendance-saved'));savedNoticeTimer=setTimeout(()=>{if(!draftContext&&$('draft-status').textContent==='Asistencia guardada.')$('draft-status').textContent='';},4000);}
       }
     }
     $('btn-guardar-asist').addEventListener('click',()=>guardarAsistenciaActual());

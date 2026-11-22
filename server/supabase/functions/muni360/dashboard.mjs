@@ -1,4 +1,5 @@
 import {AccessError} from './policy.mjs';
+import {dailyPresence,presenceDate} from './presence.mjs';
 const round1=n=>Math.round(n*10)/10;
 const round2=n=>Math.round(n*100)/100;
 const groupName=(value,fallback)=>String(value||fallback);
@@ -41,6 +42,7 @@ export function summarize(activity,state,days,now){
 }
 export async function dashboard(actor,owner,body,service,now){
  if(actor.id!==owner&&!['Coordinación','Dirección UGI'].includes(actor.rol))throw new AccessError('PERMISOS','Este panel requiere autorización de Coordinación.');
+ let date;if(body.daily===true){try{date=presenceDate(body.date,now);}catch{throw new AccessError('VALIDACION','Fecha inválida.',400);}}
  const days=body.days??30;if(![0,30,90,365].includes(days))throw new AccessError('VALIDACION','Período inválido.',400);
  const names=body.activities??actor.areas;
  if(!Array.isArray(names)||names.length>100||names.some(n=>typeof n!=='string'||!actor.areas.includes(n)))throw new AccessError('PERMISOS','El panel sólo permite actividades autorizadas.');
@@ -50,8 +52,8 @@ export async function dashboard(actor,owner,body,service,now){
   const batch=await Promise.all(selected.slice(i,i+3).map(async activity=>{
    const loaded=await service('load',{uid:actor.id,activity,scope:'dashboard'});
    if(loaded.actor.status!=='activo'||loaded.actor.expiresAt&&Date.parse(loaded.actor.expiresAt)<=now||actor.id!==owner&&(!['Coordinación','Dirección UGI'].includes(loaded.actor.rol)||!loaded.actor.areas.includes(activity)))throw new AccessError('PERMISOS','Cambió tu autorización. Actualizá el panel.');
-   return summarize(activity,loaded.state,days,now);
+   return date?dailyPresence(activity,loaded.state,date):summarize(activity,loaded.state,days,now);
   }));rows.push(...batch);
  }
- return {ok:true,scope:actor.id===owner?'club':'authorized',days,generatedAt:new Date(now).toISOString(),activities:rows};
+ return {ok:true,scope:actor.id===owner?'club':'authorized',days,...(date?{date}:{}),generatedAt:new Date(now).toISOString(),activities:rows};
 }

@@ -32,7 +32,7 @@ function form(){
  const html=fs.readFileSync('apps/muni360/source/deportes/index.html','utf8');
  const elements=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const values=new Map(),timers=[];const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
- const c={document:{getElementById:id=>elements.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},localStorage:storage,sessionStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(fn){timers.push(fn);},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};
+ const c={document:{getElementById:id=>elements.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},dispatchEvent(){}},Event:class Event{},localStorage:storage,sessionStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(fn){timers.push(fn);},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};
  vm.createContext(c);vm.runInContext(fs.readFileSync('assets/scripts/muni360-time.js','utf8'),c);vm.runInContext([...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).join('\n'),c);
  const run=s=>vm.runInContext(s,c);run("storageScope='teacher';areaActiva='Hockey';sesion={rol:'Profe'};syncClient={queue:[]};plantelActualNombres=()=>['Ana','Belén'];toast=()=>{};writes=[];enviarOperacion=async p=>{writes.push(p);return true;};");
  for(const[id,value]of Object.entries({'sel-categoria':'Sub 16','sel-equipo':'A','input-fecha':'2026-11-17'}))elements.get(id).value=value;
@@ -56,3 +56,10 @@ test('guardado conserva clima y puntos; un segundo envío idéntico no duplica l
  await f.run('guardarAsistenciaActual()');await f.run('guardarAsistenciaActual()');assert.equal(f.run('writes.length'),1);
  assert.equal(f.run('datosDeporte.asistencia[0].clima'),'Fuego');assert.equal(f.run('datosDeporte.asistencia[0].puntosCiudad'),'0');
 });
+
+ test('aviso de guardado desaparece sin ocultar pendientes ni nuevos cambios',async()=>{
+  const f=form();f.run("asistTempDep={Ana:'P',Belén:'T'};semTempDep={Ana:'V',Belén:'A'};renderVistaActiva=()=>{};cfgActual=()=>({});");
+  await f.run('guardarAsistenciaActual()');assert.equal(f.elements.get('draft-status').textContent,'Asistencia guardada.');
+  f.timers.at(-1)();assert.equal(f.elements.get('draft-status').textContent,'');
+  f.elements.get('draft-status').textContent='Asistencia pendiente de confirmación';f.timers.at(-1)();assert.equal(f.elements.get('draft-status').textContent,'Asistencia pendiente de confirmación');
+ });

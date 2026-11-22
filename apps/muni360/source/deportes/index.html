@@ -1303,6 +1303,7 @@
   <script src="../assets/scripts/muni360-sync.js"></script>
   <script src="../assets/scripts/muni360-import.js"></script>
   <script src="../assets/scripts/muni360-demo-runtime.js"></script>
+  <script src="../assets/scripts/muni360-presence.js"></script>
   <script src="../assets/scripts/muni360-dashboard.js"></script>
   <script src="../assets/scripts/muni360-inteligencia.js"></script>
   <script src="../assets/scripts/muni360-surveys.js"></script>
@@ -1470,7 +1471,7 @@
 
     // Caché privada de esta pestaña; la cola durable se separa por cuenta autenticada.
     let syncClient = null;
-    let draftContext=null,autosaveTimer=null,ultimaAsistenciaEnviada='';
+    let draftContext=null,autosaveTimer=null,savedNoticeTimer=null,ultimaAsistenciaEnviada='';
     let storageScope = 'sin-sesion';
     const almacen = {
       getItem(k) { return sessionStorage.getItem('ugi-v2:' + storageScope + ':' + k); },
@@ -1732,6 +1733,7 @@
         window.history.replaceState({...window.history.state,muni360Nav:null},'');
       }
       syncClient=null; sesion=null; datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};
+      window.MuniDashboard?.mount(null);clearTimeout(savedNoticeTimer);
       avisosGeneration++;avisosPortal={items:[],loaded:false,loading:false,error:''};draftContext=null;clearTimeout(autosaveTimer);ultimaAsistenciaEnviada='';window._asistKeyActual=null;
       sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
       try{Object.keys(localStorage).filter(k=>k.startsWith('muni360_perfil_cache:')||k.startsWith('muni360cyc_perfil_cache:')).forEach(k=>localStorage.removeItem(k));}catch(_){}
@@ -2866,6 +2868,8 @@
       }
       if(ok || syncClient?.queue.some(entry=>JSON.stringify(entry.payload.datos)===JSON.stringify(registro)&&entry.payload.deporte===payload.deporte&&entry.payload.categoria===cat&&entry.payload.equipo===eq&&entry.payload.fecha===fecha)){
         ultimaAsistenciaEnviada=fingerprint;draftContext=null;localStorage.removeItem(claveBorradorAsistencia());$('draft-status').textContent=ok?'Asistencia guardada.':'Asistencia pendiente de confirmación; se conserva en este dispositivo.';
+        clearTimeout(savedNoticeTimer);
+        if(ok){window.dispatchEvent(new Event('muni360-attendance-saved'));savedNoticeTimer=setTimeout(()=>{if(!draftContext&&$('draft-status').textContent==='Asistencia guardada.')$('draft-status').textContent='';},4000);}
       }
     }
     $('btn-guardar-asist').addEventListener('click',()=>guardarAsistenciaActual());
