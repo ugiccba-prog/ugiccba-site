@@ -123,11 +123,16 @@ function tablasSupabaseUGI(job){
  p.HistorialEvaluaciones=[['Temporada','Fecha','Categoría','Equipo','Jugador','Notas JSON']].concat(hs.flatMap(function(h){return h.state.evaluaciones.map(function(r){return [h.id,r.fecha,r.categoria,r.equipo,r.jugador,JSON.stringify(r.notas)];});}));
  p.HistorialPadron=[['Temporada','Categoría','Equipo','Jugador','ID']].concat(hs.flatMap(function(h){return h.state.padron.map(function(r){return [h.id,r.categoria,r.equipo,r.jugador,r.id];});}));
  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',job.version],['Cuestionarios activos',surveys.filter(function(sv){return sv.status==='active';}).length],['Respuestas anónimas',totalSurveyResp],['Actualizado (Argentina)',fechaHoraSupabaseUGI(new Date())],['Uso','Las primeras pestañas resumen el deporte y cuestionarios. Para cargar altas desde Sheets usá CargaPadron.']];
+ var matrices=tablasAsistenciaHorizontalUGI(s,name),grupos=Object.keys(matrices);
+ p.AsistenciaPorGrupo=[['Asistencia por grupo','Formato'],['Organización','Una pestaña por grupo y tira/subgrupo'],['Lectura','Nombres en filas; fechas en columnas'],['Marcas','P = Presente · T = Tarde · A = Ausente · vacío = Sin registrar'+(name==='Colonia'?' · 🍴 = Con comida':'')],['Grupos disponibles',grupos.length]].concat(grupos.length?grupos.map(function(t){return [t,'Asistencia día por día'];}):[['Sin grupos cargados','Al cargar el padrón en Muni360 se crean las pestañas de cada grupo.']]);
+ Object.assign(p,matrices);
  return p;
 }
 function estilosYOrdenSheetsUGI(sheet,meta,tables){
  var order=['Resumen','Cuestionarios','Padron','Asistencia','Evaluaciones','ApoyosDUA','CargaPadron','Gestos','Cambios','HistorialAsistencia','HistorialEvaluaciones','HistorialPadron','EstadoSync','ControlMuni360'];
- var widths={Resumen:[210,160,95,90,90,90,105,180,120,130],Cuestionarios:[210,85,120,100,90,260,115,240,300],Padron:[140,120,100,200,105,180,105,115,130,115,95],Asistencia:[100,140,115,100,190,170,85,105,130,125],Evaluaciones:[100,140,115,100,190,320,90],ApoyosDUA:[160,115,100,180,220,220,220],CargaPadron:[150,130,220],EstadoSync:[180,380]};
+ var widths={Resumen:[210,160,95,90,90,90,105,180,120,130],Cuestionarios:[210,85,120,100,90,260,115,240,300],Padron:[140,120,100,200,105,180,105,115,130,115,95],Asistencia:[100,140,115,100,190,170,85,105,130,125],Evaluaciones:[100,140,115,100,190,320,90],ApoyosDUA:[160,115,100,180,220,220,220],CargaPadron:[150,130,220],AsistenciaPorGrupo:[300,520],EstadoSync:[180,380]};
+ var horizontal=Object.keys(tables).filter(function(t){return t.indexOf('Asist · ')===0;});
+ order=['Resumen','AsistenciaPorGrupo'].concat(horizontal,order.filter(function(t){return t!=='Resumen';}));
  var reqs=[],pos=0;
  order.forEach(function(title){
   var tab=meta.find(function(t){return t.title===title;});if(!tab)return;
@@ -142,6 +147,12 @@ function estilosYOrdenSheetsUGI(sheet,meta,tables){
     reqs.push({repeatCell:{range:{sheetId:tab.sheetId,startRowIndex:6,endRowIndex:7,startColumnIndex:0,endColumnIndex:cols},cell:{userEnteredFormat:{backgroundColor:{red:0.878,green:0.949,blue:0.996},textFormat:{foregroundColor:{red:0.043,green:0.145,blue:0.271},bold:true}}},fields:'userEnteredFormat(backgroundColor,textFormat)'}});
    }
    var w=widths[title];
+   if(title.indexOf('Asist · ')===0){
+    reqs.push({updateSheetProperties:{properties:{sheetId:tab.sheetId,gridProperties:{frozenRowCount:1,frozenColumnCount:1}},fields:'gridProperties.frozenRowCount,gridProperties.frozenColumnCount'}});
+    reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:0,endIndex:1},properties:{pixelSize:240},fields:'pixelSize'}});
+    if(cols>1)reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:1,endIndex:cols},properties:{pixelSize:100},fields:'pixelSize'}});
+    reqs.push({repeatCell:{range:{sheetId:tab.sheetId,startRowIndex:tables[title].length-(tables[title].length>=3&&tables[title][tables[title].length-1][0]==='Total sin comida'&&tables[title][tables[title].length-2][0]==='Total con comida'?3:1),endRowIndex:tables[title].length,startColumnIndex:0,endColumnIndex:cols},cell:{userEnteredFormat:{backgroundColor:{red:0.878,green:0.949,blue:0.996},textFormat:{bold:true}}},fields:'userEnteredFormat(backgroundColor,textFormat)'}});
+   }
    if(w){w.slice(0,cols).forEach(function(px,idx){reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:idx,endIndex:idx+1},properties:{pixelSize:px},fields:'pixelSize'}});});}
   }
  });
@@ -164,6 +175,7 @@ function sincronizarMuni360SupabaseOriginalUGI(opciones){
    }
    var check=Sheets.Spreadsheets.Values.get(sheet,"'ControlMuni360'!A1:A2").values||[];if(check[0]?.[0]!==marker||check[1]?.[0]!==job.activity)throw Error('Destino rechazado: no es una vista nueva de la migración.');
    var meta=Sheets.Spreadsheets.get(sheet,{fields:'sheets.properties'}).sheets.map(function(x){return x.properties;});
+   meta.filter(function(t){return t.title.indexOf('Asist · ')===0&&!tables[t.title];}).forEach(function(t){tables[t.title]=[['Jugador'],['Sin registros de esta temporada']];});
    var missing=Object.keys(tables).filter(function(title){return !meta.some(function(t){return t.title===title;});});
    if(missing.length){
     Sheets.Spreadsheets.batchUpdate({requests:missing.map(function(title){
@@ -173,7 +185,7 @@ function sincronizarMuni360SupabaseOriginalUGI(opciones){
     meta=Sheets.Spreadsheets.get(sheet,{fields:'sheets.properties'}).sheets.map(function(x){return x.properties;});
    }
    var requests=[];
-   Object.keys(tables).forEach(function(title){var tab=meta.find(function(t){return t.title===title;}),rows=tables[title],cols=Math.max.apply(null,rows.map(function(r){return r.length;}));if(!tab)throw Error('Se modificó la estructura del destino.');
+   Object.keys(tables).forEach(function(title){var tab=meta.find(function(t){return t.title===title;}),rows=tables[title],cols=Math.max.apply(null,rows.map(function(r){return r.length;}));if(tab&&title.indexOf('Asist · ')===0)cols=Math.max(cols,tab.gridProperties.columnCount||0);if(!tab)throw Error('Se modificó la estructura del destino.');
     if(rows.length>tab.gridProperties.rowCount)requests.push({appendDimension:{sheetId:tab.sheetId,dimension:'ROWS',length:rows.length-tab.gridProperties.rowCount}});
     if(cols>(tab.gridProperties.columnCount||0))requests.push({appendDimension:{sheetId:tab.sheetId,dimension:'COLUMNS',length:cols-(tab.gridProperties.columnCount||0)}});
     requests.push({updateCells:{range:{sheetId:tab.sheetId,startRowIndex:0,endRowIndex:Math.max(rows.length,tab.gridProperties.rowCount),startColumnIndex:0,endColumnIndex:cols},rows:rows.map(function(row){return {values:Array.from({length:cols},function(_,j){var v=row[j];return {userEnteredValue:typeof v==='number'&&isFinite(v)?{numberValue:v}:{stringValue:String(v??'')}};})};}),fields:'userEnteredValue'}});
@@ -213,4 +225,49 @@ function sincronizarMuni360SupabaseOriginalUGI(opciones){
   });
   console.log('MUNI360_SUPABASE_SYNC '+JSON.stringify({verified:verified}));return {verified:verified};
  }finally{lock.releaseLock();}
+}
+// Read-only projection of the current season. Included in both bridge variants.
+function tablasAsistenciaHorizontalUGI(state,activity){
+ var groups=new Map(),out={},activityDates=new Set(),food=activity==='Colonia';
+ var norm=function(v){return String(v||'').trim().toLocaleLowerCase('es');};
+ function ensure(r){
+  var cat=String(r.categoria||'Sin categoría').trim(),eq=String(r.equipo||'General').trim()||'General',key=JSON.stringify([cat,eq]);
+  if(!groups.has(key))groups.set(key,{cat:cat,eq:eq,people:new Map(),aliases:new Map(),dates:new Set(),rows:[]});
+  return groups.get(key);
+ }
+ (state.padron||[]).forEach(function(p){
+  var g=ensure(p),name=String(p.jugador||'').trim();if(!name)return;
+  var id=p.id?'id:'+p.id:'nombre:'+norm(name);
+  if(!g.people.has(id))g.people.set(id,{name:name,marks:new Map()});
+  if(!g.aliases.has(norm(name)))g.aliases.set(norm(name),new Set());g.aliases.get(norm(name)).add(id);
+ });
+ (state.asistencia||[]).forEach(function(r){
+  var date=r.fecha;
+  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date)return;
+  var g=ensure(r),name=String(r.jugador||'').trim();if(!name)return;
+  var aliases=g.aliases.get(norm(name)),id=r.jugadorId?'id:'+r.jugadorId:aliases&&aliases.size===1?Array.from(aliases)[0]:'nombre:'+norm(name);
+  if(!g.people.has(id))g.people.set(id,{name:name,marks:new Map()});
+  g.dates.add(date);activityDates.add(date);
+  var match=String(r.estado||'').match(/^([PAT])(?:\s*\||\s*$)/);if(!match)return;
+  var marks=g.people.get(id).marks;if(!marks.has(date))marks.set(date,new Set());var withFood=food&&['P','T'].indexOf(match[1])>=0&&/(?:^|\|)\s*(?:🍴\s*)?Comida\s*(?:\||$)/i.test(String(r.estado||''));marks.get(date).add(match[1]+(withFood?' 🍴':''));
+ });
+ Array.from(groups.values()).sort(function(a,b){return a.cat.localeCompare(b.cat,'es',{numeric:true})||a.eq.localeCompare(b.eq,'es',{numeric:true});}).forEach(function(g){
+  var label='Asist · '+g.cat+(g.eq==='General'?'':' · '+g.eq),clean=label.replace(/[\[\]:*?\/\\]/g,'-');
+  // Append a stable suffix if sanitizing/truncating can otherwise merge tab names.
+  if(clean!==label||clean.length>95){var hash=2166136261;for(var i=0;i<label.length;i++)hash=Math.imul(hash^label.charCodeAt(i),16777619);clean=clean.slice(0,85)+' · '+(hash>>>0).toString(16);}
+  var title=clean,suffix=2;while(Object.prototype.hasOwnProperty.call(out,title))title=clean.slice(0,90)+' · '+suffix++;
+  var dates=Array.from(activityDates).sort(),people=Array.from(g.people.values()).sort(function(a,b){return a.name.localeCompare(b.name,'es',{numeric:true});});
+  var rows=[['Jugador'].concat(dates.map(function(d){return d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4);}))];
+  people.forEach(function(p){rows.push([p.name].concat(dates.map(function(d){var marks=p.marks.get(d);return !marks||!marks.size?'':marks.size>1?'Revisar':Array.from(marks)[0];})));});
+  var totals=dates.map(function(d){
+   var t={valid:0,present:0,meals:0,without:0,conflict:false};
+   people.forEach(function(p){var marks=p.marks.get(d);if(!marks||!marks.size)return;if(marks.size>1){t.conflict=true;return;}t.valid++;var mark=Array.from(marks)[0];if(mark.charAt(0)==='P'||mark.charAt(0)==='T'){t.present++;if(mark.indexOf('🍴')>=0)t.meals++;else t.without++;}});
+   return t;
+  });
+  function totalRow(label,key){return [label].concat(totals.map(function(t){return t.conflict?'Revisar':t.valid?t[key]:'Sin registros';}));}
+  rows.push(totalRow('Total presentes','present'));
+  if(food){rows.push(totalRow('Total con comida','meals'));rows.push(totalRow('Total sin comida','without'));}
+  out[title]=rows;
+ });
+ return out;
 }

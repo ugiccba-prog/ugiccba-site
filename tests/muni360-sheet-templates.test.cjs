@@ -39,3 +39,9 @@ test('restores trashed registered views once without changing their IDs',()=>{
   assert.equal(e.context.crearTodasLasPlantillasUGI().recuperadas,0);
   assert.equal(restored,1);assert.equal(e.targets[0].sheet_id,'EXISTING_SHEET_123456789');assert.equal(e.created,0);
 });
+
+ test('actualiza trabajos existentes en lotes sin crear activadores ni enviar mensajes',()=>{
+  const e=setup();e.context.Utilities.sleep=()=>{};e.context.SpreadsheetApp.openById=()=>e.context.SpreadsheetApp.getActiveSpreadsheet();let runs=0;e.context.sincronizarMuni360SupabaseOriginalUGI=options=>{assert.equal(options.soloPlantillas,true);runs++;return {verified:[3,2,0][runs-1]};};
+  const r=e.context.actualizarPlanillasUGI();assert.equal(r.verificadas,5);assert.equal(r.plantillas,1);assert.equal(runs,3);assert.equal(e.deleted.length,0);
+  assert.ok(e.writes.some(([range])=>range==='A6:C6'));
+ });

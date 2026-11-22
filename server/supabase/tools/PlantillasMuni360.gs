@@ -4,6 +4,7 @@ function onOpen(){
   SpreadsheetApp.getUi().createMenu('Muni360')
     .addItem('Crear todas las plantillas','crearTodasLasPlantillasUGI')
     .addItem('Abrir índice de planillas','abrirIndicePlanillasUGI')
+    .addItem('Actualizar planillas','actualizarPlanillasUGI')
     .addSeparator()
     .addItem('Limpiar activadores del ensayo anterior','limpiarActivadoresAnterioresUGI')
     .addToUi();
@@ -54,6 +55,25 @@ function abrirIndicePlanillasUGI(){
   return {ok:true,total:targets.length};
 }
 
+// Refresh queued views without sending mail, touching rosters or creating triggers.
+function actualizarPlanillasUGI(){
+ var context=contextoPlantillasUGI(true),lock=LockService.getUserLock();if(!lock.tryLock(1000))return {busy:true};
+ try{
+ var deadline=Date.now()+180000,verified=0;
+ for(var pass=0;pass<10&&Date.now()<deadline;pass++){
+  var result=sincronizarMuni360SupabaseOriginalUGI({soloPlantillas:true});
+  verified+=Number(result&&result.verified||0);
+  if(!result||result.busy||!result.verified)break;
+  // Keep the manual refresh below the shared Sheets read quota.
+  Utilities.sleep(20000);
+ }
+ var targets=rpcPlantillasUGI('mc_worker_targets',{},context);
+ escribirIndicePlanillasUGI(context,targets);
+ console.log('PLANILLAS_HORIZONTALES_UGI '+JSON.stringify({verificadas:verified,plantillas:targets.length}));
+ return {ok:true,verificadas:verified,plantillas:targets.length};
+ }finally{lock.releaseLock();}
+}
+
 function recuperarPlanillasVigentesUGI(targets){
   var owner=Session.getEffectiveUser().getEmail().toLowerCase(),recovered=0;
   targets.filter(function(t){return !!t.sheet_id;}).forEach(function(t){
@@ -77,8 +97,8 @@ function escribirIndicePlanillasUGI(context,targets){
   if(sheet.getMaxRows()<size)sheet.insertRowsAfter(sheet.getMaxRows(),size-sheet.getMaxRows());
   sheet.getRange('A1:C1').merge().setValue(marker).setFontSize(8).setFontColor('#64748b');
   sheet.getRange('A2:C2').merge().setValue('Muni360 · Planillas por actividad').setFontSize(20).setFontWeight('bold').setFontColor('#174d40');
-  sheet.getRange('A6:C6').merge().setValue('Se conservan las planillas actuales. El botón crea únicamente las que falten.').setWrap(true);
-  sheet.getRange('A7:C7').merge().setValue('Los datos se cargan en la web. En cada planilla podés preparar nombres en CargaPadron.').setWrap(true);
+  sheet.getRange('A6:C6').merge().setValue('Asistencia: una pestaña por grupo y tira/subgrupo, con las fechas en columnas.').setWrap(true);
+  sheet.getRange('A7:C7').merge().setValue('Cargá la asistencia en Muni360. Las planillas se actualizan automáticamente; CargaPadron permite preparar nombres.').setWrap(true);
   sheet.getRange('A9:C'+size).clearContent();
   sheet.getRange('A9:C9').setValues([['Actividad','Estado','Abrir planilla']]).setBackground('#176552').setFontColor('#ffffff').setFontWeight('bold');
   if(rows.length){

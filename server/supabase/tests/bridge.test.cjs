@@ -10,6 +10,18 @@ test('export is pinned, preserves Unicode across chunks and sends no credentials
 function institutional(){const e=setup(),props={UGI_SUPABASE_MAINTENANCE_KEY:'mci_fake'};e.c.PropertiesService.getScriptProperties=()=>({getProperty:k=>props[k],setProperty:(k,v)=>props[k]=v});e.c.sha=s=>crypto.createHash('sha256').update(s).digest('hex');const old=e.c.UrlFetchApp.fetch;e.c.UrlFetchApp.fetch=(url,opt)=>url.endsWith('mc_worker_targets')?{getResponseCode:()=>200,getContentText:()=>"[]"}:old(url,opt);vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../tools/SheetsInstitucional.gs'),'utf8'),e.c);return e;}
 test('institutional copy handles a large season in bounded batches without duplicating rows',()=>{const e=institutional();e.job.state.asistencia=Array.from({length:5000},(_,i)=>({fecha:'2026-11-01',categoria:'Mini',equipo:'A',jugador:'Ficticio '+i,estado:'P | Sem:N',clima:'N',puntosCiudad:0}));assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,1);assert.equal(e.saved.Asistencia.length,5001);assert.ok(e.writes>1);assert.equal(e.saved.Asistencia[1][7],0);assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,1);assert.equal(e.saved.Asistencia.length,5001);});
 test('CargaPadron refresh runs even when no attendance or evaluation changed',()=>{const e=institutional();let staging=0;e.c.UrlFetchApp.fetch=(url,opt)=>{const target=url.split('/').at(-1);if(target==='mc_worker_staging')staging++;return {getResponseCode:()=>200,getContentText:()=>JSON.stringify(target==='mc_worker_jobs'?[]:target==='mc_worker_targets'?[{activity:'Test',sheet_id:'TEST_NEW_SHEET_ID_123456789'}]:{ok:true})};};assert.equal(e.c.sincronizarMuni360SupabaseOriginalUGI().verified,0);assert.equal(staging,1);e.c.sincronizarMuni360SupabaseOriginalUGI();assert.equal(staging,1);});
+
+test('horizontal refresh clears removed dates and season reset retains an explicitly empty group tab',()=>{
+ const e=institutional(),title='Asist · Mini · A';
+ e.job.state.asistencia=['2026-11-22','2026-11-23','2026-11-24'].map(fecha=>({fecha,categoria:'Mini',equipo:'A',jugador:'=Ficticio',jugadorId:'p1',estado:'P'}));
+ const tabs=Object.keys(e.c.tablasSupabaseUGI(e.job)).map(title=>({properties:{title,sheetId:title,gridProperties:{rowCount:1000,columnCount:8}}}));
+ e.c.Sheets.Spreadsheets.get=()=>({sheets:tabs});
+ e.c.sincronizarMuni360SupabaseOriginalUGI();assert.equal(e.saved[title][0][3],'24/11/2026');
+ e.job.state.asistencia=e.job.state.asistencia.slice(-1);e.c.sincronizarMuni360SupabaseOriginalUGI();
+ assert.equal(e.saved[title][0][1],'24/11/2026');assert.ok(e.saved[title][0].slice(2).every(x=>x===''));
+ e.job.state.asistencia=[];e.job.state.padron=[];e.c.sincronizarMuni360SupabaseOriginalUGI();
+ assert.equal(e.saved[title][1][0],'Sin registros de esta temporada');assert.equal(e.saved[title].length,2);assert.ok(e.saved[title][0].slice(1).every(x=>x===''));
+});
 test('reorganized Sheets put Resumen and Cuestionarios first, summarize surveys and add missing tabs on existing books',()=>{
  const e=institutional();
  e.job.state.padron=[{id:'p1',categoria:'U13',equipo:'A',jugador:'Ana Prueba'}];
