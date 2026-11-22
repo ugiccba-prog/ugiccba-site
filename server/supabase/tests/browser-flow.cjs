@@ -99,13 +99,17 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await elegirGrupoDeportes(page,'muni360/deportes');
   assert.equal(await page.locator('#link-admin-ugi').isVisible(),true);
   await page.locator('#daily-presence-panel').waitFor({state:'visible'});
+  assert.equal(await page.locator('#daily-presence-panel').getAttribute('open'),null);
+  await page.locator('#daily-presence-panel summary').click();
   await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('Colonia')));
-  assert.ok((await page.locator('#mp-results').textContent()).includes('presentes'));
+  assert.ok((await page.locator('#mp-results').textContent()).includes('Presentes'));
   await page.locator('#mp-date').fill('2000-01-01');await page.locator('#mp-date').dispatchEvent('change');
   await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('Sin registros')));
-  assert.ok((await page.locator('#mp-results').textContent()).includes('No equivale a cero presentes'));
+  assert.ok((await page.locator('#mp-results').textContent()).includes('Sin registros para esta fecha.'));
   await page.locator('#mp-today').click();
-  await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('presentes')));
+  await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('Presentes')));
+  await page.locator('#daily-presence-panel summary').click();
+  assert.equal(await page.locator('#mp-date').isVisible(),false);
 
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);

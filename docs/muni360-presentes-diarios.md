@@ -1,6 +1,6 @@
 # Presentes diarios de Colonia y COYFD
 
-Dirección UGI y Coordinación ven un indicador abierto al ingresar, si tienen Colonia o COYFD entre sus actividades autorizadas. La fecha inicial es hoy en Buenos Aires. Se puede elegir otra fecha, volver a Hoy o actualizar. El panel histórico existente conserva sus porcentajes y períodos.
+Dirección UGI y Coordinación ven un indicador plegado al ingresar, si tienen Colonia o COYFD entre sus actividades autorizadas. La fecha inicial es hoy en Buenos Aires. Se puede elegir otra fecha, volver a Hoy o actualizar. El panel se abre y se cierra desde su título y muestra sólo el total por actividad y por grupo. El panel histórico existente conserva sus porcentajes y períodos.
 
 Los datos se consultan en el servidor mediante `/api/dashboard` con `daily: true` y una fecha ISO válida. Se conservan los controles de rol, actividades, estado y vencimiento de permisos. La respuesta sólo contiene agregados; no incluye nombres, DNI ni identificadores personales. No hay migraciones ni escrituras en padrones o asistencias.
 
