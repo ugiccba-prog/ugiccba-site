@@ -30,5 +30,18 @@ test('optimized worker keeps contract, redaction and credentials, without changi
  assert.ok(jobs[0].state.padron.every(p=>!Object.hasOwn(p,'dni')));
  assert.equal((await db.query('select count(*)::int as n from mc_private.records')).rows[0].n,before);
  assert.equal((await db.query('select count(*)::int as n from mc_private.outbox')).rows[0].n,23);
+ // Follow-up for the operational backlog: prioritize populated activities and
+ // allow a bounded three destinations per background cycle, without acknowledging
+ // any queued version or exposing sensitive private fields.
+ await db.exec(fs.readFileSync(new URL('../tools/worker-jobs-priority.sql',import.meta.url),'utf8'));
+ const prioritized=await rpc('mc_worker_jobs',{p_secret:secret,p_limit:5},'anon');
+ assert.equal(prioritized.length,3);
+ assert.equal(prioritized[0].activity,'Rugby Caballeros');
+ assert.equal(prioritized[0].state.padron.length,256);
+ assert.ok(prioritized.every(job=>job.state.padron.every(p=>!Object.hasOwn(p,'dni'))));
+ assert.deepEqual(await rpc('mc_worker_jobs',{p_secret:secret,p_limit:0},'anon'),[]);
+ await assert.rejects(()=>rpc('mc_worker_jobs',{p_secret:'wrong',p_limit:5},'anon'));
+ assert.equal((await db.query('select count(*)::int as n from mc_private.outbox')).rows[0].n,23);
+ assert.equal((await db.query('select count(*)::int as n from mc_private.records')).rows[0].n,before);
 });
 test.after(()=>db.close());
