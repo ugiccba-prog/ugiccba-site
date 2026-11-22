@@ -1686,6 +1686,10 @@
         ? datosSesion.area
         : "Básquet Caballeros";
 
+      const rutaGuardada=window.history?.state?.muni360Nav;
+      const rutaInicial=rutaAutorizadaMuni(rutaGuardada)?rutaGuardada:null;
+      if(rutaInicial)areaActiva=rutaInicial.area;
+
       almacen.setItem('muni360_area', datosSesion.esAdminTotal ? "TODOS" : areaActiva);
       try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360_ult_deporte', areaActiva); } catch(_) {}
       almacen.setItem('muni360_profe', datosSesion.profeNombre || "Juan Machado");
@@ -1698,12 +1702,22 @@
       const esAdmin = deportesSolo.filter(d=>sesion.areas.includes(d.nombre)).length>1;
       $('wrap-deporte-admin').classList.toggle('hidden', !esAdmin);
       $('sel-deporte').value = areaActiva;
-      $('input-fecha').value = fechaLocal(0);
+      $('input-fecha').value = rutaInicial?.fecha||fechaLocal(0);
 
       actualizarCabeceraYPestanas();
       iniciarEleccionGrupo();
-      cargarAreaActiva();
-      cambiarTab('inicio');
+      const cargaInicial=cargarAreaActiva();
+      cambiarTab(rutaInicial?.tab||'inicio','replace');
+      if(rutaInicial&&tabActual!==rutaInicial.tab)cambiarTab('inicio','replace');
+      if(rutaInicial?.categoria&&rutaInicial?.equipo){
+        Promise.resolve(cargaInicial).then(()=>{
+          if(sesion?.usuario!==rutaInicial.usuario||areaActiva!==rutaInicial.area)return;
+          if(categoriasDep().includes(rutaInicial.categoria)&&equiposDep(rutaInicial.categoria).includes(rutaInicial.equipo)){
+            abrirGrupoPortal(rutaInicial.categoria,rutaInicial.equipo);
+            registrarRutaMuni('replace');
+          }
+        }).catch(()=>{});
+      }
       renderGuiaUgi();
       renderPlanificadorDua();
       renderHistorialUgiLocal();
@@ -1714,6 +1728,9 @@
       if (syncClient?.queue.length && !confirm('Hay cargas pendientes. Quedarán en este dispositivo para tu próxima sesión con la misma cuenta. ¿Salir?')) return;
       if (syncClient) syncClient.stop();
       authLoad++;try{await MuniGoogle.logout();}catch(_){}
+      if(window.history?.replaceState){
+        window.history.replaceState({...window.history.state,muni360Nav:null},'');
+      }
       syncClient=null; sesion=null; datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};
       avisosGeneration++;avisosPortal={items:[],loaded:false,loading:false,error:''};draftContext=null;clearTimeout(autosaveTimer);ultimaAsistenciaEnviada='';window._asistKeyActual=null;
       sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
@@ -1758,7 +1775,7 @@
       $('tab-btn-inteligencia').classList.toggle('hidden',!verCambios);
       $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
-      if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia');}
+      if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia','replace');}
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
@@ -1769,7 +1786,7 @@
       $('card-variables-deporte').classList.remove('hidden');
 
       if (!puedePadron && tabActual === 'padron') {
-        cambiarTab('asistencia');
+        cambiarTab('asistencia','replace');
       }
     }
 
@@ -3702,7 +3719,66 @@
       renderPortal();
     }
 
-    function cambiarTab(id) {
+    // Historial de pantallas de Muni360: no cambia la URL ni la autenticación.
+    const HISTORIA_PORTAL_MUNI = 'deportes';
+    let restaurandoHistorialMuni = false;
+    function rutaHistorialMuni(){
+      return {version:1,portal:HISTORIA_PORTAL_MUNI,usuario:sesion?.usuario||'',
+        tab:tabActual,area:areaActiva,categoria:$('sel-categoria').value||'',
+        equipo:$('sel-equipo').value||'',fecha:$('input-fecha').value||''};
+    }
+    function rutaAutorizadaMuni(ruta){
+      return Boolean(sesion&&ruta?.version===1&&ruta.portal===HISTORIA_PORTAL_MUNI&&
+        ruta.usuario===sesion.usuario&&Array.isArray(sesion.areas)&&sesion.areas.includes(ruta.area));
+    }
+    function registrarRutaMuni(modo='push'){
+      if(!sesion||restaurandoHistorialMuni||!window.history?.replaceState)return;
+      const nueva=rutaHistorialMuni(),actual=window.history.state?.muni360Nav;
+      if(JSON.stringify(actual)===JSON.stringify(nueva))return;
+      const reemplazar=modo==='replace'||!rutaAutorizadaMuni(actual)||!window.history.pushState;
+      window.history[reemplazar?'replaceState':'pushState'](
+        {...(window.history.state||{}),muni360Nav:nueva},'');
+    }
+    async function recuperarRutaMuni(ruta){
+      if(!rutaAutorizadaMuni(ruta))return;
+      const actual=rutaHistorialMuni();
+      const otroGrupo=ruta.area!==areaActiva||
+        Boolean(draftContext&&(ruta.categoria!==actual.categoria||ruta.equipo!==actual.equipo||ruta.fecha!==actual.fecha));
+      if(draftContext&&otroGrupo){
+        if(!confirm('Hay una asistencia sin guardar. ¿Descartar ese borrador y volver a la pantalla anterior?')){
+          window.history?.pushState?.({...(window.history.state||{}),muni360Nav:actual},'');
+          return;
+        }
+        borrarBorradorAsistencia();
+      }
+      restaurandoHistorialMuni=true;
+      try{
+        if(ruta.area!==areaActiva){
+          areaActiva=ruta.area;$('sel-deporte').value=areaActiva;
+          await cargarAreaActiva();
+        }
+        if(ruta.fecha)$('input-fecha').value=ruta.fecha;
+        if(ruta.categoria&&ruta.equipo&&categoriasDep().includes(ruta.categoria)&&
+           equiposDep(ruta.categoria).includes(ruta.equipo)){
+          abrirGrupoPortal(ruta.categoria,ruta.equipo);
+        }
+        cambiarTab(ruta.tab,'none');
+        if(tabActual!==ruta.tab)cambiarTab('inicio','none');
+      }finally{
+        restaurandoHistorialMuni=false;
+      }
+      registrarRutaMuni('replace');
+    }
+    window.addEventListener('popstate',e=>{
+      if(rutaAutorizadaMuni(e.state?.muni360Nav)){
+        recuperarRutaMuni(e.state.muni360Nav).catch(()=>{});
+      }
+    });
+    ['sel-categoria','sel-equipo','input-fecha'].forEach(id=>
+      $(id).addEventListener('change',()=>registrarRutaMuni('replace')));
+    $('sel-deporte').addEventListener('change',()=>registrarRutaMuni('push'));
+
+    function cambiarTab(id, modoHistorial='push') {
       if(['auditoria','inteligencia','encuestas'].includes(id)&&!puedeVerCambios())return;
       if (id === 'padron' && !esCoordOAdmin()) return;
       if(!['inicio','equipos','comparar','seguimiento','agenda','avisos','asistencia','evaluacion','ugi','analisis','padron','auditoria','inteligencia','encuestas'].includes(id))return;
@@ -3737,6 +3813,7 @@
       if(id==='analisis'){cargarCuestionariosAnalisis(sesion?.modoDemo===true);renderAnalisis();}
       if(id==='inteligencia')window.MuniInteligencia?.open?.();
       if(id==='encuestas')window.MuniSurveys?.open?.();
+      if(modoHistorial!=='none')registrarRutaMuni(modoHistorial);
     }
 
     $('nav-tabs').addEventListener('click', e => {
