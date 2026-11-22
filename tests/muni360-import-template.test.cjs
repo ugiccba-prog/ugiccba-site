@@ -17,7 +17,7 @@ for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/sourc
   const buffer=XLSX.write(wb,{type:'array',bookType:'xlsx'}),target={files:[{size:buffer.byteLength,arrayBuffer:async()=>buffer}],value:'file'};
   p.els.get('padron-cat').value='Importación';p.els.get('padron-eq').value='Ensayo';
   await p.handlers.get('input-excel-file:change')({target});
-  assert.equal(p.els.get('padron-lista').value,'Ensayo, Lucía\nEnsayo, Tomás');assert.equal(p.run('datosDeporte.padron.length'),0);assert.equal(target.value,'');
+  assert.equal(p.els.get('padron-lista').value,'');assert.equal(p.run('pendingPadronGroups.length'),1);assert.equal(p.run('pendingPadronGroups[0].jugadores.length'),2);assert.match(p.els.get('padron-import-preview').innerHTML,/Vista previa/);assert.equal(p.run('datosDeporte.padron.length'),0);assert.equal(target.value,'');
  });
  test(file+': una cuenta sin permiso no descarga la plantilla y un archivo duplicado no carga datos',async()=>{
   const p=portal(file);p.run("sesion={rol:'Profe',capabilities:{}};");p.els.get('descargar-plantilla-padron').onclick();assert.equal(p.downloads.length,0);

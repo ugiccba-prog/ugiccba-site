@@ -1199,8 +1199,9 @@
 
       <!-- Pegar lista rápida -->
       <form class="card" id="form-padron">
-        <h3>2. Carga masiva rápida (pegar desde WhatsApp o Excel)</h3>
-        <p class="hint">Pegá un deportista por renglón. Si agregás el DNI al final (ej: Gómez, Juan - 48123456), se guarda oculto en su legajo y no se ve en cancha.</p>
+        <h3>2. Carga de padrón · Manual o archivo</h3>
+        <p class="hint">Para carga manual, pegá una persona por renglón. Para Excel, revisá y corregí los destinos de cada grupo en la vista previa antes de confirmar.</p>
+        <div id="padron-manual-fields">
         <div class="grid2" id="padron-campos-deporte" style="margin-bottom:10px;">
           <div class="field" style="margin:0;">
             <label for="padron-cat">Categoría / Grupo</label>
@@ -1215,7 +1216,9 @@
           <label for="padron-lista">Deportistas (Apellido, Nombre — opcional: agregar DNI al final)</label>
           <textarea id="padron-lista" required placeholder="Gómez, Juan - 48123456&#10;Pérez, Mateo - 49234567&#10;Rodríguez, Lucía"></textarea>
         </div>
-        <button type="submit" class="btn">Cargar listado al grupo</button>
+        </div>
+        <div id="padron-import-preview" class="hidden" role="region" aria-label="Vista previa del Excel"></div>
+        <button type="submit" class="btn" id="padron-submit">Cargar listado al grupo</button>
       </form>
 
       <div class="card">
@@ -1766,8 +1769,8 @@
       $('filtros-deporte').classList.remove('hidden');
       $('filtros-colonia').classList.add('hidden');
       $('btn-todos-comida').classList.toggle('hidden', !cfg.tieneComida);
-      $('wrap-sel-equipo').classList.toggle('hidden', Boolean(cfg.esBase));
-      $('wrap-padron-eq').classList.toggle('hidden', Boolean(cfg.esBase));
+      $('wrap-sel-equipo').classList.remove('hidden');
+      $('wrap-padron-eq').classList.remove('hidden');
       $('card-variables-deporte').classList.remove('hidden');
 
       if (!puedePadron && tabActual === 'padron') {
@@ -1777,6 +1780,7 @@
 
     $('sel-deporte').addEventListener('change', e => {
       areaActiva = e.target.value;
+      pendingPadronGroups=null;actualizarVistaPreviaPadron();
       try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360cyc_ult_area', areaActiva); } catch(_) {}
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
@@ -2101,7 +2105,7 @@
       if (!permiso('verLegajo')) return;
       const dniActual = obtenerDni(jugador);
       const cat = $('sel-categoria').value;
-      const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
+      const eq  = $('sel-equipo').value || 'General';
 
       const regsAsist = (datosDeporte.asistencia || []).filter(a => claveNombreDni(a.jugador) === claveNombreDni(jugador) && /^[PAT]/.test(a.estado));
       const pres = regsAsist.filter(a => String(a.estado).startsWith('P') || String(a.estado).startsWith('T')).length;
@@ -2528,7 +2532,7 @@
       const fecha = $('input-fecha').value || fechaLocal(0);
 
       let txtGrupo = cat ? `📍 ${cat}` : `📍 Seleccionar grupo`;
-      if (cat && !cfg.esBase && eq && eq !== 'General') {
+      if (cat && eq && eq !== 'General') {
         const prefijoEq = /^tira\b/i.test(eq) ? eq : `Tira ${eq}`;
         txtGrupo += ` · ${prefijoEq}`;
       }
@@ -2605,9 +2609,7 @@
       $('sel-equipo').innerHTML = eqs.length ? eqs.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('') : `<option value="General">General</option>`;
       if (ultEq && eqs.includes(ultEq)) $('sel-equipo').value = ultEq;
       guardarUltimaSeleccionGrupo();
-      if (cfgActual().esBase || eqs.length <= 1) {
-        filtrosDesplegados = false;
-      }
+      filtrosDesplegados = eqs.length > 1;
       actualizarBarraContexto();
       renderVistaActiva();
     });
@@ -3155,7 +3157,7 @@
       const lista = plantelActualNombres();
       const setClavesLista = new Set(lista.map(j => claveNombreDni(j)));
       const cat = $('sel-categoria').value;
-      const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
+      const eq  = $('sel-equipo').value || 'General';
       const diasFiltro = Number($('sel-periodo').value || 0);
       const fechaCorte = diasFiltro > 0 ? fechaLocal(diasFiltro) : '';
 
@@ -3406,7 +3408,7 @@
         : `<p class="hint">Grupo sin inscriptos.</p>`;
 
       $('padron-cat').value = $('sel-categoria').value || '';
-      $('padron-eq').value  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'A');
+      $('padron-eq').value  = $('sel-equipo').value || 'General';
       const gLista = gestosActuales();
       $('lista-gestos-config').innerHTML = gLista.map(g => {
         const esFijo = GESTOS_COMUNES_UGI.includes(g);
@@ -3422,14 +3424,63 @@
     }
 
     let pendingPadronGroups = null;
+    function actualizarVistaPreviaPadron() {
+      const preview=$('padron-import-preview'),manual=$('padron-manual-fields');
+      const importing=Boolean(pendingPadronGroups?.length);
+      preview.classList.toggle('hidden',!importing);
+      manual.classList.toggle('hidden',importing);
+      $('padron-cat').required=!importing;
+      $('padron-lista').required=!importing;
+      $('padron-submit').textContent=importing?'Confirmar importación de '+pendingPadronGroups.reduce((n,g)=>n+g.jugadores.length,0)+' personas':'Cargar listado al grupo';
+      if(!importing){preview.innerHTML='';return;}
+      const total=pendingPadronGroups.reduce((n,g)=>n+g.jugadores.length,0);
+      preview.innerHTML='<h4>Vista previa · '+total+' participantes en '+pendingPadronGroups.length+' grupos</h4>'+
+        '<p class="hint">Revisá categoría y equipo de destino. Podés editar cada campo antes de confirmar; todavía no se guardó nada.</p>'+
+        '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Origen</th><th>Categoría de destino</th><th>Equipo / Tira</th><th>Cantidad</th></tr></thead><tbody>'+
+        pendingPadronGroups.map((g,i)=>'<tr><td>'+esc(g.origen||g.categoria+' · '+g.equipo)+'</td>'+
+          '<td><input type="text" required maxlength="160" data-import-cat="'+i+'" aria-label="Categoría destino grupo '+(i+1)+'" value="'+esc(g.categoria)+'"></td>'+
+          '<td><input type="text" required maxlength="160" data-import-eq="'+i+'" aria-label="Equipo destino grupo '+(i+1)+'" value="'+esc(g.equipo)+'"></td>'+
+          '<td>'+g.jugadores.length+'</td></tr>').join('')+
+        '</tbody></table></div><p class="hint">El DNI no se muestra en la vista previa. Los equipos A y B son independientes; una tira vacía figura como General.</p>'+
+        '<button type="button" class="btn-sec" id="cancelar-excel-padron">Cancelar Excel y volver a carga manual</button>';
+    }
+    $('padron-import-preview').addEventListener('input',e=>{
+      if(!pendingPadronGroups)return;
+      const cat=e.target.getAttribute('data-import-cat'),eq=e.target.getAttribute('data-import-eq');
+      if(cat!==null)pendingPadronGroups[Number(cat)].categoria=e.target.value;
+      if(eq!==null)pendingPadronGroups[Number(eq)].equipo=e.target.value;
+    });
+    $('padron-import-preview').addEventListener('click',e=>{
+      if(!e.target.closest('#cancelar-excel-padron'))return;
+      pendingPadronGroups=null;actualizarVistaPreviaPadron();
+      toast('Importación de Excel cancelada. Podés cargar manualmente.');
+    });
     $('form-padron').addEventListener('submit', async e => {
       e.preventDefault();
-      const categoria=$('padron-cat').value.trim(),equipo=cfgActual().esBase?'General':($('padron-eq').value.trim()||'A');
+      if(!permiso('administrarPadron')||esSoloConsulta())return toast('Tu cuenta no puede administrar el padrón.');
+      if(pendingPadronGroups){
+        const groups=new Map(),seen=new Set();
+        for(const g of pendingPadronGroups){
+          const categoria=g.categoria.trim(),equipo=MuniImport.normalizeTeam(g.equipo)||'General';
+          if(!categoria||categoria.length>160||equipo.length>160)return toast('Completá categoría y equipo de todos los grupos.');
+          const key=JSON.stringify([categoria.toLocaleLowerCase('es'),equipo.toLocaleLowerCase('es')]);
+          if(!groups.has(key))groups.set(key,{categoria,equipo,jugadores:[]});
+          for(const j of g.jugadores){
+            const jk=key+'|'+j.jugador.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('es');
+            if(seen.has(jk))return toast('Un deportista aparece duplicado en el mismo equipo. Revisá el destino del Excel.');
+            seen.add(jk);groups.get(key).jugadores.push(j);
+          }
+        }
+        if(!confirm('¿Confirmar '+seen.size+' deportistas en '+groups.size+' grupos? Revisaste categorías y equipos.'))return;
+        const ok=await enviarOperacion({tipo:'ALTA_PADRON_LOTE',deporte:areaActiva,grupos:[...groups.values()]});
+        if(ok){pendingPadronGroups=null;actualizarVistaPreviaPadron();$('padron-lista').value='';await cargarAreaActiva();}
+        return;
+      }
+      const categoria=$('padron-cat').value.trim(),equipo=MuniImport.normalizeTeam($('padron-eq').value)||'General';
       const jugadores=$('padron-lista').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(extraerNombreYDni);
-      const grupos=pendingPadronGroups||(!categoria||!jugadores.length?null:[{categoria,equipo,jugadores}]);
-      if (!grupos?.length) return;
-      let ok=true;for(const grupo of grupos)if(!await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria:grupo.categoria,equipo:grupo.equipo,jugadores:grupo.jugadores})){ok=false;break;}
-      if (ok) {pendingPadronGroups=null;$('padron-lista').value='';await cargarAreaActiva();}
+      if(!categoria||!jugadores.length)return toast('Completá categoría y deportistas.');
+      const ok=await enviarOperacion({tipo:'ALTA_PADRON',deporte:areaActiva,categoria,equipo,jugadores});
+      if(ok){$('padron-lista').value='';await cargarAreaActiva();}
     });
 
     $('descargar-plantilla-padron').onclick=()=>{
@@ -3445,6 +3496,7 @@
     };
     $('input-excel-file').addEventListener('change', async e => {
       const file=e.target.files?.[0];if(!file)return;
+      pendingPadronGroups=null;actualizarVistaPreviaPadron();
       const context=[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|');
       try{
         if(!window.XLSX)throw Error('No se pudo cargar el lector de planillas. Actualizá la página.');
@@ -3455,8 +3507,20 @@
         const people=MuniImport.parse(rows);
         if(context!==[areaActiva,$('padron-cat').value,$('padron-eq').value].join('|'))throw Error('Cambió el grupo durante la lectura. Volvé a elegir el archivo.');
         if(!permiso('verDni')&&people.some(p=>p.dni))throw Error('Tu cuenta no tiene permiso para cargar DNI. Quitá esa columna.');
-        const hasRouting=people.some(p=>p.categoria||p.equipo),fallbackCat=$('padron-cat').value.trim();
-        if(hasRouting){const groups=new Map();for(const p of people){const categoria=p.categoria||fallbackCat,equipo=cfgActual().esBase?'General':(p.equipo||'General');if(!categoria)throw Error('Completá Categoría en el Excel o elegila en el formulario.');const key=JSON.stringify([categoria,equipo]);if(!groups.has(key))groups.set(key,{categoria,equipo,jugadores:[]});groups.get(key).jugadores.push({jugador:p.jugador,...(p.dni?{dni:p.dni}:{})});}pendingPadronGroups=[...groups.values()];$('padron-cat').value=pendingPadronGroups[0].categoria;$('padron-eq').value=pendingPadronGroups[0].equipo;$('padron-lista').value=pendingPadronGroups.length===1?pendingPadronGroups[0].jugadores.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n'):'';toast(`${people.length} deportistas leídos en ${pendingPadronGroups.length} grupos. Pulsá “Cargar listado al grupo” para confirmar.`);}else{pendingPadronGroups=null;$('padron-lista').value=people.map(p=>p.jugador+(p.dni?' - '+p.dni:'')).join('\n');toast(`${people.length} deportistas leídos de ${wb.SheetNames[0]}. Revisá nombres y grupo antes de cargar.`);}
+        const fallbackCat=$('padron-cat').value.trim(),fallbackEq=MuniImport.normalizeTeam($('padron-eq').value)||'General';
+        const groups=new Map();
+        for(const p of people){
+          const origenCategoria=p.categoria||fallbackCat;
+          const categoria=/^6\s*y\s*7$/i.test(origenCategoria)&&areaActiva.startsWith('Hockey sobre Patines')?'Mini':origenCategoria;
+          const equipo=Object.prototype.hasOwnProperty.call(p,'equipo')?(p.equipo||'General'):fallbackEq;
+          if(!categoria)throw Error('Completá Categoría en el Excel o elegila en el formulario.');
+          const key=JSON.stringify([categoria,equipo]);
+          if(!groups.has(key))groups.set(key,{origen:origenCategoria+' · '+equipo,categoria,equipo,jugadores:[]});
+          groups.get(key).jugadores.push({jugador:p.jugador,...(p.dni?{dni:p.dni}:{})});
+        }
+        pendingPadronGroups=[...groups.values()];
+        actualizarVistaPreviaPadron();
+        toast(`${people.length} deportistas en ${pendingPadronGroups.length} grupos preparados. Revisá los destinos y confirmá; todavía no se guardó nada.`);
       }catch(error){toast(error.message||'No se pudo leer el archivo.');}finally{e.target.value='';}
     });
 
@@ -3524,7 +3588,7 @@
       const jugador = lista[Number(b.dataset.i)];
       if (!jugador || !confirm(`¿Quitar a ${nombreBaseDua(jugador)} del grupo?`)) return;
       const cat = $('sel-categoria').value;
-      const eq  = cfgActual().esBase ? 'General' : ($('sel-equipo').value || 'General');
+      const eq  = $('sel-equipo').value || 'General';
 
       if (await enviarOperacion({tipo:'BAJA_PADRON',deporte:areaActiva,categoria:cat,equipo:eq,jugador})) await cargarAreaActiva();
     });
@@ -4098,12 +4162,19 @@
     function borrarBorradorAsistencia(){clearTimeout(autosaveTimer);localStorage.removeItem(claveBorradorAsistencia());draftContext=null;$('draft-status').textContent='';}
     function ofrecerBorradorAsistencia(){
       if(draftContext||!syncClient||!localStorage.getItem(claveBorradorAsistencia()))return;
-      $('draft-status').innerHTML='Hay una asistencia recuperable en este dispositivo. <button type="button" class="btn-sec" id="recuperar-asistencia">Revisar borrador</button>';
+      let saved;try{saved=JSON.parse(localStorage.getItem(claveBorradorAsistencia()));}catch(_){saved=null;}
+      const canRestore=Boolean(saved?.uid===storageScope&&saved?.deporte===areaActiva&&saved?.cat&&saved?.date&&categoriasDep().includes(saved.cat)&&equiposDep(saved.cat).includes(saved.eq));
+      $('draft-status').innerHTML=(canRestore?'Hay una asistencia pendiente guardada en este dispositivo.':'Hay un borrador anterior sin grupo vigente. No se envió a la base.')+
+        (canRestore?' <button type="button" class="btn-sec" id="recuperar-asistencia">Revisar borrador</button>':'')+
+        ' <button type="button" class="btn-sec" id="descartar-borrador-antiguo">Descartar borrador</button>';
+      $('descartar-borrador-antiguo').onclick=()=>{
+        if(!confirm('¿Descartar este borrador local? No afecta las asistencias guardadas en el servidor.'))return;
+        borrarBorradorAsistencia();toast('Borrador local descartado.');
+      };
+      if(!canRestore)return;
       $('recuperar-asistencia').onclick=()=>{
-        let saved;try{saved=JSON.parse(localStorage.getItem(claveBorradorAsistencia()));}catch(_){return toast('No se pudo leer el borrador.');}
-        if(!saved||saved.uid!==storageScope||saved.deporte!==areaActiva)return;
-        if(saved.cat!==$('sel-categoria').value||saved.eq!==$('sel-equipo').value||saved.date!==$('input-fecha').value)return toast('Para revisar el borrador, elegí '+saved.cat+' · '+saved.eq+' · '+saved.date+'.');
         if(!confirm('Se restaurará el borrador local en el formulario. Revisá los datos antes de pulsar Guardar asistencia.'))return;
+        $('sel-categoria').value=saved.cat;$('sel-equipo').value=saved.eq;$('input-fecha').value=saved.date;
         asistTempDep=saved.asistencia;semTempDep=saved.semaforo;comidaTempDep=saved.comida;
         $('sel-clima-clase').value=saved.clima;$('sel-puntos-ciudad').value=saved.puntos;
         draftContext={cat:saved.cat,eq:saved.eq,date:saved.date,deporte:saved.deporte};
@@ -4161,6 +4232,7 @@
     $('actualizar-auditoria').onclick=renderAuditoria;
     $('audit-list').addEventListener('click',async e=>{const b=e.target.closest('[data-audit-detail]');if(!b||!syncClient)return;try{const r=await syncClient.request({tipo:'AUDITORIA',deporte:areaActiva,auditId:b.dataset.auditDetail});$('dua-modal-body').innerHTML=`<h3>Antes y después</h3><p class="hint">El registro original se conserva; las correcciones se agregan como nuevos cambios.</p><h4>Antes</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.antes))}</pre><h4>Después</h4><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(Muni360Time.displayJson(r.despues))}</pre><button type="button" class="btn-sec" id="cerrar-audit">Cerrar</button>`;$('dua-modal').classList.remove('hidden');$('cerrar-audit').onclick=()=>$('dua-modal').classList.add('hidden');}catch(err){toast(err.message);}});
     $('importar-sheets').onclick=async()=>{
+      if(pendingPadronGroups)return toast('Terminá o cancelá la importación de Excel antes de traer nombres desde Sheets.');
       if(!syncClient)return toast('La importación real requiere configurar Google.');
       try{const result=await MuniGoogle.call('/api/sheets/staging',{deporte:areaActiva});const rows=result.rows.filter(r=>r.categoria===$('sel-categoria').value && r.equipo===($('sel-equipo').value||'General'));if(!rows.length)return toast(window.MUNI_CONFIG?.backend==='supabase'?'Todavía no hay filas recibidas de Sheets para este grupo. Se actualizan cada 5 minutos.':'No hay filas de CargaPadron para este grupo.');if(!confirm(`Se encontraron ${rows.length} nombres para el grupo seleccionado. ¿Pasarlos al formulario para revisar antes de cargar?`))return;$('padron-lista').value=rows.map(r=>r.jugador).join('\n');$('padron-lista').scrollIntoView({behavior:'smooth'});}catch(e){toast(e.message);}
     };

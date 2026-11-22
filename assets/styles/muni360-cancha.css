@@ -87,3 +87,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 #header-person{color:#fff;font-weight:600}
 #header-role{color:#d5e8f6}
 @media(max-width:640px){#header-activity{flex-basis:100%}}
+
+/* Padrón: validación visual y correcciones por grupo antes de confirmar. */
+#padron-import-preview{margin:12px 0 16px;padding:16px;background:#f3f8fd;border:1px solid #c6d8ec;border-radius:14px;}
+#padron-import-preview h4{margin:0 0 7px;color:#0b2545;}
+#padron-import-preview table{min-width:560px;text-align:left;}
+#padron-import-preview th,#padron-import-preview td{padding:9px 10px;vertical-align:middle;border-bottom:1px solid #dce7f0;font-size:.88rem;}
+#padron-import-preview th{font-size:.78rem;text-transform:uppercase;color:#31516c;}
+#padron-import-preview td input{min-width:120px;width:100%;box-sizing:border-box;}
+#padron-import-preview #cancelar-excel-padron{margin-top:13px;}

@@ -24,7 +24,7 @@ export function prepare(loaded,d,actor,now=()=>new Date().toISOString()){
   if(!equal(roster,d.roster))throw new AccessError('CONFLICTO','El plantel cambió. Actualizá antes de guardar.',409);
  }
  const after=applyOperation(before,d,actor,{idSecret:loaded.idSecret,now});
- if(['ALTA_PADRON','LEGAJO'].includes(d.tipo)){
+ if(['ALTA_PADRON','ALTA_PADRON_LOTE','LEGAJO'].includes(d.tipo)){
   for(const p of after.padron){if(!p.dni)continue;const known=(loaded.identities||[]).find(r=>r[0]===sha(loaded.idSecret+':'+p.dni));if(known){const previous=before.padron.find(x=>x.id===p.id&&norm(x.categoria)===norm(p.categoria)&&norm(x.equipo)===norm(p.equipo));if(known[2]==='reservado'&&previous?.dni!==p.dni||previous&&previous.id!==known[1])throw new AccessError('CONFLICTO','El DNI requiere revisión de Dirección.',409);p.id=known[1];}}
   const seen=new Map();for(const p of after.padron){const k=JSON.stringify([norm(p.categoria),norm(p.equipo),p.id]);if(seen.has(k)&&seen.get(k)!==p.jugador)throw new AccessError('CONFLICTO','Hay un DNI repetido con nombres diferentes en el grupo.',409);seen.set(k,p.jugador);}
  }
@@ -71,14 +71,14 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
    if(d.auditId){if(!r||!actor.capabilities.verLegajo&&r.uid!==actor.id||r.tipo==='LEGAJO'&&!actor.capabilities.verLegajo)throw new AccessError('PERMISOS','Detalle privado.');const out=copy(r);const redact=v=>{if(v&&typeof v==='object')for(const k of Object.keys(v)){if(k==='dni'&&!actor.capabilities.verDni)v[k]='';else redact(v[k]);}};redact(out);return {ok:true,...out};}
    return {ok:true,events:r.filter(e=>actor.capabilities.verLegajo||e.uid===actor.id).slice(0,50).map(({antes,despues,...e})=>e),nextCursor:r.length>50?String(offset+50):null};
   }
-  const scoped=!['LECTURA','RESET_DATOS'].includes(d.tipo),recordKey=d.tipo==='ASISTENCIA'?[d.fecha,d.categoria,d.equipo]:d.tipo==='EVALUACION'?[d.fecha,d.categoria,d.equipo,d.jugador]:d.tipo==='SESION_UGI'?[d.requestId]:null;
+  const scoped=!['LECTURA','RESET_DATOS','ALTA_PADRON_LOTE'].includes(d.tipo),recordKey=d.tipo==='ASISTENCIA'?[d.fecha,d.categoria,d.equipo]:d.tipo==='EVALUACION'?[d.fecha,d.categoria,d.equipo,d.jugador]:d.tipo==='SESION_UGI'?[d.requestId]:null;
   if(d.tipo!=='LECTURA'){
    const clean=copy(d);delete clean.accessVersion;
    const receipt=await service('receipt',{uid:actor.id,activity:d.deporte,request:d.requestId});
    if(receipt){if(receipt.actor!==actor.id||receipt.hash!==sha(clean))throw new AccessError('CONFLICTO','Ese identificador ya se usó para otra carga.',409);return receipt.result;}
   }
   for(let attempt=0;attempt<4;attempt++){
-   const loadArgs={uid:actor.id,activity:d.deporte,...(d.temporada&&d.tipo==='LECTURA'?{archive:d.temporada}:{}),...(scoped?{scope:'operation',category:d.categoria||'',team:d.equipo||'',recordKey}:{}),dnis:[...(d.jugadores||[]).map(j=>j.dni).filter(Boolean),...(d.ficha?.dni?[d.ficha.dni]:[])]};
+   const loadArgs={uid:actor.id,activity:d.deporte,...(d.temporada&&d.tipo==='LECTURA'?{archive:d.temporada}:{}),...(scoped?{scope:'operation',category:d.categoria||'',team:d.equipo||'',recordKey}:{}),dnis:[...(d.jugadores||[]).map(j=>j.dni).filter(Boolean),...(d.grupos||[]).flatMap(g=>(g.jugadores||[]).map(j=>j.dni).filter(Boolean)),...(d.ficha?.dni?[d.ficha.dni]:[])]};
    const loaded=await service('load',loadArgs),current=actorFrom(loaded.actor,areas,now(),owner);authorize(current,d);
    if(d.tipo==='LECTURA'){
     const out=visible(loaded.state,current);out.asistencia=out.asistencia.map(r=>({...r,estado:r.estado+(r.puntosCiudad?' | Pts:'+r.puntosCiudad:'')+(r.clima&&r.clima!=='N'?' | Clima:'+r.clima:'')}));

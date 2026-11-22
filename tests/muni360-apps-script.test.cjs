@@ -94,8 +94,8 @@ test('GAS: datos sin DNI en una alta no borran el DNI ya cargado; claves con esp
   const e=environment();e.seed();assert.equal(e.write(e.owner,{tipo:'ALTA_PADRON',categoria:'Sub 12',equipo:'A',jugadores:[{jugador:'Persona de prueba'}]}).ok,true);assert.equal(e.read().padron[0].dni,'12345678');
   assert.equal(e.ctx.resource({tipo:'ASISTENCIA',categoria:' Sub 12 ',equipo:'a',fecha:'2026-11-10'}),e.ctx.resource({...attendance}));
 });
-test('importación: encabezados explícitos, acentos, DNI y duplicados; no adivina columnas de categoría',()=>{
-  const {parse}=require('../assets/scripts/muni360-import.js');assert.deepEqual(parse([['Apellido','Nombre','DNI','Categoría'],['Pérez','Juan','12345678','Mini']]),[{jugador:'Pérez, Juan',dni:'12345678'}]);
+test('importación: encabezados explícitos, acentos, DNI y duplicados; conserva columnas parciales',()=>{
+  const {parse}=require('../assets/scripts/muni360-import.js');assert.deepEqual(parse([['Apellido','Nombre','DNI','Categoría'],['Pérez','Juan','12345678','Mini']]),[{jugador:'Pérez, Juan',dni:'12345678',categoria:'Mini'}]);
   assert.deepEqual(parse([['Jugador'],['Persona, Uno'],['Persona, Dos']]),[{jugador:'Persona, Uno'},{jugador:'Persona, Dos'}]);
   for(const rows of [[['Equipo'],['A']],[['Jugador'],['Pepe'],[' Pepe ']],[['Jugador','DNI'],['Pepe','invalido']],[['Jugador'],...Array.from({length:501},(_,i)=>['Persona '+i])]])assert.throws(()=>parse(rows));
 });

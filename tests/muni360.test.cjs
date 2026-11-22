@@ -188,9 +188,9 @@ test('la carga por texto conserva dos renglones como dos deportistas',async()=>{
     const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]),handlers=new Map(),values=new Map();
     const els=new Map(ids.map(id=>[id,{value:'',innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},addEventListener(type,fn){handlers.set(id+':'+type,fn);},setAttribute(){}}]));
     const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
-    const ctx={document:{getElementById:id=>els.get(id)||null,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,crypto,Muni360Sync:require('../assets/scripts/muni360-sync.js')};
+    const ctx={document:{getElementById:id=>els.get(id)||null,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,crypto,MuniImport:require('../assets/scripts/muni360-import.js'),Muni360Sync:require('../assets/scripts/muni360-sync.js')};
     vm.createContext(ctx);vm.runInContext(fs.readFileSync("assets/scripts/muni360-time.js","utf8"),ctx);vm.runInContext(script,ctx);
-    vm.runInContext("almacen.setItem('muni360_modo_demo','1');areaActiva='Tenis';datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};cfgActual=()=>({esBase:false});renderFiltrosDeporte=()=>{};renderVistaActiva=()=>{};cargarAreaActiva=async()=>{};",ctx);
+    vm.runInContext("sesion={rol:'Dirección UGI',capabilities:{administrarPadron:true,verDni:true}};almacen.setItem('muni360_modo_demo','1');areaActiva='Tenis';datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}};cfgActual=()=>({esBase:false});renderFiltrosDeporte=()=>{};renderVistaActiva=()=>{};cargarAreaActiva=async()=>{};",ctx);
     els.get('padron-cat').value='Sub 12';els.get('padron-eq').value='A';els.get('padron-lista').value='Persona, Uno\nPersona, Dos';
     await handlers.get('form-padron:submit')({preventDefault(){}});assert.equal(vm.runInContext('datosDeporte.padron.length',ctx),2);
     assert.ok(!html.includes(".join('\\\\n')"));

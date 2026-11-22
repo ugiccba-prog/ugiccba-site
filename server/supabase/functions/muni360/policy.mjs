@@ -19,7 +19,7 @@ function authorize(actor, d) {
   if (actor.rol==='Consulta') throw new AccessError('PERMISOS','Tu acceso es de consulta.');
   if (['ASISTENCIA','EVALUACION','SESION_UGI','RECONOCIMIENTO'].includes(d.tipo)) return;
   if (d.tipo==='GESTOS' && !['Coordinación','Dirección UGI'].includes(actor.rol)) throw new AccessError('PERMISOS','Solo coordinación o dirección puede administrar gestos.');
-  const needed={ALTA_PADRON:'administrarPadron',BAJA_PADRON:'administrarPadron',GESTOS:'administrarPadron',CONFIG:'administrarPadron',DUA:'editarDua',LEGAJO:'verLegajo',RESET_DATOS:'archivar',EXPORTAR:'exportar'}[d.tipo];
+  const needed={ALTA_PADRON:'administrarPadron',ALTA_PADRON_LOTE:'administrarPadron',BAJA_PADRON:'administrarPadron',GESTOS:'administrarPadron',CONFIG:'administrarPadron',DUA:'editarDua',LEGAJO:'verLegajo',RESET_DATOS:'archivar',EXPORTAR:'exportar'}[d.tipo];
   if (!needed || !actor.capabilities[needed]) throw new AccessError('PERMISOS','No tenés permiso para esa operación.');
   // No hay filtro por equipo: profes y reemplazantes cubren TODOS los equipos de cada actividad habilitada.
 }

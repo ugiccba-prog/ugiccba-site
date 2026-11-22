@@ -12,6 +12,25 @@ function text(v,max=160){if(typeof v!=='string'||!v.trim()||v.length>max||['__pr
 function member(state,d){const matches=state.padron.filter(p=>same(p.categoria,d.categoria)&&same(p.equipo,d.equipo)&&same(p.jugador,d.jugador));if(matches.length!==1)invalid('Deportista inexistente o duplicado en el grupo.');return matches[0];}
 function validateDate(date){if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)invalid('Fecha inválida.');}
 function applyOperation(before,d,actor,{idSecret,now=()=>new Date().toISOString()}={}){
+  // An entire Excel workbook is validated and applied to one immutable copy.
+  // If any group is invalid, no operation can be committed.
+  if(d.tipo==='ALTA_PADRON_LOTE'){
+    if(!Array.isArray(d.grupos)||!d.grupos.length||d.grupos.length>500)invalid('Grupos de importación inválidos.');
+    const total=d.grupos.reduce((n,g)=>n+(Array.isArray(g?.jugadores)?g.jugadores.length:501),0);
+    if(total<1||total>500)invalid('Cargá entre 1 y 500 deportistas por archivo.');
+    const groupKeys=new Set(),dniKeys=new Set();let state=copy(before);
+    for(const g of d.grupos){
+      text(g.categoria);text(g.equipo);
+      const key=JSON.stringify([g.categoria.trim().toLocaleLowerCase('es'),g.equipo.trim().toLocaleLowerCase('es')]);
+      if(groupKeys.has(key))invalid('Dos grupos tienen el mismo destino. Unificá el Excel antes de cargar.');
+      groupKeys.add(key);
+      for(const j of g.jugadores){
+        if(j.dni){if(dniKeys.has(j.dni))invalid('Un DNI figura en dos grupos del mismo archivo. Revisá la asignación.');dniKeys.add(j.dni);}
+      }
+      state=applyOperation(state,{tipo:'ALTA_PADRON',categoria:g.categoria,equipo:g.equipo,jugadores:g.jugadores},actor,{idSecret,now});
+    }
+    return state;
+  }
   const s=copy(before);d=copy(d);for(const k of ['categoria','equipo','jugador'])if(typeof d[k]==='string')d[k]=d[k].trim();
   if(['ASISTENCIA','EVALUACION','ALTA_PADRON','BAJA_PADRON','DUA','LEGAJO','RECONOCIMIENTO'].includes(d.tipo)){text(d.categoria);text(d.equipo);}
   if(['ASISTENCIA','EVALUACION','RECONOCIMIENTO'].includes(d.tipo))validateDate(d.fecha);
@@ -82,6 +101,7 @@ function auditSlice(state,d){
   if(d.tipo==='ASISTENCIA')return state.asistencia.filter(r=>group(r)&&r.fecha===d.fecha);
   if(d.tipo==='EVALUACION')return state.evaluaciones.filter(r=>group(r)&&r.fecha===d.fecha&&same(r.jugador,d.jugador));
   if(['ALTA_PADRON','BAJA_PADRON'].includes(d.tipo))return state.padron.filter(group);
+  if(d.tipo==='ALTA_PADRON_LOTE')return {total:state.padron.length,grupos:d.grupos.map(g=>({categoria:g.categoria,equipo:g.equipo,cantidad:g.jugadores.length}))};
   if(d.tipo==='DUA')return state.fichas[d.subjectId]?.dua||{};
   if(d.tipo==='LEGAJO')return {legajo:state.fichas[d.subjectId]?.legajo||{},dni:state.padron.find(p=>p.id===d.subjectId)?.dni||''};
   if(d.tipo==='RECONOCIMIENTO')return (state.fichas[d.subjectId]?.legajo?.bitacora||[]).filter(e=>e.id==='verde_'+d.requestId);
