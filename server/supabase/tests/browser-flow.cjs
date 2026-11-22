@@ -27,7 +27,7 @@ const server=http.createServer(async(req,res)=>{
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:error.message}));}
 });
 async function navegar(page,portal,id){if(await page.locator('#portal-menu').isVisible())await page.locator('#portal-menu').click();await page.locator('[data-tab="'+id+'"]').click();}
-async function elegirGrupoDeportes(page, portal) {
+async function elegirGrupoDeportes(page, portal, restored=false) {
  if (portal !== 'muni360/deportes') {
   await navegar(page, portal, 'asistencia');
   await page.locator('#tab-asistencia').waitFor({state:'visible'});
@@ -36,6 +36,10 @@ async function elegirGrupoDeportes(page, portal) {
  const categoria = page.locator('#sel-categoria');
  const equipo = page.locator('#sel-equipo');
  await categoria.locator('option').nth(1).waitFor({state:'attached'});
+ if(restored){
+  assert.equal(await categoria.inputValue(),'Mini');assert.equal(await equipo.inputValue(),'A');
+  await page.locator('#tab-asistencia').waitFor({state:'visible'});return;
+ }
  assert.equal(await categoria.inputValue(), '');
  assert.equal(await page.locator('#tab-asistencia').isVisible(), false);
  await categoria.selectOption({index:1});
@@ -72,7 +76,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await until(async()=>(await e.read('owner',deporte)).asistencia.length===2);
    await until(async()=>await page.evaluate(()=>syncClient.queue.length===0&&!guardandoOperacion));
    assert.equal((await e.read('owner',deporte)).sheetsStatus,'pending');
-   await page.reload();await elegirGrupoDeportes(page,portal);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();assert.equal(await page.locator('#sel-clima-clase').inputValue(),'Fuego');assert.equal(await page.locator('#sel-puntos-ciudad').inputValue(),'0');
+   await page.reload();await elegirGrupoDeportes(page,portal,true);await page.locator('#lista-asist [data-e="P"][aria-pressed="true"]').first().waitFor();assert.equal(await page.locator('#sel-clima-clase').inputValue(),'Fuego');assert.equal(await page.locator('#sel-puntos-ciudad').inputValue(),'0');
    await navegar(page,portal,'evaluacion');await page.locator('#lista-eval button').first().click();
    await page.locator('#contenedor-gestos input').first().fill('6.5');await page.locator('#btn-guardar-eval').click();
    await until(async()=>(await e.read('owner',deporte)).evaluaciones.some(r=>Object.values(r.notas).includes(6.5)));
@@ -94,6 +98,15 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await page.goto('http://127.0.0.1:'+port+'/muni360/deportes/?qa=owner');
   await elegirGrupoDeportes(page,'muni360/deportes');
   assert.equal(await page.locator('#link-admin-ugi').isVisible(),true);
+  await page.locator('#daily-presence-panel').waitFor({state:'visible'});
+  await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('Colonia')));
+  assert.ok((await page.locator('#mp-results').textContent()).includes('presentes'));
+  await page.locator('#mp-date').fill('2000-01-01');await page.locator('#mp-date').dispatchEvent('change');
+  await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('Sin registros')));
+  assert.ok((await page.locator('#mp-results').textContent()).includes('No equivale a cero presentes'));
+  await page.locator('#mp-today').click();
+  await until(async()=>await page.locator('#mp-results').textContent().then(t=>t.includes('presentes')));
+
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
