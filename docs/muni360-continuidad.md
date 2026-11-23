@@ -1,4 +1,4 @@
-# Muni360 · Continuidad vigente al 17/11/2026
+# Muni360 · Continuidad vigente al 23/11/2026
 
 Esta sección es la referencia actual para continuar. Las notas históricas de abajo documentan etapas anteriores y no indican la rama, el backend ni las carpetas que deben usarse hoy.
 
@@ -7,27 +7,36 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Repositorio: https://github.com/ugiccba-prog/ugiccba-site · rama oficial: `main`.
 - PC de casa, DESKTOP-G6MFIIR: `C:\Users\Juan\Repositorios\ugi`.
 - PC del club, Juan-M: `C:\Users\Juan Machado\Repo\ugiccba-site`.
-- Última revisión funcional leída y comprobada: `f3dcdcdf87c37e26b956f2d119840c073ede9958`.
+- Última revisión funcional leída y comprobada: `7e804e004302a896ea7cdaeb9167e2d0f46a2771` (22–23/11/2026).
 - No retomar una copia antigua de ensayo, una rama anterior o un ZIP como base sin compararlos con `origin/main`. Revisar `git status` antes de sincronizar; conservar cambios locales y actualizar sin forzar ni borrar archivos.
 
-## Cambios recientes incorporados
+## Cambios recientes incorporados (17/11 al 23/11/2026)
 
-- `c998fa6`: integración del portal visual funcional y comparación de deportistas.
-- `0f47ac3`: correcciones del comparador, selección de grupo, modo de demostración, gráficos y recorridos de interfaz. El radar admite entre 3 y 16 dimensiones comunes y se muestra desplegado. Se agregó el service worker de Comunidad al paquete público.
-- `f3dcdcd`: Colonia y COYFD incorporan el portal visual completo, comparación, seguimiento, agenda y comunidad, con sus grupos y funciones propias. La versión visual ya no es exclusiva de Deportes.
+- `c998fa6` / `0f47ac3` / `f3dcdcd`: Portal visual completo en Deportes y Colonia/COYFD, comparador con radar de 3 a 16 dimensiones, seguimiento, agenda y service worker de Comunidad.
+- `514de5d`: Optimización de carga SQL (`013_fast_load_and_dashboard.sql` con `jsonb_agg`) y consulta paginada por lotes de a 2 actividades en `/api/dashboard`.
+- `076ea77` / `131acea`: **Módulo de Inteligencia e IA** (`014_inteligencia.sql`, `inteligencia.mjs`, `muni360-inteligencia.js`) con alertas determinísticas (`CAIDA_ASISTENCIA`, `AUSENCIAS_CONSECUTIVAS`, `SEMAFORO_ALERTA`), vista de alertas activas, registro de intervenciones, escalamiento a 48 h y resumen asistido por IA.
+- `832401d` / `2c776e2` / `cd5ed25` / `d06a0a2` / `d0ae801`: **Cuestionarios anónimos** (`015_surveys.sql`, `surveys.mjs`, `muni360-surveys.js`, `/muni360/encuesta/`) en el menú principal, envío público sin token, integración con alertas de Inteligencia, desplegables dinámicos en cascada por deporte y creación por lote para múltiples equipos.
+- `4838e07`: Reorganización de planillas deportivas en Google Sheets e integración de Cuestionarios e Inteligencia en las vistas y exportaciones XLSX.
+- `bf1b567` / `8e01ff2` / `81c1de8`: Corrección de viewport y push en Comunidad, **Modo Demo completo (`muni360-demo-runtime.js`)** para Panel, Inteligencia, IA y Cuestionarios, y telemetría de producción/simulación de tráfico en Supabase.
+- `0b904fd`: **Importación de padrones de Excel por equipo/tira y revisión de borradores:** soporte de columnas `Categoría` y `Tira`/`Equipo` en Excel (`muni360-import.js`), vista previa agrupada por tira A/B y envío en un único lote atómico (`ALTA_PADRON_LOTE` en `domain.mjs` / `core.mjs`).
+- `1d4186e`: Navegación del navegador (Atrás/Adelante con `history.pushState`/`popstate`) entre secciones internas sin cerrar la sesión activa.
+- `dbacdba`: Priorización de actualización de Google Sheets y procesamiento de cola acotada (`server/supabase/tools/worker-jobs-priority.sql`).
+- `e972f0b` / `268d214` / `76d44c2`: **Presentes diarios de Colonia y COYFD sin duplicados** (`muni360-presence.js`, `presence.mjs`, `docs/muni360-presentes-diarios.md`), compactados en un panel desplegable por fecha para Dirección UGI y Coordinación.
+- `458c638`: **Planillas horizontales de asistencia por grupo y tira en Google Sheets** (`AsistenciaHorizontal.gs`, `SheetsInstitucional.gs`, `docs/muni360-asistencia-horizontal.md`) con pestañas `Asist · <grupo> · <tira>` y tres totales diarios en Colonia (Presentes, Con comida 🍴 y Sin comida).
+- `a342db1` / `7e804e0`: **Separación de accesos y pantallas de Colonia y COYFD** (`/muni360/colonia/` y `/muni360/coyfd/`, `docs/muni360-portales-separados.md`), generados desde la misma fuente con `MUNI_BASE_AREA`, tarjetas independientes en `entrada.html` y aislamiento de sesión, paneles e historial.
 
 ## Código y operación actuales
 
-- Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia/COYFD: `/muni360/colonia/` · administración: `/muni360/admin/`.
-- Fuentes canónicas: `apps/muni360/source/`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css`.
-- `muni360/` es generado: construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
-- Los tres portales usan el acceso vigente de Google/Firebase y el backend Supabase. El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`. Esta sincronización no cambia claves, permisos, planillas ni datos operativos.
+- Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · avisos: `/comunidad/`.
+- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css`.
+- `muni360/` es generado (**32 archivos públicos**, incluyendo `muni360/coyfd/index.html` y `muni360-presence.js`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
 - Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.
 
 ## Comprobación de esta actualización
 
-En la PC de casa pasaron `npm run check:muni360-public` (26 archivos públicos) y las 149 pruebas de `npm run test:muni360` sobre `f3dcdcd`. Al cambiar de PC, confirmar que `main` y `origin/main` coincidan y no haya cambios pendientes. La sincronización no traslada sesiones del navegador ni cargas locales pendientes: éstas se resuelven en su dispositivo, cuenta y dominio originales.
+En la PC de casa pasaron `npm run check:muni360-public` (**32 archivos públicos verificados**) y las **202 pruebas** de `npm run test:muni360` sobre `7e804e0` (`0` fallos). Al cambiar de PC, confirmar que `main` y `origin/main` coincidan y no haya cambios pendientes. La sincronización no traslada sesiones del navegador ni cargas locales pendientes: éstas se resuelven en su dispositivo, cuenta y dominio originales.
 
 ---
 

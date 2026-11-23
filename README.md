@@ -25,16 +25,21 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `ciudad-integrado.html`: Programa de inclusión, deporte adaptado y pertenencia institucional.
 
 ### 2. Gestión Deportiva: Muni 360
-* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/`.
-  * `apps/muni360/source/deportes/index.html`: Portal de **Deportes**.
-  * `apps/muni360/source/colonia/index.html`: Portal de **Colonia y COYFD**.
-  * `apps/muni360/source/admin/index.html`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
+* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**32 archivos públicos**).
+  * `apps/muni360/source/deportes/index.html` → `/muni360/deportes/`: Portal de **Deportes**.
+  * `apps/muni360/source/colonia/index.html` → `/muni360/colonia/` y `/muni360/coyfd/`: Accesos y pantallas independientes para **Colonia** y **COYFD** (empaquetados desde una única fuente con alcance `MUNI_BASE_AREA`, [docs/muni360-portales-separados.md](docs/muni360-portales-separados.md)).
+  * `apps/muni360/source/admin/index.html` → `/muni360/admin/`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
+  * `apps/muni360/source/encuesta/index.html` → `/muni360/encuesta/`: **Cuestionarios anónimos** para jugadores/as.
   * `muni360/` se genera con `npm run build:muni360-public`; Comunidad conserva sus avisos en `/comunidad/`.
   * Estructura de Google Drive y Planilla Madre oficial (`Club / Muni360`): [docs/muni360-planillas.md](docs/muni360-planillas.md).
 * **Capacidades de cancha y gestión:**
-  * Registro de Asistencia en vivo con autoguardado, semáforo UGI y cola offline recuperable por cuenta.
+  * Registro de Asistencia en vivo con autoguardado, semáforo UGI, navegación Atrás/Adelante entre secciones sin cerrar sesión, indicador desplegable de **Presentes diarios** sin duplicados en Colonia y COYFD ([docs/muni360-presentes-diarios.md](docs/muni360-presentes-diarios.md)) y cola offline recuperable por cuenta.
+  * **Planillas horizontales por grupo y tira en Google Sheets:** pestañas `Asist · <grupo> · <tira>` con fechas en columnas, nombres en filas y totales diarios de presentes, con comida y sin comida en Colonia ([docs/muni360-asistencia-horizontal.md](docs/muni360-asistencia-horizontal.md)).
   * Evaluaciones técnicas y formativas con decimales, Tarjeta Verde Digital y apoyos DUA.
-  * Carga y administración del Padrón de deportistas (con DNI privado en base) e importación/exportación XLSX.
+  * **Carga e importación profesional de Padrones desde Excel (`ALTA_PADRON_LOTE`):** detección de columnas `Categoría` / `Grupo` y `Tira` / `Equipo` (separando A/B), vista previa por grupo antes de confirmar, validación atómica en lote y exportación XLSX.
+  * **Módulo de Inteligencia e IA:** Detección determinística en SQL (`CAIDA_ASISTENCIA`, `AUSENCIAS_CONSECUTIVAS`, `SEMAFORO_ALERTA`), escalamiento automático a 48 h, asistente de análisis con IA y seguimiento de intervenciones.
+  * **Cuestionarios anónimos:** Constructor en Coordinación/Dirección con desplegables dinámicos en cascada (Deporte → Categoría → Equipos) y selección múltiple por lote, integrado con las tarjetas de Inteligencia y las planillas oficiales de Sheets.
+  * **Modo Demo interactivo (`muni360-demo-runtime.js`):** Habilita Panel de Coordinación, Inteligencia, asistente IA y Cuestionarios con datos sintéticos aislados sin requerir sesión ni modificar la base productiva.
   * Banco de 50 variantes metodológicas UGI y Planificador Express DUA.
   * Archivo consultable de temporadas y cierre del ciclo por rol, con copia previa.
 
