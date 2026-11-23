@@ -50,6 +50,7 @@ async function elegirGrupoDeportes(page, portal, restored=false) {
 }
 async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(await check())return;await new Promise(r=>setTimeout(r,100));}throw Error('Workflow condition not reached');}
 (async()=>{
+ process.env.MUNI360_TEST_COYFD='1';
  fixture=await import('./browser-fixture.mjs');e={read:(uid,deporte)=>fixture.call(uid,{tipo:'LECTURA',deporte})};
  for(const deporte of areas){const snap=await e.read('owner',deporte);await fixture.call('owner',fixture.operation(snap,'DUA',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{comunicacion:'APOYO_VISIBLE'}}));await fixture.call('owner',fixture.operation(await e.read('owner',deporte),'LEGAJO',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{paseInterno:'NOTA_PRIVADA_FLUJO',bitacora:[],actividadesSimultaneas:[]}}));}
  await fixture.db.query("insert into mc_private.permission_history values('fixture', $1)",[JSON.stringify({fecha:new Date().toISOString(),autor:'owner',usuario:'teacher',antes:{},despues:{}})]);
