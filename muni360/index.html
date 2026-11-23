@@ -49,6 +49,8 @@
     .community h2 { grid-column: 1; margin-bottom: 6px; }
     .community p { grid-column: 1; max-width: 38ch; margin: 0; color: #cee5ef; }
     .community .action { grid-column: 2; grid-row: 1 / 3; align-self: center; margin-top: 0; background: var(--paper); color: var(--navy); }
+    .deportes { grid-column: 1 / -1; min-height: 160px; }
+    .coyfd { background: #eef7fb; }
     .colonia { background: #f5f1e8; }
     footer { max-width: 1440px; margin: auto; padding: 25px clamp(24px,5vw,80px); display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: .7rem; }
     footer a { text-decoration: underline; text-underline-offset: 4px; }
@@ -94,17 +96,21 @@
         <p class="club">Club Ciudad de Buenos Aires</p>
       </div>
       <nav id="accesos" aria-label="Secciones de Muni360">
-        <a class="card" href="./deportes/">
+        <a class="card deportes" href="./deportes/">
           <h2>Deportes</h2><p>Asistencia, evaluaciones y seguimiento de cada equipo.</p>
-          <span class="action">Entrar a Deportes <span class="arrow" aria-hidden="true">→</span></span>
+          <span class="action">Entrar a Deportes</span>
         </a>
         <a class="card colonia" href="./colonia/">
-          <h2>Colonia y COYFD</h2><p>Grupos, asistencia y acompañamiento formativo.</p>
-          <span class="action">Entrar al portal <span class="arrow" aria-hidden="true">→</span></span>
+          <h2>Colonia</h2><p>Grupos, asistencia y comedor de la colonia de vacaciones.</p>
+          <span class="action">Entrar a Colonia</span>
+        </a>
+        <a class="card coyfd" href="./coyfd/">
+          <h2>COYFD</h2><p>Grupos, iniciación y orientación deportiva.</p>
+          <span class="action">Entrar a COYFD</span>
         </a>
         <a class="card community" href="/comunidad/">
           <h2>Comunidad</h2><p>Horarios y avisos de partidos y entrenamientos.</p>
-          <span class="action">Ver novedades <span class="arrow" aria-hidden="true">→</span></span>
+          <span class="action">Ver novedades</span>
         </a>
       </nav>
     </div>

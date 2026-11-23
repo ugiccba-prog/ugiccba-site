@@ -1594,8 +1594,9 @@
       } else if (syncClient && navigator.onLine) syncClient.retry({automatic:true}).catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
     }, 30000);
 
+    const AREA_FIJA=['Colonia','COYFD'].includes(window.MUNI_BASE_AREA)?window.MUNI_BASE_AREA:'';
     let sesion = null;
-    let areaActiva = "Colonia";
+    let areaActiva = AREA_FIJA || "Colonia";
     let tabActual = "asistencia";
 
     let datosDeporte = { padron: [], evaluaciones: [], asistencia: [], gestos: null, email: '' };
@@ -1612,14 +1613,16 @@
     // =========================================================================
     // 4. INICIALIZACIÓN DE PANTALLA LOGIN MUNI 360 (VALIDACIÓN EN SERVIDOR)
     // =========================================================================
-    const deportesSolo = CATALOGO_MUNI360.filter(x => x.esBase);
+    const deportesSolo = CATALOGO_MUNI360.filter(x => x.esBase && (!AREA_FIJA || x.nombre===AREA_FIJA));
     $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
     let areaElegidaLogin = almacen.getItem('muni360cyc_area') || (()=>{try{return localStorage.getItem('muni360cyc_ult_area');}catch(_){return '';}})() || "Colonia";
     if (areaElegidaLogin !== "Colonia" && areaElegidaLogin !== "COYFD") areaElegidaLogin = "Colonia";
+    if(AREA_FIJA)areaElegidaLogin=AREA_FIJA;
     $('login-profe').value = almacen.getItem('muni360_profe') || "";
 
     function marcarSeleccionLogin(nombreArea) {
+      if(AREA_FIJA&&nombreArea!==AREA_FIJA)return;
       areaElegidaLogin = nombreArea;
       if ($('btn-base-colonia')) $('btn-base-colonia').classList.toggle('active', nombreArea === "Colonia");
       if ($('btn-base-coyfd'))   $('btn-base-coyfd').classList.toggle('active', nombreArea === "COYFD");
@@ -1681,6 +1684,10 @@
     $('revisar-acceso').onclick=()=>cargarPerfilGoogle();
     function permiso(nombre){return !!sesion?.esAdminTotal || sesion?.rol==='Dirección UGI' || !!sesion?.capabilities?.[nombre];}
     function iniciarSesion(datosSesion) {
+      if(AREA_FIJA){
+        if(!Array.isArray(datosSesion.areas)||!datosSesion.areas.includes(AREA_FIJA)){$('login-error').textContent='Tu cuenta no tiene acceso a '+AREA_FIJA+'. Volvé a los accesos de Muni360.';return;}
+        datosSesion={...datosSesion,areas:[AREA_FIJA],area:AREA_FIJA};
+      }
       if(syncClient)syncClient.stop();
       sesion = datosSesion;
       if (almacen.getItem('muni360_modo_demo') !== '1') {
@@ -1692,7 +1699,7 @@
 
       areaActiva = (datosSesion.area && deportesSolo.some(x => x.nombre === datosSesion.area))
         ? datosSesion.area
-        : "Colonia";
+        : (AREA_FIJA || "Colonia");
 
       const rutaGuardada=window.history?.state?.muni360Nav;
       const rutaInicial=rutaAutorizadaMuni(rutaGuardada)?rutaGuardada:null;
@@ -1798,6 +1805,7 @@
     }
 
     $('sel-deporte').addEventListener('change', e => {
+      if(AREA_FIJA&&e.target.value!==AREA_FIJA){e.target.value=AREA_FIJA;return;}
       areaActiva = e.target.value;
       pendingPadronGroups=null;actualizarVistaPreviaPadron();
       try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360cyc_ult_area', areaActiva); } catch(_) {}
@@ -3649,7 +3657,7 @@
     }
 
     // Historial de pantallas de Muni360: no cambia la URL ni la autenticación.
-    const HISTORIA_PORTAL_MUNI = 'colonia';
+    const HISTORIA_PORTAL_MUNI = AREA_FIJA==='COYFD'?'coyfd':'colonia';
     let restaurandoHistorialMuni = false;
     function rutaHistorialMuni(){
       return {version:1,portal:HISTORIA_PORTAL_MUNI,usuario:sesion?.usuario||'',
@@ -3755,7 +3763,7 @@
       storageScope='demo';
       $('login-error').textContent = "";
 
-      const dep = "Colonia";
+      const dep = AREA_FIJA || "Colonia";
       const cat = "Grupo 8 años";
       const eq  = "General";
       const hoy = fechaLocal(0);

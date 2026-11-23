@@ -10,7 +10,17 @@ for(const dir of ['assets/scripts','assets/styles','assets/vendor'])for(const na
 files.set('assets/scripts/muni360-catalogo.js',Buffer.from('(function(){\n'+read('comunidad/catalogo.js').toString().replace(/export const /g,'const ')+'\nwindow.MuniCommunityCatalog={horarios:HORARIOS_ENTRENAMIENTO};\n})();\n'));
 files.set('escudo-ccba.png',read('escudo-ccba.png'));
 function versionAssets(html){return html.replace(/((?:\.\.\/|\.\/)assets\/[^"'?]+\.(?:js|css))(?=["'])/g,(ref)=>{const b=files.get(ref.replace(/^\.\.?\//,''));if(!b)throw Error('Recurso no incluido: '+ref);return ref+'?v='+hash(b).slice(0,12);});}
-for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/admin/index.html','admin/index.html'],['apps/muni360/source/encuesta/index.html','encuesta/index.html']]){let html=remap(read(src).toString());html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
+function basePortal(html,area){
+ const start=html.indexOf('      <!-- TARJETAS RÁPIDAS COLONIA Y COYFD -->'),end=html.indexOf('      <input type="hidden" id="login-profe">',start);
+ if(start<0||end<0)throw Error('No se encontró el acceso de Base Formativa.');
+ html=html.slice(0,start)+'      <p class="hint">'+(area==='Colonia'?'Grupos, asistencia y comedor.':'Grupos, iniciación y orientación deportiva.')+'</p>\n      <p><a href="../">Volver a los accesos de Muni360</a></p>\n\n'+html.slice(end);
+ html=html.replaceAll('Colonia y COYFD',area).replaceAll('Base Formativa · Colonia de Vacaciones y COYFD',area==='Colonia'?'Colonia de Vacaciones':'COYFD · Iniciación y orientación deportiva');
+ html=html.replace('Carga grupos de Colonia (con comedor 🍴) y COYFD (6 a 10 años), asistencias, evaluaciones y legajos UGI de muestra. No altera las planillas reales.','Explorá '+area+' con datos de muestra. No altera las planillas reales.');
+ html=html.replace('<script src="../assets/scripts/muni360-config.js">','<script>window.MUNI_BASE_AREA='+JSON.stringify(area)+';</script>\n  <script src="../assets/scripts/muni360-config.js">');
+ if(!html.includes('window.MUNI_BASE_AREA='))throw Error('Falta la actividad del portal.');
+ return html;
+}
+for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/colonia/index.html','coyfd/index.html'],['apps/muni360/source/admin/index.html','admin/index.html'],['apps/muni360/source/encuesta/index.html','encuesta/index.html']]){let html=remap(read(src).toString());if(['colonia/index.html','coyfd/index.html'].includes(target))html=basePortal(html,target.startsWith('coyfd')?'COYFD':'Colonia');html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
 files.set('index.html',read('apps/muni360/entrada.html'));
 for(const name of ['index.html','comunidad.js','catalogo.js','sw.js'])files.set('comunidad/'+name,read('comunidad/'+name));
 for(const name of ['favicon.png','logo-header.png'])files.set('assets/images/'+name,read('assets/images/'+name));

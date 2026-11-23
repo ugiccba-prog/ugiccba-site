@@ -2,7 +2,7 @@
 // No production credentials, browser profiles or remote Google requests.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.MUNI360_PLAYWRIGHT_MODULE||'playwright');
-const root=path.resolve(__dirname,'../../..');let fixture,e;const areas=['Básquet Caballeros','Colonia'];
+const root=path.resolve(__dirname,'../../..');let fixture,e;const areas=['Básquet Caballeros','Colonia','COYFD'];
 const calls=[],mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png'};
 let port;
 const server=http.createServer(async(req,res)=>{
@@ -56,13 +56,15 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
  await new Promise(r=>server.listen(0,'127.0.0.1',r));port=server.address().port;
  const browser=await chromium.launch({headless:true,...(process.env.MUNI360_BROWSER_PATH?{executablePath:process.env.MUNI360_BROWSER_PATH}:{})}),report=[];
  try{
-  for(const [index,portal]of ['muni360/deportes','muni360/colonia'].entries()){
+  for(const [index,portal]of ['muni360/deportes','muni360/colonia','muni360/coyfd'].entries()){
    const deporte=areas[index],context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[],responses=[];
    await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
    page.on('dialog',d=>d.accept());page.on('pageerror',error=>errors.push(error.message));
    page.on('response',async r=>{if(r.url().endsWith('/api/backend'))responses.push(await r.text());});
    await page.goto('http://127.0.0.1:'+port+'/'+portal+'/?qa=profe');await page.locator('#app-screen').waitFor({state:'visible'});await elegirGrupoDeportes(page,portal);
    await page.locator('#lista-asist .asist-row').first().waitFor();assert.equal(await page.locator('#lista-asist .asist-row').count(),2);
+   if(portal!=='muni360/deportes'){assert.deepEqual(await page.locator('#sel-deporte option').allTextContents(),[deporte]);assert.equal(await page.locator('#wrap-deporte-admin').isVisible(),false);assert.equal(await page.locator('.brand-tagline').textContent(),deporte);}
+   if(portal==='muni360/coyfd')assert.equal(await page.locator('#lista-asist .comida-btn').count(),0);
    assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false);
    assert.equal(await page.locator('#tab-btn-padron').isVisible(),false);
    assert.equal(await page.locator('#lista-asist [data-e="N"][aria-pressed="true"]').count(),2);
@@ -111,6 +113,13 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await page.locator('#daily-presence-panel summary').click();
   assert.equal(await page.locator('#mp-date').isVisible(),false);
 
+  for(const [route,activity] of [['colonia','Colonia'],['coyfd','COYFD']]){
+   await page.goto('http://127.0.0.1:'+port+'/muni360/'+route+'/?qa=owner');await page.locator('#app-screen').waitFor({state:'visible'});
+   assert.deepEqual(await page.locator('#sel-deporte option').allTextContents(),[activity]);
+   assert.equal(await page.locator('#management-panel .mm-choices input').count(),1);
+   assert.equal(await page.locator('#header-activity').textContent(),activity);
+   await page.reload();await page.locator('#app-screen').waitFor({state:'visible'});assert.equal(await page.locator('#header-activity').textContent(),activity);
+  }
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
