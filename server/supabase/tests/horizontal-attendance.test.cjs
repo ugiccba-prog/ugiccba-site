@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const helper=fs.readFileSync('server/supabase/tools/AsistenciaHorizontal.gs','utf8');
+const helper=fs.readFileSync('server/supabase/tools/AsistenciaHorizontal.gs','utf8').replace(/\r\n/g,'\n');
 function matrix(state,activity){const c={};vm.createContext(c);vm.runInContext(helper,c);return JSON.parse(JSON.stringify(c.tablasAsistenciaHorizontalUGI(state,activity)));}
 const person=(id,name,cat='5y6',eq='A')=>({id,jugador:name,categoria:cat,equipo:eq});
 const mark=(id,name,date,estado,cat='5y6',eq='A')=>({jugadorId:id,jugador:name,fecha:date,estado,categoria:cat,equipo:eq});
@@ -31,9 +31,9 @@ test('institutional and full bridge embed exactly the tested projection helper',
  }
 });
 
- test('Colonia actual y futura: P/T con comida, sin comida y tres totales diarios sin duplicar',()=>{
+ test('Colonia actual y futura: P/T con comedor, vianda y tres totales diarios sin duplicar',()=>{
   const state={padron:[person('1','Ana'),person('2','Bruno'),person('3','Carla'),person('4','Diego')],asistencia:[mark('1','Ana','2026-11-22','P | 🍴 Comida | Sem:V'),mark('1','Ana','2026-11-22','P | 🍴 Comida | Sem:V'),mark('2','Bruno','2026-11-22','T | Sem:A'),mark('3','Carla','2026-11-22','A | 🍴 Comida | Sem:R'),mark('4','Diego','2026-11-22','N | 🍴 Comida | Sem:V')]};
-  const rows=matrix(state,'Colonia')['Asist · 5y6 · A'];assert.equal(rows[1][1],'P 🍴');assert.equal(rows[2][1],'T');assert.equal(rows[3][1],'A');assert.equal(rows[4][1],'');assert.deepEqual(rows.slice(-3),[['Total presentes',2],['Total con comida',1],['Total sin comida',1]]);
+  const rows=matrix(state,'Colonia')['Asist · 5y6 · A'];assert.equal(rows[1][1],'P 🍴');assert.equal(rows[2][1],'T');assert.equal(rows[3][1],'A');assert.equal(rows[4][1],'');assert.deepEqual(rows.slice(-3),[['Total presentes',2],['Total comedor',1],['Total vianda',1]]);
   assert.equal(matrix(state,'COYFD')['Asist · 5y6 · A'].at(-1)[0],'Total presentes');
  });
  test('comida contradictoria pide revisión; sin carga no convierte comida en cero',()=>{

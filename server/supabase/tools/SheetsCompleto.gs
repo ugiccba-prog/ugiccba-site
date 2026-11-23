@@ -104,9 +104,11 @@ function tablasSupabaseUGI(job){
  var asistSorted=asistencia.slice().sort(function(a,b){return String(b.fecha||'').localeCompare(String(a.fecha||''));});
  var codeLabel={P:'Presente',T:'Tarde',A:'Ausente'};
  var semLabel={V:'🟢 Verde',A:'🟡 Amarillo',R:'🔴 Rojo'};
- p.Asistencia=[['Fecha','Deporte','Categoría','Equipo','Jugador','Estado','Clima','Puntos Ciudad','Asistencia (lectura)','Semáforo (lectura)']].concat(asistSorted.map(function(r){
-  var est=String(r.estado||''),code=est.charAt(0),mSem=est.match(/Sem:([VAR])/);
-  return [r.fecha,name,r.categoria,r.equipo,r.jugador,r.estado,r.clima||'',r.puntosCiudad??'',codeLabel[code]||'Sin registrar',mSem?(semLabel[mSem[1]]||'Sin observar'):'Sin observar'];
+ p.Asistencia=[['Fecha','Deporte','Categoría','Equipo','Jugador','Estado','Clima','Puntos Ciudad','Asistencia (lectura)','Semáforo (lectura)'].concat(name==='Colonia'?['Almuerzo (lectura)']:[])].concat(asistSorted.map(function(r){
+  var est=String(r.estado||''),code=est.charAt(0),mSem=est.match(/Sem:([VAR])/),conComedor=(code==='P'||code==='T')&&/(?:^|\|)\s*(?:🍴\s*)?(?:Comida|Comedor)\s*(?:\||$)/i.test(est);
+  var row=[r.fecha,name,r.categoria,r.equipo,r.jugador,r.estado,r.clima||'',r.puntosCiudad??'',codeLabel[code]||'Sin registrar',mSem?(semLabel[mSem[1]]||'Sin observar'):'Sin observar'];
+  if(name==='Colonia')row.push((code==='P'||code==='T')?(conComedor?'🍴 Comedor':'🍱 Vianda'):'-');
+  return row;
  }));
 
  var evalSorted=evaluaciones.slice().sort(function(a,b){return String(b.fecha||'').localeCompare(String(a.fecha||''));});
@@ -124,7 +126,7 @@ function tablasSupabaseUGI(job){
  p.HistorialPadron=[['Temporada','Categoría','Equipo','Jugador','ID']].concat(hs.flatMap(function(h){return h.state.padron.map(function(r){return [h.id,r.categoria,r.equipo,r.jugador,r.id];});}));
  p.EstadoSync=[['Campo','Valor'],['Actividad',name],['Versión',job.version],['Cuestionarios activos',surveys.filter(function(sv){return sv.status==='active';}).length],['Respuestas anónimas',totalSurveyResp],['Actualizado (Argentina)',fechaHoraSupabaseUGI(new Date())],['Uso','Las primeras pestañas resumen el deporte y cuestionarios. Para cargar altas desde Sheets usá CargaPadron.']];
  var matrices=tablasAsistenciaHorizontalUGI(s,name),grupos=Object.keys(matrices);
- p.AsistenciaPorGrupo=[['Asistencia por grupo','Formato'],['Organización','Una pestaña por grupo y tira/subgrupo'],['Lectura','Nombres en filas; fechas en columnas'],['Marcas','P = Presente · T = Tarde · A = Ausente · vacío = Sin registrar'+(name==='Colonia'?' · 🍴 = Con comida':'')],['Grupos disponibles',grupos.length]].concat(grupos.length?grupos.map(function(t){return [t,'Asistencia día por día'];}):[['Sin grupos cargados','Al cargar el padrón en Muni360 se crean las pestañas de cada grupo.']]);
+ p.AsistenciaPorGrupo=[['Asistencia por grupo','Formato'],['Organización','Una pestaña por grupo y tira/subgrupo'],['Lectura','Nombres en filas; fechas en columnas'],['Marcas','P = Presente · T = Tarde · A = Ausente · vacío = Sin registrar'+(name==='Colonia'?' · 🍴 = Comedor · P/T sin 🍴 = Vianda':'')],['Grupos disponibles',grupos.length]].concat(grupos.length?grupos.map(function(t){return [t,'Asistencia día por día'];}):[['Sin grupos cargados','Al cargar el padrón en Muni360 se crean las pestañas de cada grupo.']]);
  Object.assign(p,matrices);
  return p;
 }
@@ -151,7 +153,7 @@ function estilosYOrdenSheetsUGI(sheet,meta,tables){
     reqs.push({updateSheetProperties:{properties:{sheetId:tab.sheetId,gridProperties:{frozenRowCount:1,frozenColumnCount:1}},fields:'gridProperties.frozenRowCount,gridProperties.frozenColumnCount'}});
     reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:0,endIndex:1},properties:{pixelSize:240},fields:'pixelSize'}});
     if(cols>1)reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:1,endIndex:cols},properties:{pixelSize:100},fields:'pixelSize'}});
-    reqs.push({repeatCell:{range:{sheetId:tab.sheetId,startRowIndex:tables[title].length-(tables[title].length>=3&&tables[title][tables[title].length-1][0]==='Total sin comida'&&tables[title][tables[title].length-2][0]==='Total con comida'?3:1),endRowIndex:tables[title].length,startColumnIndex:0,endColumnIndex:cols},cell:{userEnteredFormat:{backgroundColor:{red:0.878,green:0.949,blue:0.996},textFormat:{bold:true}}},fields:'userEnteredFormat(backgroundColor,textFormat)'}});
+    reqs.push({repeatCell:{range:{sheetId:tab.sheetId,startRowIndex:tables[title].length-(tables[title].length>=3&&tables[title][tables[title].length-1][0]==='Total vianda'&&tables[title][tables[title].length-2][0]==='Total comedor'?3:1),endRowIndex:tables[title].length,startColumnIndex:0,endColumnIndex:cols},cell:{userEnteredFormat:{backgroundColor:{red:0.878,green:0.949,blue:0.996},textFormat:{bold:true}}},fields:'userEnteredFormat(backgroundColor,textFormat)'}});
    }
    if(w){w.slice(0,cols).forEach(function(px,idx){reqs.push({updateDimensionProperties:{range:{sheetId:tab.sheetId,dimension:'COLUMNS',startIndex:idx,endIndex:idx+1},properties:{pixelSize:px},fields:'pixelSize'}});});}
   }
@@ -233,7 +235,7 @@ function tablasAsistenciaHorizontalUGI(state,activity){
   if(!g.people.has(id))g.people.set(id,{name:name,marks:new Map()});
   g.dates.add(date);activityDates.add(date);
   var match=String(r.estado||'').match(/^([PAT])(?:\s*\||\s*$)/);if(!match)return;
-  var marks=g.people.get(id).marks;if(!marks.has(date))marks.set(date,new Set());var withFood=food&&['P','T'].indexOf(match[1])>=0&&/(?:^|\|)\s*(?:🍴\s*)?Comida\s*(?:\||$)/i.test(String(r.estado||''));marks.get(date).add(match[1]+(withFood?' 🍴':''));
+  var marks=g.people.get(id).marks;if(!marks.has(date))marks.set(date,new Set());var withFood=food&&['P','T'].indexOf(match[1])>=0&&/(?:^|\|)\s*(?:🍴\s*)?(?:Comida|Comedor)\s*(?:\||$)/i.test(String(r.estado||''));marks.get(date).add(match[1]+(withFood?' 🍴':''));
  });
  Array.from(groups.values()).sort(function(a,b){return a.cat.localeCompare(b.cat,'es',{numeric:true})||a.eq.localeCompare(b.eq,'es',{numeric:true});}).forEach(function(g){
   var label='Asist · '+g.cat+(g.eq==='General'?'':' · '+g.eq),clean=label.replace(/[\[\]:*?\/\\]/g,'-');
@@ -250,7 +252,7 @@ function tablasAsistenciaHorizontalUGI(state,activity){
   });
   function totalRow(label,key){return [label].concat(totals.map(function(t){return t.conflict?'Revisar':t.valid?t[key]:'Sin registros';}));}
   rows.push(totalRow('Total presentes','present'));
-  if(food){rows.push(totalRow('Total con comida','meals'));rows.push(totalRow('Total sin comida','without'));}
+  if(food){rows.push(totalRow('Total comedor','meals'));rows.push(totalRow('Total vianda','without'));}
   out[title]=rows;
  });
  return out;

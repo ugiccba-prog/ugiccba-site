@@ -97,7 +97,7 @@ function escribirIndicePlanillasUGI(context,targets){
   if(sheet.getMaxRows()<size)sheet.insertRowsAfter(sheet.getMaxRows(),size-sheet.getMaxRows());
   sheet.getRange('A1:C1').merge().setValue(marker).setFontSize(8).setFontColor('#64748b');
   sheet.getRange('A2:C2').merge().setValue('Muni360 · Planillas por actividad').setFontSize(20).setFontWeight('bold').setFontColor('#174d40');
-  sheet.getRange('A6:C6').merge().setValue('Asistencia: una pestaña por grupo y tira/subgrupo, con las fechas en columnas.').setWrap(true);
+  sheet.getRange('A6:C6').merge().setValue('Asistencia: una pestaña por grupo y tira/subgrupo, con las fechas en columnas (en Colonia incluye Total comedor y Total vianda).').setWrap(true);
   sheet.getRange('A7:C7').merge().setValue('Cargá la asistencia en Muni360. Las planillas se actualizan automáticamente; CargaPadron permite preparar nombres.').setWrap(true);
   sheet.getRange('A9:C'+size).clearContent();
   sheet.getRange('A9:C9').setValues([['Actividad','Estado','Abrir planilla']]).setBackground('#176552').setFontColor('#ffffff').setFontWeight('bold');

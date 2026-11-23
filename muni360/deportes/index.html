@@ -963,7 +963,7 @@
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn-sec" id="btn-todos-p">Todos Presentes (P)</button>
-            <button type="button" class="btn-sec hidden" id="btn-todos-comida" style="background:#ffedd5; color:#9a3412; border-color:#fed7aa;">🍴 Todos con comida</button>
+            <button type="button" class="btn-sec hidden" id="btn-todos-comida" style="background:#ffedd5; color:#9a3412; border-color:#fed7aa;">🍴 Todos en Comedor</button>
           </div>
         </div>
 
@@ -2757,9 +2757,10 @@
       $('kpi-dia-total').textContent = String(lista.length);
 
       if (cfg.tieneComida) {
-        $('kpi-dia-lbl2').textContent = '🍴 Comida hoy';
+        const viandas = Math.max(0, pres - alm);
+        $('kpi-dia-lbl2').textContent = '🍴 Comedor hoy';
         $('kpi-dia-val2').textContent = String(alm);
-        $('kpi-dia-sub2').textContent = 'almuerzan en Colonia';
+        $('kpi-dia-sub2').textContent = `comedor · ${viandas} vianda(s)`;
       } else {
         $('kpi-dia-lbl2').textContent = '🚦 Semáforo UGI';
         $('kpi-dia-val2').textContent = `${lista.filter(j=>semTempDep[j]!=='N').length}/${lista.length}`;
@@ -2782,7 +2783,7 @@
         <div class="asist-row" data-jugador="${esc(j)}">
           <div class="asist-name"><span class="portal-avatar-sm" aria-hidden="true">${esc(nombreBaseDua(j).trim().charAt(0))}</span><span>${esc(nombreBaseDua(j))}</span> ${btnDuaHtml}</div>
           <div class="asist-controls">
-            ${cfg.tieneComida ? `<button type="button" class="comida-btn" data-action="comida" aria-pressed="${comidaTempDep[j] && asistTempDep[j] !== 'A'}">🍴 ${comidaTempDep[j] && asistTempDep[j] !== 'A' ? 'Comida' : 'Sin comida'}</button>` : ''}
+            ${cfg.tieneComida ? `<button type="button" class="comida-btn" data-action="comida" title="${comidaTempDep[j] && asistTempDep[j] !== 'A' ? 'Comedor de la colonia' : 'Vianda (trajeron almuerzo de su casa)'}" aria-pressed="${comidaTempDep[j] && asistTempDep[j] !== 'A'}">${comidaTempDep[j] && asistTempDep[j] !== 'A' ? '🍴 Comedor' : '🍱 Vianda'}</button>` : ''}
             <div class="sem-group" role="group" data-label="Semáforo" aria-label="Semáforo UGI" title="Semáforo Conductual UGI">
               <button type="button" class="sem-btn" data-sem="N" aria-label="Sin observar" aria-pressed="${semTempDep[j] === 'N'}">—</button>
               <button type="button" class="sem-btn" data-sem="V" aria-label="Semáforo verde" title="Semáforo verde" aria-pressed="${semTempDep[j] === 'V'}">🟢</button>
@@ -2842,7 +2843,7 @@
         comidaTempDep[j] = asistTempDep[j] === 'A' ? false : activar;
       });
       renderAsistencia();
-      toast(activar ? "🍴 Comida marcada a todos los presentes" : "Comidas desmarcadas");
+      toast(activar ? "🍴 Comedor marcado a todos los presentes" : "🍱 Todos los presentes pasan a Vianda");
     });
 
 
@@ -3439,14 +3440,16 @@
           XLSX.utils.book_append_sheet(wb, wsCuest, "Cuestionarios");
         }
       }
+      const esColoniaExport = areaActiva === 'Colonia';
       const asistReciente = (datosDeporte.asistencia || []).slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || ''))).slice(0, 1000).map(r => {
-        const est = String(r.estado || ''), code = est.charAt(0), mSem = est.match(/Sem:([VAR])/);
+        const est = String(r.estado || ''), code = est.charAt(0), mSem = est.match(/Sem:([VAR])/), conComedor = (code === 'P' || code === 'T') && /(?:^|\|)\s*(?:🍴\s*)?(?:Comida|Comedor)\s*(?:\||$)/i.test(est);
         return {
           Fecha: r.fecha || '',
           Categoria: r.categoria || '',
           Equipo: r.equipo || 'General',
           Deportista: r.jugador || '',
           Asistencia: code === 'P' ? 'Presente' : code === 'T' ? 'Tarde' : code === 'A' ? 'Ausente' : 'Sin registrar',
+          ...(esColoniaExport ? { Almuerzo: (code === 'P' || code === 'T') ? (conComedor ? 'Comedor' : 'Vianda') : '-' } : {}),
           Semaforo: mSem ? (mSem[1] === 'V' ? 'Verde' : mSem[1] === 'A' ? 'Amarillo' : 'Rojo') : 'Sin observar',
           Clima: r.clima || '',
           PuntosCiudad: r.puntosCiudad ?? ''
@@ -3454,7 +3457,9 @@
       });
       if (asistReciente.length) {
         const wsAsist = XLSX.utils.json_to_sheet(asistReciente);
-        wsAsist['!cols'] = [{ wch: 13 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }];
+        wsAsist['!cols'] = esColoniaExport
+          ? [{ wch: 13 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }]
+          : [{ wch: 13 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }];
         wsAsist['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(wsAsist['!ref'])) };
         XLSX.utils.book_append_sheet(wb, wsAsist, "Asistencia reciente");
       }

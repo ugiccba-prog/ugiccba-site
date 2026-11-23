@@ -21,7 +21,7 @@ function tablasAsistenciaHorizontalUGI(state,activity){
   if(!g.people.has(id))g.people.set(id,{name:name,marks:new Map()});
   g.dates.add(date);activityDates.add(date);
   var match=String(r.estado||'').match(/^([PAT])(?:\s*\||\s*$)/);if(!match)return;
-  var marks=g.people.get(id).marks;if(!marks.has(date))marks.set(date,new Set());var withFood=food&&['P','T'].indexOf(match[1])>=0&&/(?:^|\|)\s*(?:🍴\s*)?Comida\s*(?:\||$)/i.test(String(r.estado||''));marks.get(date).add(match[1]+(withFood?' 🍴':''));
+  var marks=g.people.get(id).marks;if(!marks.has(date))marks.set(date,new Set());var withFood=food&&['P','T'].indexOf(match[1])>=0&&/(?:^|\|)\s*(?:🍴\s*)?(?:Comida|Comedor)\s*(?:\||$)/i.test(String(r.estado||''));marks.get(date).add(match[1]+(withFood?' 🍴':''));
  });
  Array.from(groups.values()).sort(function(a,b){return a.cat.localeCompare(b.cat,'es',{numeric:true})||a.eq.localeCompare(b.eq,'es',{numeric:true});}).forEach(function(g){
   var label='Asist · '+g.cat+(g.eq==='General'?'':' · '+g.eq),clean=label.replace(/[\[\]:*?\/\\]/g,'-');
@@ -38,7 +38,7 @@ function tablasAsistenciaHorizontalUGI(state,activity){
   });
   function totalRow(label,key){return [label].concat(totals.map(function(t){return t.conflict?'Revisar':t.valid?t[key]:'Sin registros';}));}
   rows.push(totalRow('Total presentes','present'));
-  if(food){rows.push(totalRow('Total con comida','meals'));rows.push(totalRow('Total sin comida','without'));}
+  if(food){rows.push(totalRow('Total comedor','meals'));rows.push(totalRow('Total vianda','without'));}
   out[title]=rows;
  });
  return out;
