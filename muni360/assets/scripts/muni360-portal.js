@@ -29,8 +29,11 @@
       const t=trend.get(r.fecha);g.total++;t.total++;total++;
       if(code!=='A'){present++;g.present++;t.present++;}
     }
-    return {roster:roster.length,groups:[...groups.values()].sort((a,b)=>a.cat.localeCompare(b.cat,'es',{numeric:true})||a.eq.localeCompare(b.eq,'es')),present,total,alerts,observed,evaluations:evaluations.length,trend:[...trend.values()].sort((a,b)=>a.date.localeCompare(b.date)),validDate};
+    for(const t of trend.values()){t.expected=roster.length;t.pending=Math.max(0,t.expected-t.total);}
+    const pending=[...trend.values()].reduce((sum,t)=>sum+t.pending,0);
+    return {pending,roster:roster.length,groups:[...groups.values()].sort((a,b)=>a.cat.localeCompare(b.cat,'es',{numeric:true})||a.eq.localeCompare(b.eq,'es')),present,total,alerts,observed,evaluations:evaluations.length,trend:[...trend.values()].sort((a,b)=>a.date.localeCompare(b.date)),validDate};
   }
+  function attendanceSignal(present,total){return {sufficient:total>=3,low:total>=3&&100*present/total<70};}
   const cards=m=>'<div class="portal-stats">'+[['Deportistas',m.roster],['Asistencia',pct(m.present,m.total)],['Equipos',m.groups.filter(g=>g.n).length],['Evaluaciones',m.evaluations]].map(([label,n])=>'<article><span>'+label+'</span><strong>'+n+'</strong></article>').join('')+'</div>';
   const teams=m=>'<div class="portal-table"><table><thead><tr><th>Equipo</th><th>Integrantes</th><th>Asistencia</th><th>Detalle</th></tr></thead><tbody>'+m.groups.filter(g=>g.n).map(g=>'<tr><th scope="row">'+esc(g.cat)+' · '+esc(g.eq)+'</th><td>'+g.n+'</td><td>'+pct(g.present,g.total)+'</td><td><button type="button" class="btn-sec" data-portal-team="1" data-cat="'+esc(g.cat)+'" data-eq="'+esc(g.eq)+'">Ver lista</button></td></tr>').join('')+'</tbody></table>'+(m.roster?'':'<p>No hay deportistas cargados para esta actividad.</p>')+'</div>';
   function chart(m){
@@ -93,5 +96,5 @@
     const profiles='<div class="portal-player-cards">'+values.map((v,i)=>'<article style="--player-color:'+colors[i]+'"><div class="portal-player-heading"><span class="portal-avatar" aria-hidden="true">'+esc(names[i].trim().charAt(0))+'</span><div><small>Jugador '+(i+1)+'</small><h3>'+esc(names[i])+'</h3></div></div><div class="portal-player-rate"><strong>'+(v.attendance==null?'Sin datos':Math.round(v.attendance)+'%')+'</strong><span>asistencia · '+v.total+' registros</span></div><p>'+v.evaluations+' evaluaciones · '+v.late+' llegada(s) tarde</p></article>').join('')+'</div>';
     return heading+profiles+'<p class="hint">P y T cuentan como presentes. Las notas muestran el promedio por dimensión y la cantidad de muestras. Los datos faltantes se muestran como “Sin datos”.</p>'+extra+graph+table;
   }
-  return {summarize,views,playerSummary,comparison};
+  return {summarize,views,playerSummary,comparison,attendanceSignal};
 });

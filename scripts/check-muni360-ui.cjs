@@ -25,6 +25,8 @@ const server=http.createServer((req,res)=>{
     return host==='127.0.0.1'?route.continue():route.abort();
    });
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+portal+'/?demo=1',{waitUntil:'load'});
+   await page.locator('#demo-password').fill('360,demo');
+   await page.locator('#demo-form button[type=submit]').click();
    await page.locator('#app-screen').waitFor({state:'visible'});
    if(portal==='muni360/deportes'){await page.locator('#sel-categoria').selectOption({label:'Sub-14'});await page.locator('#sel-equipo').selectOption('A');}
    await page.waitForFunction(()=>{const el=document.getElementById('toast');return !el||getComputedStyle(el).opacity==='0'||getComputedStyle(el).display==='none';},{},{timeout:6000});

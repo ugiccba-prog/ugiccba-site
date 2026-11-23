@@ -296,7 +296,7 @@ async function cargarAvisos() {
   try {
     const avisos = await fetchPublicFeed();
     feedState = { loading: false, error: "", avisos };
-    if (bannerAvisosMensaje?.type === "error") bannerAvisosMensaje = null;
+    bannerAvisosMensaje = null;
   } catch (err) {
     feedState = { loading: false, error: err?.message || "No se pudieron cargar los avisos.", avisos: [] };
   }

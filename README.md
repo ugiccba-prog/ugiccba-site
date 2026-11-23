@@ -1,4 +1,4 @@
-# 🏆 UGI - Unidad de Gestión Integral 
+# 🏆 UGI - Unidad de Gestión Integral
 ### Club Ciudad de Buenos Aires
 
 Repositorio oficial del sitio web de la **UGI (Unidad de Gestión Integral)** del **Club Ciudad de Buenos Aires**, plataforma transversal dedicada a la formación integral, la convivencia deportiva y el desarrollo de deportistas, familias y entrenadores.
@@ -25,7 +25,7 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `ciudad-integrado.html`: Programa de inclusión, deporte adaptado y pertenencia institucional.
 
 ### 2. Gestión Deportiva: Muni 360
-* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**32 archivos públicos**).
+* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**33 archivos públicos**).
   * `apps/muni360/source/deportes/index.html` → `/muni360/deportes/`: Portal de **Deportes**.
   * `apps/muni360/source/colonia/index.html` → `/muni360/colonia/` y `/muni360/coyfd/`: Accesos y pantallas independientes para **Colonia** y **COYFD** (empaquetados desde una única fuente con alcance `MUNI_BASE_AREA`, [docs/muni360-portales-separados.md](docs/muni360-portales-separados.md)).
   * `apps/muni360/source/admin/index.html` → `/muni360/admin/`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
