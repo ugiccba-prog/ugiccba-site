@@ -52,6 +52,9 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
 (async()=>{
  process.env.MUNI360_TEST_COYFD='1';
  fixture=await import('./browser-fixture.mjs');e={read:(uid,deporte)=>fixture.call(uid,{tipo:'LECTURA',deporte})};
+ for(const migration of ['005_maintenance.sql','009_access_notifications.sql','012_weekly_coordinator_alerts.sql','016_direct_access.sql']){
+  await fixture.db.exec(fs.readFileSync(path.join(__dirname,'../sql',migration),'utf8'));
+ }
  for(const deporte of areas){const snap=await e.read('owner',deporte);await fixture.call('owner',fixture.operation(snap,'DUA',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{comunicacion:'APOYO_VISIBLE'}}));await fixture.call('owner',fixture.operation(await e.read('owner',deporte),'LEGAJO',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{paseInterno:'NOTA_PRIVADA_FLUJO',bitacora:[],actividadesSimultaneas:[]}}));}
  await fixture.db.query("insert into mc_private.permission_history values('fixture', $1)",[JSON.stringify({fecha:new Date().toISOString(),autor:'owner',usuario:'teacher',antes:{},despues:{}})]);
  await new Promise(r=>server.listen(0,'127.0.0.1',r));port=server.address().port;
@@ -123,6 +126,13 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   }
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
   assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
+  await page.getByRole('button',{name:'Agregar acceso'}).click();
+  await page.getByLabel('Correo de la cuenta Google').fill('invitado@example.invalid');
+  await page.getByLabel('Colonia',{exact:true}).check();
+  await page.getByRole('button',{name:'Habilitar acceso y enviar correo'}).click();
+  await page.getByText('Correo en cola',{exact:true}).waitFor({state:'visible'});
+  assert.equal(await page.getByRole('dialog').isVisible(),false);
+  assert.deepEqual((await fixture.call('invitado',{},'/api/me')).profile.areas,['Colonia']);
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
  }finally{await browser.close();server.close();await fixture.db.close();}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1;});
