@@ -37,6 +37,7 @@
     padding:max(1rem,env(safe-area-inset-top)) 1rem max(1rem,env(safe-area-inset-bottom));
   }
   .pantalla.activa{display:flex}
+  .pantalla:not(#p-test){overflow-y:auto}
   .centro{margin:auto; width:100%; max-width:460px; display:flex; flex-direction:column; gap:1rem; text-align:center}
 
   h1{font-size:clamp(1.6rem,6vw,2.4rem); margin:0; letter-spacing:-.02em}
@@ -99,6 +100,8 @@
   .destacado{grid-column:1/-1}
   .destacado .n{font-size:2.4rem}
   #estado-envio{font-size:.75rem; opacity:.55}
+  :focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -157,8 +160,8 @@
 
   <div class="respuesta" id="r-donde">
     <h2>¿Dónde apareció el punto?</h2>
-    <canvas id="rueda" width="300" height="300"></canvas>
-    <p class="chico">Tocá la zona. Si no lo viste, elegí la que te parezca.</p>
+    <canvas id="rueda" width="300" height="300" tabindex="0" role="group" aria-label="Elegí la dirección con las teclas 1 a 8: 1 arriba, en sentido horario"></canvas>
+    <p class="chico">Tocá la zona o usá 1 a 8: 1 arriba, siguiendo el reloj. Si no lo viste, elegí la que te parezca.</p>
   </div>
 </section>
 
@@ -183,7 +186,7 @@
       <div class="tarjeta"><div class="n" id="r-peri-ok">–</div><div class="e">Ubicación correcta</div></div>
     </div>
     <p class="chico" id="interpretacion"></p>
-    <p id="estado-envio">Guardando…</p>
+    <p id="estado-envio" role="status" aria-live="polite">Guardando…</p>
     <button class="btn" id="btn-repetir">REPETIR</button>
     <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
   </div>
@@ -218,7 +221,7 @@
   var jugador = { nombre:'', deporte:'' };
   var fase = 'practica', ronda = 0, msActual = CFG.MS_INICIAL;
   var seguidas = 0, reversiones = [], ultimaDireccion = 0;
-  var ensayo = null, registros = [];
+  var ensayo = null, registros = [], etapa = 'inicio', generacion = 0;
 
   /* ================== LIENZO ================== */
   function ajustar(){
@@ -365,15 +368,18 @@
   /* ================== CICLO DE RONDA ================== */
   function esperar(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
-  function mostrarPor(dibujar, ms){
+  function mostrarPor(dibujar, ms, turno){
     /* Medimos cuánto estuvo DE VERDAD en pantalla: a 60 Hz nada dura menos de
        16 ms, así que pedir 40 puede ser 50. Guardamos lo real, no lo pedido. */
     return new Promise(function(listo){
       requestAnimationFrame(function(){
+        if (turno !== generacion) return listo(0);
         dibujar();
         requestAnimationFrame(function(t0){
+          if (turno !== generacion) return listo(0);
           var inicio = performance.now();
           (function revisar(){
+            if (turno !== generacion) return listo(0);
             if (performance.now() - inicio >= ms){
               var real = performance.now() - inicio;
               dibujarMascara();
@@ -389,6 +395,8 @@
   async function siguienteRonda(){
     var total = fase === 'practica' ? CFG.PRACTICA : CFG.RONDAS;
     if (ronda >= total) return fase === 'practica' ? pasarATest() : terminar();
+    const turno = ++generacion;
+    etapa = 'estimulo';
     ronda++;
     $('hud-ronda').textContent = ronda + ' / ' + total;
     $('hud-ms').textContent = Math.round(msActual) + ' ms';
@@ -402,22 +410,31 @@
 
     dibujarCruz();
     await esperar(CFG.FIJACION_MS);
-    ensayo.real = Math.round(await mostrarPor(function(){ dibujarEstimulo(ensayo); }, msActual));
+    if (turno !== generacion) return;
+    ensayo.real = Math.round(await mostrarPor(function(){ dibujarEstimulo(ensayo); }, msActual, turno));
+    if (turno !== generacion) return;
     await esperar(CFG.MASCARA_MS);
+    if (turno !== generacion) return;
     limpiar();
     dibujarCruz();
+    etapa = 'centro';
     $('r-centro').classList.add('activa');
+    document.querySelector('.forma').focus();
   }
 
   function responderCentro(figura){
+    if (etapa !== 'centro' || !['circulo','triangulo'].includes(figura)) return;
+    etapa = 'donde';
     $('r-centro').classList.remove('activa');
     ensayo.figuraElegida = figura;
     dibujarRueda();
     $('r-donde').classList.add('activa');
+    $('rueda').focus();
   }
 
   function responderDonde(sector){
-    if (sector < 0) return;
+    if (etapa !== 'donde' || !Number.isInteger(sector) || sector < 0 || sector >= CFG.SECTORES) return;
+    etapa = 'feedback';
     $('r-donde').classList.remove('activa');
     ensayo.sectorElegido = sector;
 
@@ -441,7 +458,8 @@
     }
 
     destello(correcto ? 'rgba(0,200,83,.22)' : 'rgba(255,45,45,.25)');
-    setTimeout(siguienteRonda, 320);
+    const turno = generacion;
+    setTimeout(function(){ if (turno === generacion) siguienteRonda(); }, 320);
   }
 
   function destello(color){
@@ -458,10 +476,12 @@
   }
 
   function pasarATest(){
+    etapa = 'listo';
     mostrar('p-listo');
   }
 
   function terminar(){
+    etapa = 'fin';
     var n = registros.length || 1;
     var centroOk = registros.filter(function(r){ return r.centro_ok; }).length;
     var periOk = registros.filter(function(r){ return r.periferia_ok; }).length;
@@ -499,10 +519,7 @@
       periferia_ok_pct: Math.round(periOk / n * 100),
       excentricidad_px: Math.round(excentricidad())
     }).then(function(r){
-      var pend = UGI.pendientes();
-      $('estado-envio').textContent = r.ok
-        ? '✓ Resultado guardado en la planilla'
-        : 'Sin conexión — guardado en el dispositivo' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
+      $('estado-envio').textContent = UGI.estadoEnvio(r);
     });
   }
 
@@ -513,6 +530,23 @@
 
   Array.prototype.forEach.call(document.querySelectorAll('.forma'), function(b){
     b.addEventListener('click', function(){ responderCentro(b.getAttribute('data-figura')); });
+  });
+  document.addEventListener('keydown', function(ev){
+    if (ev.repeat || etapa !== 'donde' || !/^[1-8]$/.test(ev.key)) return;
+    ev.preventDefault(); responderDonde(Number(ev.key) - 1);
+  });
+  // Una interrupción invalida el destello; repetir la misma ronda al volver.
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden && ['estimulo','centro','donde','feedback'].includes(etapa)) {
+      const respondido = etapa === 'feedback';
+      generacion++; etapa = 'interrumpido';
+      if (!respondido) ronda--;
+      $('r-centro').classList.remove('activa'); $('r-donde').classList.remove('activa');
+      limpiar();
+    } else if (!document.hidden && etapa === 'interrumpido') {
+      // Una respuesta ya registrada no se vuelve a contar.
+      siguienteRonda();
+    }
   });
   rueda.addEventListener('click', function(ev){ responderDonde(sectorDesdeToque(ev)); });
 

@@ -85,12 +85,15 @@
     });
   }
 
+  var solicitudActual = 0;
   function pintar(juego) {
+    var solicitud = ++solicitudActual;
     var caja = document.getElementById('rank-cuerpo');
     if (!caja) return;
     caja.innerHTML = aviso('Cargando…');
 
     pedirTop(juego).then(function (datos) {
+      if (solicitud !== solicitudActual) return;
       if (!datos || datos.ok === false) {
         caja.innerHTML = aviso('No se pudo leer la tabla.');
         return;
@@ -101,6 +104,7 @@
       }
       caja.innerHTML = tabla(juego, datos.top);
     }).catch(function (err) {
+      if (solicitud !== solicitudActual) return;
       caja.innerHTML = aviso(err.message === 'sin_url'
         ? 'La tabla todavía no está conectada a la planilla.'
         : 'No se pudo cargar la tabla en este momento. Probá recargar la página.');

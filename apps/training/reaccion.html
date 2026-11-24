@@ -123,6 +123,8 @@
     .centro h1{font-size:1.4rem}
     .reglas{padding:.6rem}
   }
+  :focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -212,7 +214,7 @@
         <div class="tarjeta"><div class="n" id="r-errores">–</div><div class="e">Te ganó el impulso</div></div>
       </div>
       <p class="chico" id="interpretacion"></p>
-      <p id="estado-envio">Guardando…</p>
+      <p id="estado-envio" role="status" aria-live="polite">Guardando…</p>
       <button class="btn" id="btn-repetir">REPETIR</button>
       <a class="salir" href="../../pages/jugadores.html">← Volver al portal</a>
     </div>
@@ -248,7 +250,7 @@
   var target = null, ultimoImpacto = 0, ultimaMano = 0;
   var finEn = 0, restanteAlPausar = 0;
   var stats = { aciertos:0, errores:0, esquives:0, perdidos:0, reacciones:[] };
-  var wakeLock = null;
+  var wakeLock = null, frameJuego = null, reanudando = false;
 
   /* MediaPipe puede no cargar: red del club con filtro, caída del CDN, o el propio
      CDN bloqueado. Antes eso dejaba la pantalla en negro sin explicar nada. */
@@ -504,7 +506,7 @@
 
       if (restante <= 0) return terminar();
     }
-    requestAnimationFrame(tick);
+    frameJuego = requestAnimationFrame(tick);
   }
 
   /* ================== PANTALLAS ================== */
@@ -569,22 +571,28 @@
     jugando = true; pausado = false;
     finEn = performance.now() + CFG.DURACION_S * 1000;
     nuevoTarget();
-    tick();
+    if (document.hidden) pausar();
+    else tick();
   }
 
   /* ================== PAUSA ================== */
   function pausar(){
     if (!jugando || pausado) return;
     pausado = true;
+    cancelAnimationFrame(frameJuego);
     restanteAlPausar = Math.max(0, finEn - performance.now());
     mostrar('p-pausa');
   }
   async function reanudar(){
+    if (!jugando || !pausado || reanudando) return;
+    reanudando = true;
     mostrar('p-listos');
     for (var n = 3; n > 0; n--){
       $('cuenta').textContent = n;
       await new Promise(function(r){ setTimeout(r, 600); });
     }
+    reanudando = false;
+    if (!jugando || document.hidden) { mostrar(jugando ? 'p-pausa' : 'p-fin'); return; }
     ocultarTodas();
     pausado = false;
     finEn = performance.now() + restanteAlPausar;
@@ -603,7 +611,9 @@
   }
 
   function terminar(){
+    if (!jugando) return;
     jugando = false;
+    cancelAnimationFrame(frameJuego);
     apagarCamara();
 
     var decisiones = stats.aciertos + stats.errores + stats.perdidos + stats.esquives;
@@ -645,10 +655,7 @@
       total: decisiones,
       precision: precision
     }).then(function(r){
-      var pend = UGI.pendientes();
-      $('estado-envio').textContent = r.ok
-        ? '✓ Resultado guardado en la planilla'
-        : 'Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
+      $('estado-envio').textContent = UGI.estadoEnvio(r);
     });
   }
 

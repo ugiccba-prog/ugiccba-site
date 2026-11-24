@@ -132,6 +132,8 @@
   .destacado .n{font-size:2.4rem}
   #interpretacion{font-size:.85rem;line-height:1.5;opacity:.8;max-width:420px}
   #estado-envio{font-size:.75rem;opacity:.5}
+  :focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -162,7 +164,7 @@
     </div>
 
     <label class="check"><input type="checkbox" id="chk-daltonico">
-      Modo daltónico (agrega texturas a las barras)</label>
+      Modo con símbolos (alternativa al color; sin ranking)</label>
 
     <button class="btn" id="btn-practica">EMPEZAR PRÁCTICA</button>
     <a class="salir" href="../../pages/jugadores.html">Volver al portal</a>
@@ -183,6 +185,7 @@
   <div id="zona">
     <div id="consigna">Tocá el color de la TINTA</div>
     <div id="estimulo">+</div>
+    <div id="simbolo" aria-hidden="true" style="font-size:2rem;min-height:2.5rem"></div>
     <div id="opciones"></div>
   </div>
 </section>
@@ -209,7 +212,7 @@
       <div class="tarjeta destacado"><div class="n" id="r-efecto">–</div><div class="e">Efecto Stroop (costo de inhibir)</div></div>
     </div>
     <p id="interpretacion"></p>
-    <p id="estado-envio">Guardando…</p>
+    <p id="estado-envio" role="status" aria-live="polite">Guardando…</p>
     <button class="btn" id="btn-repetir">REPETIR</button>
     <a class="salir" href="../../pages/jugadores.html">Volver al portal</a>
   </div>
@@ -225,14 +228,15 @@ if (!window.UGI) {
   window.UGI = (function(){
     var COLA='ugi_cola_envios_v1', PERFIL='ugi_perfil_v1';
     function leer(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
-    function escribir(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+    function escribir(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
     return {
       getPerfil: function(){ return leer(PERFIL,{nombre:'',deporte:''}); },
       setPerfil: function(n,d){ escribir(PERFIL,{nombre:n,deporte:d}); },
       normalizarNombre: function(t){ return String(t||'').trim().replace(/\s+/g,' '); },
       mediana: function(a){ if(!a||!a.length) return null; var b=a.slice().sort(function(x,y){return x-y;}); var m=Math.floor(b.length/2); return b.length%2?b[m]:(b[m-1]+b[m])/2; },
+      estadoEnvio: function(r){ return r.guardado ? 'Resultado guardado en este dispositivo. Se reintentará al volver a abrir el juego con conexión.' : 'No se pudo guardar: revisá el almacenamiento del navegador.'; },
       pendientes: function(){ return leer(COLA,[]).length; },
-      enviarResultado: function(p){ var c=leer(COLA,[]); c.push(p); escribir(COLA,c.slice(-50)); return Promise.resolve({ok:false,motivo:'sin_modulo'}); },
+      enviarResultado: function(p){ var c=leer(COLA,[]); c.push(p); var guardado=escribir(COLA,c); return Promise.resolve({ok:false,guardado:guardado,motivo:'sin_modulo'}); },
       reintentarCola: function(){ return Promise.resolve(0); }
     };
   })();
@@ -257,10 +261,10 @@ if (!window.UGI) {
      y no cambia nunca: el jugador aprende el mapa motor y el tiempo medido
      refleja el conflicto mental, no cuánto tardó en buscar el botón. */
   var COLORES = [
-    { nombre:'ROJO',     hex:'#FF2D2D', patron:'rayas'  },
-    { nombre:'VERDE',    hex:'#00C853', patron:'puntos' },
-    { nombre:'AZUL',     hex:'#2979FF', patron:'lineas' },
-    { nombre:'AMARILLO', hex:'#FFD600', patron:'rombos' }
+    { nombre:'ROJO',     hex:'#FF2D2D', simbolo:'●', patron:'rayas'  },
+    { nombre:'VERDE',    hex:'#00C853', simbolo:'▲', patron:'puntos' },
+    { nombre:'AZUL',     hex:'#2979FF', simbolo:'■', patron:'lineas' },
+    { nombre:'AMARILLO', hex:'#FFD600', simbolo:'◆', patron:'rombos' }
   ];
   var TECLAS = ['1','2','3','4'];
 
@@ -328,8 +332,8 @@ if (!window.UGI) {
       b.style.backgroundColor = color.hex;
       b.setAttribute('data-patron', color.patron);
       b.setAttribute('data-color', color.nombre);
-      b.setAttribute('aria-label', 'Color ' + color.nombre);
-      b.innerHTML = '<span class="tecla">' + TECLAS[i] + '</span>';
+      b.setAttribute('aria-label', $('chk-daltonico').checked ? 'Símbolo ' + color.simbolo + ', tecla ' + TECLAS[i] : 'Color ' + color.nombre);
+      b.innerHTML = '<span class="tecla">' + TECLAS[i] + '</span>' + ($('chk-daltonico').checked ? '<span style="position:relative;z-index:1;font-size:2rem;color:#07111a">' + color.simbolo + '</span>' : '');
       b.addEventListener('click', function(){ responder(color.nombre, b); });
       cont.appendChild(b);
     });
@@ -368,6 +372,7 @@ if (!window.UGI) {
 
     // Cruz de fijación: todos empiezan mirando el mismo punto de la pantalla
     var est = $('estimulo');
+    $('simbolo').textContent = '';
     est.classList.add('cruz');
     est.textContent = '+';
     est.style.color = '';
@@ -376,6 +381,7 @@ if (!window.UGI) {
       est.classList.remove('cruz');
       est.textContent = e.palabra.nombre;
       est.style.color = e.tinta.hex;
+      $('simbolo').textContent = $('chk-daltonico').checked ? e.tinta.simbolo : '';
 
       // Arranco el cronómetro recién DESPUÉS de que el navegador pintó,
       // si no le sumás 10-30 ms de dibujo al tiempo del jugador.
@@ -470,6 +476,7 @@ if (!window.UGI) {
     $('r-precision').textContent = m.precision + '%';
     $('r-cong').textContent      = m.rt_congruente_ms   !== '' ? m.rt_congruente_ms + ' ms'   : '–';
     $('r-incong').textContent    = m.rt_incongruente_ms !== '' ? m.rt_incongruente_ms + ' ms' : '–';
+    if ($('chk-daltonico').checked) document.querySelector('.destacado .e').textContent = 'Diferencia entre condiciones (variante con símbolos)';
     $('r-efecto').textContent    = m.efecto_stroop_ms   !== '' ? (m.efecto_stroop_ms > 0 ? '+' : '') + m.efecto_stroop_ms + ' ms' : '–';
 
     var txt;
@@ -484,6 +491,7 @@ if (!window.UGI) {
     } else {
       txt = 'El conflicto te está costando bastante tiempo. Es la variable a seguir sesión a sesión.';
     }
+    if ($('chk-daltonico').checked) txt = 'Práctica con símbolos: elegís la figura asociada a cada botón. Esta variante no mide el efecto Stroop y no participa del ranking.';
     $('interpretacion').innerHTML = txt +
       '<br><span class="chico">Es una medida de entrenamiento para comparar contra vos mismo, no un diagnóstico.</span>';
 
@@ -492,7 +500,7 @@ if (!window.UGI) {
     var payload = {
       jugador: jugador.nombre,
       deporte: jugador.deporte,
-      juego: CFG.JUEGO,
+      juego: $('chk-daltonico').checked ? 'SIMBOLOS' : CFG.JUEGO,
       version: CFG.VERSION,
       aciertos: m.aciertos,
       errores: m.errores,
@@ -505,10 +513,7 @@ if (!window.UGI) {
     };
 
     UGI.enviarResultado(payload).then(function(r){
-      var pend = UGI.pendientes();
-      $('estado-envio').textContent = r.ok
-        ? '✓ Resultado guardado en la planilla'
-        : 'Sin conexión — guardado en el celular' + (pend ? ' (' + pend + ' pendiente' + (pend>1?'s':'') + ')' : '') + ', se envía solo al reconectar';
+      $('estado-envio').textContent = UGI.estadoEnvio(r);
     });
   }
 
@@ -526,6 +531,9 @@ if (!window.UGI) {
 
   $('chk-daltonico').addEventListener('change', function(){
     document.body.classList.toggle('daltonico', this.checked);
+    document.querySelector('.ejemplo .pista').innerHTML = this.checked ? 'Elegí el mismo símbolo que aparece debajo de la palabra.<br>● Rojo · ▲ Verde · ■ Azul · ◆ Amarillo' : 'La palabra dice ROJO, pero la tinta es VERDE. Tocás VERDE: siempre el color de la tinta.';
+    document.querySelector('#p-listo .chico').textContent = this.checked ? 'Ignorá la palabra y elegí el botón que tenga el mismo símbolo.' : 'Ignorá lo que dice la palabra. Solo importa de qué color está pintada.';
+    $('consigna').textContent = this.checked ? 'Tocá el botón con el mismo SÍMBOLO' : 'Tocá el color de la TINTA';
   });
 
   $('btn-practica').addEventListener('click', function(){
@@ -547,7 +555,8 @@ if (!window.UGI) {
   // Teclado para la versión de PC
   document.addEventListener('keydown', function(ev){
     var i = TECLAS.indexOf(ev.key);
-    if (i === -1 || !esperando) return;
+    if (i === -1 || !esperando || ev.repeat) return;
+    ev.preventDefault();
     var c = COLORES[i];
     responder(c.nombre, botonDe(c.nombre));
   });

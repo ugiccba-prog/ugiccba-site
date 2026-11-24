@@ -47,8 +47,12 @@ var RONDAS_MINIMAS_VISION = 20;
 
 /* ---------------------------- GUARDAR ---------------------------- */
 function doPost(e) {
+  var lock = LockService.getScriptLock();
   try {
+    lock.waitLock(15000);
     var datos = JSON.parse(e.postData.contents);
+    if (!datos.id_sesion || !datos.jugador || !datos.juego) return json({ ok: false, error: 'Faltan datos' });
+    if (existeSesion(datos.id_sesion)) return json({ ok: true, id_sesion: datos.id_sesion });
     var hoja = obtenerHoja();
 
     /* Escribimos siguiendo los encabezados que YA tiene la hoja, no un orden fijo.
@@ -66,6 +70,8 @@ function doPost(e) {
     return json({ ok: true, id_sesion: datos.id_sesion || '' });
   } catch (err) {
     return json({ ok: false, error: String(err) });
+  } finally {
+    if (lock.hasLock()) lock.releaseLock();
   }
 }
 
@@ -123,9 +129,9 @@ function topDiez(juego) {
       var umbral = numero(fila[idx.umbral_ms]);
       var centro = numero(fila[idx.centro_ok_pct]);
       var rondas = numero(fila[idx.total]);
-      if (umbral === null) return;
-      if (centro !== null && centro < CENTRO_MINIMO) return;
-      if (rondas !== null && rondas < RONDAS_MINIMAS_VISION) return;
+      if (umbral === null || umbral < 40 || umbral > 900) return;
+      if (centro === null || centro < CENTRO_MINIMO || centro > 100) return;
+      if (rondas === null || rondas < RONDAS_MINIMAS_VISION) return;
       marca = {
         jugador: jugador,
         deporte: fila[idx.deporte] || '',
@@ -324,7 +330,7 @@ function acortarNombre(nombre) {
 function numero(v) {
   if (v === '' || v === null || v === undefined) return null;
   var n = Number(v);
-  return isNaN(n) ? null : n;
+  return isFinite(n) ? n : null;
 }
 
 /* JSONP cuando viene ?callback=algo: le evita al sitio los problemas de CORS

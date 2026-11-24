@@ -4,6 +4,8 @@
   "private": true,
   "description": "Sitio oficial de la Unidad de Gestión Integral (UGI) - Club Ciudad de Buenos Aires",
   "scripts": {
+    "test:mental": "node --test tests/gimnasio-mental.test.cjs",
+    "check:mental:ui": "node scripts/check-gimnasio-mental.cjs",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:js": "jshint assets/scripts apps/training",
     "test:muni360": "node scripts/build-apps-script.cjs --check && node --test tests/muni360*.test.cjs",

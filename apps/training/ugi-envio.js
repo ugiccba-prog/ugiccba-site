@@ -21,7 +21,6 @@ window.UGI = (function () {
  
   const COLA_KEY = 'ugi_cola_envios_v1';
   const PERFIL_KEY = 'ugi_perfil_v1';
-  const MAX_COLA = 50;
  
   /* ---------- localStorage a prueba de balas ---------- */
   function leerLocal(clave, porDefecto) {
@@ -37,7 +36,10 @@ window.UGI = (function () {
   }
  
   /* ---------- Perfil del jugador (para no retipear el nombre) ---------- */
-  function getPerfil() { return leerLocal(PERFIL_KEY, { nombre: '', deporte: '' }); }
+  function getPerfil() {
+    const perfil = leerLocal(PERFIL_KEY, null);
+    return perfil && typeof perfil === 'object' ? { nombre: String(perfil.nombre || ''), deporte: String(perfil.deporte || '') } : { nombre: '', deporte: '' };
+  }
   function setPerfil(nombre, deporte) {
     escribirLocal(PERFIL_KEY, { nombre: nombre, deporte: deporte });
   }
@@ -53,21 +55,8 @@ window.UGI = (function () {
       .replace(/(^|[\s'-])([a-záéíóúñü])/g, (m, sep, letra) => sep + letra.toUpperCase());
   }
  
-  /* ---------- El envío ----------
-     IMPORTANTE — acá estaba el bug que hacía que no llegara nada:
- 
-     ❌ mode: 'no-cors' + headers: {'Content-Type': 'application/json'}
-        · 'application/json' NO es un header permitido en modo no-cors: el
-          navegador lo descarta, o dispara un preflight OPTIONS que Apps Script
-          no sabe responder.
-        · Y peor: con no-cors la respuesta es "opaca", así que el .then()
-          se ejecuta igual aunque el servidor haya devuelto un error 500.
-          Por eso en la consola veías "Datos enviados correctamente" mientras
-          el Sheet seguía vacío. Estabas volando a ciegas.
- 
-     ✅ Content-Type 'text/plain' → es un "simple request", no hay preflight,
-        Apps Script lo acepta y podés LEER la respuesta y saber de verdad si
-        entró o no.                                                            */
+  /* Guardar antes de iniciar la red. El servidor confirma cada id_sesion
+     y evita insertar de nuevo la misma sesión durante los reintentos. */
   /* urlOverride: un juego puede mandar a su propia planilla pasando su URL.
      Si no se pasa nada, va a DATABASE_URL. La cola offline recuerda a que
      destino iba cada resultado, asi un reintento no lo manda a la planilla
@@ -76,46 +65,36 @@ window.UGI = (function () {
     const datos = Object.assign({
       enviado_en: new Date().toISOString(),
       dispositivo: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'movil' : 'escritorio',
-      id_sesion: Math.random().toString(36).slice(2, 10)
+      id_sesion: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)
     }, payload);
- 
-    const destino = urlOverride || datos._url || DATABASE_URL;
- 
-    if (!destino || destino.indexOf('http') !== 0) {
-      console.warn('[UGI] URL de envio no configurada (revisa ugi-envio.js o el juego)');
-      encolar(Object.assign({}, datos, { _url: destino }));
-      return Promise.resolve({ ok: false, motivo: 'sin_url' });
-    }
- 
+    datos._url = urlOverride || datos._url || DATABASE_URL;
+    const guardado = encolar(datos);
+    return transmitir(datos).then((r) => {
+      if (r.ok) quitarPendiente(datos.id_sesion);
+      return Object.assign(r, { guardado: r.ok || guardado });
+    });
+  }
+
+  function transmitir(datos) {
+    const destino = datos._url || DATABASE_URL;
+    if (!/^https?:\/\//.test(destino)) return Promise.resolve({ ok: false, motivo: 'sin_url' });
     const cuerpo = Object.assign({}, datos);
     delete cuerpo._url;
- 
+    const controlador = new AbortController();
+    const reloj = setTimeout(() => controlador.abort(), 12000);
     return fetch(destino, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(cuerpo),
-      redirect: 'follow'
-    })
-      .then((r) => r.text())
-      .then((txt) => {
-        if (txt && txt.indexOf('"ok":true') !== -1) return { ok: true };
-        throw new Error('Respuesta inesperada: ' + String(txt).slice(0, 120));
-      })
-      .catch((err) => {
-        /* Apps Script contesta con un redirect a otro dominio y el navegador a veces
-           no deja leer esa respuesta. El resultado ENTRO igual, pero acá parecía un
-           fallo: el cartel decía "sin conexión" y el resultado quedaba en la cola,
-           así que se volvía a escribir y la planilla terminaba con duplicados.
-           Antes de dar por perdido el envío, le preguntamos a la planilla si llegó. */
-        return existeEnPlanilla(destino, datos.id_sesion).then((llego) => {
-          if (llego) return { ok: true, motivo: 'verificado' };
-          console.warn('[UGI] No se pudo enviar, queda en cola:', err.message);
-          encolar(Object.assign({}, datos, { _url: destino }));
-          return { ok: false, motivo: err.message };
-        });
-      });
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(cuerpo), redirect: 'follow', signal: controlador.signal
+    }).then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then((r) => {
+      if (!r || r.ok !== true) throw new Error('Respuesta inesperada');
+      return { ok: true };
+    }).catch(() => existeEnPlanilla(destino, datos.id_sesion).then((existe) => ({ ok: existe })))
+      .finally(() => clearTimeout(reloj));
   }
- 
+
   /* ---------- ¿Llegó de verdad? ----------
      Consulta por JSONP (una etiqueta <script>), que no depende de CORS. */
   function existeEnPlanilla(destino, id) {
@@ -138,32 +117,45 @@ window.UGI = (function () {
   }
 
   /* ---------- Cola offline ---------- */
+  function leerCola() {
+    const valor = leerLocal(COLA_KEY, []);
+    return Array.isArray(valor) ? valor : [];
+  }
   function encolar(datos) {
-    const cola = leerLocal(COLA_KEY, []);
+    const cola = leerCola();
+    if (cola.some((item) => item.id_sesion && item.id_sesion === datos.id_sesion)) return true;
+    // Nunca descartar resultados anteriores para hacer lugar a uno nuevo.
     cola.push(datos);
-    escribirLocal(COLA_KEY, cola.slice(-MAX_COLA));
+    return escribirLocal(COLA_KEY, cola);
   }
- 
-  function pendientes() { return leerLocal(COLA_KEY, []).length; }
- 
+  function quitarPendiente(id) {
+    escribirLocal(COLA_KEY, leerCola().filter((item) => item.id_sesion !== id));
+  }
+  function pendientes() { return leerCola().length; }
+  let reintento = null;
   function reintentarCola() {
-    const cola = leerLocal(COLA_KEY, []);
-    if (!cola.length || !navigator.onLine) return Promise.resolve(0);
-    escribirLocal(COLA_KEY, []);            // la vacío ya; lo que falle se re-encola solo
+    if (reintento) return reintento;
+    if (!navigator.onLine) return Promise.resolve(0);
+    const cola = leerCola();
     let enviados = 0;
-    return cola.reduce(
-      (p, item) => p.then(() =>
-        // Si ya está en la planilla (envío que sí llegó pero no pudimos leer),
-        // lo damos por hecho en vez de escribirlo dos veces.
-        existeEnPlanilla(item._url || DATABASE_URL, item.id_sesion).then((llego) => {
-          if (llego) { enviados++; return; }
-          return enviarResultado(item, item._url).then((r) => { if (r.ok) enviados++; });
-        })
-      ),
-      Promise.resolve()
-    ).then(() => enviados);
+    reintento = cola.reduce((p, item) => p.then(async () => {
+      // Asignar una identidad durable a resultados de versiones anteriores.
+      if (!item.id_sesion) {
+        const original = JSON.stringify(item);
+        item.id_sesion = Date.now().toString(36) + Math.random().toString(36).slice(2);
+        const actual = leerCola();
+        const indice = actual.findIndex((v) => JSON.stringify(v) === original);
+        if (indice >= 0) actual[indice] = item;
+        else return;
+        if (!escribirLocal(COLA_KEY, actual)) return;
+      }
+      const existe = await existeEnPlanilla(item._url || DATABASE_URL, item.id_sesion);
+      const r = existe ? { ok: true } : await transmitir(item);
+      if (r.ok) { quitarPendiente(item.id_sesion); enviados++; }
+    }), Promise.resolve()).then(() => enviados).finally(() => { reintento = null; });
+    return reintento;
   }
- 
+
   /* ---------- Utilidades de medición ---------- */
   function mediana(arr) {
     if (!arr || !arr.length) return null;
@@ -172,12 +164,19 @@ window.UGI = (function () {
     return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
   }
  
+  function estadoEnvio(r) {
+    if (r.ok) return '✓ Resultado guardado en la planilla';
+    if (!r.guardado) return 'No se pudo guardar el resultado. Mantené esta pantalla abierta y comprobá la conexión y el almacenamiento del navegador.';
+    return 'Resultado pendiente de confirmación, guardado en este dispositivo. Se reintentará al reconectar o abrir otro juego (' + pendientes() + ' pendientes).';
+  }
+
   // Al arrancar cualquier juego, intenta mandar lo que quedó pendiente.
   window.addEventListener('load', () => { reintentarCola(); });
   window.addEventListener('online', () => { reintentarCola(); });
  
   return {
     DATABASE_URL,
+    estadoEnvio,
     enviarResultado,
     reintentarCola,
     pendientes,

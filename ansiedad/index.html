@@ -721,6 +721,8 @@
       .thermo-card .emoji { margin-bottom: 0; font-size: 1.6rem; flex-shrink: 0; }
       .grounding-chips { padding-left: 0; margin-top: 10px; }
     }
+      [role="button"]:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--blue-ccba, #59bde9); outline-offset: 4px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
   </style>
 </head>
 <body>
@@ -1203,9 +1205,12 @@
       container.classList.add('visible');
     }
 
+    const appliedTools = new Set();
     function toggleSolutionCard(card) {
       card.classList.toggle('applied');
-      if (card.classList.contains('applied')) {
+      const tool = card.querySelector('h5').textContent;
+      if (card.classList.contains('applied') && !appliedTools.has(tool)) {
+        appliedTools.add(tool);
         incrementCounter();
       }
     }
@@ -1290,20 +1295,21 @@
       chipEl.classList.toggle('picked');
       const stepEl = document.getElementById(stepId);
       const anyPicked = stepEl.querySelectorAll('.chip.picked').length > 0;
-      if (anyPicked) {
-        stepEl.classList.add('done');
-      }
+      stepEl.classList.toggle('done', anyPicked);
       checkAllGroundingDone();
     }
 
+    let groundingCompleted = false;
     function checkAllGroundingDone() {
       const doneCount = document.querySelectorAll('.grounding-item.done').length;
-      if (doneCount === 5) {
+      if (doneCount === 5 && !groundingCompleted) {
+        groundingCompleted = true;
         incrementCounter();
       }
     }
 
     function resetGrounding() {
+      groundingCompleted = false;
       document.querySelectorAll('.grounding-item').forEach(i => i.classList.remove('done'));
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('picked'));
     }
@@ -1500,6 +1506,7 @@
       });
     }
 
+    let agendaCompleted = false;
     function toggleAgenda(idx, el) {
       el.classList.toggle('completed');
       const completedIdx = [];
@@ -1507,10 +1514,11 @@
         if (step.classList.contains('completed')) completedIdx.push(i);
       });
       safeSet(STORAGE_KEY_AGENDA, JSON.stringify(completedIdx));
-      if (completedIdx.length === 5) incrementCounter();
+      if (completedIdx.length === 5 && !agendaCompleted) { agendaCompleted = true; incrementCounter(); }
     }
 
     function resetAgenda() {
+      agendaCompleted = false;
       safeRemove(STORAGE_KEY_AGENDA);
       document.querySelectorAll('.agenda-step').forEach(s => s.classList.remove('completed'));
     }
@@ -1518,6 +1526,27 @@
     // INICIALIZACIÓN
     updateCounterDisplay();
     loadAgenda();
+    agendaCompleted = document.querySelectorAll('.agenda-step.completed').length === 5;
+
+    // Los controles de tarjetas también se pueden activar con teclado.
+    function prepararControles() {
+      document.querySelectorAll('div[onclick], span[onclick]').forEach(el => {
+        el.tabIndex = 0; el.setAttribute('role', 'button');
+        if (!el.dataset.keyboardReady) {
+          el.dataset.keyboardReady = 'true';
+          el.addEventListener('keydown', ev => {
+            if (ev.target !== el || ev.repeat || !['Enter', ' '].includes(ev.key)) return;
+            ev.preventDefault(); ev.stopPropagation(); el.click();
+          });
+        }
+        if (el.matches('.thermo-card,.solution-card,.chip,.agenda-step,.grounding-top')) {
+          const selected = el.matches('.selected,.applied,.picked,.completed') || (el.matches('.grounding-top') && el.parentElement.classList.contains('done'));
+          el.setAttribute('aria-pressed', String(selected));
+        }
+      });
+    }
+    prepararControles();
+    new MutationObserver(prepararControles).observe(document.querySelector('main') || document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
   </script>
 </body>
 </html>
