@@ -44,6 +44,7 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * Archivo consultable de temporadas y cierre del ciclo por rol, con copia previa.
 
 ### 3. Aplicaciones Interactivas
+* **Gimnasio Mental: estado, cambios, pruebas y despliegue:** [registro de continuidad](docs/gimnasio-mental-continuidad.md), con la identificación del Apps Script activo y su versión publicada.
 * **`apps/training/`**: Módulos interactivos de entrenamiento cognitivo para deportistas:
   * `reaccion.html`: Test de tiempo de reacción e inhibición motriz.
   * `stroop.html`: Test de atención selectiva y agilidad mental.
