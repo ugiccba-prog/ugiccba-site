@@ -6,13 +6,13 @@ import {sha} from '../functions/muni360/domain.mjs';
 import {areas,call,db,rpc} from './browser-fixture.mjs';
 
 const secret='mci_'+'e'.repeat(64);
-for(const file of ['005_maintenance.sql','009_access_notifications.sql','012_weekly_coordinator_alerts.sql','016_direct_access.sql']){
+for(const file of ['005_maintenance.sql','009_access_notifications.sql','012_weekly_coordinator_alerts.sql','016_direct_access.sql','017_archive_access.sql']){
  await db.exec(fs.readFileSync(new URL('../sql/'+file,import.meta.url),'utf8'));
 }
 await db.query('insert into mc_private.maintenance(id,source_hash)values(true,$1)',[sha(secret)]);
 
 const add=(email,extra={},actor='owner')=>call(actor,{email,rol:'Profe',areas:[areas[0]],...extra},'/api/users/add');
-const list=async()=>(await call('owner',{},'/api/users/list')).users;
+const list=async(archived=false)=>(await call('owner',{archived},'/api/users/list')).users;
 const tasks=p_result=>rpc('mc_source_tasks',{p_secret:secret,p_result},'anon');
 const me=(uid,email)=>createHandler({rpc,verify:async()=>({uid,email,nombre:'Cuenta de prueba'})})({path:'/api/me',body:{}});
 
@@ -72,5 +72,41 @@ await test('a pending account can be enabled in place and a suspended invitation
  assert.equal((await me('suspended-uid','suspended@example.invalid')).profile.status,'suspendido');
  assert.equal((await tasks({approvalClaim:10})).approvals.length,0);
  await assert.rejects(add('suspended@example.invalid'),{code:'CONFLICTO'});
+});
+await test('only Dirección can archive old access, view the archive, and restore as suspended',async()=>{
+ const change=(uid,revision,archived,actor='owner')=>call(actor,{uid,revision,archived},'/api/users/archive');
+ await assert.rejects(change('teacher',0,true,'teacher'),{code:'PERMISOS'});
+ await assert.rejects(change('owner',0,true),{code:'PERMISOS'});
+ await assert.rejects(change('teacher',0,true),{code:'CONFLICTO'});
+ await me('old-uid','old@example.invalid');
+ await assert.rejects(change('old-uid',99,true),{code:'CONFLICTO'});
+
+ const archived=(await change('old-uid',0,true)).user;
+ assert.equal(archived.status,'suspendido');
+ assert.ok(archived.archivedAt);
+ assert.equal((await list()).some(u=>u.uid==='old-uid'),false);
+ assert.equal((await list(true)).find(u=>u.uid==='old-uid').revision,1);
+ assert.equal((await me('old-uid','old@example.invalid')).profile.status,'suspendido');
+ await assert.rejects(call('owner',{uid:'old-uid',revision:1,rol:'Profe',status:'activo',areas:[areas[0]]},'/api/users/update'),{code:'CONFLICTO'});
+ await assert.rejects(add('old@example.invalid'),{code:'CONFLICTO'});
+
+ const restored=(await change('old-uid',1,false)).user;
+ assert.equal(restored.archivedAt,undefined);
+ assert.equal((await list()).find(u=>u.uid==='old-uid').status,'suspendido');
+ assert.equal((await list(true)).some(u=>u.uid==='old-uid'),false);
+ assert.equal((await tasks({approvalClaim:10})).approvals.length,0);
+ const events=(await call('owner',{},'/api/users/history')).events;
+ assert.ok(events.some(e=>e.target==='old@example.invalid'&&e.motivo==='Acceso archivado'));
+ assert.ok(events.some(e=>e.target==='old@example.invalid'&&e.motivo==='Acceso restaurado como suspendido'));
+});
+
+await test('an expired direct invitation can be archived before the first login',async()=>{
+ const {user}=await add('expired@example.invalid');
+ await db.query("update mc_private.users set record=record||jsonb_build_object('expiresAt','2000-01-01T00:00:00Z') where uid=$1",[user.uid]);
+ await call('owner',{uid:user.uid,revision:user.revision,archived:true},'/api/users/archive');
+ const {profile}=await me('expired-uid','expired@example.invalid');
+ assert.equal(profile.status,'suspendido');
+ assert.ok((await list(true)).some(u=>u.uid==='expired-uid'));
+ assert.equal((await tasks({approvalClaim:10})).approvals.length,0);
 });
 await db.close();

@@ -49,12 +49,16 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
   if(input.path.startsWith('/api/users/')){
    if(identity.uid!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra permisos.');
    if(input.path==='/api/users/history')return {ok:true,...await service('permissionHistory',{uid:actor.id})};
-   if(input.path==='/api/users/list'){const offset=d.cursor==null?0:Number(d.cursor);if(!Number.isSafeInteger(offset)||offset<0)throw new AccessError('VALIDACION','Página inválida.',400);const r=await service('users',{uid:actor.id,offset});return {ok:true,users:r.users,nextCursor:r.total>offset+50?String(offset+50):null};}
+   if(input.path==='/api/users/list'){const offset=d.cursor==null?0:Number(d.cursor);if(!Number.isSafeInteger(offset)||offset<0)throw new AccessError('VALIDACION','Página inválida.',400);const r=await service('users',{uid:actor.id,offset,archived:d.archived===true});return {ok:true,users:r.users,nextCursor:r.total>offset+50?String(offset+50):null};}
    if(input.path==='/api/users/add'){
     const email=typeof d.email==='string'?d.email.trim().toLowerCase():'';
     if(email.length>254||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email))throw new AccessError('VALIDACION','Ingresá un correo válido.',400);
     const access=validateAccess({...input.body,revision:0,status:'activo'},areas);
     return {ok:true,...await service('addUser',{uid:actor.id,email,access})};
+   }
+   if(input.path==='/api/users/archive'){
+    if(typeof targetUid!=='string'||!Number.isInteger(d.revision)||typeof d.archived!=='boolean')throw new AccessError('VALIDACION','Acceso inválido.',400);
+    return {ok:true,...await service('archiveUser',{uid:actor.id,target:targetUid,revision:d.revision,archived:d.archived})};
    }
    if(input.path==='/api/users/update'){if(typeof targetUid!=='string')throw new AccessError('VALIDACION','Usuario inválido.',400);return {ok:true,...await service('updateUser',{uid:actor.id,target:targetUid,revision:d.revision,access:validateAccess(input.body,areas)})};}
    throw new AccessError('RUTA','Ruta inexistente.',404);

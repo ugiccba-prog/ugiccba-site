@@ -52,7 +52,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
 (async()=>{
  process.env.MUNI360_TEST_COYFD='1';
  fixture=await import('./browser-fixture.mjs');e={read:(uid,deporte)=>fixture.call(uid,{tipo:'LECTURA',deporte})};
- for(const migration of ['005_maintenance.sql','009_access_notifications.sql','012_weekly_coordinator_alerts.sql','016_direct_access.sql']){
+ for(const migration of ['005_maintenance.sql','009_access_notifications.sql','012_weekly_coordinator_alerts.sql','016_direct_access.sql','017_archive_access.sql']){
   await fixture.db.exec(fs.readFileSync(path.join(__dirname,'../sql',migration),'utf8'));
  }
  for(const deporte of areas){const snap=await e.read('owner',deporte);await fixture.call('owner',fixture.operation(snap,'DUA',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{comunicacion:'APOYO_VISIBLE'}}));await fixture.call('owner',fixture.operation(await e.read('owner',deporte),'LEGAJO',{deporte,jugador:'Juan ficticio',subjectId:'p1',ficha:{paseInterno:'NOTA_PRIVADA_FLUJO',bitacora:[],actividadesSimultaneas:[]}}));}
@@ -133,6 +133,16 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await page.getByText('Correo en cola',{exact:true}).waitFor({state:'visible'});
   assert.equal(await page.getByRole('dialog').isVisible(),false);
   assert.deepEqual((await fixture.call('invitado',{},'/api/me')).profile.areas,['Colonia']);
+  await fixture.call('viejo',{},'/api/me');
+  await page.locator('#search').fill('viejo@example.invalid');
+  await page.getByRole('button',{name:'Actualizar',exact:true}).click();
+  page.on('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Archivar acceso'}).click();
+  await page.getByText('Acceso archivado. Lo podés recuperar desde Archivados.',{exact:true}).waitFor();
+  await page.locator('#filter').selectOption('archivado');
+  await page.getByRole('button',{name:'Restaurar',exact:true}).click();
+  await page.getByText('Acceso restaurado como suspendido.',{exact:true}).waitFor();
+  assert.equal((await fixture.call('viejo',{},'/api/me')).profile.status,'suspendido');
   await context.close();console.log(JSON.stringify({ok:true,report,ownerAdmin:true,apiCalls:calls.length,realGoogle:false},null,2));
  }finally{await browser.close();server.close();await fixture.db.close();}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1;});

@@ -1,4 +1,4 @@
-# Muni360 · Continuidad vigente al 23/11/2026
+# Muni360 · Continuidad vigente al 24/11/2026
 
 Esta sección es la referencia actual para continuar. Las notas históricas de abajo documentan etapas anteriores y no indican la rama, el backend ni las carpetas que deben usarse hoy.
 
@@ -7,10 +7,10 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Repositorio: https://github.com/ugiccba-prog/ugiccba-site · rama oficial: `main`.
 - PC de casa, DESKTOP-G6MFIIR: `C:\Users\Juan\Repositorios\ugi`.
 - PC del club, Juan-M: `C:\Users\Juan Machado\Repo\ugiccba-site`.
-- Última revisión funcional leída y comprobada: `7e804e004302a896ea7cdaeb9167e2d0f46a2771` (22–23/11/2026).
+- Últimos cambios funcionales publicados el 24/11/2026: [alta directa por correo y archivo de accesos](MUNI360_AVISOS_ACCESO.md).
 - No retomar una copia antigua de ensayo, una rama anterior o un ZIP como base sin compararlos con `origin/main`. Revisar `git status` antes de sincronizar; conservar cambios locales y actualizar sin forzar ni borrar archivos.
 
-## Cambios recientes incorporados (17/11 al 23/11/2026)
+## Cambios recientes incorporados (17/11 al 24/11/2026)
 
 - `c998fa6` / `0f47ac3` / `f3dcdcd`: Portal visual completo en Deportes y Colonia/COYFD, comparador con radar de 3 a 16 dimensiones, seguimiento, agenda y service worker de Comunidad.
 - `514de5d`: Optimización de carga SQL (`013_fast_load_and_dashboard.sql` con `jsonb_agg`) y consulta paginada por lotes de a 2 actividades en `/api/dashboard`.
@@ -22,14 +22,23 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - `1d4186e`: Navegación del navegador (Atrás/Adelante con `history.pushState`/`popstate`) entre secciones internas sin cerrar la sesión activa.
 - `dbacdba`: Priorización de actualización de Google Sheets y procesamiento de cola acotada (`server/supabase/tools/worker-jobs-priority.sql`).
 - `e972f0b` / `268d214` / `76d44c2`: **Presentes diarios de Colonia y COYFD sin duplicados** (`muni360-presence.js`, `presence.mjs`, `docs/muni360-presentes-diarios.md`), compactados en un panel desplegable por fecha para Dirección UGI y Coordinación.
-- `458c638`: **Planillas horizontales de asistencia por grupo y tira en Google Sheets** (`AsistenciaHorizontal.gs`, `SheetsInstitucional.gs`, `docs/muni360-asistencia-horizontal.md`) con pestañas `Asist · <grupo> · <tira>` y tres totales diarios en Colonia (Presentes, Con comida 🍴 y Sin comida).
+- `458c638`: **Planillas horizontales de asistencia por grupo y tira en Google Sheets** (`AsistenciaHorizontal.gs`, `SheetsInstitucional.gs`, `docs/muni360-asistencia-horizontal.md`) con pestañas `Asist · <grupo> · <tira>` y tres totales diarios en Colonia (Presentes, Comedor y Vianda).
 - `a342db1` / `7e804e0`: **Separación de accesos y pantallas de Colonia y COYFD** (`/muni360/colonia/` y `/muni360/coyfd/`, `docs/muni360-portales-separados.md`), generados desde la misma fuente con `MUNI_BASE_AREA`, tarjetas independientes en `entrada.html` y aislamiento de sesión, paneles e historial.
+
+- `768c2ba` / `e2194c8`: Comedor y Vianda en Colonia, código de planillas horizontales y exportación. La vista de auditoría muestra los campos que cambiaron y las jornadas parciales se señalan en el resumen.
+- `30d9057`: Dirección puede dar de alta por correo, asignar permisos antes del primer ingreso y enviar un aviso mediante la cola institucional. Se comprobó publicación en GitHub Pages y la cola con datos de prueba. La entrega a una casilla real sigue pendiente de verificación. Ver [Avisos de acceso](MUNI360_AVISOS_ACCESO.md).
+
+- **Archivo de accesos:** Dirección puede retirar de la lista principal los accesos pendientes, suspendidos o vencidos. El filtro **Archivados** permite restaurarlos como suspendidos. **Historial de permisos** conserva las dos operaciones.
+
+## Registro de cambios
+
+En cada cambio de Muni360, actualizar el [Registro de cambios de Muni360 de UGI CCBA](https://chatgpt.com/library?file_id=libfile_ce838a31121c81918f39f93f40e8844c&account_id=personal) y la documentación técnica que corresponda. Asentar fecha, alcance, estado de publicación y verificaciones. Después de publicar, registrar el resultado y las verificaciones que queden pendientes. Para cambios de permisos, conservar la auditoría con quién hizo el cambio, cuándo, sobre qué acceso y qué valores cambiaron.
 
 ## Código y operación actuales
 
 - Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · avisos: `/comunidad/`.
 - Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css`.
-- `muni360/` es generado (**32 archivos públicos**, incluyendo `muni360/coyfd/index.html` y `muni360-presence.js`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- `muni360/` es generado (**33 archivos públicos**, incluyendo `muni360/coyfd/index.html` y `muni360-presence.js`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
 - Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
 - Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.

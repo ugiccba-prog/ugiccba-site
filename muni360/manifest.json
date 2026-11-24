@@ -2,7 +2,7 @@
   "format": "MUNI360_PUBLIC_BUNDLE_V1",
   "base": "/muni360/",
   "files": {
-    "assets/scripts/muni360-admin.js": "c2e8313b5716ca7814e57ca68252d74b1964a9adce2fe88008a460a289299a7d",
+    "assets/scripts/muni360-admin.js": "1127ed3a1dd1a952fe724b6d0b31fb8de47a9d9d291fbb7da310da9cecac25ce",
     "assets/scripts/muni360-audit.js": "7d6f32cf440e27b09a77fed0d33139979a3f6a1fa60e57e4cbcd503689817bd6",
     "assets/scripts/muni360-config.js": "bd4e9f7a6bae733e3c4158bd7502b910a4e582af9077ab673f2c96ef6b3eee68",
     "assets/scripts/muni360-dashboard.js": "9fb3d633fb950aabf59d494339fd7fb95baf91d40534a3a1b74a8f78d3f0cf56",
@@ -25,7 +25,7 @@
     "deportes/index.html": "3c2da44501c318d9bba447ba4e3270d4f00260a20586e23b361b03073792023f",
     "colonia/index.html": "be14fe74e9909a16210a7070a7fb7ce8e2a524d7973d87fe7840671bff3f34cc",
     "coyfd/index.html": "8a1bd671fe2d9094960a4f83491d65f4aeda7542c7e4a4b21e6ce500be18a552",
-    "admin/index.html": "d8319d238e1958fb98fd75fb613a10364d660bd67253769d06f199015b397286",
+    "admin/index.html": "955c1bbe582bc69b37bede9cec58ca197fb6e1054fb36f3de76abf2f91889a1e",
     "encuesta/index.html": "578da0c6dab7093371e16863c7b72fbcd1f8d369439f5df5125e46720fc9d661",
     "index.html": "0654943394ca7b35b54ebbf938e7860286f87527578e641cb3e6458456248963",
     "comunidad/index.html": "5930f3491dee77c8a6f16257bb1eb65424786e0738cd6c2752374960e2a46b69",

@@ -1,4 +1,16 @@
-# Avisos de solicitudes de acceso
+# Avisos y gestión de accesos en Muni360
+
+## Alta directa por correo
+
+En [Usuarios y permisos](https://ugiccba.com.ar/muni360/admin/), Dirección UGI puede usar **Agregar acceso**, asignar un rol, actividades y vencimiento cuando corresponda, y pulsar **Habilitar acceso y enviar correo**. El correo entra en la cola institucional. Al ingresar con la cuenta de Google verificada para esa dirección, la persona recibe los permisos asignados.
+
+El panel informa si el correo está en cola, enviándose, enviado o pendiente de revisión. La autorización se guarda antes de que el trabajador procese el correo. Se verificaron la cola y la vinculación del primer ingreso con datos de prueba. Queda pendiente confirmar la entrega a una casilla real.
+
+## Archivo de accesos
+
+**Archivar acceso** está disponible para Dirección sobre registros pendientes, suspendidos o vencidos. Para retirar un acceso vigente, primero suspendelo. El filtro **Archivados** permite **Restaurar** un registro como suspendido. El **Historial de permisos** conserva el motivo, la fecha, el autor, la cuenta afectada y sus valores antes y después. Para volver a habilitar el ingreso, cambiá el estado en una edición posterior. Publicado el 24/11/2026.
+
+## Antecedente del ensayo Apps Script
 
 Se ejecutan en Apps Script con MailApp. Destinatario: correo de la cuenta autenticada cuyo UID coincide con UGI_OWNER_UID; nunca un correo enviado por el solicitante. No cambian roles ni permisos.
 
