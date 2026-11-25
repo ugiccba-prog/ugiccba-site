@@ -1,13 +1,14 @@
 :root {
   --muni-ink: #102e46;
-  --muni-muted: #516577;
-  --muni-accent: #176283;
-  --muni-accent-hover: #104d69;
-  --muni-canvas: #f4f8fb;
-  --muni-surface: #fff;
-  --muni-tint: #e9f4f9;
-  --muni-border: #d7e4ec;
-  --muni-focus: #126c96;
+  --muni-muted: #3d5369;
+  --muni-accent: #225173;
+  --muni-accent-hover: #183c59;
+  --muni-canvas: #e5edf5;
+  --muni-surface: #f8fbfd;
+  --muni-tint: #d8e7f2;
+  --muni-navigation: #bdcfdd;
+  --muni-border: #b8cbd9;
+  --muni-focus: #1e567a;
   --muni-radius: 20px;
   --muni-font: 'Plus Jakarta Sans', system-ui, sans-serif;
   --muni-heading: Outfit, var(--muni-font);

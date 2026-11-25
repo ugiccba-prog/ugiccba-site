@@ -3,7 +3,7 @@
 .muni-portal button,.muni-portal select,.muni-portal input,.muni-portal textarea{font-family:var(--font)}
 .muni-portal h1,.muni-portal h2,.muni-portal h3,.portal-stats strong,.portal-player-rate strong{font-family:Outfit,var(--font);letter-spacing:-.02em}
 .muni-portal #app-screen{max-width:1360px;padding:22px 32px;margin:0 auto;min-height:calc(100vh - 130px);position:relative}
-.muni-portal #app-header{background:#ffffff80;color:#082b49;border-bottom:1px solid #dde6f2;padding:12px 32px;box-shadow:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.muni-portal #app-header{background:var(--muni-navigation);color:#082b49;border-bottom:1px solid #dde6f2;padding:12px 32px;box-shadow:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .muni-portal #app-header .brand{flex:1}.muni-portal #app-header .brand h2{color:#082b49;font-size:18px}.muni-portal #app-header .brand img{width:30px;height:36px;background:none}.muni-portal #header-sub{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#5e7191;order:2;width:100%}.muni-portal #header-role{background:#e5edfc;border-radius:20px;color:#234b81;padding:2px 9px}.muni-portal #app-header .btn-salir{background:white;border:1px solid #d9e4f2;color:#234b81;border-radius:20px;padding:8px 15px;min-height:44px;font-size:12px;width:auto;flex:none}
 .muni-portal #barra-estado{padding:8px 32px;background:#f8fbff;color:#52657b;font-size:11px;gap:8px;border-bottom:1px solid #dfe8f4}
 .muni-portal .card{background:var(--muni-surface);border:1px solid var(--muni-border);border-radius:var(--muni-radius);padding:22px;box-shadow:0 2px 8px #082b4906;margin-bottom:20px}
@@ -43,7 +43,7 @@
 #portal-mobile-nav,#portal-backdrop{display:none}
 @media(min-width:1050px){
  .muni-portal:has(#app-screen:not(.hidden)){padding-left:250px}
- .muni-portal #nav-tabs{position:fixed;inset:0 auto 0 0;width:250px;border:0;border-radius:0;background:var(--muni-surface);border-right:1px solid var(--muni-border);padding:25px 15px 18px;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;overflow-y:auto;z-index:60;scrollbar-width:thin;scrollbar-color:var(--muni-border) transparent;margin:0}
+ .muni-portal #nav-tabs{position:fixed;inset:0 auto 0 0;width:250px;border:0;border-radius:0;background:var(--muni-navigation);border-right:1px solid var(--muni-border);padding:25px 15px 18px;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;overflow-y:auto;z-index:60;scrollbar-width:thin;scrollbar-color:var(--muni-border) transparent;margin:0}
  .portal-navbrand{display:grid;grid-template-columns:36px 40px 1fr;gap:7px;padding:0 11px 8px;align-items:center;color:var(--muni-ink)}.portal-navbrand img{width:32px;height:38px;object-fit:contain}.portal-ugi{font-size:40px;color:#59bde9;line-height:1}.portal-navbrand b{font-family:Outfit,var(--font);font-size:24px;grid-column:1/-1;margin-top:4px}.portal-navbrand small{grid-column:1/-1;font-size:10px;color:var(--muni-muted)}
  .portal-nav-role{display:block;color:var(--muni-accent);background:var(--muni-tint);border:1px solid var(--muni-border);border-radius:18px;font-size:11px;padding:10px 13px;margin:8px 7px 14px}
  .muni-portal #nav-tabs .tab{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;flex:0 0 auto;white-space:normal;text-align:left;background:transparent;color:var(--muni-ink);min-height:44px;padding:10px 15px;font-size:12px;font-weight:500;border-radius:24px;border:0}
@@ -55,13 +55,13 @@
  html:has(.muni-portal){--mobile-bar-space:calc(62px + env(safe-area-inset-bottom, 0px));scroll-padding-bottom:calc(var(--mobile-bar-space) + 16px)}
  .muni-portal #app-screen{padding:18px 22px calc(var(--mobile-bar-space) + 18px)}.muni-portal #app-header{padding:12px 22px}.muni-portal #barra-estado{padding:8px 22px}
  .portal-menu{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px}
- .muni-portal #nav-tabs{display:none;position:fixed;top:0;left:0;bottom:0;width:min(285px,85vw);z-index:70;background:var(--muni-surface);border:0;border-radius:0;padding:22px 15px;overflow-y:auto;flex-direction:column;gap:6px;margin:0}.muni-portal.portal-menu-open #nav-tabs{display:flex}.muni-portal #nav-tabs .tab{flex:0 0 auto;color:var(--muni-ink);background:transparent;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:12px 14px;min-height:44px;text-align:left;border-radius:22px;font-size:12px}.muni-portal #nav-tabs .tab[aria-selected="true"]{background:var(--muni-tint);color:var(--muni-accent);font-weight:700}
+ .muni-portal #nav-tabs{display:none;position:fixed;top:0;left:0;bottom:0;width:min(285px,85vw);z-index:70;background:var(--muni-navigation);border:0;border-radius:0;padding:22px 15px;overflow-y:auto;flex-direction:column;gap:6px;margin:0}.muni-portal.portal-menu-open #nav-tabs{display:flex}.muni-portal #nav-tabs .tab{flex:0 0 auto;color:var(--muni-ink);background:transparent;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:12px 14px;min-height:44px;text-align:left;border-radius:22px;font-size:12px}.muni-portal #nav-tabs .tab[aria-selected="true"]{background:var(--muni-tint);color:var(--muni-accent);font-weight:700}
  .portal-navbrand{display:grid;color:var(--muni-ink);padding:0 12px 12px;font-size:22px;gap:6px}.portal-navbrand img{width:32px;height:38px}.portal-navbrand .portal-ugi{display:none}.portal-navbrand small{font-size:10px;color:var(--muni-muted)}.portal-nav-role{display:block;color:var(--muni-muted);font-size:11px;padding:5px 12px}
  .muni-portal.portal-menu-open #portal-backdrop{display:block;position:fixed;inset:0;z-index:65;background:#102e4660}
  #portal-mobile-nav:not(.hidden){
   display:flex;position:fixed;inset:auto 0 0;z-index:55;gap:2px;
   min-height:var(--mobile-bar-space);padding:5px max(6px,env(safe-area-inset-right,0px)) calc(5px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
-  background:var(--muni-surface);border-top:1px solid var(--muni-border);box-shadow:0 -3px 14px #102e460a;
+  background:var(--muni-navigation);border-top:1px solid var(--muni-border);box-shadow:0 -3px 14px #102e460a;
  }
  #portal-mobile-nav button{
   flex:1 1 0;display:grid;place-items:center;align-content:center;gap:3px;min-width:0;min-height:50px;
@@ -76,7 +76,7 @@
 @media(max-width:650px){
  .muni-portal #tab-analisis .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
  .muni-portal #app-screen{padding:14px 12px calc(var(--mobile-bar-space) + 16px)}
- .muni-portal #app-header{padding:10px 14px;gap:8px;background:var(--muni-surface)}
+ .muni-portal #app-header{padding:10px 14px;gap:8px}
  .muni-portal #app-header #portal-menu{font-size:.875rem;min-width:44px;padding:6px 10px}
  .muni-portal #header-sub{font-size:.8125rem;line-height:1.5}
  .muni-portal #barra-estado{padding:7px 14px;line-height:1.5;font-size:.75rem;flex-wrap:wrap}
