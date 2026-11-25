@@ -3,10 +3,33 @@
  let identity='',generation=0;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const pct=n=>n==null?'Sin datos':n.toLocaleString('es-AR')+' %';
- const semText=s=>s&&s.observados?`${s.promedio.toFixed(2)} / 3 (${pct(s.pctVerde)} 🟢) · 🟢${s.verde} 🟡${s.amarillo} 🔴${s.rojo}`:'Sin datos';
- const semClass=s=>!s||s.promedio==null?'none':s.promedio>=2.7?'green':s.promedio>=2?'yellow':'red';
- const semCell=s=>'<span class="mm-sem mm-'+semClass(s)+'">'+esc(semText(s))+'</span>';
- const metricRow=(label,x,extra)=>'<tr class="'+(extra||'')+'"><th>'+esc(label)+'</th><td>'+x.inscripciones+'</td><td>'+pct(x.asistencia)+'</td><td>'+semCell(x.semaforo)+'</td></tr>';
+ const countLabel=(count,singular,plural)=>count+' '+(count===1?singular:plural);
+ const semColors=[
+  ['verde','Verde'],
+  ['amarillo','Amarillo'],
+  ['rojo','Rojo']
+ ];
+ const semSummary=s=>{
+  if(!s?.observados)return '<span class="mm-empty">Sin datos</span>';
+  const score=s.promedio.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const counts=semColors.map(([key,label])=>
+   '<span class="mm-count"><span class="mm-dot mm-dot-'+key+'" aria-hidden="true"></span><span class="mm-sr-only">'+label+': </span>'+s[key]+'</span>'
+  ).join('');
+  return '<span class="mm-sem-score"><strong>'+score+' / 3</strong> <small>'+pct(s.pctVerde)+' verde</small></span><span class="mm-counts">'+counts+'</span>';
+ };
+ const metric=(label,html)=>'<span class="mm-metric"><span class="mm-label">'+label+'</span>'+html+'</span>';
+ const metricValues=x=>metric('Deportistas','<strong>'+x.inscripciones+'</strong>')+
+  metric('Asistencia','<strong>'+pct(x.asistencia)+'</strong>')+
+  metric('Semáforo',semSummary(x.semaforo));
+ const detailRow=(label,x,className)=>'<div class="mm-metric-row '+className+'"><span class="mm-row-name">'+esc(label)+'</span>'+metricValues(x)+'</div>';
+ const activityDetail=x=>{
+  const categories=x.categoriasDetalle||[],groups=x.gruposDetalle||[];
+  const detail=categories.map(c=>detailRow(c.categoria,c,'mm-category')+
+   groups.filter(g=>g.categoria===c.categoria).map(g=>detailRow(g.tira,g,'mm-team')).join('')
+  ).join('');
+  return '<details class="mm-activity"><summary class="mm-metric-row"><span class="mm-row-name"><strong>'+esc(x.activity)+'</strong><small>'+countLabel(categories.length,'categoría','categorías')+' · '+countLabel(groups.length,'equipo','equipos')+'</small></span>'+metricValues(x)+'</summary>'+
+   '<div class="mm-nested">'+(detail||'<p class="mm-note">Sin detalle por categoría.</p>')+'</div></details>';
+ };
  window.MuniDashboard={mount(session){
   window.MuniPresence?.mount(session);
   const isDemo=session?.modoDemo===true;
@@ -15,15 +38,41 @@
   if(identity===key)return;identity=key;generation++;document.getElementById('management-panel')?.remove();if(!allowed)return;
   const callApi=(path,body)=>{if(isDemo){if(!window.MuniDemoRuntime?.call)return Promise.reject(Error('Falta el módulo de demostración local.'));return window.MuniDemoRuntime.call(path,body,session);}return MuniGoogle.call(path,body);};
   const owner=!!(session.canManageUsers||(isDemo&&session.esAdminTotal)),box=document.createElement('details');box.id='management-panel';box.className='card muni-management';
-  box.innerHTML='<summary><strong>'+ (owner?'Mi panel · Dirección UGI':'Panel de Coordinación')+'</strong><span>'+ (isDemo?(owner?'Visión completa de demostración y detalle por actividad':'Estadísticas de demostración por deporte, categoría y equipo de tus actividades'):(owner?'Visión completa del club y detalle por actividad':'Estadísticas por deporte, categoría y equipo de tus actividades autorizadas'))+'</span></summary><div class="mm-content"><div class="mm-filters"><label>Período<select id="mm-days"><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option><option value="365">Último año</option><option value="0">Todo el historial</option></select></label><label>Actividades<select id="mm-filter"><option value="all">Todas</option><option value="with">Con deportistas</option><option value="empty">Vacías (0)</option></select></label><button type="button" id="mm-expand">Expandir todas</button><button type="button" id="mm-all">Seleccionar todas</button><button type="button" id="mm-none">Limpiar selección</button><button type="button" id="mm-update">Consultar</button></div><fieldset><legend>Actividades '+(owner?'del club':'autorizadas')+'</legend><div class="mm-choices">'+session.areas.map(a=>'<label><input type="checkbox" value="'+esc(a)+'" checked> '+esc(a)+'</label>').join('')+'</div></fieldset><p id="mm-status" role="status">Elegí actividades y consultá sus mediciones.</p><div id="mm-results"></div></div>';
+  const title=owner?'Mi panel · Dirección UGI':'Panel de Coordinación';
+  const description=owner?'Estadísticas generales y detalle por actividad':'Estadísticas de tus actividades, categorías y equipos';
+  box.innerHTML=`<summary class="mm-panel-heading"><strong>${title}</strong><span>${description}</span></summary>
+   <div class="mm-content">
+    <div class="mm-filters">
+     <label>Período<select id="mm-days"><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option><option value="365">Último año</option><option value="0">Todo el historial</option></select></label>
+     <label>Mostrar<select id="mm-filter"><option value="all">Todas las actividades</option><option value="with">Con deportistas</option><option value="empty">Vacías (0)</option></select></label>
+    </div>
+    <fieldset><legend>Actividades ${owner?'del club':'autorizadas'}</legend>
+     <div class="mm-choices">${session.areas.map(a=>'<label><input type="checkbox" value="'+esc(a)+'" checked> '+esc(a)+'</label>').join('')}</div>
+    </fieldset>
+    <div class="mm-actions">
+     <button type="button" id="mm-all">Seleccionar todas</button>
+     <button type="button" id="mm-none">Limpiar selección</button>
+     <button type="button" id="mm-update">Consultar</button>
+    </div>
+    <p id="mm-status" class="mm-note" role="status">Elegí actividades y consultá sus mediciones.</p>
+    <div id="mm-results"></div>
+    <div class="mm-detail-heading" id="mm-detail-heading" hidden><h3>Detalle por actividad</h3><button type="button" id="mm-expand">Expandir todas</button></div>
+    <div class="mm-hierarchy" id="mm-hierarchy"></div>
+   </div>`;
   document.getElementById('app-screen').prepend(box);
   const local=generation,find=id=>box.querySelector('#'+id),checks=()=>[...box.querySelectorAll('.mm-choices input')];
   find('mm-all').onclick=()=>checks().forEach(x=>x.checked=true);find('mm-none').onclick=()=>checks().forEach(x=>x.checked=false);
-  find('mm-expand').onclick=()=>{const open=find('mm-expand').dataset.open!=='1';box.querySelectorAll('#mm-results details').forEach(x=>x.open=open);find('mm-expand').dataset.open=open?'1':'0';find('mm-expand').textContent=open?'Contraer todas':'Expandir todas';};
+  find('mm-expand').onclick=()=>{const open=find('mm-expand').dataset.open!=='1';box.querySelectorAll('.mm-activity').forEach(x=>x.open=open);find('mm-expand').dataset.open=open?'1':'0';find('mm-expand').textContent=open?'Contraer todas':'Expandir todas';};
   let loaded=false;box.addEventListener('toggle',()=>{if(box.open&&!loaded){loaded=true;refresh();}});find('mm-update').onclick=refresh;
   async function refresh(){
    const activities=checks().filter(x=>x.checked).map(x=>x.value),button=find('mm-update');if(!activities.length){find('mm-status').textContent='Seleccioná al menos una actividad.';return;}
-   button.disabled=true;find('mm-results').replaceChildren();find('mm-status').textContent='Consultando datos confirmados…';
+   button.disabled=true;
+   find('mm-results').replaceChildren();
+   find('mm-hierarchy').replaceChildren();
+   find('mm-detail-heading').hidden=true;
+   find('mm-expand').dataset.open='0';
+   find('mm-expand').textContent='Expandir todas';
+   find('mm-status').textContent='Consultando datos confirmados…';
    const BATCH_SIZE=2,days=Number(find('mm-days').value),collected=[];
    let generatedAt=null;
    try{
@@ -37,12 +86,19 @@
     const filter=find('mm-filter').value,rows=collected.filter(x=>filter==='with'?x.inscripciones>0:filter==='empty'?x.inscripciones===0:true);
     const totals=rows.reduce((t,x)=>{for(const k of ['inscripciones','registros','presentes','evaluaciones','notas','sumaNotas'])t[k]+=x[k]||0;for(const k of ['verde','amarillo','rojo'])t.semaforo[k]+=x.semaforo?.[k]||0;return t;},{inscripciones:0,registros:0,presentes:0,evaluaciones:0,notas:0,sumaNotas:0,semaforo:{verde:0,amarillo:0,rojo:0}});
     const obs=totals.semaforo.verde+totals.semaforo.amarillo+totals.semaforo.rojo,sem={...totals.semaforo,observados:obs,promedio:obs?(totals.semaforo.verde*3+totals.semaforo.amarillo*2+totals.semaforo.rojo)/obs:null,pctVerde:obs?Math.round(totals.semaforo.verde/obs*1000)/10:null};
-    const cards=[['Deportistas',totals.inscripciones+' · '+rows.filter(x=>x.inscripciones>0).length+'/'+rows.length+' actividades con datos'],['Asistencia general',totals.registros?pct(Math.round(totals.presentes/totals.registros*1000)/10):'Sin datos'],['Semáforo general',semText({...sem,promedio:sem.promedio==null?null:Math.round(sem.promedio*100)/100})]];
-    const activityRows=rows.map(x=>{const cats=x.categoriasDetalle||[],groups=x.gruposDetalle||[];return '<details class="mm-activity"><summary><span><strong>'+esc(x.activity)+'</strong><small>'+cats.length+' categorías · '+groups.length+' tiras</small></span><b>'+x.inscripciones+'</b><b>'+pct(x.asistencia)+'</b><b>'+semCell(x.semaforo)+'</b></summary><div class="mm-nested"><table><thead><tr><th>Nivel</th><th>Deportistas</th><th>Asistencia</th><th>Semáforo</th></tr></thead><tbody>'+cats.map(c=>'<tr class="mm-category"><th>↳ '+esc(c.categoria)+'</th><td>'+c.inscripciones+'</td><td>'+pct(c.asistencia)+'</td><td>'+semCell(c.semaforo)+'</td></tr>'+groups.filter(g=>g.categoria===c.categoria).map(g=>metricRow('↳↳ '+g.tira,g,'mm-team')).join('')).join('')+'</tbody></table></div></details>';}).join('');
-    find('mm-results').innerHTML='<div class="mm-kpis">'+cards.map(([k,v])=>'<article><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></article>').join('')+'</div><p class="mm-note">Total de actividades consultadas: '+rows.length+' · Con deportistas: '+rows.filter(x=>x.inscripciones>0).length+' · Vacías: '+rows.filter(x=>x.inscripciones===0).length+'. La asistencia usa registros P, T y A; el semáforo sólo observa Sem:V, Sem:A y Sem:R.</p><div class="mm-hierarchy"><div class="mm-head"><span>Actividad</span><span>Deportistas</span><span>Asistencia</span><span>Semáforo</span></div>'+activityRows+(rows.length?'':'<p>Sin actividades para este filtro.</p>')+'</div>';
+    const withAthletes=rows.filter(x=>x.inscripciones>0).length;
+    const attendance=totals.registros?pct(Math.round(totals.presentes/totals.registros*1000)/10):'Sin datos';
+    const summary=[
+     metric('Deportistas','<strong>'+totals.inscripciones+'</strong><small>'+withAthletes+' de '+countLabel(rows.length,'actividad','actividades')+' con deportistas</small>'),
+     metric('Asistencia general','<strong>'+attendance+'</strong>'),
+     metric('Semáforo general',semSummary(sem))
+    ];
+    find('mm-results').innerHTML='<div class="mm-kpis">'+summary.map(html=>'<div>'+html+'</div>').join('')+'</div>'+
+     '<p class="mm-note">La asistencia incluye presentes, llegadas tarde y ausentes. El semáforo cuenta las observaciones verdes, amarillas y rojas.</p>';
+    find('mm-detail-heading').hidden=!rows.length;
+    find('mm-hierarchy').innerHTML=rows.length?rows.map(activityDetail).join(''):'<p class="mm-note">Sin actividades para este filtro.</p>';
     find('mm-status').textContent=(isDemo?'Demostración · ':'')+(owner?'Datos del club':'Datos de actividades autorizadas')+' · Actualizados '+new Date(generatedAt||Date.now()).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})+' (Argentina).';
    }catch(e){if(local===generation){loaded=false;find('mm-status').textContent=e.message||'No se pudo consultar el panel.';}}finally{if(box.isConnected)button.disabled=false;}
   }
  }};
- const style=document.createElement('style');style.textContent='.muni-management{border-top:4px solid #008cb8;margin-bottom:18px}.muni-management summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}.muni-management summary strong{font-size:1.15rem;color:#0b2545}.muni-management summary span,.mm-note{color:#526477;font-size:.85rem}.mm-content{padding-top:20px}.mm-filters{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.mm-filters label{min-width:180px}.mm-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:7px}.mm-choices label{font-size:.85rem;font-weight:500}.mm-choices input{width:auto}.mm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.mm-kpis article{background:#eef6fa;border:1px solid #d8e7ef;border-radius:14px;padding:16px}.mm-kpis span{display:block;font-size:.8rem;color:#526477}.mm-kpis strong{font-size:1.35rem;color:#0b2545}.mm-content fieldset{margin:18px 0;border:1px solid #dce5ee;border-radius:10px;padding:14px}.mm-filters button{border:1px solid #c9dce8;border-radius:10px;padding:10px 13px;background:#edf6fa;color:#173954;font:600 .8rem Inter,Arial,sans-serif;cursor:pointer}.mm-filters #mm-update{background:#0b2545;color:white;border-color:#0b2545}.mm-filters button:disabled{opacity:.6;cursor:wait}.mm-choices{max-height:170px;overflow-y:auto;padding:4px}.mm-choices label{display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:normal;margin:0;padding:5px 0}.mm-choices input{margin:0;flex:0 0 auto}.mm-hierarchy{overflow:auto}.mm-head,.mm-activity>summary{display:grid;grid-template-columns:minmax(230px,2fr) repeat(3,minmax(130px,1fr));gap:12px;align-items:center}.mm-head{padding:12px;background:#0b2545;color:white;font-weight:700}.mm-activity{border:1px solid #dce5ee;border-top:0}.mm-activity>summary{padding:14px 12px;cursor:pointer;list-style:none}.mm-activity>summary::-webkit-details-marker{display:none}.mm-activity>summary>span{display:flex;flex-direction:column;gap:4px}.mm-activity>summary small{color:#526477;font-weight:400}.mm-nested{padding:0 12px 12px}.mm-nested table{width:100%;border-collapse:collapse}.mm-nested th,.mm-nested td{text-align:left;padding:9px;border-bottom:1px solid #e5edf2;font-size:.85rem}.mm-category{background:#f5f9fb}.mm-team th{padding-left:28px;font-weight:500}.mm-sem{display:inline-block;white-space:normal}.mm-green{color:#16733a}.mm-yellow{color:#a16e00}.mm-red{color:#b42318}.mm-none{color:#526477}';document.head.append(style);
 })();

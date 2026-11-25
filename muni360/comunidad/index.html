@@ -4,46 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Cartelera oficial de avisos, partidos, cambios, suspensiones y horarios de entrenamiento del Club Ciudad de Buenos Aires." />
-  <meta name="theme-color" content="#082b49" />
+  <meta name="theme-color" content="#f4f8fb" />
   <title>Comunidad Muni | Avisos y Horarios · CCBA</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles/muni360-theme.css?v=aeac93c82dc7">
   <style>
     :root {
-      --navy: #082b49;
-      --navy-soft: #143d5b;
-      --sky: #59bde9;
-      --sky-dark: #1d6f9a;
-      --paper: #fffdf8;
-      --cream: #f5f1e8;
-      --ink: #102b3c;
-      --muted: #51636f;
-      --line: rgba(8, 43, 73, 0.16);
+      --navy: var(--muni-ink);
+      --navy-soft: var(--muni-accent-hover);
+      --sky: var(--muni-tint);
+      --sky-dark: var(--muni-accent);
+      --paper: var(--muni-canvas);
+      --cream: var(--muni-tint);
+      --ink: var(--muni-ink);
+      --muted: var(--muni-muted);
+      --line: var(--muni-border);
       --ok: #166534;
       --ok-bg: #dcfce7;
       --warn: #9a3412;
       --warn-bg: #ffedd5;
       --bad: #991b1b;
       --bad-bg: #fee2e2;
-      --focus: #0b57d0;
-      --radius: 1.05rem;
+      --focus: var(--muni-focus);
+      --radius: var(--muni-radius);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      font-family: var(--muni-font);
       background: var(--paper);
       color: var(--ink);
       line-height: 1.5;
-      overflow-x: hidden;
     }
 
     h1, h2, h3 {
-      font-family: 'Outfit', system-ui, sans-serif;
+      font-family: var(--muni-heading);
       margin: 0;
       letter-spacing: -0.02em;
     }
@@ -67,25 +67,17 @@
       outline-offset: 2px;
     }
 
-    /* Renovación visual Muni360: solo presentación, sin cambiar datos ni avisos. */
-    :root { --paper:#f4f7fb; --cream:#eaf2f9; --radius:1.2rem; --line:rgba(8,43,73,.12); }
-    body { background:linear-gradient(180deg,#e8f3fc 0,#f4f7fb 320px); }
-    .topbar { box-shadow:0 6px 24px rgba(8,43,73,.13); }
-    button, select, input { accent-color:var(--sky-dark); }
-    @media(max-width:600px) {
-      .topbar { padding:.7rem .85rem; }
-      button, select, input { min-height:42px; }
-    }
+    button, select, input { accent-color: var(--muni-accent); }
 
     /* HEADER */
     .topbar {
-      background: var(--navy);
-      color: var(--paper);
+      background: var(--muni-surface);
+      color: var(--navy);
       padding: 0.75rem 1rem;
       position: sticky;
       top: 0;
       z-index: 40;
-      box-shadow: 0 4px 16px rgba(8, 43, 73, 0.18);
+      border-bottom: 1px solid var(--line);
     }
 
     .topbar-inner {
@@ -108,8 +100,9 @@
     }
 
     .brand img {
+      width: 72px;
       height: 36px;
-      width: auto;
+      object-fit: contain;
       flex-shrink: 0;
     }
 
@@ -121,7 +114,7 @@
 
     .brand small {
       font-size: 0.72rem;
-      color: var(--sky);
+      color: var(--muted);
       display: block;
     }
 
@@ -158,8 +151,8 @@
     }
 
     .btn-publicar {
-      background: #fff;
-      color: var(--navy);
+      background: var(--muni-accent);
+      color: #fff;
     }
 
     /* CONTENEDOR PRINCIPAL */
@@ -170,8 +163,8 @@
     }
 
     .intro-card {
-      background: #eef7fc;
-      border: 1px solid rgba(29, 111, 154, 0.28);
+      background: var(--muni-tint);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 0.9rem 1rem;
       margin-bottom: 1rem;
@@ -183,7 +176,7 @@
     }
 
     .intro-card h1 {
-      font-size: 1.15rem;
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
       color: var(--navy);
     }
 
@@ -216,15 +209,15 @@
     }
 
     .tab-btn[aria-selected="true"] {
-      background: var(--navy);
-      color: #fff;
-      border-color: var(--navy);
+      background: var(--muni-tint);
+      color: var(--muni-accent);
+      border-color: var(--muni-accent);
     }
 
     /* FILTROS */
     .filtros-card {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%,180px), 1fr));
       gap: 0.75rem;
       background: #fff;
       border: 1px solid var(--line);
@@ -310,7 +303,7 @@
 
     .grid-dos {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%,180px), 1fr));
       gap: 0.75rem;
     }
 
@@ -504,8 +497,8 @@
 
     /* MODAL NATIVO */
     dialog {
-      border: 0;
-      border-radius: 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: var(--muni-radius);
       max-width: 560px;
       width: calc(100% - 1.5rem);
       padding: 0;
@@ -567,6 +560,15 @@
     .dialog-actions .btn-primary {
       width: auto;
       flex: 1 1 200px;
+    }
+
+    @media (max-width: 520px) {
+      .topbar { position: static; }
+      .topbar, .wrap { padding-inline: .75rem; }
+      .tabs { gap: .35rem; }
+      .tab-btn { flex: 1 1 auto; padding-inline: .6rem; white-space: normal; }
+      .filtros-card, .intro-card { padding: .75rem; }
+      .campo { min-width: 0; }
     }
 
     @media (pointer: coarse) {
@@ -800,8 +802,8 @@
     </div>
   </dialog>
 
-  <script src="../assets/scripts/muni360-config.js"></script>
-  <script src="../assets/scripts/muni360-google.js"></script>
+  <script src="../assets/scripts/muni360-config.js?v=bd4e9f7a6bae"></script>
+  <script src="../assets/scripts/muni360-google.js?v=cd5843f54895"></script>
   <script type="module" src="comunidad.js"></script>
 </body>
 </html>

@@ -1,0 +1,14 @@
+:root {
+  --muni-ink: #102e46;
+  --muni-muted: #516577;
+  --muni-accent: #176283;
+  --muni-accent-hover: #104d69;
+  --muni-canvas: #f4f8fb;
+  --muni-surface: #fff;
+  --muni-tint: #e9f4f9;
+  --muni-border: #d7e4ec;
+  --muni-focus: #126c96;
+  --muni-radius: 20px;
+  --muni-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --muni-heading: Outfit, var(--muni-font);
+}

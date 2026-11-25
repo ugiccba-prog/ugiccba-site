@@ -31,5 +31,4 @@
   refresh();
  }};
  window.addEventListener('muni360-attendance-saved',()=>refreshCurrent?.());
- const style=document.createElement('style');style.textContent='#daily-presence-panel>summary{cursor:pointer;list-style:revert;display:list-item;font-size:1rem}#daily-presence-panel>summary strong{font-size:1rem}#daily-presence-panel .mp-content{padding-top:14px}#daily-presence-panel h3{font-size:1rem;margin:14px 0 6px}#daily-presence-panel p{font-size:.875rem;margin:8px 0;color:#526477}#daily-presence-panel .mp-warning{color:#956000}#daily-presence-panel table{width:100%;border-collapse:collapse}#daily-presence-panel th,#daily-presence-panel td{text-align:left;padding:7px 10px;border-bottom:1px solid #dce5ee;font-size:.9rem}#daily-presence-panel td,#daily-presence-panel thead th:last-child{text-align:right;white-space:nowrap}#daily-presence-panel .mp-total{background:#eef6fa;font-weight:700}';document.head.append(style);
 })();
