@@ -56,32 +56,7 @@ const CATEGORIAS_SUGERIDAS = Object.freeze([
 ]);
 
 // Editá esta lista para modificar o sumar horarios habituales de entrenamiento.
-const HORARIOS_ENTRENAMIENTO = Object.freeze([
-  Object.freeze({
-    actividad: "Hockey sobre Patines Caballeros",
-    categoria: "Sub 12",
-    equipo: "A",
-    dias: "Martes y Jueves",
-    horario: "18:00 a 19:30",
-    lugar: "Pista 1"
-  }),
-  Object.freeze({
-    actividad: "Básquet Caballeros",
-    categoria: "U13",
-    equipo: "Tira A",
-    dias: "Lunes, Miércoles y Viernes",
-    horario: "17:30 a 19:00",
-    lugar: "Gimnasio Norte"
-  }),
-  Object.freeze({
-    actividad: "Colonia",
-    categoria: "Todos los grupos",
-    equipo: "General",
-    dias: "Lunes a Viernes",
-    horario: "09:00 a 17:00",
-    lugar: "Sector Pileta / Playón"
-  })
-]);
+const HORARIOS_ENTRENAMIENTO = Object.freeze([]);
 
 // Clave pública VAPID opcional para Web Push externo (FCM). Completar cuando esté habilitada en Firebase Console.
 const PUSH_CONFIG = Object.freeze({

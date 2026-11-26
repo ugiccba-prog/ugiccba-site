@@ -215,6 +215,20 @@
       transform: translateY(-2px);
       box-shadow: 0 14px 30px rgb(28 127 178 / 15%);
     }
+    .comunidad-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 11px;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      background: rgba(255, 253, 249, 0.72);
+      border: 1px solid rgba(8, 43, 73, 0.14);
+      color: var(--muni-ink);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
     .comunidad-box h2 {
       margin: 0;
       font: 700 clamp(1.3rem, 1.6vw, 1.52rem)/1.2 var(--muni-heading);
@@ -344,6 +358,7 @@
         </div>
         <a class="comunidad-box community" href="/comunidad/">
           <div>
+            <span class="comunidad-badge">Próximamente</span>
             <h2>Comunidad</h2>
             <p>Horarios, partidos y novedades abiertas para las familias del club.</p>
           </div>

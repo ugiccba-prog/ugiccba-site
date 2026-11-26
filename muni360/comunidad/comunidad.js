@@ -192,6 +192,10 @@ function renderHorarios() {
   });
 
   const cont = $("vista-horarios");
+  if (!HORARIOS_ENTRENAMIENTO.length) {
+    cont.innerHTML = `<div class="panel-card" style="text-align:center; color:var(--muted);">Todavía no hay horarios de entrenamiento publicados.</div>`;
+    return;
+  }
   if (!filtrados.length) {
     cont.innerHTML = `<div class="panel-card" style="text-align:center; color:var(--muted);">No hay horarios de entrenamiento cargados para ese filtro.</div>`;
     return;
