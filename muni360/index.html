@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/styles/muni360-theme.css?v=d37b807a8ab5">
+  <link rel="stylesheet" href="./assets/styles/muni360-theme.css?v=b77f3ca1b82e">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -18,10 +18,8 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background:
-        radial-gradient(circle at 86% 14%, #d6eefb 0%, rgba(214, 238, 251, 0) 46%),
-        radial-gradient(circle at 10% 88%, rgba(169, 222, 241, 0.34) 0%, rgba(244, 239, 230, 0) 42%),
-        var(--muni-canvas);
+      background: var(--muni-atmosphere);
+      background-attachment: fixed;
       color: var(--muni-ink);
       font: 400 1rem/1.5 var(--muni-font);
       -webkit-font-smoothing: antialiased;
@@ -93,36 +91,27 @@
     .back {
       display: inline-flex;
       align-items: center;
-      min-height: 44px;
-      padding-inline: 10px;
-      color: var(--muni-muted);
-      font-size: .9rem;
-      font-weight: 600;
-    }
-    .back:hover, footer a:hover {
-      color: var(--muni-ink);
-      text-decoration: underline;
-      text-underline-offset: 4px;
-    }
-    .pill-familias {
-      display: inline-flex;
-      align-items: center;
       justify-content: center;
       min-height: 44px;
-      padding: 8px 20px;
+      padding: 8px 18px;
       background: var(--muni-surface);
       color: var(--muni-ink);
       border: 1px solid #d4cbb9;
       border-radius: 999px;
-      font-size: .9rem;
+      font-size: .88rem;
       font-weight: 700;
       box-shadow: 0 2px 8px rgb(8 43 73 / 4%);
       transition: border-color .16s ease, background-color .16s ease, transform .16s ease;
     }
-    .pill-familias:hover {
+    .back:hover {
       background: var(--muni-tint);
       border-color: #8cc4e4;
       transform: translateY(-1px);
+    }
+    footer a:hover {
+      color: var(--muni-ink);
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
 
     main {
@@ -294,7 +283,7 @@
     }
     @media (max-width: 520px) {
       .brand img { height: 32px; }
-      .back { display: none; }
+      .back { padding: 8px 14px; font-size: .82rem; }
       .comunidad-box {
         flex-direction: column;
         align-items: flex-start;
@@ -302,7 +291,7 @@
       }
     }
     @media (prefers-reduced-motion: reduce) {
-      .card, .comunidad-box, .pill-familias { transition: none; }
+      .card, .comunidad-box, .back { transition: none; }
     }
   </style>
 </head>
@@ -319,7 +308,6 @@
       </a>
       <div class="top-actions">
         <a class="back" href="/">Volver a UGI</a>
-        <a class="pill-familias" href="/comunidad/">Familias</a>
       </div>
     </div>
   </header>

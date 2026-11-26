@@ -5,9 +5,9 @@
   <style>
 :root { font-family: var(--muni-font); color: var(--muni-ink); background: var(--muni-canvas); }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--muni-canvas); }
+body { margin: 0; min-height: 100vh; background: var(--muni-atmosphere); background-attachment: fixed; }
 header {
-  background: var(--muni-surface); border-bottom: 1px solid var(--muni-border);
+  background: rgba(255, 253, 249, 0.82); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(8, 43, 73, 0.08);
   padding: 18px max(16px,calc((100vw - 1080px)/2));
   display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
 }
@@ -15,7 +15,7 @@ h1, h2, h3 { font-family: var(--muni-heading); }
 header h1 { font-size: 1.55rem; margin: 0; }
 header p { margin: 4px 0 0; color: var(--muni-muted); font-size: .875rem; }
 main { max-width: 1120px; margin: 20px auto; padding: 0 16px; }
-.card { background: var(--muni-surface); border: 1px solid var(--muni-border); border-radius: var(--muni-radius); padding: 20px; margin: 14px 0; }
+.card { background: var(--muni-surface); border: 1px solid #dfd7c8; border-top: 4px solid #1c7fb2; border-radius: 22px; box-shadow: 0 10px 26px rgb(8 43 73 / 5%); padding: 20px; margin: 14px 0; }
 .card h2, dialog h2 { margin-top: 0; }
 button, .link {
   border: 1px solid var(--muni-border); border-radius: 999px; min-height: 44px; padding: 8px 16px;

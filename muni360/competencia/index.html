@@ -10,11 +10,11 @@
   <style>
     :root { --navy:var(--muni-ink,#082b49); --sky:var(--muni-sky-soft,#a9def1); --paper:var(--muni-surface,#fffdf9); --ok:#15803d; --warn:#b45309; --err:#b91c1c; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:var(--muni-font,'Plus Jakarta Sans',sans-serif); background:var(--muni-canvas,#f4efe6); font-size:16px; color:var(--navy); padding-bottom:80px; }
-    header { background:var(--paper); color:var(--navy); border-bottom:1px solid var(--muni-border,#e4ddd0); padding:14px 16px; display:flex; justify-content:space-between; align-items:center; }
+    body { margin:0; min-height:100vh; font-family:var(--muni-font,'Plus Jakarta Sans',sans-serif); background:var(--muni-atmosphere,var(--muni-canvas,#f4efe6)); background-attachment:fixed; font-size:16px; color:var(--navy); padding-bottom:80px; }
+    header { background:rgba(255,253,249,.82); backdrop-filter:blur(8px); color:var(--navy); border-bottom:1px solid rgba(8,43,73,.08); padding:14px 16px; display:flex; justify-content:space-between; align-items:center; }
     header h1 { margin:0; font-family:var(--muni-heading,'Outfit',sans-serif); font-size:1.15rem; }
     main { max-width:720px; margin:0 auto; padding:14px; }
-    .card { background:var(--paper); border:1px solid var(--muni-border,#e4ddd0); border-radius:18px; padding:16px; margin-bottom:12px; }
+    .card { background:var(--paper); border:1px solid #dfd7c8; border-top:4px solid #1c7fb2; border-radius:20px; box-shadow:0 10px 26px rgb(8 43 73 / 5%); padding:16px; margin-bottom:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .btn { border:0; border-radius:12px; padding:11px 14px; font-weight:700; cursor:pointer; font-family:inherit; }

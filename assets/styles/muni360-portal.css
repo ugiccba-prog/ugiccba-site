@@ -1,12 +1,12 @@
 /* Apariencia compartida de Deportes, Colonia y COYFD. */
-.muni-portal{--bg:var(--muni-canvas);--navy:var(--muni-ink);--blue:var(--muni-accent);--muted:var(--muni-muted);--border:var(--muni-border);--font:var(--muni-font);background:var(--bg);color:var(--navy);font-family:var(--font);margin:0;padding-bottom:0}
+.muni-portal{--bg:var(--muni-canvas);--navy:var(--muni-ink);--blue:var(--muni-accent);--muted:var(--muni-muted);--border:var(--muni-border);--font:var(--muni-font);background:var(--muni-atmosphere);background-attachment:fixed;color:var(--navy);font-family:var(--font);margin:0;padding-bottom:0}
 .muni-portal button,.muni-portal select,.muni-portal input,.muni-portal textarea{font-family:var(--font)}
 .muni-portal h1,.muni-portal h2,.muni-portal h3,.portal-stats strong,.portal-player-rate strong{font-family:Outfit,var(--font);letter-spacing:-.02em}
 .muni-portal #app-screen{max-width:1360px;padding:22px 32px;margin:0 auto;min-height:calc(100vh - 130px);position:relative}
-.muni-portal #app-header{background:var(--muni-navigation);color:var(--muni-ink);border-bottom:1px solid var(--muni-border);padding:12px 32px;box-shadow:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.muni-portal #app-header{background:rgba(255,253,249,.82);backdrop-filter:blur(8px);color:var(--muni-ink);border-bottom:1px solid rgba(8,43,73,.08);padding:12px 32px;box-shadow:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .muni-portal #app-header .brand{flex:1}.muni-portal #app-header .brand h2{color:var(--muni-ink);font-size:18px}.muni-portal #app-header .brand img{width:30px;height:36px;background:none}.muni-portal #header-sub{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muni-muted);order:2;width:100%}.muni-portal #header-role{background:var(--muni-sky-soft);border-radius:20px;color:var(--muni-ink);font-weight:700;padding:2px 10px}.muni-portal #app-header .btn-salir{background:#fff;border:1px solid var(--muni-border);color:var(--muni-ink);border-radius:20px;padding:8px 15px;min-height:44px;font-size:12px;width:auto;flex:none}
-.muni-portal #barra-estado{padding:8px 32px;background:#faf6ee;color:var(--muni-muted);font-size:11px;gap:8px;border-bottom:1px solid var(--muni-border)}
-.muni-portal .card{background:var(--muni-surface);border:1px solid var(--muni-border);border-radius:var(--muni-radius);padding:22px;box-shadow:0 2px 10px #082b4906;margin-bottom:20px}
+.muni-portal #barra-estado{padding:8px 32px;background:rgba(250,246,238,.8);color:var(--muni-muted);font-size:11px;gap:8px;border-bottom:1px solid rgba(8,43,73,.07)}
+.muni-portal .card{background:var(--muni-surface);border:1px solid #dfd7c8;border-radius:var(--muni-radius);padding:22px;box-shadow:0 10px 26px #082b490c;margin-bottom:20px}
 .muni-portal .card h3{font-size:18px;margin:0 0 12px}.muni-portal .hint{font-size:12px;line-height:1.65;color:var(--muni-muted)}
 .muni-portal .btn,.muni-portal .btn-sec,.portal-actions button,.portal-actions a{border-radius:999px;min-height:44px;padding:10px 18px;font-size:12px;font-weight:600}
 .muni-portal .btn{background:var(--muni-ink);border:0;color:white}.muni-portal .btn:hover:not(:disabled){background:var(--muni-accent)}.muni-portal .btn-sec{background:var(--muni-tint);border:1px solid #bfe3f5;color:var(--muni-ink)}.muni-portal button:disabled{opacity:.5;cursor:not-allowed}
@@ -17,7 +17,7 @@
 .portal-navbrand,.portal-nav-role,.portal-navfoot{display:none}.portal-menu{display:none!important}
 .portal-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 2px 20px;flex-wrap:wrap}.portal-hero h2{font-size:clamp(25px,2.7vw,34px);color:var(--muni-ink);line-height:1.15;margin:0 0 7px}.portal-hero p{font-size:12px;color:var(--muni-muted);margin:0;line-height:1.6}
 .portal-period{font-size:11px;color:var(--muni-muted);display:grid;gap:4px}.portal-period select,.portal-compare-filters select{border:1px solid var(--muni-border);min-height:44px;background:#ffffff;padding:10px 16px;border-radius:22px;color:var(--muni-ink);width:100%;min-width:0;font-size:12px}
-.portal-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 22px}.portal-stats article{background:#ffffff;border:1px solid var(--muni-border);border-radius:22px;padding:20px 16px;box-shadow:0 4px 14px #082b4908;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
+.portal-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 22px}.portal-stats article{background:var(--muni-surface);border:1px solid #dfd7c8;border-top:4px solid #59bde9;border-radius:22px;padding:20px 16px;box-shadow:0 10px 24px #082b490c;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}.portal-stats article:nth-child(2){border-top-color:#1c7fb2}.portal-stats article:nth-child(3){border-top-color:#082b49}.portal-stats article:nth-child(4){border-top-color:#166ea0}
 .portal-stat-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:50%;background:var(--stat-tint);color:var(--stat-color);flex:none}.portal-stat-icon svg{width:23px;height:23px}.portal-stats span:not(.portal-stat-icon){display:block;font-size:11px;color:var(--muni-muted)}.portal-stats strong{display:block;font-size:28px;color:var(--muni-ink);line-height:1.2;margin-top:5px}.portal-stats small{font-size:10px;color:var(--muni-muted)}
 .portal-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,1fr);gap:20px}.portal-grid>.card{min-width:0}
 .portal-chart{width:100%;height:auto;display:block;margin:15px 0 0}.portal-chart-empty{padding:35px 0;text-align:center;color:var(--muni-muted);font-size:13px}.portal-chart-caption{font-size:11px;color:var(--muni-muted);margin:12px 0 0}.portal-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:11px;color:var(--muni-muted);margin:15px 0}.portal-legend span:before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--player-color);margin-right:7px}
@@ -95,13 +95,14 @@
 .portal-load-warning{display:block;margin-top:6px;color:#805100;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.portal-stats article>div{min-width:0}.portal-stats .portal-load-warning{font-size:14px!important}.audit-diff{width:100%;border-collapse:collapse;font-size:14px}.audit-diff th,.audit-diff td{text-align:left;border-bottom:1px solid #dfe8f5;padding:10px;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap}.audit-diff th{background:#eef7fc}.audit-diff caption{text-align:left;font-weight:700;padding:12px 0}.audit-technical pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto}.audit-table-wrap{max-width:100%;overflow-x:auto;max-height:55vh;overflow-y:auto}.audit-diff small{display:block;color:#52657b}@media(max-width:650px){.audit-diff th,.audit-diff td{padding:8px}.muni-portal .portal-note,.muni-portal .portal-period,.muni-portal .portal-period select{font-size:14px}.portal-stats article{flex-wrap:wrap}}
 
 .muni-portal #login-screen {
-  background: radial-gradient(circle at top right, #dff1fb 0%, var(--muni-canvas) 62%);
+  background: var(--muni-atmosphere);
 }
 .muni-portal .login-card {
   background: var(--muni-surface);
-  border: 1px solid var(--muni-border);
+  border: 1px solid #dfd7c8;
+  border-top: 4px solid #1c7fb2;
   border-radius: 24px;
-  box-shadow: 0 14px 36px #082b4910;
+  box-shadow: 0 16px 40px #082b4914;
 }
 .muni-portal .login-shield { width: 58px; height: 68px; filter: none; }
 .muni-portal .login-ugi-subtitle {

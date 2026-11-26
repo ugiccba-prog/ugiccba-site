@@ -6,6 +6,10 @@
   --muni-sky: #59bde9;
   --muni-sky-soft: #a9def1;
   --muni-canvas: #f4efe6;
+  --muni-atmosphere:
+    radial-gradient(circle at 86% 14%, #d6eefb 0%, rgb(214 238 251 / 0%) 46%),
+    radial-gradient(circle at 10% 88%, rgb(169 222 241 / 34%) 0%, rgb(244 239 230 / 0%) 42%),
+    var(--muni-canvas);
   --muni-surface: #fffdf9;
   --muni-tint: #dff1fb;
   --muni-navigation: #fffdf9;
