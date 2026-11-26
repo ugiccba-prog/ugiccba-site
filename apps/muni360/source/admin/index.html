@@ -5,7 +5,7 @@
   <style>
 :root { font-family: var(--muni-font); color: var(--muni-ink); background: var(--muni-canvas); }
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; background: var(--muni-canvas); }
 header {
   background: var(--muni-surface); border-bottom: 1px solid var(--muni-border);
   padding: 18px max(16px,calc((100vw - 1080px)/2));
@@ -18,14 +18,14 @@ main { max-width: 1120px; margin: 20px auto; padding: 0 16px; }
 .card { background: var(--muni-surface); border: 1px solid var(--muni-border); border-radius: var(--muni-radius); padding: 20px; margin: 14px 0; }
 .card h2, dialog h2 { margin-top: 0; }
 button, .link {
-  border: 1px solid var(--muni-border); border-radius: 10px; min-height: 44px; padding: 8px 14px;
-  background: var(--muni-canvas); color: var(--muni-ink); font: inherit; font-weight: 650;
+  border: 1px solid var(--muni-border); border-radius: 999px; min-height: 44px; padding: 8px 16px;
+  background: #faf6ee; color: var(--muni-ink); font: inherit; font-weight: 650;
   cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
-.primary { background: var(--muni-accent); color: white; border-color: var(--muni-accent); }
-.primary:hover { background: var(--muni-accent-hover); }
+.primary { background: var(--muni-ink); color: white; border-color: var(--muni-ink); }
+.primary:hover { background: var(--muni-accent); border-color: var(--muni-accent); }
 .muted { color: var(--muni-muted); font-size: .875rem; line-height: 1.5; }
-.notice { border: 1px solid var(--muni-border); background: var(--muni-tint); padding: 12px 14px; border-radius: 12px; }
+.notice { border: 1px solid var(--muni-border); background: var(--muni-tint); padding: 12px 14px; border-radius: 12px; overflow-wrap: anywhere; }
 #form-error { background: #fff2ef; color: #9a3624; }
 #search { flex: 1 1 220px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -36,7 +36,7 @@ label { font-size: .875rem; font-weight: 700; display: block; margin: 10px 0 6px
 .person { display: flex; gap: 12px; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--muni-border); padding: 14px 0; flex-wrap: wrap; }
 .person strong { display: block; overflow-wrap: anywhere; }
 .person > div { min-width: 0; overflow-wrap: anywhere; }
-.badge { display: inline-block; margin-top: 4px; border-radius: 999px; padding: 4px 10px; background: var(--muni-tint); font-size: .8125rem; }
+.badge { display: inline-block; margin-top: 4px; border-radius: 999px; padding: 4px 10px; background: var(--muni-sky-soft); color: var(--muni-ink); font-weight: 600; font-size: .8125rem; }
 .area-list { max-height: 260px; overflow: auto; border: 1px solid var(--muni-border); border-radius: 10px; padding: 6px 12px; }
 .check { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 4px 0; font-weight: 500; }
 .check input { width: 18px; min-height: 18px; flex: none; accent-color: var(--muni-accent); }

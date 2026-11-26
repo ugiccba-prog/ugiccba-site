@@ -1,15 +1,17 @@
 :root {
-  --muni-ink: #102e46;
-  --muni-muted: #3d5369;
-  --muni-accent: #225173;
-  --muni-accent-hover: #183c59;
-  --muni-canvas: #e5edf5;
-  --muni-surface: #f8fbfd;
-  --muni-tint: #d8e7f2;
-  --muni-navigation: #bdcfdd;
-  --muni-border: #b8cbd9;
-  --muni-focus: #1e567a;
+  --muni-ink: #082b49;
+  --muni-muted: #4f6476;
+  --muni-accent: #166ea0;
+  --muni-accent-hover: #0e537b;
+  --muni-sky: #59bde9;
+  --muni-sky-soft: #a9def1;
+  --muni-canvas: #f4efe6;
+  --muni-surface: #fffdf9;
+  --muni-tint: #dff1fb;
+  --muni-navigation: #fffdf9;
+  --muni-border: #e4ddd0;
+  --muni-focus: #1c7fb2;
   --muni-radius: 20px;
   --muni-font: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --muni-heading: Outfit, var(--muni-font);
+  --muni-heading: 'Outfit', var(--muni-font);
 }

@@ -3,87 +3,341 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f8fb">
+  <meta name="theme-color" content="#f4efe6">
   <meta name="description" content="Muni360, la comunidad y la gestión deportiva del Club Ciudad de Buenos Aires.">
   <title>Muni360 | UGI · Club Ciudad de Buenos Aires</title>
   <link rel="icon" type="image/png" href="./assets/images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/styles/muni360-theme.css?v=7891a56eb18d">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/styles/muni360-theme.css?v=d37b807a8ab5">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--muni-canvas); color: var(--muni-ink); font: 400 1rem/1.5 var(--muni-font); }
-    a { color: inherit; text-decoration: none; }
-    a:focus-visible { outline: 3px solid var(--muni-focus); outline-offset: 4px; }
-    .skip { position: absolute; left: 1rem; top: -6rem; padding: .8rem; background: var(--muni-surface); z-index: 5; }
-    .skip:focus { top: 1rem; }
-    header { background: var(--muni-surface); border-bottom: 1px solid var(--muni-border); }
-    .header-inner, .hero, footer { max-width: 1120px; margin: auto; padding-inline: clamp(16px,5vw,48px); }
-    .header-inner { min-height: 76px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .brand { display: inline-flex; min-width: 0; }
-    .brand img { width: auto; height: 45px; max-width: 100%; object-fit: contain; }
-    .back { flex: none; display: inline-flex; align-items: center; min-height: 44px; color: var(--muni-accent); font-size: .875rem; font-weight: 700; }
-    .back:hover, footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
-    main { background: linear-gradient(145deg,var(--muni-tint),var(--muni-canvas) 60%); }
-    .hero { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: clamp(28px,6vw,80px); align-items: center; padding-block: clamp(36px,7vw,88px); }
-    .eyebrow { margin: 0 0 10px; color: var(--muni-muted); font-size: .875rem; font-weight: 600; }
-    h1 { margin: 0; font: 800 clamp(3.4rem,8vw,6rem)/1 var(--muni-heading); letter-spacing: -.045em; }
-    h1 span { color: var(--muni-accent); }
-    .intro { max-width: 29ch; margin: 16px 0 0; color: var(--muni-muted); font-size: 1.075rem; line-height: 1.6; }
-    nav { display: grid; min-width: 0; background: var(--muni-surface); border: 1px solid var(--muni-border); border-radius: var(--muni-radius); }
-    .card { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 4px 16px; padding: 19px 22px; border-bottom: 1px solid var(--muni-border); transition: background .2s; }
-    .card:first-child { border-radius: var(--muni-radius) var(--muni-radius) 0 0; }
-    .card:last-child { border: 0; border-radius: 0 0 var(--muni-radius) var(--muni-radius); }
-    .card:hover { background: var(--muni-tint); }
-    .card:focus-visible { outline-offset: -3px; }
-    .card h2 { margin: 0; font: 700 1.35rem/1.25 var(--muni-heading); }
-    .card p { grid-column: 1; margin: 0; color: var(--muni-muted); font-size: .875rem; }
-    .action { grid-column: 2; grid-row: 1 / 3; color: var(--muni-accent); font-size: .8125rem; font-weight: 700; }
-    footer { display: flex; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; padding-block: 20px; color: var(--muni-muted); font-size: .8125rem; }
-    @media (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 24px; } }
-    @media (max-width: 480px) {
-      .header-inner { min-height: 64px; }
-      .brand img { height: 35px; }
-      .card { padding: 14px 16px; grid-template-columns: 1fr; }
-      .action { grid-column: 1; grid-row: auto; margin-top: 3px; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--muni-canvas);
+      color: var(--muni-ink);
+      font: 400 1rem/1.5 var(--muni-font);
+      -webkit-font-smoothing: antialiased;
     }
-    @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 3px solid var(--muni-focus); outline-offset: 3px; }
+    .skip {
+      position: absolute;
+      left: 1rem;
+      top: -6rem;
+      padding: .75rem 1rem;
+      background: var(--muni-ink);
+      color: #fff;
+      border-radius: 999px;
+      z-index: 10;
+    }
+    .skip:focus { top: 1rem; }
+
+    .header-inner, .hero, footer {
+      width: 100%;
+      max-width: 1140px;
+      margin-inline: auto;
+      padding-inline: clamp(16px, 4.5vw, 44px);
+    }
+
+    header { padding-top: clamp(16px, 3vw, 28px); }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand img {
+      width: auto;
+      height: 38px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .brand-copy { display: grid; line-height: 1.2; }
+    .brand-copy strong {
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muni-ink);
+    }
+    .brand-copy span {
+      font-size: .8125rem;
+      color: var(--muni-muted);
+    }
+    .top-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding-inline: 8px;
+      color: var(--muni-muted);
+      font-size: .875rem;
+      font-weight: 600;
+    }
+    .back:hover, footer a:hover {
+      color: var(--muni-ink);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .pill-familias {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 18px;
+      background: #ffffff;
+      color: var(--muni-ink);
+      border: 1px solid var(--muni-border);
+      border-radius: 999px;
+      font-size: .875rem;
+      font-weight: 700;
+      transition: border-color .16s ease, background-color .16s ease;
+    }
+    .pill-familias:hover {
+      background: var(--muni-tint);
+      border-color: #9ecce6;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr);
+      gap: clamp(28px, 5vw, 56px);
+      align-items: center;
+      padding-block: clamp(28px, 6vw, 68px);
+    }
+    h1 {
+      margin: 0;
+      font: 800 clamp(3.3rem, 7vw, 5.4rem)/.96 var(--muni-heading);
+      letter-spacing: -.042em;
+      color: var(--muni-ink);
+    }
+    h1 span { color: #1c7fb2; }
+    .intro {
+      max-width: 26ch;
+      margin: 16px 0 0;
+      color: var(--muni-muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    nav {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+    .section-label {
+      margin: 0 0 -2px 2px;
+      font: 700 1.05rem/1.3 var(--muni-heading);
+      color: var(--muni-ink);
+    }
+    .gestion-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--muni-border);
+      border-radius: 18px;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #9ecce6;
+      box-shadow: 0 10px 24px rgb(8 43 73 / 6%);
+    }
+    .card h2 {
+      margin: 0;
+      font: 700 1.2rem/1.25 var(--muni-heading);
+      color: var(--muni-ink);
+    }
+    .card p {
+      margin: 5px 0 0;
+      color: var(--muni-muted);
+      font-size: .875rem;
+      line-height: 1.45;
+    }
+    .action {
+      color: #1c7fb2;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+    .card:hover .action {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .comunidad-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      background: var(--muni-sky-soft);
+      border-radius: 20px;
+      transition: transform .16s ease, filter .16s ease;
+    }
+    .comunidad-box:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.985);
+    }
+    .comunidad-box h2 {
+      margin: 0;
+      font: 700 1.3rem/1.2 var(--muni-heading);
+      color: var(--muni-ink);
+    }
+    .comunidad-box p {
+      margin: 4px 0 0;
+      color: #1d4460;
+      font-size: .875rem;
+      line-height: 1.45;
+    }
+    .comunidad-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 20px;
+      background: var(--muni-ink);
+      color: #ffffff;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px 20px;
+      flex-wrap: wrap;
+      padding-block: 18px;
+      color: var(--muni-muted);
+      font-size: .8125rem;
+    }
+
+    @media (max-width: 920px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .intro { max-width: 44ch; }
+    }
+    @media (max-width: 680px) {
+      .gestion-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .card {
+        flex-direction: row;
+        align-items: center;
+        padding: 15px 16px;
+      }
+      .action { flex-shrink: 0; }
+    }
+    @media (max-width: 520px) {
+      .brand img { height: 32px; }
+      .back { display: none; }
+      .comunidad-box {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .comunidad-box, .pill-familias { transition: none; }
+    }
   </style>
 </head>
 <body>
   <a class="skip" href="#accesos">Ir a los accesos</a>
-  <header><div class="header-inner">
-    <a class="brand" href="/" aria-label="UGI, página principal"><img src="./assets/images/logo-header.png" alt="Club Ciudad de Buenos Aires · UGI"></a>
-    <a class="back" href="/">Volver a UGI</a>
-  </div></header>
+  <header>
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="UGI, página principal">
+        <img src="./assets/images/logo-header.png" alt="Club Ciudad de Buenos Aires · UGI">
+        <span class="brand-copy">
+          <strong>Unidad de Gestión Integral</strong>
+          <span>Club Ciudad de Buenos Aires</span>
+        </span>
+      </a>
+      <div class="top-actions">
+        <a class="back" href="/">Volver a UGI</a>
+        <a class="pill-familias" href="/comunidad/">Familias</a>
+      </div>
+    </div>
+  </header>
   <main>
     <div class="hero">
       <div>
-        <p class="eyebrow">Unidad de Gestión Integral</p>
         <h1>Muni<span>360</span></h1>
-        <p class="intro">Horarios, avisos y herramientas para el día a día del club.</p>
+        <p class="intro">Gestión deportiva, asistencia y avisos abiertos para las familias del club.</p>
       </div>
       <nav id="accesos" aria-label="Secciones de Muni360">
-        <a class="card deportes" href="./deportes/">
-          <h2>Deportes</h2><p>Asistencia, evaluaciones y seguimiento de cada equipo.</p>
-          <span class="action">Entrar a Deportes</span>
-        </a>
-        <a class="card colonia" href="./colonia/">
-          <h2>Colonia</h2><p>Grupos, asistencia y comedor de la colonia de vacaciones.</p>
-          <span class="action">Entrar a Colonia</span>
-        </a>
-        <a class="card coyfd" href="./coyfd/">
-          <h2>COYFD</h2><p>Grupos, iniciación y orientación deportiva.</p>
-          <span class="action">Entrar a COYFD</span>
-        </a>
-        <a class="card community" href="/comunidad/">
-          <h2>Comunidad</h2><p>Horarios y avisos de partidos y entrenamientos.</p>
-          <span class="action">Ver novedades</span>
+        <p class="section-label">Gestión interna</p>
+        <div class="gestion-grid">
+          <a class="card deportes" href="./deportes/">
+            <div>
+              <h2>Deportes</h2>
+              <p>Asistencia, evaluaciones y equipos.</p>
+            </div>
+            <span class="action">Ingresar</span>
+          </a>
+          <a class="card colonia" href="./colonia/">
+            <div>
+              <h2>Colonia</h2>
+              <p>Grupos, asistencia y comedor.</p>
+            </div>
+            <span class="action">Ingresar</span>
+          </a>
+          <a class="card coyfd" href="./coyfd/">
+            <div>
+              <h2>COYFD</h2>
+              <p>Grupos y seguimiento formativo.</p>
+            </div>
+            <span class="action">Ingresar</span>
+          </a>
+        </div>
+        <a class="comunidad-box community" href="/comunidad/">
+          <div>
+            <h2>Comunidad</h2>
+            <p>Horarios, partidos y novedades abiertas para las familias del club.</p>
+          </div>
+          <span class="comunidad-cta">Ver avisos</span>
         </a>
       </nav>
     </div>
   </main>
-  <footer><span>UGI · Club Ciudad de Buenos Aires</span><a href="/">Conocé el proyecto UGI</a></footer>
+  <footer>
+    <span>UGI · Club Ciudad de Buenos Aires</span>
+    <a href="/">Conocé el proyecto UGI</a>
+  </footer>
 </body>
 </html>
