@@ -25,3 +25,13 @@ El borrador permite continuar una pantalla abierta sin red. No incluye instalaci
 Migración aplicada en kaalffshnrkxviqaymhv. Función muni360 versión 20 activa; módulos anteriores comparados con la versión publicada antes del despliegue. RLS y privilegios de las tres tablas/RPC comprobados en la base real. No se crearon partidos de prueba ni se alteraron padrones o permisos reales. Login Google y guardado con cuenta real quedan pendientes de aceptación del propietario.
 
 Frontend c86c38f publicado en main y GitHub Pages: despliegue 45736887102 aprobado. HTTP 200 y coincidencia exacta de HTML, catálogo y manifest con el repositorio; llamada anónima a Competencia rechazada con 401. CI de paquete público aprobado para c86c38f. Backend remoto completo aprobado para 320789f (45736619424); las repeticiones de c86c38f seguían en curso al verificar la publicación. El último ajuste afecta únicamente el bloqueo de controles durante el guardado, verificado nuevamente en navegador. La copia de trabajo aislada está en scratch/competencia, rama feature/competencia-20261125; los cambios previos de la copia principal se conservaron.
+
+## Datos ficticios para probar — 26/11/2026
+
+Carga solicitada por el propietario en Hockey sobre Patines Caballeros: ocho jugadores llamados PRUEBA · Jugador 01 a 08, sin DNI ni legajos, en categoría PRUEBA COMPETENCIA y equipo Ficticio. Los padrones de ambas ramas de hockey sobre patines estaban vacíos al revisar. Se agregó únicamente ese grupo usando mc_commit, con auditoría, revisión de padrón y salida a Sheets; no se reemplazaron grupos existentes.
+
+Historial: partido finalizado PRUEBA · Club Ficticio, resultado 3–1, ocho convocados, seis eventos (goles, falta y tarjeta azul) y fair play activo. ID aa261126-0001-4000-8000-000000000001. Guardado mediante mc_competencia en la misma transacción que el padrón.
+
+Verificación real posterior: mc_service devuelve ocho jugadores en el grupo, cero DNI; la competencia tiene ocho convocados y seis eventos. No se registraron asistencias ni evaluaciones. La proyección a Sheets queda a cargo del puente habitual; no se confirmó su ejecución en esta carga.
+
+Reproducción: server/supabase/tools/seed-competencia-prueba.sql. El script tiene identificadores estables y guardas para no duplicar ni reemplazar datos. Para probar un partido nuevo, elegir Hockey sobre Patines → Caballeros → PRUEBA COMPETENCIA / Ficticio; para consultar el ejemplo, usar Ver últimas competencias.
