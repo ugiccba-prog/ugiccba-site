@@ -38,11 +38,11 @@ function form(){
  for(const[id,value]of Object.entries({'sel-categoria':'Sub 16','sel-equipo':'A','input-fecha':'2026-11-17'}))elements.get(id).value=value;
  return {run,values,timers,elements};
 }
-test('lista parcial queda como borrador y no dispara envío aunque se invoque guardar',async()=>{
- const f=form();f.run("asistTempDep={Ana:'T',Belén:'A'};semTempDep={Ana:'V'};markDraft();");
- assert.equal(f.timers.length,0);assert.ok(f.values.has('muni360_asistencia_borrador:teacher:Hockey'));assert.equal(f.elements.get('btn-guardar-asist').disabled,true);
- await f.run('guardarAsistenciaActual()');assert.equal(f.run('writes.length'),0);
+test('lista parcial queda como borrador sin envío automático, pero permite guardar manualmente',async()=>{
+ const f=form();f.run("asistTempDep={Ana:'T',Belén:'A'};semTempDep={Ana:'V'};renderVistaActiva=()=>{};cfgActual=()=>({});markDraft();");
+ assert.equal(f.timers.length,0);assert.ok(f.values.has('muni360_asistencia_borrador:teacher:Hockey'));assert.equal(f.elements.get('btn-guardar-asist').disabled,false);
  f.run("semTempDep.Belén='R';markDraft();");assert.equal(f.elements.get('btn-guardar-asist').disabled,false);assert.equal(f.timers.length,1);
+ await f.run('guardarAsistenciaActual()');assert.equal(f.run('writes.length'),1);
 });
 test('evaluación recupera borrador sólo para la misma cuenta, grupo, fecha y jugador',()=>{
  const f=form();f.run("jugadorActivo='Ana';notasTemp={Tiro:8.5};guardarBorradorEvaluacion();notasTemp={};recuperarBorradorEvaluacion();");

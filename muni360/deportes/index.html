@@ -2867,10 +2867,9 @@
       clearTimeout(autosaveTimer);
       if(esSoloConsulta())return toast('Tu acceso es de consulta.');
       if(guardandoOperacion)return;
-      const estado=actualizarEstadoLista();
-      if(!estado.completa)return toast('Completá asistencia y semáforo de todo el grupo antes de guardar.');
       const lista=plantelActualNombres(); if (!lista.length) return;
       const fecha=$('input-fecha').value, cat=$('sel-categoria').value, eq=$('sel-equipo').value||'General', cfg=cfgActual();
+      if(!Muni360Time.dateIso(fecha))return toast('Elegí una fecha válida antes de guardar.');
       const registro={}; lista.forEach(j=>{const est=asistTempDep[j]||'N';registro[j]=est+((cfg.tieneComida && ['P','T'].includes(est) && comidaTempDep[j])?' | 🍴 Comida':'')+' | Sem:'+(semTempDep[j]||'N');});
       const payload={tipo:'ASISTENCIA',deporte:areaActiva,fecha,categoria:cat,equipo:eq,datos:registro,clima:$('sel-clima-clase').value,puntosCiudad:$('sel-puntos-ciudad').value};
       const fingerprint=JSON.stringify([storageScope,areaActiva,cat,eq,fecha,registro,payload.clima,payload.puntosCiudad]);
@@ -4276,7 +4275,7 @@
       const semaforo=nombres.filter(j=>['V','A','R'].includes(semTempDep[j])).length;
       const completa=!!nombres.length&&asistencia===nombres.length&&semaforo===nombres.length&&!!Muni360Time.dateIso($('input-fecha').value);
       $('portal-completion').textContent='Asistencia '+asistencia+'/'+nombres.length+' · Semáforo '+semaforo+'/'+nombres.length+' · '+(2*nombres.length-asistencia-semaforo)+' marcas pendientes';
-      $('btn-guardar-asist').disabled=!completa||esSoloConsulta()||guardandoOperacion;
+      $('btn-guardar-asist').disabled=!nombres.length||esSoloConsulta()||guardandoOperacion;
       return {completa,asistencia,semaforo};
     }
     let comparacionPortal={context:'',players:[],days:30,showAvg:true};
@@ -4381,7 +4380,7 @@
       try{localStorage.setItem(claveBorradorAsistencia(),JSON.stringify(saved));}
       catch(_){$('draft-status').textContent='No hay espacio para el borrador. Guardá antes de salir.';return;}
       const estadoLista=actualizarEstadoLista();
-      $('draft-status').textContent=estadoLista.completa?'Borrador conservado en este dispositivo. Guardando automáticamente…':'Borrador conservado. Completá asistencia y semáforo de todo el grupo para guardar.';
+      $('draft-status').textContent=estadoLista.completa?'Borrador conservado en este dispositivo. Guardando automáticamente…':'Borrador conservado. Podés completar todo el grupo o pulsar Guardar para enviarlo así.';
       clearTimeout(autosaveTimer);
       if(!estadoLista.completa)return;
       const context=JSON.stringify(draftContext),uid=storageScope;
