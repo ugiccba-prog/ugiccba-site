@@ -393,11 +393,12 @@
     }
     $('chkFairPlay').onchange=persistDraft;
     $('btnSaveFinal').onclick=async()=>{
-      if(saving)return;saving=true;$('btnSaveFinal').disabled=true;
+      if(saving)return;saving=true;const savingUid=ownerUid,savingKey=draftKey();
+      document.querySelectorAll('#viewBoard button,#viewBoard input,#viewBoard select').forEach(b=>b.disabled=true);
       const previous=state.competition.status;state.competition.status='final';persistDraft();$('syncBadge').textContent='Guardando…';
-      try{const res=await api('save',{sportKey:state.sportKey,competition:state.competition,roster:state.roster,events:state.events});state.competition.revision=res.revision;localStorage.removeItem(draftKey());renderBoard();$('syncBadge').textContent='Guardado confirmado';message('Competencia finalizada. Podés consultarla en el historial.');}
-      catch(e){state.competition.status=previous;persistDraft();$('syncBadge').textContent='Guardado pendiente';message(e.message+' El borrador sigue en este dispositivo; volvé a presionar Finalizar y Guardar para reintentar.');$('btnSaveFinal').disabled=false;}
-      finally{saving=false;}
+      try{const res=await api('save',{sportKey:state.sportKey,competition:state.competition,roster:state.roster,events:state.events});localStorage.removeItem(savingKey);if(ownerUid!==savingUid)return;state.competition.revision=res.revision;renderBoard();$('syncBadge').textContent='Guardado confirmado';message('Competencia finalizada. Podés consultarla en el historial.');}
+      catch(e){if(ownerUid!==savingUid)return;state.competition.status=previous;persistDraft();$('syncBadge').textContent='Guardado pendiente';message(e.message+' El borrador sigue en este dispositivo; volvé a presionar Finalizar y Guardar para reintentar.');$('btnSaveFinal').disabled=false;}
+      finally{saving=false;if(ownerUid===savingUid){document.querySelectorAll('#viewBoard button,#viewBoard input,#viewBoard select').forEach(b=>b.disabled=false);renderBoard();}}
     };
   </script>
 </body>

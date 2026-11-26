@@ -24,4 +24,4 @@ El borrador permite continuar una pantalla abierta sin red. No incluye instalaci
 
 Migración aplicada en kaalffshnrkxviqaymhv. Función muni360 versión 20 activa; módulos anteriores comparados con la versión publicada antes del despliegue. RLS y privilegios de las tres tablas/RPC comprobados en la base real. No se crearon partidos de prueba ni se alteraron padrones o permisos reales. Login Google y guardado con cuenta real quedan pendientes de aceptación del propietario.
 
-La publicación del frontend se verifica después del push y se registra aquí su resultado.
+Frontend publicado en main y GitHub Pages: despliegue 45736619331 aprobado. HTTP 200 y coincidencia exacta de HTML, catálogo y manifest con el repositorio; llamada anónima a Competencia rechazada con 401. CI de paquete público aprobado; la ejecución remota completa de backend se consulta antes del cierre. La copia de trabajo aislada está en scratch/competencia, rama feature/competencia-20261125; los cambios previos de la copia principal se conservaron.
