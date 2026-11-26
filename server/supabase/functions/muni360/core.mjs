@@ -1,3 +1,4 @@
+import {handleCompetencia} from './competencia.mjs';
 import {dashboard} from './dashboard.mjs';
 import {handleInteligencia} from './inteligencia.mjs';
 import {handlePublicSurveys,handleSurveys} from './surveys.mjs';
@@ -63,6 +64,7 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
    if(input.path==='/api/users/update'){if(typeof targetUid!=='string')throw new AccessError('VALIDACION','Usuario inválido.',400);return {ok:true,...await service('updateUser',{uid:actor.id,target:targetUid,revision:d.revision,access:validateAccess(input.body,areas)})};}
    throw new AccessError('RUTA','Ruta inexistente.',404);
   }
+  if(input.path.startsWith('/api/competencia/'))return handleCompetencia({actor,owner,path:input.path,body:d,rpc,service});
   if(input.path==='/api/dashboard')return dashboard(actor,owner,d,service,now());
   if(input.path.startsWith('/api/inteligencia/'))return handleInteligencia({actor,owner,path:input.path,body:d,rpc,now:now(),aiGenerate});
   if(input.path.startsWith('/api/surveys/'))return handleSurveys({actor,owner,path:input.path,body:d,rpc,now:now()});

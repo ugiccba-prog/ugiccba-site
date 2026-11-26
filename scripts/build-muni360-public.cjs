@@ -21,6 +21,7 @@ function basePortal(html,area){
  return html;
 }
 for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/colonia/index.html','coyfd/index.html'],['apps/muni360/source/admin/index.html','admin/index.html'],['apps/muni360/source/encuesta/index.html','encuesta/index.html']]){let html=remap(read(src).toString());if(['colonia/index.html','coyfd/index.html'].includes(target))html=basePortal(html,target.startsWith('coyfd')?'COYFD':'Colonia');html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
+for(const name of ['index.html','competencia-config.mjs'])files.set('competencia/'+name,read('apps/muni360/source/competencia/'+name));
 files.set('index.html',Buffer.from(versionAssets(read('apps/muni360/entrada.html').toString())));
 for(const name of ['index.html','comunidad.js','catalogo.js','sw.js']){const file=read('comunidad/'+name);files.set('comunidad/'+name,name==='index.html'?Buffer.from(versionAssets(file.toString())):file);}
 for(const name of ['favicon.png','logo-header.png'])files.set('assets/images/'+name,read('assets/images/'+name));

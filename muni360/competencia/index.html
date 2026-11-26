@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Muni 360 — Competencia (Privado)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#082b49; --sky:#59bde9; --paper:#fffdf8; --ok:#15803d; --warn:#b45309; --err:#b91c1c; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Plus Jakarta Sans',sans-serif; background:#f1f5f9;font-size:16px; color:var(--navy); padding-bottom:80px; }
+    header { background:var(--navy); color:#fff; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; font-family:'Outfit',sans-serif; font-size:1.15rem; }
+    main { max-width:720px; margin:0 auto; padding:14px; }
+    .card { background:#fff; border:1px solid #dbe4ee; border-radius:12px; padding:14px; margin-bottom:12px; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .btn { border:0; border-radius:10px; padding:11px 12px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .btn-primary { background:var(--navy); color:#fff; }
+    .btn-sky { background:var(--sky); color:var(--navy); }
+    .btn-rival { background:#fee2e2; color:#991b1b; }
+    .btn-ghost { background:#eef2f7; color:var(--navy); }
+    .btn-green { background:#dcfce7; color:#166534; }
+    input, select, textarea {font-size:1rem; width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; margin-top:4px; }
+    .scoreboard { background:var(--navy); color:#fff; border-radius:14px; padding:16px; text-align:center; margin-bottom:12px; }
+    .score-nums { font-family:'Outfit',sans-serif; font-size:2.6rem; letter-spacing:4px; }
+    .alert-bar { background:#fef3c7; color:var(--warn); padding:8px 12px; border-radius:8px; font-weight:700; margin-bottom:10px; display:none; }
+    .hidden { display:none !important; }
+    .modal { position:fixed; inset:0; background:rgba(8,43,73,.65); display:flex; align-items:flex-end; justify-content:center; z-index:50; }
+    .modal-sheet { background:#fff; width:100%; max-width:720px; border-radius:18px 18px 0 0; padding:16px; max-height:75vh; overflow:auto; }
+    button:focus-visible,input:focus-visible,select:focus-visible {outline:3px solid #0284c7;outline-offset:3px;}
+    button:disabled {opacity:.55;cursor:wait;}
+    @media(max-width:420px){.grid-2{grid-template-columns:1fr;}header{gap:12px;flex-wrap:wrap;}}
+    .event-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eef2f7; font-size:.92rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Muni 360 · Competencia</h1>
+    <span id="syncBadge" style="font-size:.8rem;opacity:.85;">Ingresá para comenzar</span>
+  </header>
+
+  <main>
+    <p id="message" role="status" aria-live="polite"></p>
+    <button id="logout" class="btn btn-ghost hidden">Cerrar sesión</button>
+    <!-- 1. Login propietario -->
+    <section id="viewAuth" class="card">
+      <p>Acceso privado del propietario. Los registros no se publican en Comunidad.</p>
+      <button id="btnLogin" class="btn btn-primary" style="width:100%">Ingresar con Google</button>
+    </section>
+
+    <!-- 2. Armado rápido -->
+    <section id="viewSetup" class="card hidden">
+      <h2 style="margin-top:0;font-family:'Outfit',sans-serif;">Nueva Competencia</h2>
+      <label>Deporte
+        <select id="selSport"></select>
+      </label>
+      <div class="grid-2" style="margin-top:8px;">
+        <label>Grupo del padrón <select id="inpCategory"></select></label>
+        <label>Modo
+          <select id="selMode">
+            <option value="live">En Vivo</option>
+            <option value="post">Post-Partido</option>
+          </select>
+        </label>
+      </div>
+      <label style="display:block;margin-top:8px;">Rival o Nombre del Torneo
+        <input id="inpOpponent" placeholder="Ej: GEBA / Torneo Metropolitano" />
+      </label>
+      <label>Actividad <select id="activity"></select></label>
+      <label>Fecha y hora (Argentina) <input id="date" type="datetime-local" required /></label>
+      <fieldset><legend>Convocados del padrón</legend><div id="roster"></div></fieldset>
+      <p>Elegí el deporte y verificá la actividad, el grupo y los convocados.</p>
+      <button id="resume" class="btn btn-ghost hidden">Recuperar borrador de este dispositivo</button>
+      <button id="history" class="btn btn-ghost">Ver últimas competencias</button>
+      <div id="historyList"></div>
+      <button id="btnStart" class="btn btn-primary" style="width:100%;margin-top:12px;">Abrir Mesa de Control</button>
+    </section>
+
+    <!-- 3. Mesa de Control -->
+    <section id="viewBoard" class="hidden">
+      <div id="alertBar" class="alert-bar"></div>
+
+      <div id="scoreboardBox" class="scoreboard">
+        <div id="boardTitle" style="font-size:.9rem;opacity:.85;"></div>
+        <div id="scoreLabel">Puntos registrados (acumulado)</div><div class="score-nums"><span id="scoreMuni">0</span> - <span id="scoreRival">0</span></div>
+        <div class="row" style="justify-content:center;margin-top:8px;" id="periodBar"></div>
+      </div>
+
+      <!-- Botonera Arquetipos A, B, C, D -->
+      <div id="liveControls" class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px;">
+          <strong>Acciones Muni (2 toques)</strong>
+          <button id="btnUndo" class="btn btn-ghost" style="padding:6px 10px;">↩ Deshacer</button>
+        </div>
+        <div id="muniButtons" class="grid-2"></div>
+        <hr style="border:0;border-top:1px solid #eef2f7;margin:12px 0;" />
+        <strong style="display:block;margin-bottom:8px;">Rival (1 toque)</strong>
+        <div id="rivalButtons" class="grid-2"></div>
+      </div>
+
+      <!-- Planilla Arquetipo E (Jueces / Recorrido) -->
+      <div id="judgeControls" class="card hidden">
+        <h3 style="margin-top:0;">Planilla de Torneo</h3>
+        <div id="judgeForm"></div>
+      </div>
+
+      <button id="back" class="btn btn-ghost">Volver al inicio (conservar borrador)</button>
+      <!-- Tarjeta Verde UGI + Guardar -->
+      <div class="card row" style="justify-content:space-between;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+          <input type="checkbox" id="chkFairPlay" style="width:auto;margin:0;" /> 🟩 Tarjeta Verde / Fair Play UGI
+        </label>
+        <button id="btnSaveFinal" class="btn btn-green">Finalizar y Guardar</button>
+      </div>
+
+      <!-- Cronología -->
+      <div class="card">
+        <strong>Cronología</strong>
+        <div id="eventLog" style="margin-top:8px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Selector rápido de jugador (2º toque) -->
+  <div id="playerModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalActionTitle">
+    <div class="modal-sheet">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px;">
+        <strong id="modalActionTitle">¿Quién realizó la acción?</strong>
+        <button id="btnCloseModal" class="btn btn-ghost" style="padding:6px 10px;">Cerrar</button>
+      </div>
+      <div id="playerGrid" class="grid-2"></div>
+    </div>
+  </div>
+
+  <script src="../assets/scripts/muni360-config.js"></script>
+  <script src="../assets/scripts/muni360-google.js"></script>
+  <script type="module">
+    import { SPORTS_CONFIG } from './competencia-config.mjs';
+
+    let ownerUid=null, availableRoster=[], groups=[], saving=false;
+    const api=(action,body={})=>window.MuniGoogle.call('/api/competencia/'+action,body);
+    const message=text=>$('message').textContent=text;
+    const OFFLINE_KEY = 'muni360_competencia_draft';
+
+    const state = {
+      token: null,
+      sportKey: 'hockey_patines',
+      competition: null,
+      roster: [],
+      events: [],
+      currentPeriod: '1T',
+      pendingAction: null
+    };
+
+    const $ = id => document.getElementById(id);
+
+    // Poblar selector de deportes
+    Object.entries(SPORTS_CONFIG).forEach(([key, cfg]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = cfg.label;
+      $('selSport').appendChild(opt);
+    });
+
+    function draftKey(){return OFFLINE_KEY+'_'+ownerUid;}
+    function showSetup(){ $('viewAuth').classList.add('hidden');$('viewBoard').classList.add('hidden');$('viewSetup').classList.remove('hidden');$('logout').classList.remove('hidden');$('resume').classList.toggle('hidden',!localStorage.getItem(draftKey())); }
+    $('btnLogin').onclick=()=>window.MuniGoogle.login().catch(e=>message(e.message));
+    $('logout').onclick=()=>window.MuniGoogle.logout();
+    window.MuniGoogle.observe(async(user,error)=>{
+      ownerUid=null;
+      $('viewAuth').classList.remove('hidden');$('viewSetup').classList.add('hidden');$('viewBoard').classList.add('hidden');$('logout').classList.add('hidden');
+      if(!user){message(error?.message||'Ingresá con tu cuenta autorizada.');return;}
+      try{const me=await window.MuniGoogle.call('/api/me');if(!me.profile.canManageUsers||me.profile.status!=='activo')throw Error('Acceso exclusivo del propietario.');ownerUid=user.uid;showSetup();await loadSport();message('Sesión privada activa.');}catch(e){message(e.message);}
+    });
+    async function loadSport(){
+      $('btnStart').disabled=true;
+      const cfg=SPORTS_CONFIG[$('selSport').value];$('activity').replaceChildren();
+      cfg.activities.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;$('activity').append(o);});
+      await loadRoster();
+    }
+    async function loadRoster(){
+      $('btnStart').disabled=true;$('roster').replaceChildren();$('inpCategory').replaceChildren();
+      const activity=$('activity').value;
+      try{const data=await api('roster',{activity});if(activity!==$('activity').value)return;availableRoster=data.roster;
+        groups=[...new Map(availableRoster.map(p=>[JSON.stringify([p.category,p.team]),[p.category,p.team]])).values()];
+        groups.forEach(([category,team],i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=category+' · '+team;$('inpCategory').append(o);});renderRoster();
+      }catch(e){message(e.message);}
+    }
+    function renderRoster(){
+      const [category,team]=groups[Number($('inpCategory').value)]||[];$('roster').replaceChildren();
+      availableRoster.filter(p=>p.category===category&&p.team===team).forEach(p=>{const l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.value=p.player_id;i.checked=true;i.style.width='auto';l.append(i,document.createTextNode(' '+p.player_name));l.style.display='block';$('roster').append(l);});
+      $('btnStart').disabled=!$('roster').childElementCount;
+      if(!$('roster').childElementCount)message('Esta actividad no tiene convocados en el padrón activo.');
+    }
+    $('selSport').onchange=loadSport;$('activity').onchange=loadRoster;$('inpCategory').onchange=renderRoster;
+    $('date').value=new Date(Date.now()-3*3600000).toISOString().slice(0,16);
+    $('back').onclick=()=>{persistDraft();showSetup();};
+    $('resume').onclick=()=>{try{const d=JSON.parse(localStorage.getItem(draftKey()));if(!d?.competition||!SPORTS_CONFIG[d.sportKey]||!Array.isArray(d.events)||!Array.isArray(d.roster))throw Error('Borrador inválido.');Object.assign(state,d);$('chkFairPlay').checked=state.competition.fair_play_ugi===true;$('viewSetup').classList.add('hidden');$('viewBoard').classList.remove('hidden');renderBoard();message('Borrador recuperado.');}catch(e){message(e.message);}};
+    $('history').onclick=async()=>{try{const d=await api('list');$('historyList').replaceChildren();for(const c of d.items){const row=document.createElement('p');row.textContent=new Date(c.date_ar).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})+' · '+c.activity_id+' · '+c.category+' · '+c.opponent_or_event+' · '+c.score_muni+'–'+c.score_rival+' · '+c.status;const open=document.createElement('button');open.className='btn btn-ghost';open.textContent='Ver detalle';open.onclick=async()=>{try{const d=await api('detail',{id:c.id});state.sportKey=d.competition.summary_json.sportKey;state.competition={...d.competition,team:d.competition.summary_json.team};state.roster=d.roster;state.events=d.events;state.currentPeriod=SPORTS_CONFIG[state.sportKey].periods?.[0]||'Torneo';$('chkFairPlay').checked=d.competition.fair_play_ugi;showSetup();$('viewSetup').classList.add('hidden');$('viewBoard').classList.remove('hidden');renderBoard();message('Registro guardado · consulta de detalle.');}catch(e){message(e.message);}};row.append(document.createTextNode(' '),open);$('historyList').append(row);}}catch(e){message(e.message);}};
+
+    // Iniciar Mesa de Control
+    $('btnStart').onclick = () => {
+      state.sportKey = $('selSport').value;
+      const cfg = SPORTS_CONFIG[state.sportKey];
+      state.currentPeriod = cfg.periods ? cfg.periods[0] : 'Torneo';
+
+      const selected=new Set([...$('roster').querySelectorAll('input:checked')].map(i=>i.value));
+      state.roster=availableRoster.filter(p=>selected.has(p.player_id)).map(({player_id,player_name})=>({player_id,player_name}));
+      if(!state.roster.length||!$('inpOpponent').value.trim()||!$('date').value){message('Completá rival, fecha y convocados.');return;}
+      const [category,team]=groups[Number($('inpCategory').value)];
+      state.competition = {
+        id:crypto.randomUUID(), revision:0,
+        activity_id: $('activity').value, team,
+        category,
+        date_ar: new Date($('date').value+':00-03:00').toISOString(),
+        mode: $('selMode').value,
+        archetype: cfg.archetype,
+        opponent_or_event: $('inpOpponent').value.trim() || 'Rival / Torneo',
+        status: 'live'
+      };
+      state.events = []; $('chkFairPlay').checked=false;
+
+      $('viewSetup').classList.add('hidden');
+      $('viewBoard').classList.remove('hidden');
+      renderBoard();
+      persistDraft();
+    };
+
+    function renderBoard() {
+      const cfg = SPORTS_CONFIG[state.sportKey];
+      $('boardTitle').textContent = `${cfg.label} · ${state.competition.category} vs ${state.competition.opponent_or_event}`;
+
+      if (cfg.archetype === 'E') {
+        $('scoreboardBox').classList.add('hidden');
+        $('liveControls').classList.add('hidden');
+        $('judgeControls').classList.remove('hidden');
+        renderJudgeForm(cfg);
+      } else {
+        $('scoreboardBox').classList.remove('hidden');
+        $('liveControls').classList.remove('hidden');
+        $('judgeControls').classList.add('hidden');
+
+        // Períodos
+        $('periodBar').innerHTML = '';
+        cfg.periods.forEach(p => {
+          const b = document.createElement('button');
+          b.className = `btn ${state.currentPeriod === p ? 'btn-sky' : 'btn-ghost'}`;
+          b.style.padding = '6px 10px';
+          b.textContent = p;
+          b.setAttribute('aria-pressed',String(state.currentPeriod===p));
+          b.onclick = () => { state.currentPeriod = p; persistDraft(); renderBoard(); };
+          $('periodBar').appendChild(b);
+        });
+
+        // Botones Muni
+        $('muniButtons').innerHTML = '';
+        cfg.muniActions.forEach(act => {
+          const b = document.createElement('button');
+          b.className = 'btn btn-sky';
+          b.textContent = act.label;
+          b.onclick = () => (act.noPlayer || act.teamFoul) ? pushEvent('muni', act, null) : openPlayerPicker(act);
+          $('muniButtons').appendChild(b);
+        });
+
+        // Botones Rival
+        $('rivalButtons').innerHTML = '';
+        cfg.rivalActions.forEach(act => {
+          const b = document.createElement('button');
+          b.className = 'btn btn-rival';
+          b.textContent = act.label;
+          b.onclick = () => pushEvent('rival', act, null);
+          $('rivalButtons').appendChild(b);
+        });
+      }
+
+      const locked=state.competition.status==='final';
+      document.querySelectorAll('#liveControls button,#judgeControls button,#judgeControls input,#judgeControls select,#periodBar button,#chkFairPlay').forEach(b=>b.disabled=locked);
+      $('btnSaveFinal').disabled=locked;
+      recalcAndRenderLog();
+    }
+
+    function renderJudgeForm(cfg) {
+      const box = $('judgeForm');
+      box.innerHTML = '';
+      const sel = document.createElement('select');
+      state.roster.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p.player_id;
+        o.textContent = p.player_name;
+        sel.appendChild(o);
+      });
+      box.appendChild(sel);
+
+      const inputs = {};
+      cfg.fields.forEach(f => {
+        const lbl = document.createElement('label');
+        lbl.style.display = 'block';
+        lbl.style.marginTop = '6px';
+        lbl.textContent = f;
+        const inp = document.createElement('input');
+        inputs[f] = inp;
+        lbl.appendChild(inp);
+        box.appendChild(lbl);
+      });
+
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary';
+      btn.style.marginTop = '10px';
+      btn.style.width = '100%';
+      btn.textContent = 'Agregar registro de torneo';
+      btn.onclick = () => {
+        const player = state.roster.find(r => r.player_id === sel.value);
+        const meta = {};
+        cfg.fields.forEach(f => { meta[f] = inputs[f].value.trim(); inputs[f].value = ''; });
+        pushEvent('muni', { code: 'nota_torneo', label: `Torneo (${meta[cfg.fields[0]] || 'Registro'})`, delta: 0 }, player, meta);
+      };
+      box.appendChild(btn);
+    }
+
+    function openPlayerPicker(act) {
+      state.pendingAction = act;
+      $('modalActionTitle').textContent = `${act.label} — ¿Quién?`;
+      $('playerGrid').innerHTML = '';
+      state.roster.forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-ghost';
+        b.textContent = p.player_name;
+        b.onclick = () => {
+          pushEvent('muni', state.pendingAction, p);
+          $('playerModal').classList.add('hidden');
+        };
+        $('playerGrid').appendChild(b);
+      });
+      $('playerModal').classList.remove('hidden');$('btnCloseModal').focus();
+    }
+
+    function closeModal(){$('playerModal').classList.add('hidden');$('btnUndo').focus();}
+    $('btnCloseModal').onclick=closeModal;
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.key==='Tab'&&!$('playerModal').classList.contains('hidden')){const buttons=[...$('playerModal').querySelectorAll('button')];const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+
+    function pushEvent(side, act, player, meta = {}) {
+      state.events.push({
+        side,
+        action_code: act.code,
+        action_label: act.label,
+        points_delta: act.delta || 0,
+        period: state.currentPeriod,
+        player_id: player?.player_id || null,
+        player_name: player?.player_name || null,
+        meta_json: meta
+      });
+      persistDraft();
+      recalcAndRenderLog();
+    }
+
+    $('btnUndo').onclick = () => {
+      state.events.pop();
+      persistDraft();
+      recalcAndRenderLog();
+    };
+
+    function recalcAndRenderLog() {
+      let muni = 0, rival = 0, teamFouls = 0;
+      state.events.forEach(ev => {
+        if (ev.side === 'muni') muni += ev.points_delta;
+        else rival += ev.points_delta;
+        if (ev.action_code === 'falta_equipo') teamFouls++;
+      });
+      $('scoreLabel').textContent=SPORTS_CONFIG[state.sportKey].archetype==='C'?'Tantos / games acumulados · ver desglose por set':'Puntos registrados (acumulado)';
+      $('scoreMuni').textContent = muni;
+      $('scoreRival').textContent = rival;
+
+      const alerts = SPORTS_CONFIG[state.sportKey].alerts;
+      if (alerts?.teamFoulsWarn && teamFouls >= alerts.teamFoulsWarn) {
+        $('alertBar').style.display = 'block';
+        $('alertBar').textContent = `⚠️ Atención: ${teamFouls} faltas de equipo acumuladas.`;
+      } else {
+        $('alertBar').style.display = 'none';
+      }
+
+      $('eventLog').replaceChildren();
+      if(SPORTS_CONFIG[state.sportKey].archetype==='C'){for(const period of SPORTS_CONFIG[state.sportKey].periods){const row=document.createElement('p');const sum=side=>state.events.filter(e=>e.period===period&&e.side===side).reduce((n,e)=>n+e.points_delta,0);row.textContent=period+': '+sum('muni')+'–'+sum('rival');$('eventLog').append(row);}}
+      state.events.slice().reverse().forEach(ev=>{const row=document.createElement('div');row.className='event-item';row.textContent='['+ev.period+'] '+ev.action_label+(ev.player_name?' · '+ev.player_name:'')+' · '+(ev.side==='muni'?'Muni':'Rival')+(Object.keys(ev.meta_json||{}).length?' · '+Object.entries(ev.meta_json).map(([k,v])=>k+': '+v).join(' · '):'');$('eventLog').append(row);});
+    }
+
+    function persistDraft(){
+      if(!ownerUid||!state.competition)return;
+      state.competition.fair_play_ugi=$('chkFairPlay').checked;
+      try{localStorage.setItem(draftKey(),JSON.stringify({sportKey:state.sportKey,competition:{...state.competition,status:state.competition.revision===0?'live':state.competition.status},roster:state.roster,events:state.events,currentPeriod:state.currentPeriod}));$('syncBadge').textContent='Borrador en este dispositivo';}
+      catch(e){message('No se pudo guardar el borrador en este dispositivo. No cierres esta página antes de guardar.');}
+    }
+    $('chkFairPlay').onchange=persistDraft;
+    $('btnSaveFinal').onclick=async()=>{
+      if(saving)return;saving=true;$('btnSaveFinal').disabled=true;
+      const previous=state.competition.status;state.competition.status='final';persistDraft();$('syncBadge').textContent='Guardando…';
+      try{const res=await api('save',{sportKey:state.sportKey,competition:state.competition,roster:state.roster,events:state.events});state.competition.revision=res.revision;localStorage.removeItem(draftKey());renderBoard();$('syncBadge').textContent='Guardado confirmado';message('Competencia finalizada. Podés consultarla en el historial.');}
+      catch(e){state.competition.status=previous;persistDraft();$('syncBadge').textContent='Guardado pendiente';message(e.message+' El borrador sigue en este dispositivo; volvé a presionar Finalizar y Guardar para reintentar.');$('btnSaveFinal').disabled=false;}
+      finally{saving=false;}
+    };
+  </script>
+</body>
+</html>

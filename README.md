@@ -89,3 +89,5 @@ El corte a Supabase se mantiene activo y el paquete público `/muni360/` está p
 ## Muni360 en el dominio
 
 Ruta oficial publicada en producción: https://ugiccba.com.ar/muni360/. Abrir `UGI.code-workspace` en VS Code. Fuentes, compilación y operación continua: [docs/muni360-dominio.md](docs/muni360-dominio.md).
+
+Documentación del módulo privado Competencia: [integración, pruebas y alcance](docs/muni360-competencia.md).
