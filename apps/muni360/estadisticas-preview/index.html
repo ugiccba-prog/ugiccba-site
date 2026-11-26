@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Hockey sobre patines · Estadísticas de competición</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#102b46;background:#edf3f9;font-size:16px}*{box-sizing:border-box}body{margin:0}header{background:#082b49;color:white;padding:24px max(20px,calc((100vw - 1080px)/2));}header p{color:#bde5ff;margin:6px 0}h1{font-size:clamp(1.6rem,5vw,2.4rem);margin:14px 0}h2{font-size:1.25rem}main{max-width:1120px;margin:auto;padding:20px}a{color:#08669f}header a{color:#fff}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.card{background:white;border:1px solid #cfdeeb;border-radius:16px;padding:20px;margin:16px 0}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.kpi{background:white;border:1px solid #cfdeeb;border-radius:14px;padding:18px}.value{display:block;font-size:2rem;font-weight:750;margin-top:8px}label{display:flex;flex-direction:column;gap:7px;flex:1;min-width:160px}select,input,button,.button{font:inherit;border-radius:8px;padding:11px;border:1px solid #b4c9db;min-height:44px}button,.button{background:#0b5288;color:white;cursor:pointer;font-weight:650;text-decoration:none}button:disabled{opacity:.55;cursor:wait}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #168ed0;outline-offset:3px}.muted{color:#4b6277;line-height:1.6}.notice{border-left:4px solid #d98600;background:#fff5dc;padding:14px;border-radius:6px;line-height:1.5}.hidden{display:none!important}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left}th,td{padding:12px 9px;border-bottom:1px solid #e0e9f1;white-space:nowrap}th{font-size:.9rem;background:#f0f6fb}caption{text-align:left;margin-bottom:12px}.badge{background:#ffe3a3;color:#5b3800;border-radius:20px;padding:5px 10px;font-size:.9rem}.empty{padding:24px;text-align:center}.match{padding:16px 0;border-bottom:1px solid #dce5ef}.match strong{display:block;margin-bottom:6px}footer{padding:24px 0;color:#4b6277;font-size:.9rem}#status{line-height:1.5}
+</style></head><body>
+<header><div class="row"><span class="badge">Vista de prueba · acceso privado</span><a href="../">Inicio de pruebas</a></div><p>Deportes / Hockey sobre patines / Competición</p><h1>Estadísticas de competición</h1><p>Resultados del equipo y registros por jugador</p></header>
+<main>
+<p id="status" role="status" aria-live="polite">Ingresá con la cuenta del propietario.</p>
+<section id="auth" class="card"><h2>Acceso del propietario</h2><p class="muted">Consultá los partidos guardados en Competencia.</p><button id="google-login">Ingresar con Google</button></section>
+<div id="app" class="hidden">
+<div class="row"><button id="refresh">Actualizar datos</button><a class="button" href="../competencia/">Abrir mesa de Competencia</a><button id="logout">Cerrar sesión</button></div>
+<section class="card" aria-label="Filtros"><div class="row">
+<label>Actividad<select id="activity"><option>Hockey sobre Patines Caballeros</option><option>Hockey sobre Patines Damas</option></select></label>
+<label>Categoría<select id="category"><option value="">Todas las categorías</option></select></label>
+<label>Registros<select id="kind"><option value="test">Datos ficticios de prueba</option><option value="real">Registros reales</option></select></label></div>
+<div class="row" style="margin-top:16px"><label>Desde (Argentina)<input id="from" type="date"></label><label>Hasta (Argentina)<input id="to" type="date"></label></div></section>
+<p id="testNotice" class="notice">Estás viendo datos ficticios. Se muestran separados de los registros reales.</p>
+<div id="coverage" class="muted"></div><div id="kpis" class="kpis" style="margin-top:16px"></div>
+<section class="card"><h2>Estadísticas por jugador</h2><p class="muted">Convocatorias indica en cuántos partidos figura en la lista. No representa minutos jugados.</p><div class="table-wrap"><table><caption id="playerCaption">Registros de los partidos filtrados</caption><thead><tr><th scope="col">Jugador</th><th scope="col">Convocatorias</th><th scope="col">Goles</th><th scope="col">Goles de penal</th><th scope="col">Azules</th><th scope="col">Rojas</th></tr></thead><tbody id="players"></tbody></table></div></section>
+<section class="card"><h2>Partidos</h2><div id="matches"></div></section>
+<footer>Solo partidos finalizados. Cobertura: últimos 50 registros de Competencia, entre todos los deportes. Las acciones son las cargadas en la mesa; no se calculan minutos, asistencias ni efectividad de tiro sin esos datos.</footer>
+</div></main>
+<script src="../assets/scripts/muni360-config.js"></script><script src="../assets/scripts/muni360-google.js"></script>
+<script type="module">
+import {summarize,argentinaDate} from './estadisticas.mjs';
+const $=id=>document.getElementById(id);let items=[],session=0;
+const status=text=>$('status').textContent=text;
+function node(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
+function categories(){const old=$('category').value;$('category').replaceChildren(new Option('Todas las categorías',''));[...new Set(items.filter(c=>c.activity_id===$('activity').value).map(c=>c.category))].sort().forEach(c=>$('category').append(new Option(c,c)));if([...$('category').options].some(o=>o.value===old))$('category').value=old;}
+function render(){
+ if($('from').value&&$('to').value&&$('from').value>$('to').value){status('La fecha Desde debe ser anterior o igual a Hasta.');return;}
+ const data=summarize(items,{activity:$('activity').value,category:$('category').value,kind:$('kind').value,from:$('from').value,to:$('to').value});
+ $('testNotice').classList.toggle('hidden',$('kind').value!=='test');
+ $('coverage').textContent=`${data.matches.length} partidos finalizados en el filtro. ${items.length} registros disponibles en la última consulta.`+(items.length===50?' Se alcanzó el límite: los totales no representan todo el historial.':'')+(data.incomplete?` ${data.incomplete} partidos sin detalle de acciones; las estadísticas individuales pueden estar incompletas.`:'');
+ $('kpis').replaceChildren();for(const [label,value] of [['Partidos',data.matches.length],['Ganados',data.wins],['Empatados',data.draws],['Perdidos',data.losses],['Goles a favor',data.goalsFor],['Goles en contra',data.goalsAgainst],['Tarjetas azules',data.blue],['Tarjetas rojas',data.red],['Fair play',data.fairPlay]]){const card=node('div',label,'kpi');card.append(node('span',String(value),'value'));$('kpis').append(card);}
+ $('players').replaceChildren();for(const p of data.players){const row=document.createElement('tr');for(const v of [p.name,p.appearances,p.goals,p.penaltyGoals,p.blue,p.red])row.append(node('td',String(v)));$('players').append(row);}
+ if(!data.players.length){const cell=node('td','No hay jugadores registrados en este filtro.');cell.colSpan=6;const row=document.createElement('tr');row.append(cell);$('players').append(row);}
+ $('matches').replaceChildren();for(const c of data.matches){const row=node('article','','match');row.append(node('strong',`${c.score_muni}–${c.score_rival} · ${c.opponent_or_event}`),node('div',`${argentinaDate(c.date_ar)} · ${c.category} · ${c.summary_json?.team||''}`));const snapshot=c.summary_json?.snapshot;if(snapshot?.events){const details=document.createElement('details');details.append(node('summary','Ver acciones del partido'));for(const e of snapshot.events)details.append(node('p',`[${e.period}] ${e.side==='muni'?'Muni':'Rival'} · ${e.action_label}${e.player_name?' · '+e.player_name:''}`));row.append(details);}$('matches').append(row);}
+ if(!data.matches.length)$('matches').append(node('p','No hay partidos finalizados para los filtros seleccionados.','empty'));
+ status('Datos actualizados. Consulta de solo lectura.');
+}
+async function load(){const current=session;$('refresh').disabled=true;status('Consultando competencias…');try{const result=await window.MuniGoogle.call('/api/competencia/list');if(current!==session)return;items=result.items;categories();render();}catch(e){if(current===session){items=[];render();status(e.message);}}finally{if(current===session)$('refresh').disabled=false;}}
+$('google-login').onclick=()=>window.MuniGoogle.login().catch(e=>status(e.message));$('logout').onclick=()=>window.MuniGoogle.logout();$('refresh').onclick=load;
+for(const id of ['category','kind','from','to'])$(id).onchange=render;$('activity').onchange=()=>{categories();render();};
+window.MuniGoogle.observe(async(user,error)=>{const current=++session;items=[];$('app').classList.add('hidden');$('auth').classList.remove('hidden');$('players').replaceChildren();$('matches').replaceChildren();$('kpis').replaceChildren();if(!user){status(error?.message||'Ingresá con la cuenta del propietario.');return;}try{const me=await window.MuniGoogle.call('/api/me');if(current!==session)return;if(!me.profile.canManageUsers||me.profile.status!=='activo')throw Error('Este panel está reservado al propietario.');$('auth').classList.add('hidden');$('app').classList.remove('hidden');await load();}catch(e){if(current===session)status(e.message);}});
+</script></body></html>

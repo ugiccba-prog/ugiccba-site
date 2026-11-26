@@ -1,0 +1,8 @@
+{
+  "hosting": {
+    "site": "muni360-ugi-ensayo",
+    "public": "scratch/estadisticas-preview",
+    "ignore": ["**/.*"],
+    "headers": [{"source":"**","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"},{"key":"Cache-Control","value":"no-store"}]}]
+  }
+}
