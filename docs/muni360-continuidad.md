@@ -1,4 +1,4 @@
-# Muni360 · Continuidad vigente al 24/11/2026
+# Muni360 · Continuidad vigente al 26/11/2026
 
 Esta sección es la referencia actual para continuar. Las notas históricas de abajo documentan etapas anteriores y no indican la rama, el backend ni las carpetas que deben usarse hoy.
 
@@ -7,7 +7,7 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Repositorio: https://github.com/ugiccba-prog/ugiccba-site · rama oficial: `main`.
 - PC de casa, DESKTOP-G6MFIIR: `C:\Users\Juan\Repositorios\ugi`.
 - PC del club, Juan-M: `C:\Users\Juan Machado\Repo\ugiccba-site`.
-- Últimos cambios funcionales publicados el 24/11/2026: [alta directa por correo y archivo de accesos](MUNI360_AVISOS_ACCESO.md).
+- Últimos cambios funcionales consolidados el 26/11/2026: acceso unificado exclusivo para `ugiccba@gmail.com` en los portales, mejoras de la revisión del 24/11 aplicadas en Supabase y [Competencia privada](muni360-competencia.md).
 - No retomar una copia antigua de ensayo, una rama anterior o un ZIP como base sin compararlos con `origin/main`. Revisar `git status` antes de sincronizar; conservar cambios locales y actualizar sin forzar ni borrar archivos.
 
 ## Cambios recientes incorporados (17/11 al 24/11/2026)
@@ -29,6 +29,8 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - `30d9057`: Dirección puede dar de alta por correo, asignar permisos antes del primer ingreso y enviar un aviso mediante la cola institucional. Se comprobó publicación en GitHub Pages y la cola con datos de prueba. La entrega a una casilla real sigue pendiente de verificación. Ver [Avisos de acceso](MUNI360_AVISOS_ACCESO.md).
 
 - **Archivo de accesos:** Dirección puede retirar de la lista principal los accesos pendientes, suspendidos o vencidos. El filtro **Archivados** permite restaurarlos como suspendidos. **Historial de permisos** conserva las dos operaciones.
+- **Revisión integral y mejoras (24/11/2026):** Corrección de cola offline por actividad en `Muni360Sync` (`reviewAndRetry`/`discardFirst`), paginación ampliada a 200 usuarios en `/api/users/list` con precarga multipágina en `muni360-admin.js`, validación en servidor y tope de 500 respuestas en cuestionarios públicos (`015_surveys.sql`), orden de pestañas vacías en Sheets (`SheetsInstitucional.gs`) y ajuste ES11 en `.jshintrc`. Ver [Guía de despliegue en Supabase y Google Sheets](muni360-despliegue-supabase-sheets.md).
+- **Consolidación en `main` (26/11/2026):** Integración de `origin/main` (rediseño visual/móvil y [Competencia privada](muni360-competencia.md)) con las mejoras locales, más acceso unificado en todos los portales exclusivamente para `ugiccba@gmail.com` (sin cambios para el resto de las cuentas) y despliegue en Supabase (`kaalffshnrkxviqaymhv`).
 
 ## Registro de cambios
 
@@ -36,9 +38,9 @@ En cada cambio de Muni360, actualizar el [Registro de cambios de Muni360 de UGI 
 
 ## Código y operación actuales
 
-- Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · avisos: `/comunidad/`.
-- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css`.
-- `muni360/` es generado (**33 archivos públicos**, incluyendo `muni360/coyfd/index.html` y `muni360-presence.js`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · competencia privada: `/muni360/competencia/` · avisos: `/comunidad/`.
+- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`.
+- `muni360/` es generado (**36 archivos públicos**, 35 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
 - Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
 - Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.

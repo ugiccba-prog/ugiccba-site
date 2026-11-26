@@ -92,6 +92,11 @@ await test('create, public anonymous submit, immediate first-response summary, a
  assert.equal(pub.survey.title,'Clima del grupo');
  assert.equal('created_by' in pub.survey,false);
 
+ // Public anonymous submit rejects missing required answers, invalid scale values and unknown options
+ await assert.rejects(()=>call(null,'/api/surveys/submit',{code,answers:{q1:5}}),e=>e.code==='22023'||e.code==='VALIDACION');
+ await assert.rejects(()=>call(null,'/api/surveys/submit',{code,answers:{q1:9,q2:'Bien'}}),e=>e.code==='22023'||e.code==='VALIDACION');
+ await assert.rejects(()=>call(null,'/api/surveys/submit',{code,answers:{q1:5,q2:'Otra opcion'}}),e=>e.code==='22023'||e.code==='VALIDACION');
+
  // Public anonymous submit without auth token
  const sub=await call(null,'/api/surveys/submit',{code,answers:{q1:5,q2:'Bien',q3:'Muy bueno el grupo'}});
  assert.equal(sub.ok,true);

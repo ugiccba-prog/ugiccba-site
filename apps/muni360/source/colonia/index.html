@@ -1616,6 +1616,13 @@
     // =========================================================================
     // 4. INICIALIZACIÓN DE PANTALLA LOGIN MUNI 360 (VALIDACIÓN EN SERVIDOR)
     // =========================================================================
+    const EMAIL_INGRESO_UNIFICADO = 'ugiccba@gmail.com';
+    function esIngresoUnificado(s) {
+      return String(s?.email || '').trim().toLowerCase() === EMAIL_INGRESO_UNIFICADO;
+    }
+    function actividadesPortal(s) {
+      return esIngresoUnificado(s) ? CATALOGO_MUNI360 : CATALOGO_MUNI360.filter(x => x.esBase && (!AREA_FIJA || x.nombre===AREA_FIJA));
+    }
     const deportesSolo = CATALOGO_MUNI360.filter(x => x.esBase && (!AREA_FIJA || x.nombre===AREA_FIJA));
     $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
@@ -1653,12 +1660,14 @@
         const data=await MuniGoogle.call('/api/me');if(attempt!==authLoad)return;
         const p=data.profile;
         if(p.status!=='activo') { $('login-error').textContent=p.status==='pendiente'?'Tu acceso está pendiente de aprobación por Dirección UGI.':p.status==='vencido'?'Tu autorización venció. Dirección puede renovarla.':'Tu acceso está suspendido. Contactá a Dirección UGI.';return; }
-        const available=deportesSolo.filter(d=>p.areas.includes(d.nombre));
+        const emailPerfil=p.email||user?.email||'';
+        const catalogo=actividadesPortal({email:emailPerfil});
+        const available=catalogo.filter(d=>p.areas.includes(d.nombre));
         if(!available.length){$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;}
         limpiarCachePrivada();storageScope=p.uid;
         let ultArea='';try{ultArea=localStorage.getItem('muni360cyc_ult_area')||'';}catch(_){}
-        const preferred=available.some(d=>d.nombre===ultArea)?ultArea:(available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre);
-        const datosSesion={usuario:p.uid,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:!!p.canManageUsers,expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:preferred};
+        const preferred=(AREA_FIJA&&available.some(d=>d.nombre===AREA_FIJA))?AREA_FIJA:(available.some(d=>d.nombre===ultArea)?ultArea:(available.some(d=>d.nombre===areaElegidaLogin)?areaElegidaLogin:available[0].nombre));
+        const datosSesion={usuario:p.uid,email:emailPerfil,nombre:p.nombre,profeNombre:p.nombre,rol:p.rol,areas:p.areas,capabilities:p.capabilities,versionUsuario:p.version,canManageUsers:p.canManageUsers,esAdminTotal:!!p.canManageUsers,expiresAt:Number.MAX_SAFE_INTEGER,apiVersion:2,area:preferred};
         try{
           if(localStorage.getItem('muni360_keep_signed_in')!=='false')localStorage.setItem('muni360cyc_perfil_cache:'+p.uid,JSON.stringify(datosSesion));
           else localStorage.removeItem('muni360cyc_perfil_cache:'+p.uid);
@@ -1670,8 +1679,9 @@
             if(localStorage.getItem('muni360_keep_signed_in')!=='false'){
               const cached=JSON.parse(localStorage.getItem('muni360cyc_perfil_cache:'+user.uid)||'null');
               if(cached?.usuario===user.uid){
+                if(!cached.email && user?.email) cached.email = user.email;
                 const ult=localStorage.getItem('muni360cyc_ult_area')||'';
-                if(ult && Array.isArray(cached.areas) && cached.areas.includes(ult) && deportesSolo.some(d=>d.nombre===ult))cached.area=ult;
+                if(ult && Array.isArray(cached.areas) && cached.areas.includes(ult) && actividadesPortal(cached).some(d=>d.nombre===ult))cached.area=ult;
                 storageScope=user.uid;iniciarSesion(cached);return;
               }
             }
@@ -1687,22 +1697,26 @@
     $('revisar-acceso').onclick=()=>cargarPerfilGoogle();
     function permiso(nombre){return !!sesion?.esAdminTotal || sesion?.rol==='Dirección UGI' || !!sesion?.capabilities?.[nombre];}
     function iniciarSesion(datosSesion) {
-      if(AREA_FIJA){
+      const unificado=esIngresoUnificado(datosSesion);
+      const catalogo=actividadesPortal(datosSesion);
+      if(AREA_FIJA && !unificado){
         if(!Array.isArray(datosSesion.areas)||!datosSesion.areas.includes(AREA_FIJA)){$('login-error').textContent='Tu cuenta no tiene acceso a '+AREA_FIJA+'. Volvé a los accesos de Muni360.';return;}
         datosSesion={...datosSesion,areas:[AREA_FIJA],area:AREA_FIJA};
       }
+      const areasAutorizadas=catalogo.filter(d=>Array.isArray(datosSesion.areas)&&datosSesion.areas.includes(d.nombre));
+      if(!areasAutorizadas.length){$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;}
       if(syncClient)syncClient.stop();
       sesion = datosSesion;
       if (almacen.getItem('muni360_modo_demo') !== '1') {
         storageScope=datosSesion.usuario;
         syncClient=new Muni360Sync.Client({url:URL_API_MUNI,fetch:window.fetch.bind(window),storage:window.localStorage,session:datosSesion,transport:window.MUNI_CONFIG.backend==='supabase'?'supabase':'apps-script',getToken:()=>MuniGoogle.getToken(false,datosSesion.usuario),onStatus:estadoSincronizacion});
-        $('sel-deporte').innerHTML=deportesSolo.filter(d=>datosSesion.areas.includes(d.nombre)).map(d=>`<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
+        $('sel-deporte').innerHTML=catalogo.filter(d=>datosSesion.areas.includes(d.nombre)).map(d=>`<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
         syncClient.retry().catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
       }
 
-      areaActiva = (datosSesion.area && deportesSolo.some(x => x.nombre === datosSesion.area))
+      areaActiva = (datosSesion.area && areasAutorizadas.some(x => x.nombre === datosSesion.area))
         ? datosSesion.area
-        : (AREA_FIJA || "Colonia");
+        : (AREA_FIJA && areasAutorizadas.some(x => x.nombre === AREA_FIJA) ? AREA_FIJA : areasAutorizadas[0].nombre);
 
       const rutaGuardada=window.history?.state?.muni360Nav;
       const rutaInicial=rutaAutorizadaMuni(rutaGuardada)?rutaGuardada:null;
@@ -1716,8 +1730,8 @@
       $('login-screen').classList.add('hidden');
       ['app-header', 'barra-estado', 'app-screen', 'portal-mobile-nav'].forEach(id => $(id).classList.remove('hidden'));
 
-      $('sel-deporte').innerHTML=deportesSolo.filter(d=>sesion.areas.includes(d.nombre)).map(d=>'<option value="'+esc(d.nombre)+'">'+esc(d.nombre)+'</option>').join('');
-      const esAdmin = deportesSolo.filter(d=>sesion.areas.includes(d.nombre)).length>1;
+      $('sel-deporte').innerHTML=catalogo.filter(d=>sesion.areas.includes(d.nombre)).map(d=>'<option value="'+esc(d.nombre)+'">'+esc(d.nombre)+'</option>').join('');
+      const esAdmin = catalogo.filter(d=>sesion.areas.includes(d.nombre)).length>1;
       $('wrap-deporte-admin').classList.toggle('hidden', !esAdmin);
       $('sel-deporte').value = areaActiva;
       $('input-fecha').value = rutaInicial?.fecha||fechaLocal(0);
@@ -1793,7 +1807,7 @@
       $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia','replace');}
-      $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>deportesSolo.some(d=>d.nombre===a)).length>1));
+      $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>actividadesPortal(sesion).some(d=>d.nombre===a)).length>1));
 
       $('filtros-deporte').classList.remove('hidden');
       $('filtros-colonia').classList.add('hidden');
@@ -1808,7 +1822,7 @@
     }
 
     $('sel-deporte').addEventListener('change', e => {
-      if(AREA_FIJA&&e.target.value!==AREA_FIJA){e.target.value=AREA_FIJA;return;}
+      if(AREA_FIJA&&!esIngresoUnificado(sesion)&&e.target.value!==AREA_FIJA){e.target.value=AREA_FIJA;return;}
       areaActiva = e.target.value;
       pendingPadronGroups=null;actualizarVistaPreviaPadron();
       try { if (almacen.getItem('muni360_modo_demo') !== '1') localStorage.setItem('muni360cyc_ult_area', areaActiva); } catch(_) {}
@@ -3677,7 +3691,8 @@
     }
     function rutaAutorizadaMuni(ruta){
       return Boolean(sesion&&ruta?.version===1&&ruta.portal===HISTORIA_PORTAL_MUNI&&
-        ruta.usuario===sesion.usuario&&Array.isArray(sesion.areas)&&sesion.areas.includes(ruta.area));
+        ruta.usuario===sesion.usuario&&Array.isArray(sesion.areas)&&sesion.areas.includes(ruta.area)&&
+        actividadesPortal(sesion).some(d=>d.nombre===ruta.area));
     }
     function registrarRutaMuni(modo='push'){
       if(!sesion||restaurandoHistorialMuni||!window.history?.replaceState)return;

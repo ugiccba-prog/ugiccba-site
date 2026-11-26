@@ -24,3 +24,53 @@ test('Comunidad retira el banner de carga al resolver vacío, error y reintento'
  c.fetchPublicFeed=async()=>{throw Error('Sin conexión');};await vm.runInContext('cargarAvisos()',c);assert.match($('estado-avisos').innerHTML,/Sin conexión/);assert.match($('estado-avisos').innerHTML,/Reintentar/);
  c.fetchPublicFeed=async()=>[];await vm.runInContext('cargarAvisos()',c);assert.equal($('estado-avisos').innerHTML,'');
 });
+
+test('Muni360Sync: reviewAndRetry y discardFirst operan sobre el primer pendiente bloqueado sin descartar otros',async()=>{
+  const {Client}=require('../assets/scripts/muni360-sync.js');
+  const store=new Map();
+  let online=false;
+  const sent=[];
+  const client=new Client({
+    url:'https://example.invalid',
+    transport:'supabase',
+    storage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},
+    session:{usuario:'profe',versionUsuario:'v1',expiresAt:Date.now()+600000},
+    getToken:async()=>'tok',
+    lock:fn=>fn(),
+    fetch:async(_,opt)=>{
+      const body=JSON.parse(opt.body);
+      sent.push(body);
+      if(body.tipo==='LECTURA')return {ok:true,json:async()=>({ok:true,apiVersion:2,backendVersion:'supabase-1.0.0',temporada:1,versiones:{}})};
+      if(body.tipo==='RESULTADO')return {ok:true,json:async()=>({ok:true,apiVersion:2,backendVersion:'supabase-1.0.0',committed:false})};
+      if(!online&&body.deporte==='Tenis')throw Error('network');
+      return {ok:true,json:async()=>({ok:true,apiVersion:2,backendVersion:'supabase-1.0.0',requestId:body.requestId,revision:1})};
+    }
+  });
+  client.snapshots.Tenis={versiones:{},temporada:1,padron:[]};
+  client.snapshots.Colonia={versiones:{},temporada:1,padron:[]};
+  await client.enqueue({tipo:'EVALUACION',deporte:'Tenis',categoria:'Sub 12',equipo:'A',fecha:'2026-11-24',jugador:'Ana',notas:{Tiro:7}});
+  assert.equal(client.queue.length,1);
+  // Simular un pendiente bloqueado en Colonia después del pendiente offline de Tenis
+  client.queue.push({payload:{tipo:'EVALUACION',deporte:'Colonia',categoria:'6 años',equipo:'General',fecha:'2026-11-24',jugador:'Luis',notas:{Tiro:8},requestId:'req-blocked-colonia-1234',revision:0,temporada:1},usuarioVersion:'v1',error:'Conflicto en Colonia',code:'CONFLICTO'});
+  client.persist();
+  // reviewAndRetry debe consultar RESULTADO/LECTURA de Colonia (queue[1]) y conservar Tenis (queue[0])
+  await client.reviewAndRetry();
+  assert.equal(client.queue.length,2);
+  assert.equal(client.queue[0].payload.deporte,'Tenis');
+  assert.equal(client.queue[1].payload.deporte,'Colonia');
+  assert.equal(client.queue[1].error,undefined);
+  assert.ok(sent.some(b=>b.deporte==='Colonia'&&b.tipo==='LECTURA'));
+  assert.ok(!sent.some(b=>b.deporte==='Tenis'&&b.tipo==='LECTURA'));
+  // Ahora sí con red activa, flush confirma Tenis y Colonia sin perder ninguno
+  online=true;
+  await client.flush();
+  assert.equal(client.queue.length,0);
+  // Agregar Tenis offline y Colonia bloqueado; discardFirst debe descartar solo Colonia
+  online=false;
+  await client.enqueue({tipo:'EVALUACION',deporte:'Tenis',categoria:'Sub 12',equipo:'A',fecha:'2026-11-24',jugador:'Ana',notas:{Tiro:7}});
+  client.queue.push({payload:{tipo:'EVALUACION',deporte:'Colonia',categoria:'6 años',equipo:'General',fecha:'2026-11-24',jugador:'Luis',notas:{Tiro:9},requestId:'req-blocked-colonia-5678',revision:1,temporada:1},usuarioVersion:'v1',error:'Otro conflicto',code:'CONFLICTO'});
+  client.persist();
+  await client.discardFirst();
+  assert.equal(client.queue.length,1);
+  assert.equal(client.queue[0].payload.deporte,'Tenis');
+});

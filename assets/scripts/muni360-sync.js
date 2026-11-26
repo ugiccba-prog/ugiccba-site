@@ -133,10 +133,12 @@
     async reviewAndRetry() {
       await this.lock(async () => {
       this.queue = JSON.parse(this.storage.getItem(this.storageKey) || '[]');
-      const entry = this.queue[0]; if (!entry) return;
+      const idx = this.queue.findIndex(x => x.error);
+      const targetIdx = idx >= 0 ? idx : 0;
+      const entry = this.queue[targetIdx]; if (!entry) return;
       if(['apps-script','supabase'].includes(this.transport)){
         const receipt=await this.request({tipo:'RESULTADO',deporte:entry.payload.deporte,requestId:entry.payload.requestId});
-        if(receipt.committed){this.queue.shift();this.persist();this.status('La carga ya estaba confirmada en Google.');return;}
+        if(receipt.committed){const snap=this.snapshots[entry.payload.deporte];if(snap&&receipt.result?.revision)snap.versiones[keyFor(entry.payload)]=receipt.result.revision;this.queue.splice(targetIdx,1);this.persist();this.status('La carga ya estaba confirmada en Google.');return;}
       }
       const snapshot = await this.read(entry.payload.deporte);
       if (entry.payload.temporada !== snapshot.temporada) throw new ApiError('La carga pertenece a una temporada anterior. Descartala después de copiar los datos que necesites.', 'CONFLICTO');
@@ -154,8 +156,10 @@
     async discardFirst() {
       await this.lock(async () => {
       this.queue = JSON.parse(this.storage.getItem(this.storageKey) || '[]');
-      const discarded = this.queue.shift();
-      if (discarded) this.queue.forEach(x => { if (x.payload.deporte === discarded.payload.deporte && keyFor(x.payload) === keyFor(discarded.payload)) x.payload.revision--; });
+      const idx = this.queue.findIndex(x => x.error);
+      const targetIdx = idx >= 0 ? idx : 0;
+      const [discarded] = this.queue.splice(targetIdx, 1);
+      if (discarded) this.queue.slice(targetIdx).forEach(x => { if (x.payload.deporte === discarded.payload.deporte && keyFor(x.payload) === keyFor(discarded.payload)) x.payload.revision--; });
       this.persist(); this.status('Carga descartada por el usuario.');
       });
     }

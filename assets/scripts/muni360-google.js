@@ -46,7 +46,7 @@
       mod.onAuthStateChanged(auth,()=>{ready=true;callbacks.forEach(fn=>fn(auth.currentUser));});
     })().catch(e=>{loading=null;throw e;});return loading;
   }
-  async function getToken(force=false,expectedUid){await initialize();if(typeof auth?.authStateReady==='function')await auth.authStateReady();if(!auth.currentUser || expectedUid && auth.currentUser.uid!==expectedUid){const e=Error('La cuenta de Google cambió. Volvé a ingresar para esta carga.');e.code='SESION';throw e;}return auth.currentUser.getIdToken(force);}
+  async function getToken(force=false,expectedUid=null){await initialize();if(typeof auth?.authStateReady==='function')await auth.authStateReady();if(!auth.currentUser || expectedUid && auth.currentUser.uid!==expectedUid){const e=Error('La cuenta de Google cambió. Volvé a ingresar para esta carga.');e.code='SESION';throw e;}return auth.currentUser.getIdToken(force);}
   async function call(path,body={}){
     const token=await getToken();
     const response=await fetch(root.MUNI_CONFIG.apiBaseUrl,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...body,path,idToken:token}),signal:AbortSignal.timeout(25000)});

@@ -55,6 +55,11 @@ declare
  v_survey mc_private.surveys%rowtype;
  v_code text;
  v_status text;
+ v_q jsonb;
+ v_qid text;
+ v_qtype text;
+ v_val jsonb;
+ v_resp_count integer;
 begin
  if p_action='public_get' then
   v_code:=trim(coalesce(p->>'code',''));
@@ -79,6 +84,41 @@ begin
   if v_survey.id is null or v_survey.status<>'active' then
    raise exception using errcode='PT409',message='Este cuestionario ya no recibe respuestas.';
   end if;
+  select count(*) into v_resp_count from mc_private.survey_responses where survey_id=v_survey.id;
+  if v_resp_count>=500 then
+   raise exception using errcode='PT409',message='Este cuestionario alcanzó el límite de respuestas.';
+  end if;
+  for v_q in select * from jsonb_array_elements(coalesce(v_survey.questions,'[]'::jsonb)) loop
+   v_qid:=v_q->>'id';
+   v_qtype:=v_q->>'type';
+   v_val:=coalesce(p->'answers','{}'::jsonb)->v_qid;
+   if coalesce((v_q->>'required')::boolean,false) and (
+    v_val is null or jsonb_typeof(v_val)='null'
+    or (jsonb_typeof(v_val)='string' and btrim(v_val#>>'{}')='')
+    or (jsonb_typeof(v_val)='array' and jsonb_array_length(v_val)=0)
+   ) then
+    raise exception using errcode='22023',message='Respondé las preguntas obligatorias.';
+   end if;
+   if v_val is not null and jsonb_typeof(v_val)<>'null' then
+    if v_qtype='scale' then
+     if jsonb_typeof(v_val)<>'number' or (v_val#>>'{}') !~ '^[1-5]$' then
+      raise exception using errcode='22023',message='Valor de escala inválido.';
+     end if;
+    elsif v_qtype='single' then
+     if jsonb_typeof(v_val)<>'string' or (btrim(v_val#>>'{}')<>'' and not (coalesce(v_q->'options','[]'::jsonb) ? (v_val#>>'{}'))) then
+      raise exception using errcode='22023',message='Opción inválida.';
+     end if;
+    elsif v_qtype='multi' then
+     if jsonb_typeof(v_val)<>'array' or exists(select 1 from jsonb_array_elements_text(v_val) as opt where not (coalesce(v_q->'options','[]'::jsonb) ? opt)) then
+      raise exception using errcode='22023',message='Opción múltiple inválida.';
+     end if;
+    elsif v_qtype='text' then
+     if jsonb_typeof(v_val)<>'string' then
+      raise exception using errcode='22023',message='Respuesta de texto inválida.';
+     end if;
+    end if;
+   end if;
+  end loop;
   insert into mc_private.survey_responses(survey_id,answers,submitted_at)
   values(v_survey.id,coalesce(p->'answers','{}'::jsonb),v_now);
   perform mc_private.surveys_enqueue_outbox(v_survey.activity,v_now);

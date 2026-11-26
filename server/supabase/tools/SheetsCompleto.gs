@@ -134,7 +134,9 @@ function estilosYOrdenSheetsUGI(sheet,meta,tables){
  var order=['Resumen','Cuestionarios','Padron','Asistencia','Evaluaciones','ApoyosDUA','CargaPadron','Gestos','Cambios','HistorialAsistencia','HistorialEvaluaciones','HistorialPadron','EstadoSync','ControlMuni360'];
  var widths={Resumen:[210,160,95,90,90,90,105,180,120,130],Cuestionarios:[210,85,120,100,90,260,115,240,300],Padron:[140,120,100,200,105,180,105,115,130,115,95],Asistencia:[100,140,115,100,190,170,85,105,130,125],Evaluaciones:[100,140,115,100,190,320,90],ApoyosDUA:[160,115,100,180,220,220,220],CargaPadron:[150,130,220],AsistenciaPorGrupo:[300,520],EstadoSync:[180,380]};
  var horizontal=Object.keys(tables).filter(function(t){return t.indexOf('Asist · ')===0;});
- order=['Resumen','AsistenciaPorGrupo'].concat(horizontal,order.filter(function(t){return t!=='Resumen';}));
+ var horizontalActive=horizontal.filter(function(t){return !(tables[t].length===2&&tables[t][1][0]==='Sin registros de esta temporada');});
+ var horizontalRetired=horizontal.filter(function(t){return tables[t].length===2&&tables[t][1][0]==='Sin registros de esta temporada';});
+ order=['Resumen','AsistenciaPorGrupo'].concat(horizontalActive,order.filter(function(t){return t!=='Resumen'&&t!=='EstadoSync'&&t!=='ControlMuni360';}),horizontalRetired,['EstadoSync','ControlMuni360']);
  var reqs=[],pos=0;
  order.forEach(function(title){
   var tab=meta.find(function(t){return t.title===title;});if(!tab)return;

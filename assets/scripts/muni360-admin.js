@@ -59,8 +59,16 @@
     try{
       const result=await MuniGoogle.call('/api/users/list',{cursor:append?cursor:null,archived:archivedView()});
       if(request!==listRequest)return;
-      users=append?[...new Map(users.concat(result.users).map(u=>[u.uid,u])).values()]:result.users;
-      cursor=result.nextCursor;render();
+      let allUsers=result.users||[],next=result.nextCursor,pages=1;
+      while(!append&&next&&pages<5){
+        const more=await MuniGoogle.call('/api/users/list',{cursor:next,archived:archivedView()});
+        if(request!==listRequest)return;
+        allUsers=allUsers.concat(more.users||[]);
+        next=more.nextCursor;
+        pages++;
+      }
+      users=append?[...new Map(users.concat(allUsers).map(u=>[u.uid,u])).values()]:allUsers;
+      cursor=next;render();
       const report=await MuniGoogle.call('/api/users/history');
       if(request!==listRequest)return;
       history=report.events;renderHistory();

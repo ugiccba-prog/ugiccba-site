@@ -1,6 +1,6 @@
 begin;
 
-create function mc_private.manage_user_archive(p_action text,p jsonb) returns jsonb
+create or replace function mc_private.manage_user_archive(p_action text,p jsonb) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare
  owner_uid text;
@@ -26,7 +26,7 @@ begin
     from (
      select uid,record from mc_private.users
      where (record ? 'archivedAt')=archive_view
-     order by uid limit 50 offset coalesce((p->>'offset')::integer,0)
+     order by uid limit 200 offset coalesce((p->>'offset')::integer,0)
     ) users_page
     left join lateral (
      select case when status='sending' and claimed_at<now()-interval '15 minutes' then 'review' else status end as status

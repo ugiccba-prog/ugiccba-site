@@ -50,7 +50,7 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
   if(input.path.startsWith('/api/users/')){
    if(identity.uid!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra permisos.');
    if(input.path==='/api/users/history')return {ok:true,...await service('permissionHistory',{uid:actor.id})};
-   if(input.path==='/api/users/list'){const offset=d.cursor==null?0:Number(d.cursor);if(!Number.isSafeInteger(offset)||offset<0)throw new AccessError('VALIDACION','Página inválida.',400);const r=await service('users',{uid:actor.id,offset,archived:d.archived===true});return {ok:true,users:r.users,nextCursor:r.total>offset+50?String(offset+50):null};}
+   if(input.path==='/api/users/list'){const offset=d.cursor==null?0:Number(d.cursor);if(!Number.isSafeInteger(offset)||offset<0)throw new AccessError('VALIDACION','Página inválida.',400);const r=await service('users',{uid:actor.id,offset,archived:d.archived===true});return {ok:true,users:r.users,nextCursor:r.total>offset+200?String(offset+200):null};}
    if(input.path==='/api/users/add'){
     const email=typeof d.email==='string'?d.email.trim().toLowerCase():'';
     if(email.length>254||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email))throw new AccessError('VALIDACION','Ingresá un correo válido.',400);
