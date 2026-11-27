@@ -104,6 +104,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await page.goto('http://127.0.0.1:'+port+'/muni360/deportes/?qa=owner');
   await elegirGrupoDeportes(page,'muni360/deportes');
   assert.equal(await page.locator('#link-admin-ugi').isVisible(),true);
+  await page.goto('http://127.0.0.1:'+port+'/muni360/colonia/?qa=owner');
   await page.locator('#daily-presence-panel').waitFor({state:'visible'});
   assert.equal(await page.locator('#daily-presence-panel').getAttribute('open'),null);
   await page.locator('#daily-presence-panel summary').click();
