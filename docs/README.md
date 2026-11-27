@@ -1,6 +1,6 @@
 # Documentación UGI · índice
 
-Punto de partida: [muni360-continuidad.md](muni360-continuidad.md) (estado vigente de Muni360). Los documentos de la sección **Histórico** registran etapas cerradas: se conservan como antecedente y sus conteos de pruebas o archivos corresponden a la fecha en que se escribieron.
+Punto de partida: [../AGENTS.md](../AGENTS.md) (reglas y comandos para personas e IA) y [muni360-continuidad.md](muni360-continuidad.md) (estado vigente de Muni360). Los documentos de la sección **Histórico** registran etapas cerradas: se conservan como antecedente y sus conteos de pruebas o archivos corresponden a la fecha en que se escribieron.
 
 ## Vigente
 
