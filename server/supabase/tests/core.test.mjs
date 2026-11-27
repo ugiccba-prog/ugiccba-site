@@ -35,7 +35,7 @@ await test('Excel múltiple: Colonia A/B se confirma atómicamente, no permite p
  let saved=await call('owner',{tipo:'LECTURA',deporte:'Colonia'});assert.equal(saved.padron.length,4);assert.deepEqual(saved.padron.map(p=>p.equipo),['A','A','B','B']);
  const bad=operation(saved,'ALTA_PADRON_LOTE',{deporte:'Colonia',categoria:'',equipo:'',fecha:'',grupos:[{categoria:'Otro',equipo:'A',jugadores:[{jugador:'Nuevo',dni:'55556666'}]},{categoria:'Otro',equipo:'B',jugadores:[{jugador:'DNI inválido',dni:'abc'}]}]});
  await assert.rejects(()=>call('owner',bad),/DNI/);saved=await call('owner',{tipo:'LECTURA',deporte:'Colonia'});assert.equal(saved.padron.length,4);
- await assert.rejects(()=>call('teacher',operation(saved,'ALTA_PADRON_LOTE',{deporte:'Colonia',categoria:'',equipo:'',fecha:'',grupos})),/permiso/i);
+ await assert.rejects(()=>call('teacher',operation(saved,'ALTA_PADRON_LOTE',{deporte:'Colonia',categoria:'',equipo:'',fecha:'',grupos})),/permiso|equipos asignados/i);
 });
 await test('Consulta can read but cannot write; Profe cannot grant itself permissions',async()=>{await load('reader');await assert.rejects(async()=>call('reader',operation(await load('reader'),'ASISTENCIA',{datos:{}})),/consulta/);await assert.rejects(()=>call('teacher',{uid:'teacher',rol:'Dirección UGI'},'/api/users/update'),/propietario/);});
 await test('owner permissions panel persists suspension and subsequent request is blocked',async()=>{const r=await call('owner',{uid:'reader',rol:'Consulta',status:'suspendido',areas,capabilities:{},revision:0},'/api/users/update');assert.equal(r.user.revision,1);assert.notEqual(r.user.version,'11111111-2222-4333-8444-555555555555');await assert.rejects(()=>load('reader'));});
