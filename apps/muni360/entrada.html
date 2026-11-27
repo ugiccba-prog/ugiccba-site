@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4efe6">
-  <meta name="description" content="Muni360, la comunidad y la gestión deportiva del Club Ciudad de Buenos Aires.">
+  <meta name="description" content="Muni360 · Acceso único a Deportes, Colonia y COYFD del Club Ciudad de Buenos Aires.">
   <title>Muni360 | UGI · Club Ciudad de Buenos Aires</title>
   <link rel="icon" type="image/png" href="./assets/images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +25,14 @@
       -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; text-decoration: none; }
-    a:focus-visible { outline: 3px solid var(--muni-focus); outline-offset: 3px; }
+    button { font: inherit; color: inherit; }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid var(--muni-focus);
+      outline-offset: 3px;
+    }
+    .hidden { display: none !important; }
     .skip {
       position: absolute;
       left: 1rem;
@@ -40,15 +47,15 @@
 
     .header-inner, .hero, footer {
       width: 100%;
-      max-width: 1320px;
+      max-width: 1240px;
       margin-inline: auto;
       padding-inline: clamp(18px, 4.5vw, 56px);
     }
 
     header {
-      padding-block: clamp(16px, 2.4vw, 24px);
+      padding-block: clamp(14px, 2.2vw, 22px);
       border-bottom: 1px solid rgba(8, 43, 73, 0.07);
-      background: rgba(255, 253, 249, 0.45);
+      background: rgba(255, 253, 249, 0.55);
       backdrop-filter: blur(8px);
     }
     .header-inner {
@@ -82,17 +89,11 @@
       font-size: .84rem;
       color: var(--muni-muted);
     }
-    .top-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
     .back {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 44px;
+      min-height: 42px;
       padding: 8px 18px;
       background: var(--muni-surface);
       color: var(--muni-ink);
@@ -108,11 +109,6 @@
       border-color: #8cc4e4;
       transform: translateY(-1px);
     }
-    footer a:hover {
-      color: var(--muni-ink);
-      text-decoration: underline;
-      text-underline-offset: 4px;
-    }
 
     main {
       flex: 1;
@@ -121,145 +117,169 @@
     }
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr);
+      grid-template-columns: minmax(0, .95fr) minmax(0, 1fr);
       gap: clamp(28px, 5vw, 72px);
       align-items: center;
-      padding-block: clamp(32px, 5.5vw, 76px);
+      padding-block: clamp(32px, 5vw, 68px);
     }
     h1 {
       margin: 0;
-      font: 800 clamp(3.5rem, 7.6vw, 6.4rem)/.94 var(--muni-heading);
+      font: 800 clamp(3.4rem, 7.2vw, 6rem)/.94 var(--muni-heading);
       letter-spacing: -.044em;
       color: var(--muni-ink);
     }
     h1 span { color: #1c7fb2; }
     .intro {
-      max-width: 28ch;
-      margin: 20px 0 0;
+      max-width: 30ch;
+      margin: 18px 0 0;
       color: #3e5266;
-      font-size: clamp(1.04rem, 1.3vw, 1.22rem);
+      font-size: clamp(1.04rem, 1.3vw, 1.2rem);
       line-height: 1.55;
     }
 
-    nav {
-      display: grid;
-      gap: 16px;
-      min-width: 0;
-    }
-    .section-label {
-      margin: 0 0 0 4px;
-      font: 700 clamp(1.05rem, 1.2vw, 1.2rem)/1.3 var(--muni-heading);
-      color: var(--muni-ink);
-    }
-    .gestion-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: clamp(12px, 1.5vw, 18px);
-    }
-    .card {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 24px;
-      min-height: 184px;
-      padding: clamp(20px, 2vw, 26px);
+    .auth-card {
+      position: relative;
       background: var(--muni-surface);
       border: 1px solid #dfd7c8;
-      border-top: 4px solid #59bde9;
-      border-radius: 22px;
-      box-shadow: 0 10px 26px rgb(8 43 73 / 5%);
-      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+      border-radius: 24px;
+      padding: clamp(24px, 3.2vw, 34px);
+      box-shadow: 0 20px 44px rgb(8 43 73 / 8%);
+      overflow: hidden;
+      max-width: 460px;
+      width: 100%;
+      justify-self: end;
     }
-    .card:nth-child(2) { border-top-color: #1c7fb2; }
-    .card:nth-child(3) { border-top-color: #082b49; }
-    .card:hover {
-      transform: translateY(-3px);
-      background: #ffffff;
-      border-color: #9ecce6;
-      box-shadow: 0 16px 32px rgb(8 43 73 / 9%);
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--muni-sky) 0%, var(--muni-accent) 52%, var(--muni-ink) 100%);
     }
-    .card h2 {
-      margin: 0;
-      font: 700 clamp(1.22rem, 1.45vw, 1.38rem)/1.22 var(--muni-heading);
+    .auth-pill {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--muni-tint);
+      color: var(--muni-accent);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    .auth-card h2 {
+      margin: 14px 0 6px;
+      font: 700 clamp(1.45rem, 2vw, 1.75rem)/1.18 var(--muni-heading);
+      letter-spacing: -.02em;
       color: var(--muni-ink);
     }
-    .card p {
-      margin: 7px 0 0;
+    .auth-copy {
+      margin: 0 0 20px;
       color: var(--muni-muted);
-      font-size: .92rem;
-      line-height: 1.48;
-    }
-    .action {
-      color: #166ea0;
-      font-size: .9rem;
-      font-weight: 700;
-    }
-    .card:hover .action {
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      font-size: .95rem;
+      line-height: 1.5;
     }
 
-    .comunidad-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: clamp(22px, 2.4vw, 28px) clamp(22px, 2.6vw, 30px);
-      background: linear-gradient(135deg, #bfe8f7 0%, #9bd6ee 100%);
-      border: 1px solid #8bc9e2;
-      border-radius: 24px;
-      box-shadow: 0 10px 26px rgb(28 127 178 / 10%);
-      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
-    }
-    .comunidad-box:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 30px rgb(28 127 178 / 15%);
-    }
-    .comunidad-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 11px;
-      margin-bottom: 8px;
-      border-radius: 999px;
-      background: rgba(255, 253, 249, 0.72);
-      border: 1px solid rgba(8, 43, 73, 0.14);
-      color: var(--muni-ink);
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
-    .comunidad-box h2 {
-      margin: 0;
-      font: 700 clamp(1.3rem, 1.6vw, 1.52rem)/1.2 var(--muni-heading);
-      color: var(--muni-ink);
-    }
-    .comunidad-box p {
-      margin: 5px 0 0;
-      color: #153b57;
-      font-size: .95rem;
-      line-height: 1.48;
-    }
-    .comunidad-cta {
+    .google-btn {
+      width: 100%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 46px;
-      padding: 11px 24px;
-      background: var(--muni-ink);
-      color: #ffffff;
+      gap: 12px;
+      min-height: 50px;
+      padding: 12px 20px;
       border-radius: 999px;
-      font-size: .9rem;
+      border: 1px solid #d4cbb9;
+      background: #ffffff;
+      color: var(--muni-ink);
+      font-size: .98rem;
       font-weight: 700;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: background-color .16s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgb(8 43 73 / 7%);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background-color .16s ease;
     }
-    .comunidad-box:hover .comunidad-cta { background: var(--muni-accent); }
+    .google-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: #8cc4e4;
+      background: #f8fcff;
+      box-shadow: 0 10px 24px rgb(8 43 73 / 11%);
+    }
+    .google-btn:disabled {
+      opacity: .68;
+      cursor: wait;
+    }
+
+    .auth-status {
+      margin: 14px 0 0;
+      min-height: 1.3em;
+      font-size: .88rem;
+      line-height: 1.45;
+      color: var(--muni-muted);
+    }
+    .auth-status.is-error {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .auth-status.is-info {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--muni-tint);
+      border: 1px solid #bae6fd;
+      color: var(--muni-ink);
+    }
+
+    .auth-secondary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .btn-ghost {
+      flex: 1 1 140px;
+      min-height: 42px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #d4cbb9;
+      background: var(--muni-surface);
+      color: var(--muni-ink);
+      font-size: .86rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color .16s ease, border-color .16s ease;
+    }
+    .btn-ghost:hover {
+      background: var(--muni-tint);
+      border-color: #8cc4e4;
+    }
+
+    .auth-checking {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: var(--muni-tint);
+      color: var(--muni-ink);
+      font-size: .92rem;
+      font-weight: 600;
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(8, 43, 73, 0.2);
+      border-top-color: var(--muni-accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     footer {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 8px 20px;
       flex-wrap: wrap;
       padding-block: 20px;
@@ -267,50 +287,38 @@
       color: var(--muni-muted);
       font-size: .84rem;
     }
+    footer a {
+      font-weight: 600;
+      color: var(--muni-ink);
+    }
+    footer a:hover {
+      color: var(--muni-accent);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 900px) {
       .hero {
         grid-template-columns: 1fr;
         gap: 28px;
-        padding-block: clamp(24px, 4.5vw, 48px);
+        padding-block: clamp(24px, 4.5vw, 44px);
       }
-      .intro { max-width: 46ch; margin-top: 14px; }
-      .card { min-height: 158px; }
-    }
-    @media (max-width: 680px) {
-      .gestion-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      .card {
-        flex-direction: row;
-        align-items: center;
-        min-height: auto;
-        gap: 14px;
-        padding: 16px 18px;
-        border-top: 1px solid #dfd7c8;
-        border-left: 4px solid #59bde9;
-      }
-      .card:nth-child(2) { border-top-color: #dfd7c8; border-left-color: #1c7fb2; }
-      .card:nth-child(3) { border-top-color: #dfd7c8; border-left-color: #082b49; }
-      .action { flex-shrink: 0; }
+      .intro { max-width: 44ch; margin-top: 12px; }
+      .auth-card { justify-self: stretch; max-width: 100%; }
     }
     @media (max-width: 520px) {
       .brand img { height: 32px; }
       .back { padding: 8px 14px; font-size: .82rem; }
-      .comunidad-box {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 18px;
-      }
+      .auth-card { padding: 22px 18px; border-radius: 20px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .card, .comunidad-box, .back { transition: none; }
+      .back, .google-btn, .btn-ghost { transition: none; }
+      .spinner { animation: none; }
     }
   </style>
 </head>
 <body>
-  <a class="skip" href="#accesos">Ir a los accesos</a>
+  <a class="skip" href="#acceso">Ir al ingreso</a>
   <header>
     <div class="header-inner">
       <a class="brand" href="/" aria-label="UGI, página principal">
@@ -320,56 +328,195 @@
           <span>Club Ciudad de Buenos Aires</span>
         </span>
       </a>
-      <div class="top-actions">
-        <a class="back" href="/">Volver a UGI</a>
-      </div>
+      <a class="back" href="/">Volver a UGI</a>
     </div>
   </header>
+
   <main>
     <div class="hero">
       <div>
         <h1>Muni<span>360</span></h1>
-        <p class="intro">Gestión deportiva, asistencia y avisos abiertos para las familias del club.</p>
+        <p class="intro">Deportes, Colonia y COYFD en un solo acceso.</p>
       </div>
-      <nav id="accesos" aria-label="Secciones de Muni360">
-        <p class="section-label">Gestión interna</p>
-        <div class="gestion-grid">
-          <a class="card deportes" href="./deportes/">
-            <div>
-              <h2>Deportes</h2>
-              <p>Asistencia, evaluaciones y equipos.</p>
-            </div>
-            <span class="action">Ingresar</span>
-          </a>
-          <a class="card colonia" href="./colonia/">
-            <div>
-              <h2>Colonia</h2>
-              <p>Grupos, asistencia y comedor.</p>
-            </div>
-            <span class="action">Ingresar</span>
-          </a>
-          <a class="card coyfd" href="./coyfd/">
-            <div>
-              <h2>COYFD</h2>
-              <p>Grupos y seguimiento formativo.</p>
-            </div>
-            <span class="action">Ingresar</span>
-          </a>
+
+      <section id="acceso" class="auth-card" aria-label="Ingreso institucional">
+        <span class="auth-pill">Ingreso institucional</span>
+        <h2>Ingresá a tu espacio</h2>
+        <p class="auth-copy">Entrás directo a tus equipos o grupos habilitados.</p>
+
+        <div id="auth-checking" class="auth-checking hidden" role="status" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Verificando tu acceso…</span>
         </div>
-        <a class="comunidad-box community" href="/comunidad/">
-          <div>
-            <span class="comunidad-badge">Próximamente</span>
-            <h2>Comunidad</h2>
-            <p>Horarios, partidos y novedades abiertas para las familias del club.</p>
-          </div>
-          <span class="comunidad-cta">Ver avisos</span>
-        </a>
-      </nav>
+
+        <form id="login-form">
+          <button type="submit" id="google-login" class="google-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5c-.3 1.5-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.7z"/>
+              <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.8-3c-1.1.7-2.5 1.2-4.2 1.2-3.2 0-5.9-2.2-6.9-5.1H1.2v3.1C3.2 21.3 7.3 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.1 14.2c-.2-.7-.4-1.4-.4-2.2s.2-1.5.4-2.2V6.7H1.2C.4 8.3 0 10.1 0 12s.4 3.7 1.2 5.3l3.9-3.1z"/>
+              <path fill="#EA4335" d="M12 4.7c1.8 0 3.3.6 4.6 1.8l3.4-3.4C18 1.2 15.2 0 12 0 7.3 0 3.2 2.7 1.2 6.7l3.9 3.1c1-2.9 3.7-5.1 6.9-5.1z"/>
+            </svg>
+            <span>Continuar con Google</span>
+          </button>
+        </form>
+
+        <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
+
+        <div id="auth-secondary" class="auth-secondary hidden">
+          <button type="button" id="revisar-acceso" class="btn-ghost">Revisar acceso</button>
+          <button type="button" id="cambiar-cuenta" class="btn-ghost">Cambiar cuenta</button>
+        </div>
+      </section>
     </div>
   </main>
+
   <footer>
     <span>UGI · Club Ciudad de Buenos Aires</span>
-    <a href="/">Conocé el proyecto UGI</a>
+    <a href="/comunidad/">Avisos para familias · Comunidad</a>
   </footer>
+
+  <script src="./assets/scripts/muni360-config.js"></script>
+  <script src="./assets/scripts/muni360-google.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const $ = id => document.getElementById(id);
+      const checkingEl = $('auth-checking');
+      const formEl = $('login-form');
+      const loginBtn = $('google-login');
+      const statusEl = $('auth-status');
+      const secondaryEl = $('auth-secondary');
+      const retryBtn = $('revisar-acceso');
+      const switchBtn = $('cambiar-cuenta');
+
+      let attemptSeq = 0;
+      let currentUser = null;
+
+      function setState({ checking = false, message = '', tone = '', showSecondary = false, showForm = true } = {}) {
+        checkingEl.classList.toggle('hidden', !checking);
+        formEl.classList.toggle('hidden', !showForm);
+        secondaryEl.classList.toggle('hidden', !showSecondary);
+        statusEl.textContent = message;
+        statusEl.className = 'auth-status' + (tone ? ' is-' + tone : '');
+      }
+
+      function resolveDestination(profile) {
+        const areas = Array.isArray(profile?.areas) ? profile.areas : [];
+        if (!areas.length) return '';
+
+        let lastSport = '';
+        let lastBase = '';
+        try {
+          lastSport = localStorage.getItem('muni360_ult_deporte') || '';
+          lastBase = localStorage.getItem('muni360cyc_ult_area') || '';
+        } catch (_) {}
+
+        const toPath = area => area === 'Colonia' ? './colonia/' : area === 'COYFD' ? './coyfd/' : './deportes/';
+
+        if (lastSport && areas.includes(lastSport)) return toPath(lastSport);
+        if (lastBase && areas.includes(lastBase)) return toPath(lastBase);
+
+        const hasSport = areas.some(a => a !== 'Colonia' && a !== 'COYFD');
+        if (hasSport) return './deportes/';
+        if (areas.includes('Colonia')) return './colonia/';
+        if (areas.includes('COYFD')) return './coyfd/';
+        return '';
+      }
+
+      async function verifyAccess(user) {
+        const attempt = ++attemptSeq;
+        if (!user) {
+          setState({ checking: false, showForm: true, showSecondary: false });
+          return;
+        }
+
+        setState({ checking: true, showForm: false, showSecondary: false });
+        try {
+          const data = await window.MuniGoogle.call('/api/me');
+          if (attempt !== attemptSeq) return;
+          const profile = data?.profile;
+
+          if (!profile || profile.status !== 'activo') {
+            const msg = profile?.status === 'pendiente'
+              ? 'Tu acceso está pendiente de aprobación por Dirección UGI.'
+              : profile?.status === 'vencido'
+                ? 'Tu autorización venció. Dirección UGI puede renovarla.'
+                : 'Tu acceso está suspendido. Contactá a Dirección UGI.';
+            setState({ checking: false, showForm: false, showSecondary: true, message: msg, tone: 'info' });
+            return;
+          }
+
+          const dest = resolveDestination(profile);
+          if (!dest) {
+            setState({
+              checking: false,
+              showForm: false,
+              showSecondary: true,
+              message: 'Tu cuenta todavía no tiene actividades habilitadas. Consultá a Dirección UGI.',
+              tone: 'info'
+            });
+            return;
+          }
+
+          window.location.replace(dest);
+        } catch (err) {
+          if (attempt !== attemptSeq) return;
+          setState({
+            checking: false,
+            showForm: true,
+            showSecondary: true,
+            message: err?.message || 'No se pudo verificar el acceso. Reintentá en un momento.',
+            tone: 'error'
+          });
+        }
+      }
+
+      formEl.addEventListener('submit', async e => {
+        e.preventDefault();
+        loginBtn.disabled = true;
+        setState({ checking: false, showForm: true, message: 'Abriendo Google…' });
+        try {
+          await window.MuniGoogle.login();
+        } catch (err) {
+          const msg = err?.code === 'auth/popup-blocked'
+            ? 'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.'
+            : err?.code === 'auth/popup-closed-by-user'
+              ? 'Ingreso cancelado. Podés intentarlo otra vez.'
+              : err?.message || 'No se pudo abrir Google.';
+          setState({ checking: false, showForm: true, message: msg, tone: 'error' });
+        } finally {
+          loginBtn.disabled = false;
+        }
+      });
+
+      retryBtn.addEventListener('click', () => {
+        if (!currentUser) {
+          setState({ checking: false, showForm: true, showSecondary: false });
+          return;
+        }
+        verifyAccess(currentUser);
+      });
+
+      switchBtn.addEventListener('click', async () => {
+        try { await window.MuniGoogle.logout(); } catch (_) {}
+        currentUser = null;
+        setState({ checking: false, showForm: true, showSecondary: false });
+        formEl.requestSubmit();
+      });
+
+      if (window.MuniGoogle?.configured?.()) {
+        setState({ checking: true, showForm: false, showSecondary: false });
+        window.MuniGoogle.observe((user, error) => {
+          currentUser = user || null;
+          if (error) {
+            setState({ checking: false, showForm: true, message: error.message, tone: 'error' });
+            return;
+          }
+          verifyAccess(user);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

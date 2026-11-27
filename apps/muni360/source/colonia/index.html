@@ -869,17 +869,9 @@
       <p id="login-error" class="error" aria-live="polite"></p>
       <button type="submit" id="google-login">Continuar con Google</button>
       <button type="button" id="revisar-acceso" class="btn-sec" style="margin-top:10px">Ya me autorizaron · Revisar acceso</button>
-      <div style="text-align:center; margin-top:16px; padding-top:14px; border-top:1px dashed #cbd5e1;">
-        <button type="button" id="btn-entrar-demo" onclick="cargarDemoVideoUGI()" class="btn-sec" style="width:100%; justify-content:center; background:#f0fdf4; color:#15803d; border-color:#86efac; padding:10px 14px; font-size:0.88rem; min-height:44px; border-radius:10px;">
-          🎭 Entrar con Modelo de Prueba (Reunión / Video)
-        </button>
-        <div style="font-size:0.72rem; color:var(--muted); margin-top:5px;">
-          Carga grupos de Colonia (con comedor 🍴) y COYFD (6 a 10 años), asistencias, evaluaciones y legajos UGI de muestra. No altera las planillas reales.
-        </div>
-      </div>
 
       <div style="margin-top:12px; padding-top:10px; border-top:1px solid #f1f5f9; font-size:0.78rem; color:var(--muted);">
-        ¿Buscás Deportes Federados? <a href="../muni360/" style="color:var(--blue); font-weight:800; text-decoration:none;">Ir a Muni 360 Deportes &rarr;</a>
+        <a href="../">Volver a Muni360</a>
       </div>
     </form>
   </div>
@@ -891,7 +883,7 @@
     <div class="brand">
       <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='../../escudo-ccba.png'" alt="C.C.B.A.">
       <div>
-        <h2>MUNI 360<span class="brand-tagline">Colonia y COYFD</span></h2>
+        <h2>MUNI 360</h2>
       </div>
     </div>
     <button type="button" class="btn-sec portal-menu" id="portal-menu" aria-controls="nav-tabs" aria-expanded="false">☰ Menú</button>
@@ -912,22 +904,22 @@
 
     <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
-    <nav class="tabs" id="nav-tabs" role="tablist" aria-label="Secciones de Muni360"><div class="portal-navbrand"><img src="../escudo-ccba.png" alt="Club Ciudad de Buenos Aires"><span class="portal-ugi" aria-hidden="true">◎</span><b>Muni360</b><small>Unidad de Gestión Integral · CCBA</small></div><p class="portal-nav-role" id="portal-nav-role">Perfil autorizado</p><button type="button" class="tab" role="tab" data-tab="inicio" aria-selected="false"><span class="portal-icon" data-icon="home" aria-hidden="true"></span><span>Inicio</span></button><button type="button" class="tab" role="tab" data-tab="equipos" aria-selected="false"><span class="portal-icon" data-icon="users" aria-hidden="true"></span><span>Mis grupos</span></button><button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Asistencia y semáforo</span></button><button type="button" class="tab" role="tab" data-tab="evaluacion" aria-selected="false" id="tab-btn-evaluacion"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Evaluaciones</span></button><button type="button" class="tab" role="tab" data-tab="comparar" aria-selected="false"><span class="portal-icon" data-icon="compare" aria-hidden="true"></span><span>Comparar participantes</span></button><button type="button" class="tab" role="tab" data-tab="seguimiento" aria-selected="false"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Seguimiento y DUA</span></button><button type="button" class="tab" role="tab" data-tab="ugi" aria-selected="false"><span class="portal-icon" data-icon="book" aria-hidden="true"></span><span>Planificador y banco</span></button><button type="button" class="tab" role="tab" data-tab="agenda" aria-selected="false"><span class="portal-icon" data-icon="calendar" aria-hidden="true"></span><span>Horarios y agenda</span></button><button type="button" class="tab" role="tab" data-tab="avisos" aria-selected="false"><span class="portal-icon" data-icon="bell" aria-hidden="true"></span><span>Comunidad y avisos</span></button><button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Análisis del grupo</span></button><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false" id="tab-btn-auditoria"><span class="portal-icon" data-icon="history" aria-hidden="true"></span><span>Cambios</span></button><button type="button" class="tab hidden" role="tab" data-tab="inteligencia" aria-selected="false" id="tab-btn-inteligencia"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Inteligencia</span></button><button type="button" class="tab hidden" role="tab" data-tab="encuestas" aria-selected="false" id="tab-btn-encuestas"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Cuestionarios</span></button><button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron"><span class="portal-icon" data-icon="settings" aria-hidden="true"></span><span>Padrón</span></button><p class="portal-navfoot">Club Ciudad de Buenos Aires<br><small>Colonia y COYFD</small></p>    <div class="toolbar-cancha" id="owner-tools"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
+    <nav class="tabs" id="nav-tabs" role="tablist" aria-label="Secciones de Muni360"><div class="portal-navbrand"><img src="../escudo-ccba.png" alt="Club Ciudad de Buenos Aires"><span class="portal-ugi" aria-hidden="true">◎</span><b>Muni360</b><small>Unidad de Gestión Integral · CCBA</small></div><p class="portal-nav-role" id="portal-nav-role">Perfil autorizado</p><button type="button" class="tab" role="tab" data-tab="inicio" aria-selected="false"><span class="portal-icon" data-icon="home" aria-hidden="true"></span><span>Inicio</span></button><button type="button" class="tab" role="tab" data-tab="equipos" aria-selected="false"><span class="portal-icon" data-icon="users" aria-hidden="true"></span><span>Grupos</span></button><button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Lista</span></button><button type="button" class="tab" role="tab" data-tab="evaluacion" aria-selected="false" id="tab-btn-evaluacion"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Evaluar</span></button><button type="button" class="tab" role="tab" data-tab="comparar" aria-selected="false"><span class="portal-icon" data-icon="compare" aria-hidden="true"></span><span>Comparar</span></button><button type="button" class="tab" role="tab" data-tab="seguimiento" aria-selected="false"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>DUA</span></button><button type="button" class="tab" role="tab" data-tab="ugi" aria-selected="false"><span class="portal-icon" data-icon="book" aria-hidden="true"></span><span>Banco</span></button><button type="button" class="tab" role="tab" data-tab="agenda" aria-selected="false"><span class="portal-icon" data-icon="calendar" aria-hidden="true"></span><span>Agenda</span></button><button type="button" class="tab" role="tab" data-tab="avisos" aria-selected="false"><span class="portal-icon" data-icon="bell" aria-hidden="true"></span><span>Avisos</span></button><button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Resumen</span></button><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false" id="tab-btn-auditoria"><span class="portal-icon" data-icon="history" aria-hidden="true"></span><span>Cambios</span></button><button type="button" class="tab hidden" role="tab" data-tab="inteligencia" aria-selected="false" id="tab-btn-inteligencia"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Inteligencia</span></button><button type="button" class="tab hidden" role="tab" data-tab="encuestas" aria-selected="false" id="tab-btn-encuestas"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Cuestionarios</span></button><button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron"><span class="portal-icon" data-icon="settings" aria-hidden="true"></span><span>Padrón</span></button><p class="portal-navfoot">Club Ciudad de Buenos Aires<br><small>Colonia y COYFD</small></p>    <div class="toolbar-cancha" id="owner-tools"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
-<button type="button" class="btn-salir muni-salir-menu" id="btn-salir">Cambiar / Salir</button>
-<a href="../index.html" class="muni-return-menu" aria-label="Volver a la portada general de Muni360">← Ir a Muni360</a>
+<button type="button" class="btn-salir muni-salir-menu" id="btn-salir">Salir</button>
+<a href="../index.html" class="muni-return-menu" aria-label="Volver a la portada general de Muni360">← Muni360</a>
 </nav>
 
     <!-- BARRA COMPACTA DE CONTEXTO ACTIVO (MODO CANCHA) -->
     <div id="barra-contexto-activo" class="barra-contexto">
       <span id="txt-contexto-activo" class="barra-contexto-txt">📍 Seleccionar grupo · 📅 Hoy</span>
-      <button type="button" id="btn-toggle-filtros" class="btn-pill-contexto">⚙️ Cambiar grupo / fecha</button>
+      <button type="button" id="btn-toggle-filtros" class="btn-pill-contexto">Cambiar</button>
     </div>
 
     <!-- TARJETA DE FILTROS GLOBALES (COLAPSABLE) -->
     <div class="card hidden" id="card-filtros">
       <div class="spread" style="margin-bottom:8px;">
-        <span style="font-size:0.78rem; font-weight:800; color:var(--navy); text-transform:uppercase;">Seleccionar Grupo y Fecha</span>
+        <span style="font-size:0.78rem; font-weight:800; color:var(--navy); text-transform:uppercase;">Filtros</span>
         <button type="button" class="btn-sec" id="btn-listo-filtros" style="min-height:30px; padding:4px 12px; background:#dcfce7; color:#166534; border-color:#86efac;">✓ Listo</button>
       </div>
 
@@ -975,7 +967,7 @@
             <details class="ayuda-asistencia"><summary aria-label="Ver referencias de asistencia y semáforo" title="Referencias de carga">?</summary><p class="hint" style="margin:0;" id="sub-lista-asist">— = Sin registrar / sin observar · P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p></details>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-sec" id="btn-todos-p">Todos Presentes (P)</button>
+            <button type="button" class="btn-sec" id="btn-todos-p">Todos P</button>
             <button type="button" class="btn-sec hidden" id="btn-todos-comida" style="background:#ffedd5; color:#9a3412; border-color:#fed7aa;">🍴 Todos en Comedor</button>
           </div>
         </div>

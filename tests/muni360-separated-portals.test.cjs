@@ -57,6 +57,9 @@ test('Deportes: solo habilita Deportes para otras cuentas, habilita todo para ug
  assert.match(u.els.get('sel-deporte').innerHTML,/value="COYFD"/);
  assert.match(u.els.get('sel-deporte').innerHTML,/value="Tenis"/);
 });
-test('entrada principal ofrece Colonia y COYFD como destinos distintos',()=>{
- const html=fs.readFileSync('muni360/index.html','utf8');assert.match(html,/href="\.\/colonia\/"/);assert.match(html,/href="\.\/coyfd\/"/);assert.match(html,/<h2>Colonia<\/h2>/);assert.match(html,/<h2>COYFD<\/h2>/);assert.doesNotMatch(html,/Colonia y COYFD/);
+test('entrada principal ofrece un acceso único unificado sin demo',()=>{
+ const html=fs.readFileSync('muni360/index.html','utf8');
+ assert.match(html,/id="google-login"/);
+ assert.match(html,/Deportes, Colonia y COYFD en un solo acceso/);
+ assert.doesNotMatch(html,/btn-entrar-demo|Modelo de Prueba|<h2>Colonia<\/h2>|<h2>COYFD<\/h2>|<h2>Deportes<\/h2>/);
 });
