@@ -130,7 +130,7 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
    await page.reload();await page.locator('#app-screen').waitFor({state:'visible'});assert.equal(await page.locator('#header-activity').textContent(),activity);
   }
   await page.goto('http://127.0.0.1:'+port+'/muni360/admin/?qa=owner');await page.locator('#panel').waitFor({state:'visible'});
-  assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
+  await page.waitForFunction(()=>document.querySelectorAll('#users [data-edit]').length>=2);assert.ok(await page.locator('#users [data-edit]').count()>=2);await page.waitForFunction(()=>document.getElementById('history').textContent.trim().length>0);assert.ok((await page.locator('#history').textContent()).length>0);
   await page.getByRole('button',{name:'Agregar acceso'}).click();
   await page.getByLabel('Correo de la cuenta Google').fill('invitado@example.invalid');
   await page.getByLabel('Colonia',{exact:true}).check();
