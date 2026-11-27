@@ -1,0 +1,15 @@
+# ugiccba.com.ar
+# Muni360 y sus herramientas internas requieren ingreso; no aportan a buscadores.
+User-agent: *
+Disallow: /muni360/
+Disallow: /apps/muni360/
+Disallow: /apps-script/
+Disallow: /archive/
+Disallow: /demo/
+Disallow: /docs/
+Disallow: /pilots/
+Disallow: /scripts/
+Disallow: /server/
+Disallow: /tests/
+
+Sitemap: https://ugiccba.com.ar/sitemap.xml
