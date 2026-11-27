@@ -1804,7 +1804,7 @@
       const mobile=$('portal-mobile-nav');
       const accesos=esProfePorEquipo()?
         [['equipos','users','Mis equipos'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['analisis','trend','Análisis'],['ugi','book','Banco']]:
-        [['inicio','home','Inicio'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['compare','Comparar']];
+        [['inicio','home','Inicio'],['equipos','users','Equipos'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar']];
       mobile.innerHTML=accesos.map(([id,icon,label])=>'<button type="button" data-portal-tab="'+id+'"><span data-icon="'+icon+'" aria-hidden="true"></span><small>'+label+'</small></button>').join('');
       window.MuniPortal?.hydrate?.();
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia','replace');}
