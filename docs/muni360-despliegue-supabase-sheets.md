@@ -1,7 +1,7 @@
 # Muni360 · Despliegue de cambios en Supabase y Google Sheets
 
 **Fecha de actualización:** 26/11/2026
-**Estado:** Pasos 1 (SQL) y 2 (Edge Function `muni360`, los 11 archivos incluyendo `competencia.mjs` y `competencia-config.mjs`) aplicados y verificados en `kaalffshnrkxviqaymhv` el 26/11/2026. Queda para aplicar manualmente en la carpeta privada externa de Apps Script el Paso 3 (`SheetsInstitucional.gs`) si aún no se subió.
+**Estado:** Pasos 1 (SQL) y 2 (Edge Function `muni360`, los 11 archivos incluyendo `competencia.mjs` y `competencia-config.mjs`) aplicados y verificados en `kaalffshnrkxviqaymhv` el 26/11/2026. El 27/11/2026 se redesplegó la Edge Function `muni360` (**versión 23**, `verify_jwt: false`) con `policy.mjs` actualizado para habilitar Evaluar sin requerir verificación previa de ficha jugador. Queda para aplicar manualmente en la carpeta privada externa de Apps Script el Paso 3 (`SheetsInstitucional.gs`) si aún no se subió.
 **Objetivo:** Guía paso a paso para aplicar en Supabase (SQL + Edge Function) y en el proyecto de Google Apps Script de mantenimiento (`SheetsInstitucional.gs`) los cambios de la revisión integral del 24/11/2026.
 
 ---
