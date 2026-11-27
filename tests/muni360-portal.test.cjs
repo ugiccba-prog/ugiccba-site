@@ -1,3 +1,4 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const portal=require('../assets/scripts/muni360-portal.js');
 const data={padron:[{jugador:'Ana',categoria:'Sub 16',equipo:'A'},{jugador:'Belén',categoria:'Sub 16',equipo:'A'},{jugador:'Ana',categoria:'Sub 19',equipo:'B'}],asistencia:[
@@ -29,7 +30,7 @@ test('textos externos quedan escapados y resumen excluye N y fechas futuras',()=
  assert.ok(!portal.views(data,'2026-11-17','<img onerror=x>',{rol:'Profe'}).inicio.includes('<img onerror=x>'));
 });
 function form(){
- const html=fs.readFileSync('apps/muni360/source/deportes/index.html','utf8');
+ const html=readPortal('apps/muni360/source/deportes/index.html');
  const elements=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const values=new Map(),timers=[];const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
  const c={document:{getElementById:id=>elements.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},dispatchEvent(){}},Event:class Event{},localStorage:storage,sessionStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(fn){timers.push(fn);},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};

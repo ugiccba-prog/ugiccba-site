@@ -1,4 +1,5 @@
 'use strict';
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -396,8 +397,8 @@ test('Dashboard, Inteligencia y Cuestionarios funcionan en modoDemo sin llamar a
 });
 
 test('los portales y encuesta.html enlazan el runtime de demo y soportan enlaces ?demo=1', () => {
-  const deportes = fs.readFileSync(path.join(root, 'apps/muni360/source/deportes/index.html'), 'utf8');
-  const colonia = fs.readFileSync(path.join(root, 'apps/muni360/source/colonia/index.html'), 'utf8');
+  const deportes = readPortal(path.join(root, 'apps/muni360/source/deportes/index.html'));
+  const colonia = readPortal(path.join(root, 'apps/muni360/source/colonia/index.html'));
   const encuesta = fs.readFileSync(path.join(root, 'apps/muni360/source/encuesta/index.html'), 'utf8');
 
   for (const html of [deportes, colonia]) {

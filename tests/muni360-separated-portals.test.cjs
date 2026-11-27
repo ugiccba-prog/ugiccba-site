@@ -1,6 +1,7 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 function portal(route,area){
- const html=fs.readFileSync('muni360/'+route+'/index.html','utf8');
+ const html=readPortal('muni360/'+route+'/index.html');
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const saved=new Map([['muni360cyc_ult_area',area==='Colonia'?'COYFD':'Colonia']]),storage={getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)};
  const c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},history:{state:null,replaceState(){}}},localStorage:storage,sessionStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};
@@ -58,7 +59,7 @@ test('Deportes: solo habilita Deportes para otras cuentas, habilita todo para ug
  assert.match(u.els.get('sel-deporte').innerHTML,/value="Tenis"/);
 });
 test('entrada principal ofrece un acceso único unificado sin demo',()=>{
- const html=fs.readFileSync('muni360/index.html','utf8');
+ const html=readPortal('muni360/index.html');
  assert.match(html,/id="google-login"/);
  assert.match(html,/Deportes, Colonia y COYFD en un solo acceso/);
  assert.doesNotMatch(html,/btn-entrar-demo|Modelo de Prueba|<h2>Colonia<\/h2>|<h2>COYFD<\/h2>|<h2>Deportes<\/h2>/);

@@ -1,3 +1,4 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
@@ -173,7 +174,7 @@ test('baja y alta del mismo DNI recuperan identidad estable; otro DNI no hereda 
 });
 test('sintaxis y arranque de los dos portales, sin autenticación local ni DUA ajeno',()=>{
   for(const path of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
-    const html=fs.readFileSync(path,'utf8'),scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim());
+    const html=readPortal(path),scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim());
     const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));
     const els=new Map([...ids].map(id=>[id,{value:'',innerHTML:'',textContent:'',checked:false,disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
     const store={getItem:()=>null,setItem(){},removeItem(){}};
@@ -184,7 +185,7 @@ test('sintaxis y arranque de los dos portales, sin autenticación local ni DUA a
 });
 test('la carga por texto conserva dos renglones como dos deportistas',async()=>{
   for(const path of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
-    const html=fs.readFileSync(path,'utf8'),script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
+    const html=readPortal(path),script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
     const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]),handlers=new Map(),values=new Map();
     const els=new Map(ids.map(id=>[id,{value:'',innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},addEventListener(type,fn){handlers.set(id+':'+type,fn);},setAttribute(){}}]));
     const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};

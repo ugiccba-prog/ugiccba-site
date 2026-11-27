@@ -1,7 +1,8 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 function portal(file){
- const html=fs.readFileSync(file,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
+ const html=readPortal(file),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
  const storage={getItem:()=>null,setItem(){throw Error('Consulta no debe crear borradores');},removeItem(){}};
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const controls=[{disabled:false},{disabled:true}],c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>controls,addEventListener(){}},window:{addEventListener(){}},sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){throw Error('Consulta no debe programar guardados');},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console};
