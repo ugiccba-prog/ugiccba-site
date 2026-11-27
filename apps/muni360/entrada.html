@@ -392,6 +392,7 @@
 
       let attemptSeq = 0;
       let currentUser = null;
+      let loggingIn = false;
 
       function setState({ checking = false, message = '', tone = '', showSecondary = false, showForm = true } = {}) {
         checkingEl.classList.toggle('hidden', !checking);
@@ -402,6 +403,9 @@
       }
 
       function resolveDestination(profile) {
+        const email = String(profile?.email || '').trim().toLowerCase();
+        if (email === 'ugiccba@gmail.com') return './deportes/';
+
         const areas = Array.isArray(profile?.areas) ? profile.areas : [];
         if (!areas.length) return '';
 
@@ -415,10 +419,9 @@
         const toPath = area => area === 'Colonia' ? './colonia/' : area === 'COYFD' ? './coyfd/' : './deportes/';
 
         if (lastSport && areas.includes(lastSport)) return toPath(lastSport);
-        if (lastBase && areas.includes(lastBase)) return toPath(lastBase);
-
         const hasSport = areas.some(a => a !== 'Colonia' && a !== 'COYFD');
         if (hasSport) return './deportes/';
+        if (lastBase && areas.includes(lastBase)) return toPath(lastBase);
         if (areas.includes('Colonia')) return './colonia/';
         if (areas.includes('COYFD')) return './coyfd/';
         return '';
@@ -475,10 +478,15 @@
       formEl.addEventListener('submit', async e => {
         e.preventDefault();
         loginBtn.disabled = true;
+        loggingIn = true;
         setState({ checking: false, showForm: true, message: 'Abriendo Google…' });
         try {
-          await window.MuniGoogle.login();
+          const cred = await window.MuniGoogle.login();
+          loggingIn = false;
+          currentUser = cred?.user || currentUser;
+          await verifyAccess(currentUser);
         } catch (err) {
+          loggingIn = false;
           const msg = err?.code === 'auth/popup-blocked'
             ? 'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.'
             : err?.code === 'auth/popup-closed-by-user'
@@ -486,6 +494,7 @@
               : err?.message || 'No se pudo abrir Google.';
           setState({ checking: false, showForm: true, message: msg, tone: 'error' });
         } finally {
+          loggingIn = false;
           loginBtn.disabled = false;
         }
       });
@@ -509,6 +518,7 @@
         setState({ checking: true, showForm: false, showSecondary: false });
         window.MuniGoogle.observe((user, error) => {
           currentUser = user || null;
+          if (loggingIn) return;
           if (error) {
             setState({ checking: false, showForm: true, message: error.message, tone: 'error' });
             return;
