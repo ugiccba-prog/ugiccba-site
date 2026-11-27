@@ -64,7 +64,14 @@ await test('team assignment grants only authorized groups and keeps the coach’
   uid:'coord',nombre:'Coordinación de prueba',rol:'Coordinación',status:'activo',areas:[sport],revision:0,version:'coord-new'
  })]);
  await assert.rejects(()=>rpc('mc_team_access',{p_action:'list',p:{actorUid:'owner',activity:sport}},'authenticated'),/permission denied/);
+ await db.query("insert into mc_private.users(uid,record) values('invite:test',$1)",[JSON.stringify({
+  uid:'invite:test',nombre:'Profe invitado',rol:'Profe',status:'activo',areas:[sport],revision:0,version:'invited'
+ })]);
  const catalog=await call('coord',{deporte:sport},'/api/team-access/list');
+ assert.ok(catalog.teachers.some(row=>row.uid==='teacher'));
+ assert.ok(catalog.teachers.every(row=>row.uid!=='invite:test'));
+ await assert.rejects(()=>call('coord',{...target,uid:'invite:test',teams:[group],revision:0},
+  '/api/team-access/save'),e=>e.code==='PERMISOS');
  assert.equal(catalog.canLinkPlayer,false);
  assert.deepEqual(catalog.players,[]);
  await assert.rejects(()=>call('coord',{...target,playerId:'p1',revision:0},'/api/team-access/player'),e=>e.code==='PERMISOS');

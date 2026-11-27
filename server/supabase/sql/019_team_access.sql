@@ -49,7 +49,7 @@ begin
   ) || case when is_owner then jsonb_build_object('playerId',u.record->'playerLinks'->sport) else '{}'::jsonb end
    order by u.record->>'nombre',u.uid),'[]'::jsonb) into teachers
   from mc_private.users u
-  where u.record->>'rol'='Profe' and u.record->>'status'='activo'
+  where u.uid not like 'invite:%' and u.record->>'rol'='Profe' and u.record->>'status'='activo'
     and (u.record->'areas') ? sport
     and (u.record->>'expiresAt' is null or (u.record->>'expiresAt')::timestamptz>now());
   if is_owner then
@@ -98,7 +98,7 @@ begin
   raise exception using errcode='42501',message='Acción de asignación no autorizada.';
  end if;
  select record into teacher from mc_private.users where uid=target_uid for update;
- if coalesce(teacher->>'rol','')<>'Profe' or coalesce(teacher->>'status','')<>'activo'
+ if target_uid like 'invite:%' or coalesce(teacher->>'rol','')<>'Profe' or coalesce(teacher->>'status','')<>'activo'
     or not coalesce((teacher->'areas') ? sport,false) or (teacher->>'expiresAt')::timestamptz<=now() then
   raise exception using errcode='42501',message='La cuenta Profe no está activa para esta actividad.';
  end if;
