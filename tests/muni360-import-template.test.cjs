@@ -1,8 +1,9 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const XLSX=require('../assets/vendor/xlsx-0.20.3.full.min.js'),MuniImport=require('../assets/scripts/muni360-import.js');
 function portal(file){
- const html=fs.readFileSync(file,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),handlers=new Map(),downloads=[],messages=[];
+ const html=readPortal(file),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),handlers=new Map(),downloads=[],messages=[];
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(name,fn){handlers.set(m[1]+':'+name,fn);},setAttribute(){}}]));
  const storage={getItem:()=>null,setItem(){},removeItem(){}},xlsx={...XLSX,writeFile:(wb,name)=>downloads.push({wb,name})};
  const c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},XLSX:xlsx},XLSX:xlsx,MuniImport,sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,capture:message=>messages.push(message)};

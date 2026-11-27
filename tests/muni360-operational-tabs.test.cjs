@@ -1,6 +1,7 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 function portal(file){
- const html=fs.readFileSync(file,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),els=new Map();
+ const html=readPortal(file),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),els=new Map();
  for(const match of html.matchAll(/id="([^"]+)"/g)){
   const classes=new Set();els.set(match[1],{value:'',textContent:'',innerHTML:'',disabled:false,style:{},classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k),toggle(k,on){if(on===undefined)on=!classes.has(k);if(on)classes.add(k);else classes.delete(k);}},addEventListener(){},setAttribute(){}});
  }

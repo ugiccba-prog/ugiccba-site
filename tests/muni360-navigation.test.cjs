@@ -1,7 +1,8 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const MuniImport=require('../assets/scripts/muni360-import.js');
 function portal(path,activity){
- const html=fs.readFileSync(path,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
+ const html=readPortal(path),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
  const listeners=new Map(),entries=[{state:null}],els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  let index=0,confirms=0,confirmResult=true;
  const emit=(name,e)=>{for(const fn of listeners.get(name)||[])fn(e)};

@@ -1,10 +1,11 @@
 'use strict';
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const src=fs.readFileSync(path.join(root,'apps/muni360/source/deportes/index.html'),'utf8');
+const src=readPortal(path.join(root,'apps/muni360/source/deportes/index.html'));
 const policy=()=>import('../server/supabase/functions/muni360/policy.mjs');
 test('las cuatro C están presentes, sin reemplazar ni alterar las evaluaciones anteriores',()=>{
  const m=src.match(/const GESTOS_COMUNES_UGI\s*=\s*\[([^\]]+)\]/);

@@ -1,3 +1,4 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{execFileSync}=require('node:child_process');
 const time=require('../assets/scripts/muni360-time.js'),{environment}=require('./helpers/apps-script-env.cjs');
 test('Argentina: cambios nocturnos y fechas de clase usan el dia argentino sin depender del dispositivo',()=>{
@@ -47,7 +48,7 @@ test('Argentina: el editor de permisos muestra hora argentina y envia el vencimi
 
 test('Argentina: el historial de ambos portales renderiza el horario argentino y escapa el autor',async()=>{
  for(const file of ['apps/muni360/source/deportes/index.html','apps/muni360/source/colonia/index.html']){
-  const html=fs.readFileSync(file,'utf8'),start=html.indexOf('async function renderAuditoria(){'),end=html.indexOf("    $('sync-sheets').onclick",start);
+  const html=readPortal(file),start=html.indexOf('async function renderAuditoria(){'),end=html.indexOf('\n}\n',start)+2; // fin de la función en muni360-portal-comun.js
   assert.ok(start>0&&end>start);
   const output={innerHTML:''},esc=value=>String(value??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const c={puedeVerCambios:()=>true,Muni360Time:time,esc,$:()=>output,areaActiva:'Tenis',syncClient:{request:async()=>({events:[{tipo:'ASISTENCIA',fecha:'2026-11-12T01:15:00Z',autor:'<Profe>',categoria:'Ensayo',equipo:'A',estado:'CONFIRMADO',id:'prueba'}]})}};

@@ -79,7 +79,9 @@ Se conservó una copia del proyecto Apps Script y la versión inmutable 9 antes 
 
 ## Telemetría en producción (`ugiccba.com.ar/muni360`) y simulación de tráfico — 20/11/2026
 
-El paquete público `/muni360/` publicado en `https://ugiccba.com.ar/muni360/` opera contra `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360` (30 archivos públicos verificados con `npm run check:muni360-public` y 172 pruebas aprobadas en `npm run test:muni360`).
+El paquete público `/muni360/` publicado en `https://ugiccba.com.ar/muni360/` opera contra `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360` (39 archivos públicos verificados con `npm run check:muni360-public`, 208 pruebas en `npm run test:muni360` y 103 del servidor en `node --test server/supabase/tests/*.test.*` al 27/11/2026).
+
+Para correr las pruebas del servidor localmente: `npm ci --prefix pilots/supabase` y luego `MUNI_PGLITE_MODULE=$PWD/pilots/supabase/node_modules/@electric-sql/pglite node --test server/supabase/tests/*.test.*`. El recorrido en navegador es `node server/supabase/tests/browser-flow.cjs` (con `MUNI360_PLAYWRIGHT_MODULE` si Playwright no está en el proyecto).
 
 - **Disco actual en Supabase (`kaalffshnrkxviqaymhv`):** **85 MB** sobre 500 MB del plan Free (**17%**), repartidos en `~8 MB` del esquema productivo `mc_private` (25 actividades, 25 planillas en `sheet_targets`, 7 usuarios, 178 auditorías, 156 recibos, `outbox` en 0), `29 MB` de `mc_private.demo_run_records` (22.425 filas del Modo Demo), `36 MB` del histórico separado `mp_private` y `~12 MB` del motor base PostgreSQL.
 - **Simulación de tráfico semanal y de temporada completa (Semana 16, 23 actividades, 22.466 registros):**

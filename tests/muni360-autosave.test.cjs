@@ -1,7 +1,8 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 function portal(file){
- const html=fs.readFileSync(file,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
+ const html=readPortal(file),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n');
  const values=new Map(),timers=[],events=new Map(),els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',disabled:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){}}]));
  const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
  const c={document:{getElementById:id=>els.get(id)||null,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener:(name,fn)=>events.set(name,fn)},localStorage:storage,sessionStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(fn){timers.push(fn);return timers.length;},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,Muni360Sync:require('../assets/scripts/muni360-sync.js')};

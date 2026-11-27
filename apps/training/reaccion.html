@@ -8,9 +8,11 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-HPX70B00SH');
+    // Sin Google Signals ni personalización de anuncios: el sitio lo usan familias y menores.
+    gtag('config', 'G-HPX70B00SH', { allow_google_signals: false, allow_ad_personalization_signals: false });
   </script>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://script.google.com https://script.googleusercontent.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://script.google.com https://script.googleusercontent.com https://cdn.jsdelivr.net https://unpkg.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Entrenamiento cognitivo de reacción con cámara e inhibición motora del Gimnasio Mental UGI - Club Ciudad de Buenos Aires." />
 <meta name="theme-color" content="#07111a">
@@ -19,11 +21,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>Reacción con cámara | UGI CCBA</title>
+<link rel="canonical" href="https://ugiccba.com.ar/apps/training/reaccion.html" />
+<!-- OPEN GRAPH / WHATSAPP / REDES -->
+<meta property="og:site_name" content="UGI · Club Ciudad de Buenos Aires" />
+<meta property="og:locale" content="es_AR" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://ugiccba.com.ar/apps/training/reaccion.html" />
+<meta property="og:title" content="Reacción con cámara | UGI CCBA" />
+<meta property="og:description" content="Entrenamiento cognitivo de reacción con cámara e inhibición motora del Gimnasio Mental UGI - Club Ciudad de Buenos Aires." />
+<meta property="og:image" content="https://ugiccba.com.ar/assets/images/og-ugi.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Escudo del Club Ciudad de Buenos Aires y la Unidad de Gestión Integral" />
+<meta name="twitter:card" content="summary_large_image" />
 
 <!-- Detector de manos. Si este CDN esta bloqueado, el script de abajo reintenta
      con unpkg antes de darse por vencido. -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" integrity="sha384-oHwoZ9HyKv5ark5VOH+XWdbNfmhYtptAOBuV8plz6mAfXvTA6d8fULuYllWouEK2" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" integrity="sha384-q1KhAZhJcJXr3zfC3Tz07pBqQSabwFIZhXlmlUAB8s0zk4ETWERkIKGBCFQ5Jc3e" crossorigin="anonymous"></script>
 <style>
   :root{
     --sky:#59bde9; --sky-dark:#2a8fc1; --navy:#082b49;
@@ -255,14 +270,19 @@
   /* MediaPipe puede no cargar: red del club con filtro, caída del CDN, o el propio
      CDN bloqueado. Antes eso dejaba la pantalla en negro sin explicar nada. */
   var hands = null, camara = null;
-  var baseMP = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/';
+  /* Versiones fijas: los .wasm/.tflite que pide locateFile deben coincidir con hands.js. */
+  var MP_HANDS = '0.4.1675469240', MP_CAMERA = '0.3.1675466862';
+  var MP_SRI_HANDS = 'sha384-oHwoZ9HyKv5ark5VOH+XWdbNfmhYtptAOBuV8plz6mAfXvTA6d8fULuYllWouEK2';
+  var MP_SRI_CAMERA = 'sha384-q1KhAZhJcJXr3zfC3Tz07pBqQSabwFIZhXlmlUAB8s0zk4ETWERkIKGBCFQ5Jc3e';
+  var baseMP = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@' + MP_HANDS + '/';
 
   function hayDetector(){ return typeof Hands === 'function' && typeof Camera === 'function'; }
 
-  function cargarScript(src){
+  function cargarScript(src, integrity){
     return new Promise(function(ok, mal){
       var s = document.createElement('script');
       s.src = src; s.crossOrigin = 'anonymous';
+      if (integrity) s.integrity = integrity;
       s.onload = ok; s.onerror = function(){ mal(new Error('no cargó ' + src)); };
       document.head.appendChild(s);
     });
@@ -273,9 +293,9 @@
   async function asegurarDetector(){
     if (!hayDetector()){
       try {
-        await cargarScript('https://unpkg.com/@mediapipe/hands/hands.js');
-        await cargarScript('https://unpkg.com/@mediapipe/camera_utils/camera_utils.js');
-        baseMP = 'https://unpkg.com/@mediapipe/hands/';
+        await cargarScript('https://unpkg.com/@mediapipe/hands@' + MP_HANDS + '/hands.js', MP_SRI_HANDS);
+        await cargarScript('https://unpkg.com/@mediapipe/camera_utils@' + MP_CAMERA + '/camera_utils.js', MP_SRI_CAMERA);
+        baseMP = 'https://unpkg.com/@mediapipe/hands@' + MP_HANDS + '/';
       } catch(e){}
     }
     if (!hayDetector()) return false;

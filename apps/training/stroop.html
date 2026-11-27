@@ -8,9 +8,11 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-HPX70B00SH');
+    // Sin Google Signals ni personalización de anuncios: el sitio lo usan familias y menores.
+    gtag('config', 'G-HPX70B00SH', { allow_google_signals: false, allow_ad_personalization_signals: false });
   </script>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://script.google.com https://script.googleusercontent.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'self'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Test de Stroop del Gimnasio Mental UGI - Club Ciudad de Buenos Aires: entrená la atención selectiva y el control de impulsos." />
 <link rel="icon" type="image/png" href="../../assets/images/favicon.png">
@@ -18,6 +20,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>Test de Stroop | UGI CCBA</title>
+<link rel="canonical" href="https://ugiccba.com.ar/apps/training/stroop.html" />
+<!-- OPEN GRAPH / WHATSAPP / REDES -->
+<meta property="og:site_name" content="UGI · Club Ciudad de Buenos Aires" />
+<meta property="og:locale" content="es_AR" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://ugiccba.com.ar/apps/training/stroop.html" />
+<meta property="og:title" content="Test de Stroop | UGI CCBA" />
+<meta property="og:description" content="Test de Stroop del Gimnasio Mental UGI - Club Ciudad de Buenos Aires: entrená la atención selectiva y el control de impulsos." />
+<meta property="og:image" content="https://ugiccba.com.ar/assets/images/og-ugi.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Escudo del Club Ciudad de Buenos Aires y la Unidad de Gestión Integral" />
+<meta name="twitter:card" content="summary_large_image" />
 <style>
   :root{
     --sky:#59bde9; --sky-dark:#2a8fc1; --navy:#082b49;

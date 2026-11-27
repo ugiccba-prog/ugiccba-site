@@ -1,3 +1,6 @@
-
 asistencia/**
 app-asistencia/**
+# Paquete público generado por scripts/build-muni360-public.cjs; se lintean las fuentes.
+muni360/**
+node_modules/**
+pilots/**/node_modules/**

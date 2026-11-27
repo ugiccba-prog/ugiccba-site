@@ -1,9 +1,12 @@
+// ARCHIVADO (27/11/2026): recorrido contra el backend Apps Script retirado. El portal
+// de Deportes ahora exige equipos asignados al Profe, que Apps Script no maneja.
+// Recorrido vigente: server/supabase/tests/browser-flow.cjs (Supabase + PGlite).
 // Full portal workflow against the real Apps Script engine with in-memory Google adapters.
 // No production credentials, browser profiles or remote Google requests.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.MUNI360_PLAYWRIGHT_MODULE||'playwright');
-const {environment}=require('../tests/helpers/apps-script-env.cjs');
-const root=path.resolve(__dirname,'..'),e=environment(),areas=['Básquet Caballeros','Colonia'];
+const {environment}=require('../../tests/helpers/apps-script-env.cjs');
+const root=path.resolve(__dirname,'../..'),e=environment(),areas=['Básquet Caballeros','Colonia'];
 e.props.set('UGI_SHEET_MAP',JSON.stringify({[areas[0]]:'basket-view',Colonia:'colonia-view'}));
 e.grant(e.teacher,{areas});e.props.set('UGI_SYNC_ON_SAVE','true');
 for(const deporte of areas){

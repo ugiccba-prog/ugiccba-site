@@ -13,8 +13,8 @@ jobs:
       MUNI_PGLITE_MODULE: ${{ github.workspace }}/pilots/supabase/node_modules/@electric-sql/pglite
       MUNI360_PLAYWRIGHT_MODULE: ${{ github.workspace }}/pilots/supabase/node_modules/playwright
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
       - run: npm ci --prefix pilots/supabase

@@ -25,7 +25,7 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `ciudad-integrado.html`: Programa de inclusión, deporte adaptado y pertenencia institucional.
 
 ### 2. Gestión Deportiva: Muni 360
-* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**37 archivos públicos**).
+* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**39 archivos públicos**).
   * `apps/muni360/source/deportes/index.html` → `/muni360/deportes/`: Portal de **Deportes**.
   * `apps/muni360/source/colonia/index.html` → `/muni360/colonia/` y `/muni360/coyfd/`: Accesos y pantallas independientes para **Colonia** y **COYFD** (empaquetados desde una única fuente con alcance `MUNI_BASE_AREA`, [docs/muni360-portales-separados.md](docs/muni360-portales-separados.md)).
   * `apps/muni360/source/admin/index.html` → `/muni360/admin/`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
@@ -78,13 +78,14 @@ La decisión vigente (corte aprobado el 12/11/2026) utiliza **Supabase (`supabas
 
 El corte a Supabase se mantiene activo y el paquete público `/muni360/` está publicado en `main` (`https://ugiccba.com.ar/muni360/`), respaldado por la estructura ordenada en Google Drive (`Club / Muni360 / Muni360 · Planilla Madre de Control (Oficial)`, `01 · Planillas por Actividad (Oficiales)` y `02 · Respaldos Privados Supabase (No borrar)`). `archive/apps-script-v2/` y `server/muni360/` se conservan en el repositorio únicamente como referencia histórica.
 
+- [Índice de documentación (vigente e histórica)](docs/README.md)
 - [Estado y arquitectura en Supabase](server/supabase/README.md)
 - [Planillas oficiales y estructura en Google Drive](docs/muni360-planillas.md)
 - [Publicación en dominio UGI y compilación](docs/muni360-dominio.md)
 - [Decisión y costos](docs/muni360-decision.md)
 - [Guía de uso de Muni360](docs/muni360-guia-uso.md)
 - [Matriz de aceptación en Google](docs/muni360-pruebas-aceptacion.md)
-- Comprobaciones: `npm run test:muni360` y `npm run check:muni360-public`.
+- Comprobaciones: `npm run test:muni360`, `npm run check:muni360-public`, `npm run lint:js`, `npm run lint:css` y las pruebas del servidor (`node --test server/supabase/tests/*.test.*`, ver [server/supabase/README.md](server/supabase/README.md)).
 
 ## Muni360 en el dominio
 

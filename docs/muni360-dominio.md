@@ -14,7 +14,7 @@ El paquete `/muni360/` se sirve desde la rama `main` publicada en GitHub Pages, 
 
 ## Código y publicación
 
-Abrir `UGI.code-workspace` en VS Code. Fuentes: `apps/muni360/source/deportes/`, `apps/muni360/source/colonia/`, `apps/muni360/source/admin/`, `assets/scripts/muni360-*.js`, `assets/styles/muni360-cancha.css`. Entrada común: `apps/muni360/entrada.html`. Backend y mantenimiento: `server/supabase/`; SQL histórico: `pilots/supabase/supabase/migrations/`.
+Abrir `UGI.code-workspace` en VS Code. Fuentes: `apps/muni360/source/deportes/`, `apps/muni360/source/colonia/`, `apps/muni360/source/admin/`, `assets/scripts/muni360-*.js`, `assets/styles/muni360-cancha.css`. La portada `/muni360/` se genera desde la fuente de Deportes (portada única). Backend y mantenimiento: `server/supabase/`; SQL histórico: `pilots/supabase/supabase/migrations/`.
 
 `muni360/` es el paquete generado: no editarlo a mano. Ejecutar `npm run build:muni360-public` tras cambios en las fuentes; `npm run check:muni360-public` comprueba que el paquete corresponda al código actual. Solo incluye recursos públicos enumerados y sus huellas. Nunca copiar carpetas privadas, credenciales, respaldos, node_modules o código del servidor al paquete.
 

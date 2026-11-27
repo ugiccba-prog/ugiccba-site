@@ -1,7 +1,8 @@
+const {readPortal}=require('./helpers/portal-source.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const XLSX=require('../assets/vendor/xlsx-0.20.3.full.min.js'),MuniImport=require('../assets/scripts/muni360-import.js');
 function make(file,activity){
- const html=fs.readFileSync(file,'utf8'),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),handlers=new Map(),sent=[],messages=[];
+ const html=readPortal(file),code=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(s=>s.trim()).join('\n'),handlers=new Map(),sent=[],messages=[];
  const els=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',innerHTML:'',textContent:'',required:true,classList:{add(){},remove(){},toggle(){}},addEventListener(k,fn){handlers.set(m[1]+':'+k,fn)},getAttribute(){return null},setAttribute(){}}]));
  const storage={getItem(){return null},setItem(){},removeItem(){}};
  const c={document:{getElementById:id=>els.get(id),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){},XLSX,send:p=>sent.push(p)},XLSX,MuniImport,sessionStorage:storage,localStorage:storage,navigator:{onLine:false},setInterval(){},setTimeout(){},clearTimeout(){},URLSearchParams,location:{search:'',hash:''},console,confirm:()=>true,capture:m=>messages.push(m)};
