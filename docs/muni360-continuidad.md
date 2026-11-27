@@ -13,6 +13,20 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Se retiraron 14 ramas remotas ya integradas. Se conservaron `feature/estadisticas-competencia`, vista previa con trabajo propio, y `style-fix-and-linting-666540683759662844`, propuesta cerrada sin integrar con cambios propios. La base para tareas nuevas es `main`.
 - Se comprobó HTTP 200 en la portada, Deportes, Colonia, COYFD, administración, Competencia, Cuestionarios y Comunidad. La antigua ruta `/ensayo360muni/` devuelve HTTP 404. La copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia devuelven HTTP 404 sin redirección. Las rutas reservadas de Firebase Authentication siguen disponibles.
 
+## Revisión integral del 27/11/2026 (rama `ccr-0edf6895-mvm9o6`)
+
+Cambios hechos en la rama de revisión; quedan vigentes cuando se integran en `main`.
+
+- **CI reparado:** las pruebas del servidor (`node --test server/supabase/tests/*.test.*`, 103) y el recorrido `browser-flow.cjs` vuelven a pasar tras limitar a los Profes de Colonia y COYFD a sus grupos asignados. Nuevo workflow **Site checks** (lint de JS y CSS y Gimnasio Mental).
+- **Lógica común de los portales:** `assets/scripts/muni360-portal-comun.js` (71 funciones) y `assets/styles/muni360-app.css` (135 reglas) reúnen lo que Deportes y Colonia/COYFD tenían duplicado. Cada `index.html` de `apps/muni360/source/` conserva sólo sus diferencias; las deliberadas están en la constante `PORTAL_MUNI`. **Un cambio en esos dos archivos afecta a todos los portales.** Las pruebas leen cada portal con `tests/helpers/portal-source.cjs`.
+- **Colonia y COYFD reciben protecciones que sólo tenía Deportes:** no guardan asistencia con acceso de consulta, con otra carga en curso o con fecha inválida; no reenvían una lista idéntica y conservan clima y puntos.
+- **Edge Function (`server/supabase/functions/muni360/index.ts`):** no expone errores internos de Postgres al navegador; las notificaciones push reutilizan el token de FCM y salen en lotes de 10. **Requiere redesplegar la función** (ver [muni360-despliegue-supabase-sheets.md](muni360-despliegue-supabase-sheets.md)).
+- **Seguridad del navegador:** Content-Security-Policy con lista de orígenes en todas las páginas (Firebase Auth, FCM, Supabase, GA4, Apps Script del ranking, MediaPipe). Si se agrega un servicio externo nuevo hay que sumarlo a la etiqueta `Content-Security-Policy` de la página. La clave de la demo se guarda sólo como huella SHA-256. GA4 sin Google Signals ni personalización de anuncios.
+- **Peso:** escudo, favicon, infografías (WebP) y guías PDF optimizados, unos 11 MB menos.
+- **SEO:** `robots.txt`, `sitemap.xml`, `404.html`, URL canónica y vista previa para redes con `assets/images/og-ugi.jpg`.
+- **Verificación visual:** 152 capturas de todas las pestañas en modo demo (4 portales, 2 anchos, Dirección y Profe) y el estilo computado de todos los elementos, sin diferencias antes/después.
+- `scripts/check-muni360-flow.cjs` pasó a `archive/apps-script-v2/` (probaba el backend Apps Script retirado).
+
 ## Repositorio y computadoras
 
 - Repositorio: https://github.com/ugiccba-prog/ugiccba-site · rama oficial: `main`.
@@ -51,8 +65,8 @@ En cada cambio de Muni360, actualizar el [Registro de cambios de Muni360 de UGI 
 ## Código y operación actuales
 
 - Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · competencia privada: `/muni360/competencia/` · avisos: `/comunidad/`.
-- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`.
-- `muni360/` es generado (**37 archivos públicos**, 36 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-app.css` (comunes a todos los portales) / `muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`. La lógica común de Deportes y Colonia/COYFD está en `assets/scripts/muni360-portal-comun.js`.
+- `muni360/` es generado (**39 archivos públicos**, 38 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
 - Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
 - Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.

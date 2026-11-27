@@ -79,7 +79,7 @@ Se conservó una copia del proyecto Apps Script y la versión inmutable 9 antes 
 
 ## Telemetría en producción (`ugiccba.com.ar/muni360`) y simulación de tráfico — 20/11/2026
 
-El paquete público `/muni360/` publicado en `https://ugiccba.com.ar/muni360/` opera contra `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360` (37 archivos públicos verificados con `npm run check:muni360-public`, 208 pruebas en `npm run test:muni360` y 103 del servidor en `node --test server/supabase/tests/*.test.*` al 27/11/2026).
+El paquete público `/muni360/` publicado en `https://ugiccba.com.ar/muni360/` opera contra `https://kaalffshnrkxviqaymhv.supabase.co/functions/v1/muni360` (39 archivos públicos verificados con `npm run check:muni360-public`, 208 pruebas en `npm run test:muni360` y 103 del servidor en `node --test server/supabase/tests/*.test.*` al 27/11/2026).
 
 Para correr las pruebas del servidor localmente: `npm ci --prefix pilots/supabase` y luego `MUNI_PGLITE_MODULE=$PWD/pilots/supabase/node_modules/@electric-sql/pglite node --test server/supabase/tests/*.test.*`. El recorrido en navegador es `node server/supabase/tests/browser-flow.cjs` (con `MUNI360_PLAYWRIGHT_MODULE` si Playwright no está en el proyecto).
 
