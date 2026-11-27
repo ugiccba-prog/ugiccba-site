@@ -7,6 +7,8 @@ const base=Deno.env.get('SUPABASE_URL')!;
 const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const publicKey=Deno.env.get('SUPABASE_ANON_KEY')!;
 const fcmSecret=Deno.env.get('FCM_SERVICE_ACCOUNT_JSON')||'';
+// Requests without Origin (server-to-server, curl) are accepted on purpose: CORS only
+// protects browsers, and every non-public path still requires a verified Firebase token.
 const allowed=(origin:string)=>!origin||/^https:\/\/muni360-ugi-ensayo(?:--[a-z0-9-]+)?\.web\.app$/.test(origin)||['https://ugiccba.com.ar','https://www.ugiccba.com.ar','https://ugiccba-prog.github.io'].includes(origin);
 
 function b64url(bytes:Uint8Array|string){
@@ -15,7 +17,9 @@ function b64url(bytes:Uint8Array|string){
  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
+let fcmAccount:any=null,fcmToken:{value:string;expires:number}|null=null;
 async function getFcmAccessToken(sa:{client_email:string;private_key:string}){
+ if(fcmToken&&fcmToken.expires>Date.now()+60000)return fcmToken.value;
  const pem=sa.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s+/g,'');
  const keyBytes=Uint8Array.from(atob(pem),c=>c.charCodeAt(0));
  const key=await crypto.subtle.importKey('pkcs8',keyBytes,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
@@ -27,21 +31,22 @@ async function getFcmAccessToken(sa:{client_email:string;private_key:string}){
  const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion}),signal:AbortSignal.timeout(10000)});
  const data=await r.json();
  if(!r.ok||!data.access_token)throw Error('FCM_AUTH_FAILED');
- return data.access_token as string;
+ fcmToken={value:data.access_token as string,expires:Date.now()+Math.min(Number(data.expires_in)||3600,3600)*1000};
+ return fcmToken.value;
 }
 
 async function sendComunidadPush({aviso,targets}:{aviso:any;targets:Array<{token:string;uid:string;plataforma:string}>}){
  if(!fcmSecret){
   return {sent:[],failed:targets.map(t=>({uid:t.uid,error:'FCM_NO_CONFIGURADO'}))};
  }
- const sa=JSON.parse(fcmSecret);
+ const sa=fcmAccount||(fcmAccount=JSON.parse(fcmSecret));
  const accessToken=await getFcmAccessToken(sa);
  const sent:string[]=[];
  const failed:Array<{uid:string;error:string}>=[];
- for(const t of targets){
+ const send=async(t:{token:string;uid:string;plataforma:string})=>{
   if(t.plataforma!=='web-fcm'){
    failed.push({uid:t.uid,error:'CANAL_LOCAL_SIN_PUSH_REMOTO'});
-   continue;
+   return;
   }
   try{
    const res=await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,{
@@ -71,13 +76,17 @@ async function sendComunidadPush({aviso,targets}:{aviso:any;targets:Array<{token
   }catch(err:any){
    failed.push({uid:t.uid,error:err?.message||'FCM_FETCH_ERROR'});
   }
- }
+ };
+ // Send in small parallel batches instead of one request at a time.
+ for(let i=0;i<targets.length;i+=10)await Promise.all(targets.slice(i,i+10).map(send));
  return {sent,failed};
 }
 
 async function call(name:string,args:unknown,key=serviceKey,token=key){
  const r=await fetch(base+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(20000)});
- const data=await r.json();if(!r.ok){const e:any=Error(data.message||'No se confirmó la operación.');e.status=r.status;e.code=data.code==='PT409'?'CONFLICTO':data.code==='42501'?'PERMISOS':(data.code==='22023'||data.code==='22007')?'VALIDACION':'SERVIDOR';throw e;}return data;
+ const data=await r.json();if(!r.ok){const code=data.code==='PT409'?'CONFLICTO':data.code==='42501'?'PERMISOS':(data.code==='22023'||data.code==='22007')?'VALIDACION':'SERVIDOR';
+  // Only messages raised on purpose by our SQL (known codes or plain RAISE, P0001) reach the user; internal PostgREST/Postgres text stays private.
+  const e:any=Error(code==='SERVIDOR'&&data.code!=='P0001'?'No se confirmó la operación. Reintentá con el mismo identificador.':(data.message||'No se confirmó la operación.'));e.status=r.status;e.code=code;e.dbCode=typeof data.code==='string'?data.code:null;throw e;}return data;
 }
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin')||'',headers={'Content-Type':'application/json;charset=UTF-8','Cache-Control':'no-store','Vary':'Origin',...(allowed(origin)&&origin?{'Access-Control-Allow-Origin':origin}:{}),'Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS'};
@@ -93,5 +102,5 @@ Deno.serve(async(req:Request)=>{
   // third-party auth. Never decode an unverified JWT to establish identity.
   const handle=createHandler({rpc:(n:string,a:unknown)=>call(n,a),verify:async()=>{try{return await call('mc_identity',{},publicKey,token);}catch(_){throw Object.assign(Error('Sesión Google inválida. Volvé a ingresar.'),{status:401,code:'SESION'});}},notify:sendComunidadPush});
   const result=await handle({token,path,body});return new Response(JSON.stringify({apiVersion:2,backendVersion:'supabase-1.0.0',...result}),{status:200,headers});
- }catch(e:any){const code=e.code||'SERVIDOR',status=e.status&&e.status>=400&&e.status<=599?e.status:500;console.error(JSON.stringify({event:'MUNI_REQUEST_FAILED',code}));return new Response(JSON.stringify({ok:false,apiVersion:2,backendVersion:'supabase-1.0.0',codigo:code,error:e.code?e.message:'No se confirmó la operación. Reintentá con el mismo identificador.'}),{status,headers});}
+ }catch(e:any){const code=e.code||'SERVIDOR',status=e.status&&e.status>=400&&e.status<=599?e.status:500;console.error(JSON.stringify({event:'MUNI_REQUEST_FAILED',code,dbCode:e.dbCode||null}));return new Response(JSON.stringify({ok:false,apiVersion:2,backendVersion:'supabase-1.0.0',codigo:code,error:e.code?e.message:'No se confirmó la operación. Reintentá con el mismo identificador.'}),{status,headers});}
 });
