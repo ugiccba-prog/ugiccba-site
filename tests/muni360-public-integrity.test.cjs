@@ -6,10 +6,15 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 const normalized=(file,bytes)=>file.endsWith('.png')?bytes:Buffer.from(bytes.toString('utf8').replace(/\r\n/g,'\n'));
-test('manifest del sitio publicado corresponde a los 36 archivos generados',()=>{
+test('manifest del sitio publicado corresponde a los archivos generados',()=>{
  const manifest=JSON.parse(fs.readFileSync(path.join(root,'muni360/manifest.json'),'utf8'));
  assert.equal(manifest.format,'MUNI360_PUBLIC_BUNDLE_V1');
- assert.equal(Object.keys(manifest.files).length,35);
+ const publicRoot=path.join(root,'muni360');
+ const files=fs.readdirSync(publicRoot,{recursive:true,withFileTypes:true})
+  .filter(entry=>entry.isFile())
+  .map(entry=>path.relative(publicRoot,path.join(entry.parentPath,entry.name)).split(path.sep).join('/'))
+  .filter(file=>file!=='manifest.json');
+ assert.deepEqual(Object.keys(manifest.files).sort(),files.sort());
  for(const [file,hash] of Object.entries(manifest.files)){
   const bytes=normalized(file,fs.readFileSync(path.join(root,'muni360',file)));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),hash,file);

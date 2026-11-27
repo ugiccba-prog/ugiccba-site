@@ -3,8 +3,8 @@ import {dashboard} from './dashboard.mjs';
 import {handleInteligencia} from './inteligencia.mjs';
 import {handlePublicSurveys,handleSurveys} from './surveys.mjs';
 import {handleComunidad} from './comunidad.mjs';
-import {AccessError,actorFrom,authorize,validateAccess,ROLES,CAPS} from './policy.mjs';
-import {sha,copy,resource,empty,applyOperation,visible,auditSlice} from './domain.mjs';
+import {AccessError,actorFrom,authorize,validateAccess,ROLES,CAPS,equipoRestringido,evaluacionesHabilitadas} from './policy.mjs';
+import {sha,copy,resource,empty,applyOperation,visible,auditSlice,puedeVerObservacion} from './domain.mjs';
 const groupTypes=['ALTA_PADRON','BAJA_PADRON','ASISTENCIA','EVALUACION','DUA','LEGAJO','RECONOCIMIENTO'];
 const norm=x=>String(x||'').trim().toLowerCase();
 const equal=(x,y)=>JSON.stringify(x)===JSON.stringify(y);
@@ -32,6 +32,21 @@ export function prepare(loaded,d,actor,now=()=>new Date().toISOString()){
  const stamp=now(),clean=copy(d);delete clean.accessVersion;
  return {uid:actor.id,actorVersion:actor.version,activity:d.deporte,operation:d,hash:sha(clean),resource:key,rosterKey:groupKey,checkRoster:groupTypes.includes(d.tipo),rosterChanged:!equal(before.padron,after.padron),baseVersion:meta.version,changes:deltas(before,after),fichas:Object.entries(after.fichas).filter(([id,f])=>!equal(f,before.fichas[id])).map(([id,f])=>({id,before:before.fichas[id]||null,after:f})),archive:d.tipo==='RESET_DATOS'?{id:'temporada_'+d.requestId,fecha:stamp,modo:d.modo,autor:actor.id,state:before,temporada:meta.temporada}:null,audit:{id:d.requestId,fecha:stamp,uid:actor.id,autor:actor.nombre,rol:actor.rol,tipo:d.tipo,deporte:d.deporte,categoria:d.categoria||'',equipo:d.equipo||'',jugador:d.jugador||'',antes:auditSlice(before,d),despues:auditSlice(after,d)}};
 }
+function versionesEquipos(versions,actor,activity,state){
+ const rosterIds=new Set(state.padron.map(p=>p.id));
+ const eligible=new Set(state.padron.filter(p=>!p.excluirEvaluacion).map(p=>JSON.stringify([norm(p.categoria),norm(p.equipo),norm(p.jugador)])));
+ const groups=new Set((actor.teams[activity]||[]).map(p=>JSON.stringify([norm(p.categoria),norm(p.equipo)])));
+ return Object.fromEntries(Object.entries(versions).filter(([key])=>{
+  try{
+   const [type,category,team,,name]=JSON.parse(key);
+   // Recognition writes share the private record revision without reading its contents.
+   if(type==='LEGAJO')return rosterIds.has(category);
+   if(!['PADRON','ASISTENCIA','EVALUACION'].includes(type)||!groups.has(JSON.stringify([category,team])))return false;
+   if(type!=='EVALUACION')return true;
+   return evaluacionesHabilitadas(actor,activity)&&eligible.has(JSON.stringify([category,team,name]));
+  }catch(_){return false;}
+ }));
+}
 export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate}){
  const service=(action,p)=>rpc('mc_service',{p_action:action,p});
  return async function handle(input){
@@ -47,6 +62,17 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
    else if(e.code!=='PENDIENTE'||user?.status==='activo')throw e;
   }
   if(input.path==='/api/me')return {ok:true,profile:{uid:identity.uid,nombre:user.nombre,email:user.email,status:actor?'activo':accessStatus,expiresAt:user.expiresAt||null,rol:user.rol,areas:actor?.areas||[],capabilities:actor?.capabilities||{},version:user.version,canManageUsers:identity.uid===owner},catalog:{areas,roles:ROLES,capabilities:CAPS}};
+  if(input.path.startsWith('/api/team-access/')){
+   const action={'/api/team-access/list':'list','/api/team-access/save':'save','/api/team-access/save-team':'saveTeam','/api/team-access/player':'player'}[input.path];
+   if(!action)throw new AccessError('RUTA','Ruta inexistente.',404);
+   if(actor.id!==owner && actor.rol!=='Coordinación')throw new AccessError('PERMISOS','Sólo Dirección y Coordinación pueden asignar equipos.');
+   if(!actor.areas.includes(d.deporte)||['Colonia','COYFD'].includes(d.deporte))throw new AccessError('PERMISOS','Actividad fuera de tu alcance.');
+   if(action==='player'&&actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección puede vincular al deportista.');
+   const result=await rpc('mc_team_access',{p_action:action,p:{
+    actorUid:actor.id,activity:d.deporte,targetUid,revision:d.revision,teams:d.teams,playerId:d.playerId,team:d.team,changes:d.changes
+   }});
+   return {ok:true,...result};
+  }
   if(input.path.startsWith('/api/users/')){
    if(identity.uid!==owner)throw new AccessError('PERMISOS','Sólo el propietario administra permisos.');
    if(input.path==='/api/users/history')return {ok:true,...await service('permissionHistory',{uid:actor.id})};
@@ -80,7 +106,7 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
   if(d.tipo==='AUDITORIA'){
    const offset=d.cursor==null?0:Number(d.cursor);if(!Number.isSafeInteger(offset)||offset<0)throw new AccessError('VALIDACION','Página inválida.',400);
    const r=await service('audit',{uid:actor.id,activity:d.deporte,offset,...(d.auditId?{auditId:d.auditId}:{})});
-   if(d.auditId){if(!r||!actor.capabilities.verLegajo&&r.uid!==actor.id||r.tipo==='LEGAJO'&&!actor.capabilities.verLegajo)throw new AccessError('PERMISOS','Detalle privado.');const out=copy(r);const redact=v=>{if(v&&typeof v==='object')for(const k of Object.keys(v)){if(k==='dni'&&!actor.capabilities.verDni)v[k]='';else redact(v[k]);}};redact(out);return {ok:true,...out};}
+   if(d.auditId){if(!r||!actor.capabilities.verLegajo&&r.uid!==actor.id||r.tipo==='LEGAJO'&&!actor.capabilities.verLegajo)throw new AccessError('PERMISOS','Detalle privado.');const out=copy(r);const redact=v=>{if(v&&typeof v==='object')for(const k of Object.keys(v)){if(k==='dni'&&!actor.capabilities.verDni)v[k]='';else if(k==='observacion'&&!puedeVerObservacion(actor))delete v[k];else redact(v[k]);}};redact(out);return {ok:true,...out};}
    return {ok:true,events:r.filter(e=>actor.capabilities.verLegajo||e.uid===actor.id).slice(0,50).map(({antes,despues,...e})=>e),nextCursor:r.length>50?String(offset+50):null};
   }
   const scoped=!['LECTURA','RESET_DATOS','ALTA_PADRON_LOTE'].includes(d.tipo),recordKey=d.tipo==='ASISTENCIA'?[d.fecha,d.categoria,d.equipo]:d.tipo==='EVALUACION'?[d.fecha,d.categoria,d.equipo,d.jugador]:d.tipo==='SESION_UGI'?[d.requestId]:null;
@@ -93,9 +119,10 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
    const loadArgs={uid:actor.id,activity:d.deporte,...(d.temporada&&d.tipo==='LECTURA'?{archive:d.temporada}:{}),...(scoped?{scope:'operation',category:d.categoria||'',team:d.equipo||'',recordKey}:{}),dnis:[...(d.jugadores||[]).map(j=>j.dni).filter(Boolean),...(d.grupos||[]).flatMap(g=>(g.jugadores||[]).map(j=>j.dni).filter(Boolean)),...(d.ficha?.dni?[d.ficha.dni]:[])]};
    const loaded=await service('load',loadArgs),current=actorFrom(loaded.actor,areas,now(),owner);authorize(current,d);
    if(d.tipo==='LECTURA'){
-    const out=visible(loaded.state,current);out.asistencia=out.asistencia.map(r=>({...r,estado:r.estado+(r.puntosCiudad?' | Pts:'+r.puntosCiudad:'')+(r.clima&&r.clima!=='N'?' | Clima:'+r.clima:'')}));
+    const scopedCoach=equipoRestringido(current,d.deporte);
+    const out=visible(loaded.state,current,d.deporte);out.asistencia=out.asistencia.map(r=>({...r,estado:r.estado+(r.puntosCiudad?' | Pts:'+r.puntosCiudad:'')+(r.clima&&r.clima!=='N'?' | Clima:'+r.clima:'')}));
     let backup=null;if(current.id===owner){try{backup=await rpc('mc_backup_status',{p_uid:current.id});}catch(_){/* Optional status must not block access to confirmed records. */}}
-    return {ok:true,...out,versiones:loaded.versions,temporada:loaded.meta.temporada,version:loaded.meta.version,archivos:loaded.archives,sheetsStatus:loaded.meta.projectedVersion>=loaded.meta.version?'synced':'pending',backup};
+    return {ok:true,...out,versiones:scopedCoach?versionesEquipos(loaded.versions,current,d.deporte,out):loaded.versions,temporada:loaded.meta.temporada,version:loaded.meta.version,archivos:scopedCoach?[]:loaded.archives,...(scopedCoach?{scopeEquipos:true,evaluacionesHabilitadas:evaluacionesHabilitadas(current,d.deporte),accessVersion:current.version}:{}),sheetsStatus:loaded.meta.projectedVersion>=loaded.meta.version?'synced':'pending',backup};
    }
    const payload=prepare(loaded,d,current),result=await rpc('mc_commit',{p:payload});if(!result.retry)return result;
   }

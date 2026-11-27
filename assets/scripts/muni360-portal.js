@@ -35,16 +35,22 @@
   }
   function attendanceSignal(present,total){return {sufficient:total>=3,low:total>=3&&100*present/total<70};}
   const cards=m=>'<div class="portal-stats">'+[['Deportistas',m.roster],['Asistencia',pct(m.present,m.total)],['Equipos',m.groups.filter(g=>g.n).length],['Evaluaciones',m.evaluations]].map(([label,n])=>'<article><span>'+label+'</span><strong>'+n+'</strong></article>').join('')+'</div>';
-  const teams=m=>'<div class="portal-table"><table><thead><tr><th>Equipo</th><th>Integrantes</th><th>Asistencia</th><th>Detalle</th></tr></thead><tbody>'+m.groups.filter(g=>g.n).map(g=>'<tr><th scope="row">'+esc(g.cat)+' · '+esc(g.eq)+'</th><td>'+g.n+'</td><td>'+pct(g.present,g.total)+'</td><td><button type="button" class="btn-sec" data-portal-team="1" data-cat="'+esc(g.cat)+'" data-eq="'+esc(g.eq)+'">Ver lista</button></td></tr>').join('')+'</tbody></table>'+(m.roster?'':'<p>No hay deportistas cargados para esta actividad.</p>')+'</div>';
+  const teams=(m,buttonLabel='Ver lista')=>'<div class="portal-table"><table><thead><tr><th>Equipo</th><th>Integrantes</th><th>Asistencia</th><th>Detalle</th></tr></thead><tbody>'+m.groups.filter(g=>g.n).map(g=>'<tr><th scope="row">'+esc(g.cat)+' · '+esc(g.eq)+'</th><td>'+g.n+'</td><td>'+pct(g.present,g.total)+'</td><td><button type="button" class="btn-sec" data-portal-team="1" data-cat="'+esc(g.cat)+'" data-eq="'+esc(g.eq)+'">' +buttonLabel+'</button></td></tr>').join('')+'</tbody></table>'+(m.roster?'':'<p>No hay deportistas cargados para esta actividad.</p>')+'</div>';
   function chart(m){
     const points=m.trend.slice(-12);
     if(!points.length)return '<p class="hint">Sin asistencias registradas en este período.</p>';
     return '<div class="portal-chart" role="list" aria-label="Asistencia de las últimas 12 jornadas registradas">'+points.map(t=>'<div role="listitem"><span>'+esc(t.date.slice(5).split('-').reverse().join('/'))+'</span><meter min="0" max="100" value="'+100*t.present/t.total+'">'+pct(t.present,t.total)+'</meter><b>'+pct(t.present,t.total)+'</b></div>').join('')+'</div>';
   }
-  function views(data,date,activity,session){
+  function views(data,date,activity,session,{compact=false}={}){
     const m=summarize(data,date),demo=session?.modoDemo===true||session?.usuario==='demo';
     const note='<p class="hint">'+(demo?'Demostración · ':'')+'Actividad: '+esc(activity)+' · 30 días hasta '+esc(date||'seleccionar fecha')+'. P y T cuentan como presentes. Sin marcar queda fuera del porcentaje.</p>';
-    const heading=title=>'<div class="portal-hero"><h2>'+title+'</h2><p>'+esc(session?.profeNombre||'')+' · '+esc(session?.rol||'')+'</p></div>';
+    const heading=title=>'<div class="portal-hero"><h2>'+title+'</h2>'+(compact?'':'<p>'+esc(session?.profeNombre||'')+' · '+esc(session?.rol||'')+'</p>')+'</div>';
+    const progress='<div class="card"><h3>Evolución de asistencia</h3>'+chart(m)+'</div>';
+    if(compact)return {
+      inicio:heading('Resumen')+'<p class="hint">Últimos 30 días</p>'+cards(m)+progress,
+      equipos:heading('Mis equipos')+'<div class="card">'+teams(m,'Abrir lista')+'</div>',
+      seguimiento:heading('Seguimiento')+progress
+    };
     const actions='<div class="portal-actions"><button type="button" class="btn" data-portal-tab="asistencia">Tomar asistencia y semáforo</button><button type="button" class="btn-sec" data-portal-tab="evaluacion">Ver evaluaciones</button><button type="button" class="btn-sec" data-portal-tab="ugi">Banco metodológico</button></div>';
     return {
       inicio:heading('Tu actividad en Muni360')+note+cards(m)+'<div class="card"><h3>Evolución de asistencia</h3>'+chart(m)+'</div><div class="card"><h3>Equipos de la actividad autorizada</h3>'+teams(m)+'</div>'+actions,

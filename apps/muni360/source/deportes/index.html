@@ -853,7 +853,7 @@
       </div>
 
       <input type="hidden" id="login-profe"><input type="hidden" id="login-pass">
-      <p class="google-status">Ingresá con tu cuenta de Google. Dirección UGI habilita tus actividades. Los profes pueden cubrir todos sus equipos.</p>
+      <p class="google-status">Ingresá con tu cuenta de Google. Dirección UGI habilita tus actividades. Los profes ingresan a los equipos que tienen asignados.</p>
       <p id="login-error" class="error" aria-live="polite"></p>
       <button type="submit" id="google-login">Continuar con Google</button>
       <button type="button" id="revisar-acceso" class="btn-sec" style="margin-top:10px">Ya me autorizaron · Revisar acceso</button>
@@ -901,7 +901,7 @@
 
     <div id="modo-consulta-aviso" class="draft-status hidden" role="status">Modo consulta: podés ver los datos, sin modificarlos.</div>
     <div id="draft-status" class="draft-status" role="status"></div>
-    <nav class="tabs" id="nav-tabs" role="tablist" aria-label="Secciones de Muni360"><div class="portal-navbrand"><img src="../escudo-ccba.png" alt="Club Ciudad de Buenos Aires"><span class="portal-ugi" aria-hidden="true">◎</span><b>Muni360</b><small>Unidad de Gestión Integral · CCBA</small></div><p class="portal-nav-role" id="portal-nav-role">Perfil autorizado</p><button type="button" class="tab" role="tab" data-tab="inicio" aria-selected="false"><span class="portal-icon" data-icon="home" aria-hidden="true"></span><span>Inicio</span></button><button type="button" class="tab" role="tab" data-tab="equipos" aria-selected="false"><span class="portal-icon" data-icon="users" aria-hidden="true"></span><span>Mis equipos</span></button><button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Asistencia y semáforo</span></button><button type="button" class="tab" role="tab" data-tab="evaluacion" aria-selected="false" id="tab-btn-evaluacion"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Evaluaciones</span></button><button type="button" class="tab" role="tab" data-tab="comparar" aria-selected="false"><span class="portal-icon" data-icon="compare" aria-hidden="true"></span><span>Comparar jugadores</span></button><button type="button" class="tab" role="tab" data-tab="seguimiento" aria-selected="false"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Seguimiento y DUA</span></button><button type="button" class="tab" role="tab" data-tab="ugi" aria-selected="false"><span class="portal-icon" data-icon="book" aria-hidden="true"></span><span>Planificador y banco</span></button><button type="button" class="tab" role="tab" data-tab="agenda" aria-selected="false"><span class="portal-icon" data-icon="calendar" aria-hidden="true"></span><span>Horarios y agenda</span></button><button type="button" class="tab" role="tab" data-tab="avisos" aria-selected="false"><span class="portal-icon" data-icon="bell" aria-hidden="true"></span><span>Comunidad y avisos</span></button><button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Análisis del equipo</span></button><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false" id="tab-btn-auditoria"><span class="portal-icon" data-icon="history" aria-hidden="true"></span><span>Cambios</span></button><button type="button" class="tab hidden" role="tab" data-tab="inteligencia" aria-selected="false" id="tab-btn-inteligencia"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Inteligencia</span></button><button type="button" class="tab hidden" role="tab" data-tab="encuestas" aria-selected="false" id="tab-btn-encuestas"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Cuestionarios</span></button><button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron"><span class="portal-icon" data-icon="settings" aria-hidden="true"></span><span>Padrón</span></button>    <div class="toolbar-cancha" id="owner-tools"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
+    <nav class="tabs" id="nav-tabs" role="tablist" aria-label="Secciones de Muni360"><div class="portal-navbrand"><img src="../escudo-ccba.png" alt="Club Ciudad de Buenos Aires"><span class="portal-ugi" aria-hidden="true">◎</span><b>Muni360</b><small>Unidad de Gestión Integral · CCBA</small></div><p class="portal-nav-role" id="portal-nav-role">Perfil autorizado</p><button type="button" class="tab" role="tab" data-tab="inicio" aria-selected="false"><span class="portal-icon" data-icon="home" aria-hidden="true"></span><span>Inicio</span></button><button type="button" class="tab" role="tab" data-tab="equipos" aria-selected="false"><span class="portal-icon" data-icon="users" aria-hidden="true"></span><span>Mis equipos</span></button><button type="button" class="tab" role="tab" data-tab="asistencia" aria-selected="true"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Asistencia y semáforo</span></button><button type="button" class="tab" role="tab" data-tab="evaluacion" aria-selected="false" id="tab-btn-evaluacion"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Evaluaciones</span></button><button type="button" class="tab" role="tab" data-tab="seguimiento" aria-selected="false"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Seguimiento y DUA</span></button><button type="button" class="tab" role="tab" data-tab="ugi" aria-selected="false"><span class="portal-icon" data-icon="book" aria-hidden="true"></span><span>Planificador y banco</span></button><button type="button" class="tab" role="tab" data-tab="agenda" aria-selected="false"><span class="portal-icon" data-icon="calendar" aria-hidden="true"></span><span>Horarios y agenda</span></button><button type="button" class="tab" role="tab" data-tab="avisos" aria-selected="false"><span class="portal-icon" data-icon="bell" aria-hidden="true"></span><span>Comunidad y avisos</span></button><button type="button" class="tab" role="tab" data-tab="analisis" aria-selected="false"><span class="portal-icon" data-icon="chart" aria-hidden="true"></span><span>Análisis del equipo</span></button><button type="button" class="tab" role="tab" data-tab="auditoria" aria-selected="false" id="tab-btn-auditoria"><span class="portal-icon" data-icon="history" aria-hidden="true"></span><span>Cambios</span></button><button type="button" class="tab hidden" role="tab" data-tab="inteligencia" aria-selected="false" id="tab-btn-inteligencia"><span class="portal-icon" data-icon="trend" aria-hidden="true"></span><span>Inteligencia</span></button><button type="button" class="tab hidden" role="tab" data-tab="encuestas" aria-selected="false" id="tab-btn-encuestas"><span class="portal-icon" data-icon="check" aria-hidden="true"></span><span>Cuestionarios</span></button><button type="button" class="tab hidden" role="tab" data-tab="padron" aria-selected="false" id="tab-btn-padron"><span class="portal-icon" data-icon="settings" aria-hidden="true"></span><span>Padrón</span></button>    <div class="toolbar-cancha" id="owner-tools"><button type="button" class="btn-sec hidden" id="sync-sheets">Actualizar vistas de Sheets</button><button type="button" class="btn-sec hidden" id="auto-sheets">Activar sincronización automática</button>
       <a class="btn-sec hidden" id="link-admin-ugi" href="../admin/">Usuarios y permisos</a></div>
 <button type="button" class="btn-salir muni-salir-menu" id="btn-salir">Cambiar / Salir</button>
 <a href="../index.html" class="muni-return-menu" aria-label="Volver a la portada general de Muni360">← Ir a Muni360</a><p class="portal-navfoot">Club Ciudad de Buenos Aires<br><small>Gestión deportiva y formativa</small></p></nav>
@@ -909,13 +909,13 @@
     <!-- BARRA COMPACTA DE CONTEXTO ACTIVO (MODO CANCHA) -->
     <div id="barra-contexto-activo" class="barra-contexto">
       <span id="txt-contexto-activo" class="barra-contexto-txt">📍 Seleccionar grupo · 📅 Hoy</span>
-      <button type="button" id="btn-toggle-filtros" class="btn-pill-contexto">⚙️ Cambiar grupo / fecha</button>
+      <button type="button" id="btn-toggle-filtros" class="btn-pill-contexto">Grupo y fecha</button>
     </div>
 
     <!-- TARJETA DE FILTROS GLOBALES (COLAPSABLE) -->
     <div class="card hidden" id="card-filtros">
       <div class="spread" style="margin-bottom:8px;">
-        <span style="font-size:0.78rem; font-weight:800; color:var(--navy); text-transform:uppercase;">Seleccionar Grupo y Fecha</span>
+        <span style="font-size:0.78rem; font-weight:800; color:var(--navy); text-transform:uppercase;">Filtros</span>
         <button type="button" class="btn-sec" id="btn-listo-filtros" style="min-height:30px; padding:4px 12px; background:#dcfce7; color:#166534; border-color:#86efac;">✓ Listo</button>
       </div>
 
@@ -949,8 +949,7 @@
     <section id="tab-inicio" class="hidden" aria-label="Inicio"></section>
     <section id="tab-inteligencia" class="hidden" aria-label="Inteligencia"></section>
     <section id="tab-encuestas" class="hidden" aria-label="Cuestionarios"></section>
-    <section id="tab-equipos" class="hidden" aria-label="Equipos"></section>
-    <section id="tab-comparar" class="hidden" aria-label="Comparar jugadores"></section>
+    <section id="tab-equipos" class="hidden" aria-label="Equipos"><div id="equipos-contenido"></div><div id="equipos-asignaciones"></div></section>
     <section id="tab-seguimiento" class="hidden" aria-label="Seguimiento"></section>
     <section id="tab-agenda" class="hidden" aria-label="Horarios y agenda"></section>
     <section id="tab-avisos" class="hidden" aria-label="Avisos"></section>
@@ -963,15 +962,16 @@
             <details class="ayuda-asistencia"><summary aria-label="Ver referencias de asistencia y semáforo" title="Referencias de carga">?</summary><p class="hint" style="margin:0;" id="sub-lista-asist">— = Sin registrar / sin observar · P = Presente · A = Ausente · T = Tarde · 🟢🟡🔴 = Semáforo UGI · 🧩 = Apoyo DUA</p></details>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-sec" id="btn-todos-p">Todos Presentes (P)</button>
+            <button type="button" class="btn-sec" id="btn-todos-p">Todos presentes</button>
             <button type="button" class="btn-sec hidden" id="btn-todos-comida" style="background:#ffedd5; color:#9a3412; border-color:#fed7aa;">🍴 Todos en Comedor</button>
           </div>
         </div>
 
-        <input type="search" id="buscar-alumno-asist" placeholder="🔍 Buscar deportista por apellido o nombre..." style="margin-bottom:10px; min-height:40px; font-size:0.86rem;">
+        <input type="search" id="buscar-alumno-asist" placeholder="Buscar deportista" style="margin-bottom:10px; min-height:40px; font-size:0.86rem;">
 
         <p id="portal-completion" class="portal-completion" role="status" aria-live="polite"></p>
         <div id="lista-asist"></div>
+        <div id="asignaciones-del-equipo"></div>
 
         <details class="resumen-jornada"><summary>Resumen de la clase</summary>
 <div class="kpis" id="kpis-asist-dia">
@@ -1037,6 +1037,10 @@
           <input type="text" id="eval-nuevo-gesto" placeholder="Nuevo gesto técnico" aria-label="Nuevo gesto técnico" style="flex:1;min-width:160px;">
           <button type="button" class="btn-sec" id="eval-btn-sumar-gesto">Agregar gesto</button>
         </div>
+        <div class="field hidden" id="eval-observacion-campo" style="margin-top:14px;">
+          <label for="eval-observacion">Observación interna (opcional)</label>
+          <textarea id="eval-observacion" maxlength="1000" rows="3"></textarea>
+        </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
           <button type="button" class="btn ok" id="btn-guardar-eval" style="flex:2;">Guardar y pasar al siguiente</button>
@@ -1052,10 +1056,9 @@
          =================================================================== -->
     <section id="tab-ugi" class="hidden">
       <div class="card">
-        <h3>🛠️ Asistente rápido de cancha · Enseñar a enseñar</h3>
-        <p class="hint">Elegí qué trabajar o destrabar hoy en tu grupo, rotá entre las 10 variantes de cada eje y registrá tu sesión.</p>
+        <h3>Planificador</h3>
 
-        <label>1. ¿Qué foco querés trabajar hoy?</label>
+        <label>Foco de la sesión</label>
         <div class="grid-situaciones" id="botonera-ugi">
           <button type="button" class="btn-situacion active" data-guia="Grupo disperso"><span>🎯</span><span>Grupo disperso</span></button>
           <button type="button" class="btn-situacion" data-guia="Frustración por error"><span>😤</span><span>Frustración</span></button>
@@ -1067,7 +1070,7 @@
         <div id="panel-respuesta-ugi" class="respuesta-box"></div>
 
         <div style="border-top:1px solid #e2e8f0; padding-top:12px; margin-top:12px;">
-          <label>2. Autoevaluación rápida de la sesión</label>
+          <label>Autoevaluación</label>
           <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0 12px; font-size:0.86rem; font-weight:600;">
             <label style="text-transform:none; font-size:0.86rem; display:flex; align-items:center; gap:8px;">
               <input type="checkbox" id="chk-ugi-1" style="width:18px; height:18px; min-height:auto;"> Consigna clara en menos de 2 minutos
@@ -1080,7 +1083,7 @@
             </label>
           </div>
           <input type="text" id="nota-ugi-profe" placeholder="Observación breve de la práctica (opcional)..." style="margin-bottom:10px;">
-          <button type="button" class="btn ok" id="btn-registrar-ugi">Registrar sesión en bitácora UGI</button>
+          <button type="button" class="btn ok" id="btn-registrar-ugi">Registrar sesión</button>
         </div>
       </div>
 
@@ -1136,20 +1139,20 @@
 
       <div class="card"><label for="sel-archivo">Temporadas anteriores</label><select id="sel-archivo"><option value="">Sin archivos disponibles</option></select><div id="comparacion-temporada" role="status"></div></div>
       <div class="kpis">
-        <div class="kpi"><span id="lbl-kpi1">Técnica</span><b id="kpi-promedio">-</b><span id="sub-kpi1">sobre 10</span></div><div class="kpi"><span>Formación y convivencia</span><b id="kpi-formativo">-</b><span>sobre 10 · separado de técnica</span></div>
+        <div class="kpi"><span id="lbl-kpi1">Técnica</span><b id="kpi-promedio">-</b><span id="sub-kpi1">sobre 10</span></div><div class="kpi"><span>Formación y convivencia</span><b id="kpi-formativo">-</b><span>sobre 10</span></div>
         <div class="kpi kpi-ok"><span>Asistencia</span><b id="kpi-asistencia">-</b><span>presentismo</span></div>
         <div class="kpi kpi-warn"><span>Alertas (&lt;70%)</span><b id="kpi-alertas">0</b><span>seguimiento</span></div>
       </div>
 
       <div class="card" id="card-grafico-gestos">
-        <h3>Rendimiento por variable técnica y UGI</h3>
+        <h3>Rendimiento por variable</h3>
         <p class="hint">La variable más baja se marca en rojo para reforzar en la semana.</p>
         <div id="grafico-gestos"></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="card-matriz-individual">
         <h3>Matriz individual del grupo</h3>
-        <p class="hint">Indicadores para revisar con el equipo. La alerta de asistencia requiere al menos 3 jornadas registradas por persona. No activan planes ni sanciones automáticamente. Sin observar no equivale a verde.</p>
+        <p class="hint">Las alertas de asistencia se calculan desde la tercera jornada.</p>
         <div style="overflow-x:auto;">
           <table>
             <thead>
@@ -1289,7 +1292,7 @@
     <section id="tab-auditoria" class="hidden"><div class="card"><h3>Historial de cambios</h3><p class="hint">Cada cambio de la app conserva autor, fecha y valores anteriores y nuevos. Un profe consulta sus propios cambios; Dirección consulta el historial autorizado.</p><button type="button" class="btn-sec" id="actualizar-auditoria">Actualizar</button><div id="audit-list"></div></div></section>
   </main>
   <div id="portal-backdrop" aria-hidden="true"></div>
-  <nav id="portal-mobile-nav" class="hidden" aria-label="Accesos principales"><button type="button" data-portal-tab="inicio"><span data-icon="home" aria-hidden="true"></span><small>Inicio</small></button><button type="button" data-portal-tab="asistencia"><span data-icon="check" aria-hidden="true"></span><small>Lista</small></button><button type="button" data-portal-tab="evaluacion"><span data-icon="chart" aria-hidden="true"></span><small>Evaluar</small></button><button type="button" data-portal-tab="comparar"><span data-icon="compare" aria-hidden="true"></span><small>Comparar</small></button></nav>
+  <nav id="portal-mobile-nav" class="hidden" aria-label="Accesos principales"><button type="button" data-portal-tab="inicio"><span data-icon="home" aria-hidden="true"></span><small>Inicio</small></button><button type="button" data-portal-tab="equipos"><span data-icon="users" aria-hidden="true"></span><small>Equipos</small></button><button type="button" data-portal-tab="asistencia"><span data-icon="check" aria-hidden="true"></span><small>Lista</small></button><button type="button" data-portal-tab="evaluacion"><span data-icon="chart" aria-hidden="true"></span><small>Evaluar</small></button></nav>
 
   <!-- MODAL EMERGENTE PASAPORTE DUA / LEGAJO PRIVADO DNI / TARJETA VERDE -->
   <div id="dua-modal" class="dua-modal-backdrop hidden">
@@ -1309,6 +1312,7 @@
   <script src="../assets/scripts/muni360-inteligencia.js"></script>
   <script src="../assets/scripts/muni360-surveys.js"></script>
   <script src="../assets/scripts/muni360-portal.js"></script>
+  <script src="../assets/scripts/muni360-team-access.js"></script>
   <script src="../assets/scripts/muni360-ui.js"></script>
   <script src="../assets/scripts/muni360-audit.js"></script>
   <script src="../assets/scripts/muni360-catalogo.js"></script>
@@ -1721,8 +1725,9 @@
       actualizarCabeceraYPestanas();
       iniciarEleccionGrupo();
       const cargaInicial=cargarAreaActiva();
-      cambiarTab(rutaInicial?.tab||'inicio','replace');
-      if(rutaInicial&&tabActual!==rutaInicial.tab)cambiarTab('inicio','replace');
+      const portada=esProfePorEquipo()?'equipos':'inicio';
+      cambiarTab(rutaInicial?.tab||portada,'replace');
+      if(rutaInicial&&tabActual!==rutaInicial.tab)cambiarTab(portada,'replace');
       if(rutaInicial?.categoria&&rutaInicial?.equipo){
         Promise.resolve(cargaInicial).then(()=>{
           if(sesion?.usuario!==rutaInicial.usuario||areaActiva!==rutaInicial.area)return;
@@ -1758,7 +1763,9 @@
       return CATALOGO_MUNI360.find(x => x.nombre === areaActiva) || CATALOGO_MUNI360[0];
     }
 
-    function esCoordOAdmin(){return !!sesion && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
+    const pestanasProfe=['equipos','asistencia','evaluacion','analisis','ugi'];
+    function esProfePorEquipo(){return sesion?.rol==='Profe' && !cfgActual().esBase;}
+    function esCoordOAdmin(){return !!sesion && !esProfePorEquipo() && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
     function puedeEditarGestos(){return !!sesion && !esSoloConsulta() && (sesion.esAdminTotal || sesion.rol==='Dirección UGI' || (sesion.rol==='Coordinación' && permiso('administrarPadron')));}
 
@@ -1790,6 +1797,16 @@
       $('tab-btn-inteligencia').classList.toggle('hidden',!verCambios);
       $('tab-btn-encuestas').classList.toggle('hidden',!verCambios);
       $('nav-tabs').classList.toggle('nav-operativa',!verCambios&&!puedePadron);
+      const extraTabs=['inicio','seguimiento','agenda','avisos'];
+      document.querySelectorAll('#nav-tabs .tab').forEach(button=>{
+        if(extraTabs.includes(button.dataset.tab))button.classList.toggle('hidden',esProfePorEquipo());
+      });
+      const mobile=$('portal-mobile-nav');
+      const accesos=esProfePorEquipo()?
+        [['equipos','users','Mis equipos'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['analisis','trend','Análisis'],['ugi','book','Banco']]:
+        [['inicio','home','Inicio'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['compare','Comparar']];
+      mobile.innerHTML=accesos.map(([id,icon,label])=>'<button type="button" data-portal-tab="'+id+'"><span data-icon="'+icon+'" aria-hidden="true"></span><small>'+label+'</small></button>').join('');
+      window.MuniPortal?.hydrate?.();
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia','replace');}
       $('wrap-deporte-admin').classList.toggle('hidden', !(sesion?.areas?.filter(a=>actividadesPortal(sesion).some(d=>d.nombre===a)).length>1));
 
@@ -2491,20 +2508,37 @@
         $('estado-txt').textContent='🎬 DEMOSTRACIÓN · Datos ficticios · Sin envíos a Google'; return;
       }
       const client=syncClient,uid=sesion?.usuario;
-      let cached=null;try{cached=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null');}catch(_){}
-      // Prefer this authenticated client's confirmed snapshot over browser cache.
-      const previous=client?.snapshots?.[d]||cached;
+      const scopedCoach=esProfePorEquipo();
+      let cached=null;if(!scopedCoach){try{cached=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null');}catch(_){}}
+      // Sports coaches reauthorize whenever their team data is loaded.
+      const previous=scopedCoach?null:client?.snapshots?.[d]||cached;
+      const sameAuthorizedView=scopedCoach&&client?.snapshots?.[d]===datosDeporte&&datosDeporte.scopeEquipos;
       if(previous&&Array.isArray(previous.padron)&&Array.isArray(previous.asistencia)&&Array.isArray(previous.evaluaciones)){
         datosDeporte=previous;renderFiltrosDeporte();renderVistaActiva();
-      }else{
+      }else if(!sameAuthorizedView){
         datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};renderFiltrosDeporte();renderVistaActiva();
       }
-      if(client?.queue.some(x=>x.payload.deporte===d)){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
+      if(!scopedCoach&&client?.queue.some(x=>x.payload.deporte===d)){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
       $('estado-txt').textContent='Consultando los datos confirmados…';
       try {
         const j=await client.read(d);
         if (client!==syncClient || uid!==sesion?.usuario || d!==areaActiva || secuencia!==secuenciaCargaArea) return;
-        client.snapshots[d]=j; datosDeporte=j; almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
+        if(scopedCoach&&j.scopeEquipos!==true){
+          delete client.snapshots[d];
+          throw new Error('La actualización de permisos por equipo todavía no está disponible.');
+        }
+        client.snapshots[d]=j;
+        datosDeporte=j;
+        if(scopedCoach && j.accessVersion) sesion.versionUsuario=j.accessVersion;
+        if(!scopedCoach) almacen.setItem('muni360_cache_'+d,JSON.stringify(j));
+        if(scopedCoach && esperaEquipo && categoriasDep().length===1){
+          const [categoria]=categoriasDep();
+          const equipos=equiposDep(categoria);
+          if(equipos.length===1){
+            $('sel-categoria').innerHTML=opcionesGrupo([categoria],'Elegí la categoría');
+            abrirGrupoPortal(categoria,equipos[0]);
+          }
+        }
         window._asistKeyActual=null; renderFiltrosDeporte(); renderVistaActiva(); renderHistorialUgiLocal();
         $('estado-txt').textContent=j.sheetsStatus==='pending'?(window.MUNI_CONFIG.backend==='supabase'?'✓ Guardado en la base · Copia a Sheets pendiente':'✓ Guardado en Sheets privado · Vistas de actividad pendientes'):'✓ Guardado · Vistas de Sheets actualizadas'; $('estado-acciones').innerHTML='';
         $('sel-archivo').innerHTML='<option value="">Comparar con temporada archivada...</option>'+j.archivos.map(a=>`<option value="${esc(a.id)}">${esc(Muni360Time.format(a.fecha))} · ${esc(a.modo)}</option>`).join('');
@@ -2512,7 +2546,16 @@
         cargarCuestionariosAnalisis(true);
         window.MuniSurveys?.refreshGroups?.(d);
         if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
-      } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
+      } catch(e) {
+        if(client!==syncClient||uid!==sesion?.usuario||d!==areaActiva||secuencia!==secuenciaCargaArea)return;
+        const denied=scopedCoach&&['PERMISOS','PENDIENTE','VENCIDO','SESION'].includes(e.code);
+        if(denied){
+          delete client.snapshots[d];
+          datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
+          renderFiltrosDeporte();renderVistaActiva();
+        }
+        $('estado-txt').textContent=denied?e.message:'No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message;
+      }
     }
 
     function categoriasDep() {
@@ -2547,7 +2590,7 @@
       $('sel-categoria').value = '';
       $('sel-equipo').value = '';
       filtrosDesplegados = true;
-      cambiarTab('asistencia');
+      cambiarTab(esProfePorEquipo()?'equipos':'asistencia');
     }
 
     function opcionesGrupo(opciones, indicacion) {
@@ -2694,7 +2737,7 @@
       filtrosDesplegados = false;
       actualizarBarraContexto();
       renderVistaActiva();
-      if (estabaEligiendo && ['inicio', 'asistencia'].includes(tabActual)) cambiarTab('asistencia');
+      if (estabaEligiendo && ['inicio','equipos','asistencia'].includes(tabActual)) cambiarTab('asistencia');
     });
 
     $('input-fecha').addEventListener('change', () => {
@@ -2716,6 +2759,7 @@
     // 6. PESTAÑA 1: ASISTENCIA + COMIDA (COLONIA) + SEMÁFORO UGI + BOTÓN DUA
     // =========================================================================
     function renderAsistencia() {
+      montarAsignacionesDelEquipo();
       const cfg = cfgActual();
       const searchContext = JSON.stringify([storageScope,areaActiva,$('sel-categoria').value,$('sel-equipo').value]);
       if(window._asistSearchContext!==searchContext){$('buscar-alumno-asist').value='';window._asistSearchContext=searchContext;}
@@ -2913,8 +2957,22 @@
       );
     }
 
+    function evaluadosPermitidos(){
+      const roster=plantelActualNombres();
+      if(!esProfePorEquipo() || almacen.getItem('muni360_modo_demo')==='1')return roster;
+      if(!datosDeporte.evaluacionesHabilitadas)return [];
+      const categoria=$('sel-categoria').value, equipo=$('sel-equipo').value||'General';
+      const excluded=new Set(datosDeporte.padron.filter(p=>
+        p.excluirEvaluacion&&p.categoria===categoria&&p.equipo===equipo).map(p=>p.jugador));
+      return roster.filter(nombre=>!excluded.has(nombre));
+    }
+
+    function puedeVerObservacionEval(){
+      return ['Profe','Coordinación','Dirección UGI'].includes(sesion?.rol);
+    }
+
     function renderEvaluacion() {
-      const lista = plantelActualNombres();
+      const lista = evaluadosPermitidos();
       const fecha = $('input-fecha').value;
       $('lista-eval').innerHTML = lista.length
         ? lista.map((j, i) => `
@@ -2922,13 +2980,13 @@
               <span>${esc(nombreBaseDua(j))}</span>
               ${evalDeJugador(j, fecha) ? '<span class="tag">✓ Evaluado</span>' : ''}
             </button>`).join('')
-        : `<p class="hint" style="text-align:center; padding:14px 0;">No hay deportistas cargados en este grupo.</p>`;
+        : '<p class="hint">'+(esProfePorEquipo()&&datosDeporte.scopeEquipos&&datosDeporte.padron.length&&!datosDeporte.evaluacionesHabilitadas?'Dirección UGI debe verificar tu ficha para habilitar Evaluaciones.':'No hay deportistas habilitados para evaluar en este grupo.')+'</p>';
     }
 
     $('lista-eval').addEventListener('click', e => {
       const b = e.target.closest('.jugador');
       if (!b) return;
-      const j = plantelActualNombres()[Number(b.dataset.i)];
+      const j = evaluadosPermitidos()[Number(b.dataset.i)];
       abrirPanelEval(j);
     });
 
@@ -2936,24 +2994,28 @@
     function claveBorradorEvaluacion(){return 'muni360_eval_borrador:'+JSON.stringify(contextoEvaluacion());}
     function guardarBorradorEvaluacion(){
       if(esSoloConsulta()||!jugadorActivo)return;
-      try{localStorage.setItem(claveBorradorEvaluacion(),JSON.stringify({...contextoEvaluacion(),notas:{...notasTemp}}));$('eval-draft-status').textContent='Borrador conservado en este dispositivo. Pulsá Guardar para confirmar la evaluación.';}
+      try{localStorage.setItem(claveBorradorEvaluacion(),JSON.stringify({...contextoEvaluacion(),notas:{...notasTemp},observacion:$('eval-observacion').value}));$('eval-draft-status').textContent='Borrador conservado en este dispositivo. Pulsá Guardar para confirmar la evaluación.';}
       catch(_){$('eval-draft-status').textContent='No se pudo conservar el borrador. Guardá la evaluación antes de salir.';}
     }
     function recuperarBorradorEvaluacion(){
       $('eval-draft-status').textContent='';if(esSoloConsulta())return;
       try{
         const saved=JSON.parse(localStorage.getItem(claveBorradorEvaluacion())||'null');
-        if(!saved||JSON.stringify({...saved,notas:undefined})!==JSON.stringify(contextoEvaluacion()))return;
+        if(!saved||JSON.stringify({...saved,notas:undefined,observacion:undefined})!==JSON.stringify(contextoEvaluacion()))return;
         const entries=Object.entries(saved.notas||{}).filter(([k,n])=>!['__proto__','constructor','prototype'].includes(k)&&typeof n==='number'&&Number.isFinite(n)&&n>=1&&n<=10);
+        if(puedeVerObservacionEval()&&typeof saved.observacion==='string')$('eval-observacion').value=saved.observacion.slice(0,1000);
         notasTemp=Object.fromEntries(entries);$('eval-draft-status').textContent='Borrador recuperado para revisar. Todavía no se envió al servidor.';
       }catch(_){}
     }
+    $('eval-observacion').addEventListener('input',guardarBorradorEvaluacion);
     function abrirPanelEval(jugador) {
+      if(!evaluadosPermitidos().includes(jugador))return;
       jugadorActivo = jugador;
       window._evalContext=JSON.stringify([storageScope,areaActiva,$('sel-categoria').value,$('sel-equipo').value,$('input-fecha').value]);
-      if(!plantelActualNombres().includes(jugador))return;
       const previa = evalDeJugador(jugador, $('input-fecha').value);
       notasTemp = previa ? { ...previa.notas } : {};
+      $('eval-observacion-campo').classList.toggle('hidden',!puedeVerObservacionEval());
+      $('eval-observacion').value=puedeVerObservacionEval()?(previa?.observacion||''):'';
       recuperarBorradorEvaluacion();
       const eraArq = Object.keys(notasTemp).some(k => k.startsWith('Arquero:')) || /\b(arq|arquero|arquera)\b/i.test(jugador);
       puestoEval = (tieneArqueroActual() && eraArq) ? 'arquero' : 'campo';
@@ -3068,15 +3130,18 @@
       if (!Object.keys(notas).length || !jugadorActivo) return toast('Puntuá al menos una variable.');
       const fecha=$('input-fecha').value, categoria=$('sel-categoria').value, equipo=$('sel-equipo').value||'General', jugador=jugadorActivo;
       if(esSoloConsulta())return toast('Tu acceso es de consulta.');
-      const payload={tipo:'EVALUACION',deporte:areaActiva,fecha,categoria,equipo,jugador,notas};
+      if(!evaluadosPermitidos().includes(jugador))return toast('Tu cuenta no puede editar esta evaluación.');
+      const observacion=puedeVerObservacionEval()?$('eval-observacion').value.trim():undefined;
+      const payload={tipo:'EVALUACION',deporte:areaActiva,fecha,categoria,equipo,jugador,notas,...(observacion!==undefined?{observacion}:{})};
       const confirmado=await enviarOperacion(payload);
-      const enCola=syncClient?.queue.some(x=>x.payload.tipo==='EVALUACION'&&x.payload.deporte===areaActiva&&x.payload.fecha===fecha&&x.payload.categoria===categoria&&x.payload.equipo===equipo&&x.payload.jugador===jugador&&JSON.stringify(x.payload.notas)===JSON.stringify(notas));
+      const enCola=syncClient?.queue.some(x=>x.payload.tipo==='EVALUACION'&&x.payload.deporte===areaActiva&&x.payload.fecha===fecha&&x.payload.categoria===categoria&&x.payload.equipo===equipo&&x.payload.jugador===jugador&&JSON.stringify(x.payload.notas)===JSON.stringify(notas)&&x.payload.observacion===observacion);
       if(confirmado||enCola){try{localStorage.removeItem(claveBorradorEvaluacion());}catch(_){}$('eval-draft-status').textContent=confirmado?'Evaluación confirmada.':'Evaluación pendiente de confirmación; conservada en este dispositivo.';}
       if(!confirmado)return;
       datosDeporte.evaluaciones=datosDeporte.evaluaciones.filter(r=>!(r.fecha===fecha && r.categoria===categoria && r.equipo===equipo && r.jugador===jugador));
-      datosDeporte.evaluaciones.push({fecha,categoria,equipo,jugador,notas});
-      almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte)); renderVistaActiva();
-      const pl=plantelActualNombres(),idx=pl.indexOf(jugador),sig=[...pl.slice(idx+1),...pl.slice(0,idx)].find(j=>!evalDeJugador(j,fecha));
+      datosDeporte.evaluaciones.push({fecha,categoria,equipo,jugador,notas,...(observacion?{observacion}:{})});
+      if(!esProfePorEquipo()||almacen.getItem('muni360_modo_demo')==='1')almacen.setItem('muni360_cache_'+areaActiva,JSON.stringify(datosDeporte));
+      renderVistaActiva();
+      const pl=evaluadosPermitidos(),idx=pl.indexOf(jugador),sig=[...pl.slice(idx+1),...pl.slice(0,idx)].find(j=>!evalDeJugador(j,fecha));
       if (sig) abrirPanelEval(sig); else {jugadorActivo=null;$('panel-gestos').classList.add('hidden');}
     });
 
@@ -3267,6 +3332,7 @@
 
     function renderAnalisis() {
       const lista = plantelActualNombres();
+      $('card-matriz-individual').classList.toggle('hidden',esProfePorEquipo());
       const setClavesLista = new Set(lista.map(j => claveNombreDni(j)));
       const cat = $('sel-categoria').value;
       const eq  = $('sel-equipo').value || 'General';
@@ -3736,7 +3802,7 @@
       actualizarBarraContexto();
       if ($('comparacion-temporada')) $('comparacion-temporada').textContent='';
       renderAsistencia();
-      if(jugadorActivo&&(!plantelActualNombres().includes(jugadorActivo)||window._evalContext!==JSON.stringify([storageScope,areaActiva,$('sel-categoria').value,$('sel-equipo').value,$('input-fecha').value]))){jugadorActivo=null;$('panel-gestos').classList.add('hidden');}
+      if(jugadorActivo&&(!evaluadosPermitidos().includes(jugadorActivo)||window._evalContext!==JSON.stringify([storageScope,areaActiva,$('sel-categoria').value,$('sel-equipo').value,$('input-fecha').value]))){jugadorActivo=null;$('panel-gestos').classList.add('hidden');}
       renderEvaluacion();
       renderAnalisis();
       renderPadron();
@@ -3804,10 +3870,11 @@
     $('sel-deporte').addEventListener('change',()=>registrarRutaMuni('push'));
 
     function cambiarTab(id, modoHistorial='push') {
+      if(esProfePorEquipo()&&!pestanasProfe.includes(id))return;
       if(['auditoria','inteligencia','encuestas'].includes(id)&&!puedeVerCambios())return;
       if (id === 'padron' && !esCoordOAdmin()) return;
-      if(!['inicio','equipos','comparar','seguimiento','agenda','avisos','asistencia','evaluacion','ugi','analisis','padron','auditoria','inteligencia','encuestas'].includes(id))return;
-      if(['comparar','evaluacion','seguimiento','analisis'].includes(id)&&(esperaEquipo||!$('sel-categoria').value)){
+      if(!['inicio','equipos','seguimiento','agenda','avisos','asistencia','evaluacion','ugi','analisis','padron','auditoria','inteligencia','encuestas'].includes(id))return;
+      if(['evaluacion','seguimiento','analisis'].includes(id)&&(esperaEquipo||!$('sel-categoria').value)){
         const cats=categoriasDep();
         if(cats.length){
           const ultCat=almacen.getItem('muni360_ult_cat_'+areaActiva)||'';
@@ -3819,7 +3886,7 @@
       }
       tabActual = id;
       window.scrollTo?.({top:0,behavior:'auto'});
-      ['inicio','equipos','comparar','seguimiento','agenda','avisos','asistencia', 'evaluacion', 'ugi', 'analisis', 'padron', 'auditoria', 'inteligencia', 'encuestas'].forEach(t => {
+      ['inicio','equipos','seguimiento','agenda','avisos','asistencia', 'evaluacion', 'ugi', 'analisis', 'padron', 'auditoria', 'inteligencia', 'encuestas'].forEach(t => {
         $('tab-' + t).classList.toggle('hidden', t !== id);
       });
       document.querySelectorAll('#nav-tabs .tab').forEach(b => {
@@ -3829,7 +3896,7 @@
       actualizarBarraContexto();
       document.body?.classList.remove('portal-menu-open');
       $('portal-menu').setAttribute('aria-expanded','false');
-      if(['inicio','equipos','comparar','seguimiento','agenda','avisos'].includes(id))renderPortal();
+      if(['inicio','equipos','seguimiento','agenda','avisos'].includes(id))renderPortal();
       document.querySelectorAll('[data-portal-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.portalTab===id);if(b.closest?.('#portal-mobile-nav'))b.setAttribute('aria-current',b.dataset.portalTab===id?'page':'false');});
       if(id==='avisos')cargarAvisosPortal();
       window.MuniPortal?.hydrate?.();
@@ -4274,36 +4341,65 @@
       const asistencia=nombres.filter(j=>['P','A','T'].includes(asistTempDep[j])).length;
       const semaforo=nombres.filter(j=>['V','A','R'].includes(semTempDep[j])).length;
       const completa=!!nombres.length&&asistencia===nombres.length&&semaforo===nombres.length&&!!Muni360Time.dateIso($('input-fecha').value);
-      $('portal-completion').textContent='Asistencia '+asistencia+'/'+nombres.length+' · Semáforo '+semaforo+'/'+nombres.length+' · '+(2*nombres.length-asistencia-semaforo)+' marcas pendientes';
+      $('portal-completion').textContent='Asistencia '+asistencia+'/'+nombres.length+' · Semáforo '+semaforo+'/'+nombres.length;
       $('btn-guardar-asist').disabled=!nombres.length||esSoloConsulta()||guardandoOperacion;
       return {completa,asistencia,semaforo};
     }
-    let comparacionPortal={context:'',players:[],days:30,showAvg:true};
-    let periodoPortal=30,avisosPortal={items:[],loaded:false,loading:false,error:''},avisosGeneration=0;
+    let avisosPortal={items:[],loaded:false,loading:false,error:''},avisosGeneration=0;
     function renderPortal(){
       if(!window.MuniPortal)return;
-      const views=window.MuniPortal.views(datosDeporte,$('input-fecha').value,areaActiva,sesion,{days:periodoPortal,cat:$('sel-categoria').value,eq:$('sel-equipo').value||'General',label:nombreBaseDua,dua:obtenerFichaDua});
-      for(const id of ['inicio','equipos','seguimiento','avisos'])$('tab-'+id).innerHTML=views[id];
-      renderComparacionPortal();
+      const views=window.MuniPortal.views(datosDeporte,$('input-fecha').value,areaActiva,sesion,{compact:true});
+      for(const id of ['inicio','seguimiento'])$('tab-'+id).innerHTML=views[id];
+      $('equipos-contenido').innerHTML=esProfePorEquipo()?equiposProfe():views.equipos;
+      montarAsignaciones();
       $('tab-agenda').innerHTML=window.MuniPortal.agenda(window.MuniCommunityCatalog?.horarios||[],areaActiva);
       renderAvisosPortal();
       window.MuniPortal.hydrate?.();
     }
-    function renderComparacionPortal(){
-      if(!window.MuniPortal)return;
-      const cat=$('sel-categoria').value,eq=$('sel-equipo').value||'General';
-      const context=JSON.stringify([storageScope,areaActiva,cat,eq]);
-      if(comparacionPortal.context!==context)comparacionPortal={context,players:[],days:30,showAvg:true};
-      $('tab-comparar').innerHTML=window.MuniPortal.comparison(datosDeporte,{activity:areaActiva,cat,eq,end:$('input-fecha').value,days:comparacionPortal.days,players:comparacionPortal.players,showAvg:comparacionPortal.showAvg,label:nombreBaseDua});
+    function equiposProfe(){
+      const groups=categoriasDep().flatMap(cat=>equiposDep(cat).map(eq=>({cat,eq})));
+      return '<div class="portal-hero"><h2>Mis equipos</h2></div>'+
+        (groups.length?groups.map(({cat,eq})=>{
+          const data=' data-portal-team="1" data-cat="'+esc(cat)+'" data-eq="'+esc(eq)+'"';
+          const count=datosDeporte.padron.filter(p=>p.categoria===cat&&p.equipo===eq).length;
+          return '<article class="card spread"><div><h3>'+esc(cat+(eq==='General'?'':' · '+eq))+'</h3>'+
+            '<p class="hint">'+count+' deportistas</p></div>'+
+            '<button type="button" class="btn-sec"'+data+'>Abrir lista</button></article>';
+        }).join(''):'<div class="card"><p class="hint">'+
+          (datosDeporte.scopeEquipos?'Todavía no tenés equipos asignados con plantel. Contactá a Coordinación.':'Actualizá la actividad para consultar tus equipos.')+'</p></div>');
     }
-    $('app-screen').addEventListener('change',e=>{
-      if(e.target.matches('[data-portal-period]')){periodoPortal=Number(e.target.value);renderPortal();return;}
-      if(!e.target.matches('[data-compare-control]'))return;
-      comparacionPortal.players=[$('portal-player-0').value,$('portal-player-1').value];
-      comparacionPortal.days=Number($('portal-compare-days').value);
-      comparacionPortal.showAvg=$('portal-compare-avg')?.checked!==false;
-      renderComparacionPortal();
-    });
+    function montarAsignacionesDelEquipo(){
+      const target=$('asignaciones-del-equipo');
+      const categoria=$('sel-categoria').value, equipo=$('sel-equipo').value;
+      const allowed=(sesion?.canManageUsers||sesion?.rol==='Coordinación') &&
+        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1' &&
+        categoria && equipo && equiposDep(categoria).includes(equipo);
+      const context=allowed?JSON.stringify([sesion.usuario,areaActiva,categoria,equipo]):'';
+      if((target.dataset?.context||'')===context)return;
+      target.dataset.context=context;
+      target.replaceChildren();
+      if(!allowed)return;
+      target.innerHTML='<details style="margin-top:1rem"><summary class="btn-sec">Asignar profesor o profesores</summary>'+
+        '<p class="hint" role="status"></p><form><fieldset></fieldset>'+
+        '<button type="submit" class="btn" disabled>Guardar profesores</button></form></details>';
+      window.MuniTeamAccess?.mountTeam(target.firstElementChild,areaActiva,{categoria,equipo},
+        (path,body)=>MuniGoogle.call(path,body));
+    }
+    function montarAsignaciones(){
+      const target=$('equipos-asignaciones');
+      const allowed=sesion?.canManageUsers &&
+        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1';
+      const context=allowed?JSON.stringify([sesion.usuario,areaActiva]):'';
+      if(target.dataset.context===context)return;
+      target.replaceChildren();
+      target.dataset.context='';
+      if(!allowed||tabActual!=='equipos')return;
+      target.dataset.context=context;
+      target.innerHTML='<div class="card"><div class="spread"><h3>Asignar equipos</h3>'+
+        '<button type="button" class="btn-sec" data-team-access-refresh>Actualizar</button></div>'+
+        '<p class="hint" role="status"></p><div data-team-access-fields></div></div>';
+      window.MuniTeamAccess?.mount(target.firstElementChild,areaActiva,(path,body)=>MuniGoogle.call(path,body));
+    }
     $('portal-backdrop').addEventListener('click',()=>{document.body.classList.remove('portal-menu-open');$('portal-menu').setAttribute('aria-expanded','false');});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.body?.classList.remove('portal-menu-open');$('portal-menu').setAttribute('aria-expanded','false');}});
     $('portal-mobile-nav').addEventListener('click',e=>{const b=e.target.closest('[data-portal-tab]');if(b)cambiarTab(b.dataset.portalTab);});
@@ -4312,10 +4408,7 @@
       $('portal-menu').setAttribute('aria-expanded',String(open));
     });
     $('app-screen').addEventListener('click',e=>{
-      if(e.target.closest('[data-compare-swap]')){comparacionPortal.players=[$('portal-player-1').value,$('portal-player-0').value];renderComparacionPortal();return;}
       if(e.target.closest('[data-feed-refresh]')){cargarAvisosPortal(true);return;}
-      const player=e.target.closest('[data-portal-player]');
-      if(player){if(draftContext)return toast('Guardá o descartá la lista en edición antes de abrir otro grupo.');abrirGrupoPortal(player.dataset.cat,player.dataset.eq);if(player.dataset.action==='compare'){const otro=plantelActualNombres().find(j=>j!==player.dataset.portalPlayer)||'';comparacionPortal.players=[player.dataset.portalPlayer,otro];cambiarTab('comparar');}else{cambiarTab('evaluacion');abrirPanelEval(player.dataset.portalPlayer);}return;}
       const dua=e.target.closest('[data-portal-dua]');
       if(dua){if(draftContext)return toast('Guardá o descartá la lista en edición antes de cambiar de grupo.');abrirGrupoPortal(dua.dataset.cat,dua.dataset.eq);window.verPasaporteDUA(dua.dataset.portalDua);return;}
       const action=e.target.closest('[data-portal-tab]');
@@ -4323,7 +4416,7 @@
       const team=e.target.closest('[data-portal-team]');
       if(!team)return;
       if(draftContext)return toast('Guardá o descartá la asistencia en edición antes de cambiar de equipo.');
-      abrirGrupoPortal(team.dataset.cat,team.dataset.eq);cambiarTab('asistencia');
+      if(abrirGrupoPortal(team.dataset.cat,team.dataset.eq))cambiarTab(team.dataset.destino||'asistencia');
     });
     function abrirGrupoPortal(cat,eq){
       if(!categoriasDep().includes(cat)||!equiposDep(cat).includes(eq))return false;

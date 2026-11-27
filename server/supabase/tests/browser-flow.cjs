@@ -104,6 +104,11 @@ async function until(check){const end=Date.now()+12000;while(Date.now()<end){if(
   await page.goto('http://127.0.0.1:'+port+'/muni360/deportes/?qa=owner');
   await elegirGrupoDeportes(page,'muni360/deportes');
   assert.equal(await page.locator('#link-admin-ugi').isVisible(),true);
+  const teamAssignments=page.locator('#asignaciones-del-equipo');
+  await teamAssignments.getByText('Asignar profesor o profesores',{exact:true}).click();
+  await teamAssignments.getByRole('checkbox',{name:/teacher/}).waitFor({state:'visible'});
+  assert.equal(await teamAssignments.getByRole('checkbox',{name:/teacher/}).isChecked(),true);
+  await page.goto('http://127.0.0.1:'+port+'/muni360/colonia/?qa=owner');
   await page.locator('#daily-presence-panel').waitFor({state:'visible'});
   assert.equal(await page.locator('#daily-presence-panel').getAttribute('open'),null);
   await page.locator('#daily-presence-panel summary').click();
