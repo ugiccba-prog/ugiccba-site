@@ -348,3 +348,11 @@ El archivo `server/supabase/tools/SheetsInstitucional.gs` organiza en `estilosYO
 
 - **Migración aplicada (`kaalffshnrkxviqaymhv`):** `server/supabase/sql/020_team_access_colonia_coyfd.sql` (`muni360_team_access_colonia_coyfd`), que actualiza `public.mc_team_access` para habilitar la asignación y el filtrado por grupo en **Colonia** y **COYFD**.
 - **Edge Function `muni360` (versión 24, `verify_jwt: false`):** redesplegada con `server/supabase/functions/muni360/core.mjs` y `server/supabase/functions/muni360/policy.mjs` actualizados para aceptar `/api/team-access/*` y restringir alcance de **Profe** por equipo/grupo también en **Colonia** y **COYFD**.
+
+---
+
+## Actualización del 27/11/2026 · Versión 25 (revisión integral)
+
+- **Edge Function `muni360` (versión 25, `verify_jwt: false`):** cambia sólo `index.ts`. Los errores internos de Postgres/PostgREST ya no llegan al navegador (se mantienen los mensajes de negocio y los `RAISE` simples, P0001) y el registro `MUNI_REQUEST_FAILED` incluye `dbCode`. Los avisos push de Comunidad reutilizan el token de FCM y se envían en lotes de 10.
+- **Método:** primero se desplegó una copia en `muni360-verificacion` (con JWT obligatorio) y se comparó con el repositorio; luego se desplegó `muni360` y se volvió a comparar: 11 de 11 archivos idénticos. `muni360-verificacion` quedó como stub que responde 410 y puede borrarse desde el panel.
+- **Sin migraciones SQL nuevas.** Volver a la v24 es redesplegar los mismos archivos del commit `4ba6d96`.
