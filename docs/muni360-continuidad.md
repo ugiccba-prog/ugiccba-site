@@ -4,7 +4,9 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 
 ## Estado publicado al 27/11/2026
 
-- GitHub Pages sirve [Muni360](https://ugiccba.com.ar/muni360/) desde `main`. La última revisión funcional verificada es [59ae7979](https://github.com/ugiccba-prog/ugiccba-site/commit/59ae797941ee4f820a5829373ab55e30e987e5ee).
+- GitHub Pages sirve [Muni360](https://ugiccba.com.ar/muni360/) desde `main`.
+- **Acceso único unificado (`entrada.html`):** `/muni360/` unifica el ingreso de **Deportes, Colonia y COYFD** en una sola pantalla institucional con Google, sin tarjetas separadas ni opción de demo. Si la cuenta ya está logueada y autorizada en `/api/me`, redirige automáticamente al portal habilitado; si está pendiente o sin áreas, muestra el estado junto con **Revisar acceso** y **Cambiar cuenta**.
+- **Navegación simplificada y lenguaje cercano (`cb8d5b8` + actualización del 27/11):** se retiró el bloque de demo de los ingresos internos, se acortaron las etiquetas del menú (`Equipos`/`Grupos`, `Lista`, `Evaluar`, `Banco`, `Agenda`, `Avisos`, `Análisis`, `Cambios`), la barra móvil de **Profe** quedó en 4 accesos (`Equipos`, `Lista`, `Evaluar`, `Banco`), se reemplazó **DUA** por **Seguimiento personalizado** en las vistas visibles y se agruparon **Equipo/Grupo**, **Alertas e IA** y **Cuestionarios** bajo un único acceso **Análisis** para Coordinación y Dirección.
 - Deportes muestra una acción **Abrir lista** por equipo. Desde el plantel, Coordinación puede elegir profesores habilitados en su deporte. Cada profe ve sus equipos asignados. Se retiró **Comparar jugadores** de Deportes y se corrigió el acceso **Equipos** en la barra móvil.
 - Supabase tiene aplicada la migración `20261127032420 muni360_team_access`. Firebase Authentication sigue gestionando el ingreso por Google.
 - El [PR #3](https://github.com/ugiccba-prog/ugiccba-site/pull/3) fue integrado en `ec9c2772`. Al cierre de la revisión no había PR abiertos.

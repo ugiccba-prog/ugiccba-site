@@ -4,7 +4,7 @@ const data={padron:[{id:'1',jugador:'Ana',categoria:'Sub 16',equipo:'A'},{id:'2'
 test('períodos y grupo modifican datos; seguimiento usa sólo apoyos visibles',()=>{
  assert.equal(ui.summarize(data,'2026-11-17',30).total,1);assert.equal(ui.summarize(data,'2026-11-17',90).total,2);
  const v=ui.views(data,'2026-11-17','Hockey',{rol:'Profe'},{cat:'Sub 16',eq:'A',days:30});
- assert.ok(v.inicio.includes('Hola, Profe'));assert.ok(!v.seguimiento.includes('PRIVADO'));assert.ok(v.seguimiento.includes('Ver apoyo DUA'));assert.ok(!v.seguimiento.includes('Otra'));
+ assert.ok(v.inicio.includes('Hola, Profe'));assert.ok(!v.seguimiento.includes('PRIVADO'));assert.ok(v.seguimiento.includes('Ver seguimiento'));assert.ok(!v.seguimiento.includes('Otra'));
 });
 test('comparación muestra dimensiones reales, radar opcional y evolución filtrada',()=>{
  const opts={cat:'Sub 16',eq:'A',end:'2026-11-17',days:30,players:['Ana','Belén']};
