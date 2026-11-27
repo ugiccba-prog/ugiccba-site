@@ -972,6 +972,7 @@
 
         <p id="portal-completion" class="portal-completion" role="status" aria-live="polite"></p>
         <div id="lista-asist"></div>
+        <div id="asignaciones-del-equipo"></div>
 
         <details class="resumen-jornada"><summary>Resumen de la clase</summary>
 <div class="kpis" id="kpis-asist-dia">
@@ -2760,6 +2761,7 @@
     // 6. PESTAÑA 1: ASISTENCIA + COMIDA (COLONIA) + SEMÁFORO UGI + BOTÓN DUA
     // =========================================================================
     function renderAsistencia() {
+      montarAsignacionesDelEquipo();
       const cfg = cfgActual();
       const searchContext = JSON.stringify([storageScope,areaActiva,$('sel-categoria').value,$('sel-equipo').value]);
       if(window._asistSearchContext!==searchContext){$('buscar-alumno-asist').value='';window._asistSearchContext=searchContext;}
@@ -4371,9 +4373,26 @@
         }).join(''):'<div class="card"><p class="hint">'+
           (datosDeporte.scopeEquipos?'Todavía no tenés equipos asignados con plantel. Contactá a Coordinación.':'Actualizá la actividad para consultar tus equipos.')+'</p></div>');
     }
+    function montarAsignacionesDelEquipo(){
+      const target=$('asignaciones-del-equipo');
+      const categoria=$('sel-categoria').value, equipo=$('sel-equipo').value;
+      const allowed=(sesion?.canManageUsers||sesion?.rol==='Coordinación') &&
+        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1' &&
+        categoria && equipo && equiposDep(categoria).includes(equipo);
+      const context=allowed?JSON.stringify([sesion.usuario,areaActiva,categoria,equipo]):'';
+      if((target.dataset?.context||'')===context)return;
+      target.dataset.context=context;
+      target.replaceChildren();
+      if(!allowed)return;
+      target.innerHTML='<details style="margin-top:1rem"><summary class="btn-sec">Asignar profesor o profesores</summary>'+
+        '<p class="hint" role="status"></p><form><fieldset></fieldset>'+
+        '<button type="submit" class="btn" disabled>Guardar profesores</button></form></details>';
+      window.MuniTeamAccess?.mountTeam(target.firstElementChild,areaActiva,{categoria,equipo},
+        (path,body)=>MuniGoogle.call(path,body));
+    }
     function montarAsignaciones(){
       const target=$('equipos-asignaciones');
-      const allowed=(sesion?.canManageUsers||sesion?.rol==='Coordinación') &&
+      const allowed=sesion?.canManageUsers &&
         !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1';
       const context=allowed?JSON.stringify([sesion.usuario,areaActiva]):'';
       if(target.dataset.context===context)return;

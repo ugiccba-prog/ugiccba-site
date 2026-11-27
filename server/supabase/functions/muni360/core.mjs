@@ -63,13 +63,13 @@ export function createHandler({rpc,verify,now=()=>Date.now(),notify,aiGenerate})
   }
   if(input.path==='/api/me')return {ok:true,profile:{uid:identity.uid,nombre:user.nombre,email:user.email,status:actor?'activo':accessStatus,expiresAt:user.expiresAt||null,rol:user.rol,areas:actor?.areas||[],capabilities:actor?.capabilities||{},version:user.version,canManageUsers:identity.uid===owner},catalog:{areas,roles:ROLES,capabilities:CAPS}};
   if(input.path.startsWith('/api/team-access/')){
-   const action={'/api/team-access/list':'list','/api/team-access/save':'save','/api/team-access/player':'player'}[input.path];
+   const action={'/api/team-access/list':'list','/api/team-access/save':'save','/api/team-access/save-team':'saveTeam','/api/team-access/player':'player'}[input.path];
    if(!action)throw new AccessError('RUTA','Ruta inexistente.',404);
    if(actor.id!==owner && actor.rol!=='Coordinación')throw new AccessError('PERMISOS','Sólo Dirección y Coordinación pueden asignar equipos.');
    if(!actor.areas.includes(d.deporte)||['Colonia','COYFD'].includes(d.deporte))throw new AccessError('PERMISOS','Actividad fuera de tu alcance.');
    if(action==='player'&&actor.id!==owner)throw new AccessError('PERMISOS','Sólo Dirección puede vincular al deportista.');
    const result=await rpc('mc_team_access',{p_action:action,p:{
-    actorUid:actor.id,activity:d.deporte,targetUid,revision:d.revision,teams:d.teams,playerId:d.playerId
+    actorUid:actor.id,activity:d.deporte,targetUid,revision:d.revision,teams:d.teams,playerId:d.playerId,team:d.team,changes:d.changes
    }});
    return {ok:true,...result};
   }

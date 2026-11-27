@@ -99,5 +99,11 @@ await test('team assignment grants only authorized groups and keeps the coach’
  const revoked=await load();
  assert.deepEqual(revoked.padron,[]);
  assert.deepEqual(revoked.evaluaciones,[]);
+ const bulk={deporte:sport,team:group,changes:[{uid:'teacher',revision:3,assigned:true}]};
+ await assert.rejects(()=>call('coord',{...bulk,changes:[...bulk.changes,{uid:'zzz',revision:0,assigned:true}]},
+  '/api/team-access/save-team'),e=>e.code==='PERMISOS');
+ assert.deepEqual((await load()).padron,[]);
+ await call('coord',bulk,'/api/team-access/save-team');
+ assert.deepEqual((await load()).padron.map(row=>row.equipo),['A','A']);
 });
 await db.close();

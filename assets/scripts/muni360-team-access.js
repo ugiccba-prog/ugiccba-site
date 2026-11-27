@@ -102,5 +102,58 @@
     container.querySelector('[data-team-access-refresh]').addEventListener('click',()=>refresh());
     refresh();
   }
-  root.MuniTeamAccess={mount};
+  function mountTeam(container, activity, team, call) {
+    const status=container.querySelector('[role="status"]');
+    const form=container.querySelector('form');
+    const fields=form.querySelector('fieldset');
+    const submit=form.querySelector('button');
+    let teachers=[], assigned=new Set();
+
+    async function load(message='') {
+      submit.disabled=true;
+      status.textContent='Cargando profesores…';
+      try {
+        const catalog=await call('/api/team-access/list',{deporte:activity});
+        if(!container.isConnected)return;
+        if(!catalog.teams.some(row=>key(row)===key(team))) {
+          status.textContent='Este equipo ya no figura en el padrón.';
+          return;
+        }
+        teachers=catalog.teachers;
+        assigned=new Set(teachers.filter(row=>row.teams.some(group=>key(group)===key(team))).map(row=>row.uid));
+        fields.innerHTML='<legend>Profesores de '+esc(title(team))+'</legend>'+teachers.map(row=>
+          '<label class="btn-sec" style="display:block;margin:.35rem 0"><input type="checkbox" name="teacher" value="'+
+          esc(row.uid)+'"'+(assigned.has(row.uid)?' checked':'')+'> '+esc(row.nombre||row.email)+' · '+esc(row.email)+'</label>'
+        ).join('');
+        status.textContent=message||(!teachers.length?'No hay profesores con acceso aprobado a esta actividad.':'');
+        submit.disabled=!teachers.length;
+      }catch(error){if(container.isConnected)status.textContent=error.message;}
+    }
+
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(submit.disabled)return;
+      const selected=new Set(new FormData(form).getAll('teacher'));
+      const changes=teachers.filter(row=>selected.has(row.uid)!==assigned.has(row.uid)).map(row=>({
+        uid:row.uid,revision:row.revision,assigned:selected.has(row.uid)
+      }));
+      if(!changes.length){status.textContent='La selección ya está guardada.';return;}
+      submit.disabled=true;
+      fields.disabled=true;
+      status.textContent='Guardando profesores…';
+      try {
+        await call('/api/team-access/save-team',{deporte:activity,team,changes});
+        if(container.isConnected)await load('Profesores guardados.');
+      } catch(error) {
+        if(!container.isConnected)return;
+        if(error.code==='CONFLICTO')await load('Las asignaciones cambiaron. Revisá la lista y volvé a guardar.');
+        else {status.textContent=error.message;submit.disabled=false;}
+      } finally {fields.disabled=false;}
+    });
+    container.addEventListener('toggle',()=>{
+      if(container.open&&!fields.innerHTML)load();
+    });
+  }
+
+  root.MuniTeamAccess={mount,mountTeam};
 })(window);

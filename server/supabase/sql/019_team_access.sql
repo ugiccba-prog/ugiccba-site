@@ -19,6 +19,10 @@ declare
  sport text:=p->>'activity';
  requested jsonb:=p->'teams';
  player_id jsonb:=p->'playerId';
+ group_choice jsonb:=p->'team';
+ changes jsonb:=p->'changes';
+ change jsonb;
+ next_teams jsonb;
 begin
  select * into strict config from mc_private.settings where id;
  select record into caller from mc_private.users where uid=actor_uid for share;
@@ -63,6 +67,33 @@ begin
  if config.mode<>'ready' then
   raise exception using errcode='PT409',message='Muni360 está en mantenimiento.';
  end if;
+ if p_action='saveTeam' then
+  if jsonb_typeof(changes) is distinct from 'array' or
+    not exists(select 1 from jsonb_array_elements(groups) entry where entry=group_choice) then
+   raise exception using errcode='22023',message='Revisá el equipo y los profesores.';
+  end if;
+  if jsonb_array_length(changes)>200 then
+   raise exception using errcode='22023',message='Demasiados profesores para una sola asignación.';
+  end if;
+  -- All changes share the same SQL transaction. A conflict rolls back the whole selection.
+  for change in select value from jsonb_array_elements(changes) order by value->>'uid' loop
+   if jsonb_typeof(change->'assigned') is distinct from 'boolean' then
+    raise exception using errcode='22023',message='Asignación inválida.';
+   end if;
+   target_uid:=change->>'uid';
+   select record into teacher from mc_private.users where uid=target_uid for update;
+   select coalesce(jsonb_agg(entry),'[]'::jsonb) into next_teams
+     from jsonb_array_elements(coalesce(teacher->'teams'->sport,'[]'::jsonb)) entry
+     where entry<>group_choice;
+   if (change->>'assigned')::boolean then
+    next_teams:=next_teams||jsonb_build_array(group_choice);
+   end if;
+   perform public.mc_team_access('save',jsonb_build_object(
+    'actorUid',actor_uid,'activity',sport,'targetUid',target_uid,
+    'revision',change->'revision','teams',next_teams));
+  end loop;
+  return jsonb_build_object('updated',jsonb_array_length(changes));
+ end if;
  if p_action is null or p_action not in ('save','player') or (p_action='player' and not is_owner) then
   raise exception using errcode='42501',message='Acción de asignación no autorizada.';
  end if;
@@ -82,6 +113,7 @@ begin
   if jsonb_array_length(requested)>500 or exists (
    select 1 from jsonb_array_elements(requested) choice
    where not exists (select 1 from jsonb_array_elements(groups) available where available=choice)
+     and not exists (select 1 from jsonb_array_elements(coalesce(teacher->'teams'->sport,'[]'::jsonb)) previous where previous=choice)
   ) then
    raise exception using errcode='22023',message='Elegí los equipos del padrón.';
   end if;
