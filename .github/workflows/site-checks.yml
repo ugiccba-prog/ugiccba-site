@@ -1,0 +1,22 @@
+name: Site checks
+on:
+  push:
+    paths: ['**/*.html', '**/*.css', 'assets/scripts/**', 'apps/training/**', 'tests/gimnasio-mental.test.cjs', 'package.json', 'package-lock.json', '.stylelintrc.json', '.stylelintignore', '.jshintrc', '.github/workflows/site-checks.yml']
+  pull_request:
+    paths: ['**/*.html', '**/*.css', 'assets/scripts/**', 'apps/training/**', 'tests/gimnasio-mental.test.cjs', 'package.json', 'package-lock.json', '.stylelintrc.json', '.stylelintignore', '.jshintrc']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint:js
+      - run: npm run lint:css
+      - run: npm run test:mental

@@ -51,7 +51,7 @@ En cada cambio de Muni360, actualizar el [Registro de cambios de Muni360 de UGI 
 ## Código y operación actuales
 
 - Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · competencia privada: `/muni360/competencia/` · avisos: `/comunidad/`.
-- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`.
+- Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`.
 - `muni360/` es generado (**37 archivos públicos**, 36 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
 - Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
