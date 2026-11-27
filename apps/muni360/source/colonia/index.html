@@ -3799,10 +3799,19 @@
     // =========================================================================
     // 12. MODO DEMO / PRESENTACIÓN PARA VIDEOS Y REUNIONES
     // =========================================================================
-    window.cargarDemoVideoUGI = function(pedida) {
+    // Sólo se guarda la huella SHA-256 de la clave de demo: el modo demo usa datos
+    // sintéticos en el navegador y no da acceso a la base real.
+    const DEMO_CLAVE_SHA256 = "dc35033e2b99db8d3d35723b313c574b5931c096c47723da52eee25149530060";
+    async function claveDemoValida(texto) {
+      try {
+        const huella = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto.trim()));
+        return Array.from(new Uint8Array(huella), b => b.toString(16).padStart(2, "0")).join("") === DEMO_CLAVE_SHA256;
+      } catch (_) { return false; }
+    }
+    window.cargarDemoVideoUGI = async function(pedida) {
       if(typeof pedida!=="string"){ $("demo-error").textContent=""; $("demo-access").showModal(); $("demo-password").focus(); return; }
       if (pedida === null) return;
-      if (pedida.trim() !== "360,demo") {
+      if (!(await claveDemoValida(pedida))) {
         $('login-error').textContent = "Contraseña de demo incorrecta.";
         $("demo-error").textContent="Contraseña de demo incorrecta.";
         toast("Contraseña de demo incorrecta.");

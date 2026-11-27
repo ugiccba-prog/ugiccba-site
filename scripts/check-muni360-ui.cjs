@@ -41,7 +41,7 @@ const server=http.createServer((req,res)=>{
     }
     assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),false,'professor audit tab hidden');
     assert.equal(await page.locator('#tab-btn-padron').isVisible(),false,'professor padron tab hidden');
-    assert.equal(await page.locator('#nav-tabs .tab:visible').count(),10);
+    assert.equal(await page.locator('#nav-tabs .tab:visible').count(),portal==='muni360/deportes'?5:10,'menú compacto de Deportes para Profe');
     if(width<1050)await page.locator('#portal-backdrop').click({position:{x:width-10,y:10}});
     await page.evaluate(()=>cambiarTab('auditoria'));assert.equal(await page.locator('#tab-auditoria').isVisible(),false);
    }else if(profile==='direccion'&&width>=1050)assert.equal(await page.locator('#tab-btn-auditoria').isVisible(),true,'management retains changes');
