@@ -2513,9 +2513,10 @@
       let cached=null;if(!scopedCoach){try{cached=JSON.parse(almacen.getItem('muni360_cache_'+d)||'null');}catch(_){}}
       // Sports coaches reauthorize whenever their team data is loaded.
       const previous=scopedCoach?null:client?.snapshots?.[d]||cached;
+      const sameAuthorizedView=scopedCoach&&client?.snapshots?.[d]===datosDeporte&&datosDeporte.scopeEquipos;
       if(previous&&Array.isArray(previous.padron)&&Array.isArray(previous.asistencia)&&Array.isArray(previous.evaluaciones)){
         datosDeporte=previous;renderFiltrosDeporte();renderVistaActiva();
-      }else{
+      }else if(!sameAuthorizedView){
         datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};renderFiltrosDeporte();renderVistaActiva();
       }
       if(!scopedCoach&&client?.queue.some(x=>x.payload.deporte===d)){client.status('Enviá o revisá los pendientes antes de actualizar.');return;}
@@ -2546,7 +2547,16 @@
         cargarCuestionariosAnalisis(true);
         window.MuniSurveys?.refreshGroups?.(d);
         if(client.queue.length)client.status('Datos de '+d+' actualizados. Podés trabajar en esta actividad; revisá los pendientes indicados.');
-      } catch(e) { if(client===syncClient&&uid===sesion?.usuario&&d===areaActiva&&secuencia===secuenciaCargaArea)$('estado-txt').textContent='No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message; }
+      } catch(e) {
+        if(client!==syncClient||uid!==sesion?.usuario||d!==areaActiva||secuencia!==secuenciaCargaArea)return;
+        const denied=scopedCoach&&['PERMISOS','PENDIENTE','VENCIDO','SESION'].includes(e.code);
+        if(denied){
+          delete client.snapshots[d];
+          datosDeporte={padron:[],asistencia:[],evaluaciones:[],gestos:null,fichas:{}};
+          renderFiltrosDeporte();renderVistaActiva();
+        }
+        $('estado-txt').textContent=denied?e.message:'No se pudo actualizar. Se conservan los últimos datos confirmados. '+e.message;
+      }
     }
 
     function categoriasDep() {
