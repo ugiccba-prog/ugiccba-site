@@ -28,13 +28,13 @@ Consultar `docs/muni360-continuidad.md` antes de retomar. Revisar cambios locale
 
 ## Sesiones y cargas pendientes
 
-El acceso anterior de Firebase permanece publicado. No redirigirlo automáticamente ni borrar su almacenamiento. Una carga que diga “Guardado en la base” está en Supabase y se ve desde cualquiera de las dos direcciones. Una carga local pendiente debe enviarse desde el dispositivo, navegador y dominio donde fue creada. Ingresar allí con la misma cuenta y conexión antes de cambiar. No copiar tokens o cargas pendientes entre dominios automáticamente.
+Desde el 27/11/2026, la antigua copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia redirigen al portal oficial. Firebase Authentication conserva sus rutas reservadas para el ingreso con Google. Las cargas confirmadas siguen en Supabase. Las cargas locales pendientes están ligadas al navegador y al dominio donde se crearon. No se trasladan automáticamente.
 
 El usuario debe iniciar sesión una vez en el dominio nuevo; luego rige “Mantener sesión iniciada”. La persistencia depende del mismo navegador y de que no borre sus datos. Revocar permisos sigue bloqueando nuevas operaciones en el servidor. No se modifican datos, usuarios o permisos por cambiar la dirección.
 
 ## Recuperación
 
-Un fallo de publicación se corrige revirtiendo el commit de interfaz o volviendo al acceso Firebase. No reabrir el backend Apps Script antiguo ni restaurar la base anterior: los guardados actuales continúan en Supabase. Conservar respaldos privados y reconciliar cualquier cambio antes de una restauración de datos.
+Un fallo de publicación se corrige revirtiendo el commit de interfaz en `main` y verificando el nuevo despliegue. No reabrir el backend Apps Script antiguo ni restaurar la base anterior: los guardados actuales continúan en Supabase. Conservar respaldos privados y reconciliar cualquier cambio antes de una restauración de datos.
 
 ## Publicacion verificada el 12/11/2026
 
