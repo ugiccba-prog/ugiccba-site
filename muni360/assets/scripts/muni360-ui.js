@@ -43,11 +43,11 @@
     const result = compact?{
       inicio:base.views(data,date,activity,session,{compact:true}).inicio,
       equipos:heading('Equipos',activity)+'<div class="card">'+teamTable(all)+'</div>',
-      seguimiento:heading('Seguimiento personalizado',activity)+'<div class="card">'+(following||'<p class="hint">Sin observaciones ni seguimiento personalizado.</p>')+'</div>'
+      seguimiento:heading('Alerta individual',activity)+'<div class="card">'+(following||'<p class="hint">Sin observaciones ni alertas individuales.</p>')+'</div>'
     }:{
-      inicio:heading(session?.rol==='Profe'?'Hola, Profe':'Panel Muni360',subtitle,period(days))+cards(m)+'<div class="portal-grid"><section class="card"><h3>Asistencia</h3>'+chart(m)+'</section><section class="card"><h3>Últimas jornadas</h3>'+sessions+'</section></div><section class="card"><h3>Accesos rápidos</h3><div class="portal-actions">'+action('asistencia','check','Lista')+action('evaluacion','chart','Evaluar')+action('comparar','compare','Comparar')+action('ugi','book','Banco')+'</div></section>',
+      inicio:heading(session?.rol==='Profe'?'Hola, Profe':'Panel Muni360',subtitle,period(days))+cards(m)+'<div class="portal-grid"><section class="card"><h3>Asistencia</h3>'+chart(m)+'</section><section class="card"><h3>Últimas jornadas</h3>'+sessions+'</section></div><section class="card"><h3>Accesos rápidos</h3><div class="portal-actions">'+action('asistencia','check','Lista')+action('evaluacion','chart','Evaluar')+action('comparar','compare','Comparar')+action('ugi','book','Herramientas')+'</div></section>',
       equipos:heading('Equipos y deportistas',subtitle,period(days))+'<div class="card"><h3>Equipos</h3>'+teamTable(all)+'</div>'+rosterHtml,
-      seguimiento:heading('Seguimiento personalizado',subtitle,period(days))+cards(m)+'<div class="card"><h3>Observaciones y apoyos</h3>'+(following||'<p class="portal-note">Sin observaciones ni seguimiento personalizado en este período.</p>')+'</div><div class="portal-actions">'+action('analisis','chart','Ver análisis')+'</div>',
+      seguimiento:heading('Alerta individual',subtitle,period(days))+cards(m)+'<div class="card"><h3>Observaciones y apoyos</h3>'+(following||'<p class="portal-note">Sin observaciones ni alertas individuales en este período.</p>')+'</div><div class="portal-actions">'+action('analisis','chart','Ver análisis')+'</div>',
       avisos:''
     };
     return Object.fromEntries(Object.entries(result).map(([key,html])=>[key,localize(html,activity)]));
