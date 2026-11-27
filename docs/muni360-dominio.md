@@ -28,7 +28,7 @@ Consultar `docs/muni360-continuidad.md` antes de retomar. Revisar cambios locale
 
 ## Sesiones y cargas pendientes
 
-Desde el 27/11/2026, la antigua copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia redirigen al portal oficial. Firebase Authentication conserva sus rutas reservadas para el ingreso con Google. Las cargas confirmadas siguen en Supabase. Las cargas locales pendientes están ligadas al navegador y al dominio donde se crearon. No se trasladan automáticamente.
+Desde el 27/11/2026, los enlaces a la antigua copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia devuelven HTTP 404 sin redirección. Firebase Authentication conserva sus rutas reservadas para el ingreso con Google. Las cargas confirmadas siguen en Supabase. Las cargas locales pendientes están ligadas al navegador y al dominio donde se crearon. No se trasladan automáticamente.
 
 El usuario debe iniciar sesión una vez en el dominio nuevo; luego rige “Mantener sesión iniciada”. La persistencia depende del mismo navegador y de que no borre sus datos. Revocar permisos sigue bloqueando nuevas operaciones en el servidor. No se modifican datos, usuarios o permisos por cambiar la dirección.
 

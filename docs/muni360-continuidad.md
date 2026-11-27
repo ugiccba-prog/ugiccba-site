@@ -9,7 +9,7 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Supabase tiene aplicada la migración `20261127032420 muni360_team_access`. Firebase Authentication sigue gestionando el ingreso por Google.
 - El [PR #3](https://github.com/ugiccba-prog/ugiccba-site/pull/3) fue integrado en `ec9c2772`. Al cierre de la revisión no había PR abiertos.
 - Se retiraron 14 ramas remotas ya integradas. Se conservaron `feature/estadisticas-competencia`, vista previa con trabajo propio, y `style-fix-and-linting-666540683759662844`, propuesta cerrada sin integrar con cambios propios. La base para tareas nuevas es `main`.
-- Se comprobó HTTP 200 en la portada, Deportes, Colonia, COYFD, administración, Competencia, Cuestionarios y Comunidad. La antigua ruta `/ensayo360muni/` devuelve HTTP 404. La copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia devuelven HTTP 301 al portal oficial. Las rutas reservadas de Firebase Authentication siguen disponibles.
+- Se comprobó HTTP 200 en la portada, Deportes, Colonia, COYFD, administración, Competencia, Cuestionarios y Comunidad. La antigua ruta `/ensayo360muni/` devuelve HTTP 404. La copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia devuelven HTTP 404 sin redirección. Las rutas reservadas de Firebase Authentication siguen disponibles.
 
 ## Repositorio y computadoras
 
