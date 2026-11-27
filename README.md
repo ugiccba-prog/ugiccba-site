@@ -25,7 +25,7 @@ Centralizar los recursos pedagógicos, las herramientas de convivencia y el sist
   * `ciudad-integrado.html`: Programa de inclusión, deporte adaptado y pertenencia institucional.
 
 ### 2. Gestión Deportiva: Muni 360
-* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**33 archivos públicos**).
+* **Paquete público vigente en `main`:** `muni360/`, publicado en `https://ugiccba.com.ar/muni360/` (**37 archivos públicos**).
   * `apps/muni360/source/deportes/index.html` → `/muni360/deportes/`: Portal de **Deportes**.
   * `apps/muni360/source/colonia/index.html` → `/muni360/colonia/` y `/muni360/coyfd/`: Accesos y pantallas independientes para **Colonia** y **COYFD** (empaquetados desde una única fuente con alcance `MUNI_BASE_AREA`, [docs/muni360-portales-separados.md](docs/muni360-portales-separados.md)).
   * `apps/muni360/source/admin/index.html` → `/muni360/admin/`: Panel de **Usuarios y permisos** reservado a Dirección UGI.
@@ -88,6 +88,6 @@ El corte a Supabase se mantiene activo y el paquete público `/muni360/` está p
 
 ## Muni360 en el dominio
 
-Ruta oficial publicada en producción: https://ugiccba.com.ar/muni360/. Abrir `UGI.code-workspace` en VS Code. Fuentes, compilación y operación continua: [docs/muni360-dominio.md](docs/muni360-dominio.md).
+Ruta oficial publicada en producción: https://ugiccba.com.ar/muni360/. Ver [estado vigente y continuidad](docs/muni360-continuidad.md). Abrir `UGI.code-workspace` en VS Code. Fuentes, compilación y operación continua: [docs/muni360-dominio.md](docs/muni360-dominio.md).
 
 Documentación del módulo privado Competencia: [integración, pruebas y alcance](docs/muni360-competencia.md).

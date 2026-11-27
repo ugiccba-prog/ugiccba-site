@@ -3,8 +3,11 @@
 Ruta oficial publicada en `main`: https://ugiccba.com.ar/muni360/.
 
 - Deportes: `/muni360/deportes/`
-- Colonia / COYFD: `/muni360/colonia/`
+- Colonia: `/muni360/colonia/`
+- COYFD: `/muni360/coyfd/`
 - Usuarios y permisos: `/muni360/admin/`
+- Competencia privada: `/muni360/competencia/`
+- Cuestionarios: `/muni360/encuesta/`
 - Avisos de cambios de partido y entrenamiento: `/comunidad/`
 
 El paquete `/muni360/` se sirve desde la rama `main` publicada en GitHub Pages, integrado con Firebase Authentication (ingreso con Google) y Supabase (`supabase-1.0.0`) para los datos operativos, planillas espejadas en Google Drive (`docs/muni360-planillas.md`) y avisos de Comunidad. No se modifican DNS ni CNAME.

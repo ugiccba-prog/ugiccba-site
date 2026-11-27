@@ -1,6 +1,15 @@
-# Muni360 · Continuidad vigente al 26/11/2026
+# Muni360 · Continuidad vigente al 27/11/2026
 
 Esta sección es la referencia actual para continuar. Las notas históricas de abajo documentan etapas anteriores y no indican la rama, el backend ni las carpetas que deben usarse hoy.
+
+## Estado publicado al 27/11/2026
+
+- GitHub Pages sirve [Muni360](https://ugiccba.com.ar/muni360/) desde `main`. La última revisión funcional verificada es [59ae7979](https://github.com/ugiccba-prog/ugiccba-site/commit/59ae797941ee4f820a5829373ab55e30e987e5ee).
+- Deportes muestra una acción **Abrir lista** por equipo. Desde el plantel, Coordinación puede elegir profesores habilitados en su deporte. Cada profe ve sus equipos asignados. Se retiró **Comparar jugadores** de Deportes y se corrigió el acceso **Equipos** en la barra móvil.
+- Supabase tiene aplicada la migración `20261127032420 muni360_team_access`. Firebase Authentication sigue gestionando el ingreso por Google.
+- El [PR #3](https://github.com/ugiccba-prog/ugiccba-site/pull/3) fue integrado en `ec9c2772`. Al cierre de la revisión no había PR abiertos.
+- Se retiraron 14 ramas remotas ya integradas. Se conservaron `feature/estadisticas-competencia`, vista previa con trabajo propio, y `style-fix-and-linting-666540683759662844`, propuesta cerrada sin integrar con cambios propios. La base para tareas nuevas es `main`.
+- Se comprobó HTTP 200 en la portada, Deportes, Colonia, COYFD, administración, Competencia, Cuestionarios y Comunidad. La antigua ruta del dominio `/ensayo360muni/` devuelve HTTP 404.
 
 ## Repositorio y computadoras
 
@@ -41,7 +50,7 @@ En cada cambio de Muni360, actualizar el [Registro de cambios de Muni360 de UGI 
 
 - Página oficial: https://ugiccba.com.ar/muni360/ · Deportes: `/muni360/deportes/` · Colonia: `/muni360/colonia/` · COYFD: `/muni360/coyfd/` · administración: `/muni360/admin/` · cuestionarios: `/muni360/encuesta/` · competencia privada: `/muni360/competencia/` · avisos: `/comunidad/`.
 - Fuentes canónicas: `apps/muni360/source/` (`deportes/`, `colonia/`, `admin/`, `encuesta/`, `competencia/`), `apps/muni360/entrada.html`, `assets/scripts/muni360-*.js` y estilos `assets/styles/muni360-cancha.css` / `muni360-portal.css` / `muni360-theme.css`.
-- `muni360/` es generado (**36 archivos públicos**, 35 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
+- `muni360/` es generado (**37 archivos públicos**, 36 en `muni360/manifest.json`, incluyendo `/muni360/competencia/`): construir con `npm run build:muni360-public`; no editar sus archivos como fuente.
 - Los portales usan el acceso vigente de Google/Firebase y el backend Supabase (`kaalffshnrkxviqaymhv`). El mantenimiento institucional de Sheets y respaldos sigue separado en `Projects/Muni360-Privado/apps-script-institucional`.
 - Mantener los estados **P = Presente, A = Ausente, T = Tarde**; no sustituir Tarde por Justificado.
 - Los permisos de cada cuenta vienen del servidor. Las demos usan registros ficticios y no acreditan escrituras productivas.
