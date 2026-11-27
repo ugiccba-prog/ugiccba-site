@@ -12,6 +12,9 @@
   const legendStyle = 'font-size:.84rem;font-weight:700;color:#082b49;padding:0 8px';
 
   function mount(container, activity, call) {
+    const isBase = ['Colonia','COYFD'].includes(activity);
+    const groupWord = isBase ? 'grupos' : 'equipos';
+    const GroupWord = isBase ? 'Grupos' : 'Equipos';
     const status = container.querySelector('[role="status"]');
     const content = container.querySelector('[data-team-access-fields]');
     let catalog, uid = '', sequence = 0;
@@ -32,10 +35,10 @@
       const available = new Set(catalog.teams.map(key));
       const missing = teacher.teams.filter(team => !available.has(key(team))).map(title);
       content.insertAdjacentHTML('beforeend',
-        '<form data-team-access-form="save"><div class="field"><h4>Equipos</h4>'+
-        (groups.join('')||'<p class="hint">Todavía no hay equipos en el padrón.</p>')+'</div>'+
-        (missing.length?'<p class="hint">Equipos sin plantel actual que se quitarán al guardar: '+esc(missing.join(', '))+'.</p>':'')+
-        '<button class="btn" type="submit">Guardar equipos</button></form>');
+        '<form data-team-access-form="save"><div class="field"><h4>'+GroupWord+'</h4>'+
+        (groups.join('')||'<p class="hint">Todavía no hay '+groupWord+' en el padrón.</p>')+'</div>'+
+        (missing.length?'<p class="hint">'+GroupWord+' sin plantel actual que se quitarán al guardar: '+esc(missing.join(', '))+'.</p>':'')+
+        '<button class="btn" type="submit">Guardar '+groupWord+'</button></form>');
     }
 
     async function refresh(message='') {
@@ -79,7 +82,7 @@
         if (action==='save') teacher.teams=body.teams;
         else {teacher.reviewed=true;teacher.playerId=body.playerId;}
         render();
-        status.textContent=action==='save'?'Equipos guardados.':'Verificación guardada.';
+        status.textContent=action==='save'?(GroupWord+' guardados.'):'Verificación guardada.';
       } catch(error) {
         if (!container.isConnected) return;
         if(error.code==='CONFLICTO') await refresh(error.message);
@@ -92,6 +95,7 @@
     refresh();
   }
   function mountTeam(container, activity, team, call) {
+    const isBase = ['Colonia','COYFD'].includes(activity);
     const status=container.querySelector('[role="status"]');
     const form=container.querySelector('form');
     const fields=form.querySelector('fieldset');
@@ -105,7 +109,7 @@
         const catalog=await call('/api/team-access/list',{deporte:activity});
         if(!container.isConnected)return;
         if(!catalog.teams.some(row=>key(row)===key(team))) {
-          status.textContent='Este equipo ya no figura en el padrón.';
+          status.textContent=isBase?'Este grupo ya no figura en el padrón.':'Este equipo ya no figura en el padrón.';
           return;
         }
         teachers=catalog.teachers;

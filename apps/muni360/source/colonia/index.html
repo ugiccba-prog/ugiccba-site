@@ -958,7 +958,7 @@
     <section id="tab-inicio" class="hidden" aria-label="Inicio"></section>
     <section id="tab-inteligencia" class="hidden" aria-label="Inteligencia"></section>
     <section id="tab-encuestas" class="hidden" aria-label="Cuestionarios"></section>
-    <section id="tab-equipos" class="hidden" aria-label="Grupos"></section>
+    <section id="tab-equipos" class="hidden" aria-label="Grupos"><div id="equipos-contenido"></div><div id="equipos-asignaciones"></div></section>
     <section id="tab-comparar" class="hidden" aria-label="Comparar deportistas"></section>
     <section id="tab-seguimiento" class="hidden" aria-label="Seguimiento"></section>
     <section id="tab-agenda" class="hidden" aria-label="Horarios y agenda"></section>
@@ -4215,7 +4215,9 @@
     function renderPortal(){
       if(!window.MuniPortal)return;
       const views=window.MuniPortal.views(datosDeporte,$('input-fecha').value,areaActiva,sesion,{days:periodoPortal,cat:$('sel-categoria').value,eq:$('sel-equipo').value||'General',label:nombreBaseDua,dua:obtenerFichaDua});
-      for(const id of ['inicio','equipos','seguimiento','avisos'])$('tab-'+id).innerHTML=views[id];
+      for(const id of ['inicio','seguimiento','avisos'])$('tab-'+id).innerHTML=views[id];
+      $('equipos-contenido').innerHTML=views.equipos;
+      montarAsignaciones();
       renderComparacionPortal();
       $('tab-agenda').innerHTML=window.MuniPortal.agenda(window.MuniCommunityCatalog?.horarios||[],areaActiva);
       renderAvisosPortal();
@@ -4226,7 +4228,7 @@
       if(!target)return;
       const categoria=$('sel-categoria').value, equipo=$('sel-equipo').value;
       const allowed=(sesion?.canManageUsers||sesion?.rol==='Coordinación') &&
-        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1' &&
+        almacen.getItem('muni360_modo_demo')!=='1' &&
         categoria && equipo && equiposDep(categoria).includes(equipo);
       const context=allowed?JSON.stringify([sesion.usuario,areaActiva,categoria,equipo]):'';
       if((target.dataset?.context||'')===context)return;
@@ -4238,6 +4240,21 @@
         '<button type="submit" class="btn" style="width:auto;min-width:170px;padding:10px 20px;" disabled>Guardar profesores</button></form></details>';
       window.MuniTeamAccess?.mountTeam(target.firstElementChild,areaActiva,{categoria,equipo},
         (path,body)=>MuniGoogle.call(path,body));
+    }
+    function montarAsignaciones(){
+      const target=$('equipos-asignaciones');
+      if(!target)return;
+      const allowed=sesion?.canManageUsers && almacen.getItem('muni360_modo_demo')!=='1';
+      const context=allowed?JSON.stringify([sesion.usuario,areaActiva]):'';
+      if(target.dataset.context===context)return;
+      target.replaceChildren();
+      target.dataset.context='';
+      if(!allowed||tabActual!=='equipos')return;
+      target.dataset.context=context;
+      target.innerHTML='<div class="card"><div class="spread"><h3>Asignar grupos</h3>'+
+        '<button type="button" class="btn-sec" data-team-access-refresh>Actualizar</button></div>'+
+        '<p class="hint" role="status"></p><div data-team-access-fields></div></div>';
+      window.MuniTeamAccess?.mount(target.firstElementChild,areaActiva,(path,body)=>MuniGoogle.call(path,body));
     }
     function renderComparacionPortal(){
       if(!window.MuniPortal)return;

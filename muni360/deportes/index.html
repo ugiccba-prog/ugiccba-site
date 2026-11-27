@@ -50,122 +50,176 @@
 
     /* ================= PANTALLA DE LOGIN MUNI 360 ================= */
     #app-screen.eligiendo-grupo #tab-asistencia, #app-screen.eligiendo-grupo #btn-listo-filtros, #app-screen.eligiendo-grupo #barra-contexto-activo { display: none; }
+    body:has(#login-screen:not(.hidden)) { padding-bottom: 0; }
     #login-screen {
+      --muni-atmosphere: linear-gradient(135deg, #f4efe6 0%, #fbf9f5 52%, #dceaf7 100%);
+      --muni-ink: #13253a;
+      --muni-muted: #58697c;
+      --muni-sky: #2875d9;
+      --muni-accent: #1d7fb8;
+      --muni-line: rgba(19, 37, 58, 0.12);
+      --muni-card: rgba(255, 255, 255, 0.94);
+      --muni-shadow: 0 22px 54px rgba(19, 37, 58, 0.14);
       min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--muni-atmosphere);
+      color: var(--muni-ink);
+      font-family: "Plus Jakarta Sans", 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    #login-screen .login-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 24px 0;
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    #login-screen .login-top img { width: 32px; height: 32px; object-fit: contain; }
+    #login-screen .login-top span { font-size: .85rem; font-weight: 700; color: var(--muni-ink); letter-spacing: .01em; }
+    #login-screen .login-main {
+      flex: 1;
+      display: grid;
+      align-items: center;
+      align-content: center;
+      gap: 28px;
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    #login-screen .login-hero h1 {
+      margin: 0;
+      font-family: "Outfit", system-ui, sans-serif;
+      font-size: clamp(2.6rem, 6vw, 4.4rem);
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: .96;
+      color: var(--muni-ink);
+    }
+    #login-screen .login-hero h1 span { color: var(--muni-accent); }
+    #login-screen .login-hero p {
+      margin: 14px 0 0;
+      max-width: 34ch;
+      color: var(--muni-muted);
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      line-height: 1.5;
+    }
+    #login-screen .auth-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--muni-card);
+      border: 1px solid rgba(255, 255, 255, .92);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--muni-shadow);
+      max-width: 420px;
+      width: 100%;
+      text-align: left;
+    }
+    #login-screen .auth-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, var(--muni-accent), var(--muni-sky));
+    }
+    #login-screen .eyebrow {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e2effb;
+      color: #0b4c77;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+    #login-screen .auth-card h2 {
+      margin: 14px 0 6px;
+      font-family: "Outfit", system-ui, sans-serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--muni-ink);
+    }
+    #login-screen .lead { margin: 0 0 18px; color: var(--muni-muted); font-size: .92rem; line-height: 1.45; }
+    #login-screen .auth-checking { display: flex; align-items: center; gap: 10px; min-height: 48px; color: var(--muni-muted); font-size: .94rem; }
+    #login-screen .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d5e5f5;
+      border-top-color: var(--muni-accent);
+      border-radius: 50%;
+      animation: muni-login-spin .8s linear infinite;
+      flex: none;
+    }
+    @keyframes muni-login-spin { to { transform: rotate(360deg); } }
+    #login-screen .remember {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+      color: var(--muni-ink);
+      font-size: .86rem;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+    #login-screen .remember input { width: 17px; height: 17px; margin: 0; accent-color: var(--muni-ink); flex: none; }
+    #login-screen .google-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px 14px;
-      background: radial-gradient(circle at top, #1e3a8a 0%, #0b2545 55%, #060d1a 100%);
-    }
-    .login-card {
+      gap: 11px;
       width: 100%;
-      max-width: 440px;
-      background: var(--white);
-      border-radius: 24px;
-      padding: 26px 22px 24px;
-      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
-      text-align: center;
-    }
-    .login-shield {
-      width: 82px;
-      height: 96px;
-      object-fit: contain;
-      filter: drop-shadow(0 6px 12px rgba(11, 37, 69, 0.22));
-      margin-bottom: 8px;
-    }
-    .login-club-name {
-      font-size: 0.78rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.9px;
-      color: var(--navy);
-      margin-bottom: 4px;
-    }
-    .login-ugi-subtitle {
-      display: inline-block;
-      background: var(--sky-light);
-      color: var(--blue);
-      border: 1px solid var(--sky-border);
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding: 4px 13px;
+      min-height: 48px;
+      padding: 12px 18px;
+      border: 1px solid #d4dde7;
       border-radius: 999px;
-      margin-bottom: 8px;
-    }
-    .login-pill {
-      display: inline-block;
-      background: var(--sky-light);
-      color: var(--blue);
-      border: 1px solid var(--sky-border);
-      font-size: 0.68rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding: 4px 12px;
-      border-radius: 999px;
-      margin-bottom: 6px;
-    }
-    .login-card h1 {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--navy);
-      letter-spacing: -0.5px;
-      line-height: 1.1;
-    }
-    .login-sub {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 2px;
-      margin-bottom: 16px;
-    }
-    .base-cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 12px 0 16px;
-    }
-    .base-btn {
-      padding: 12px 10px;
-      border-radius: 14px;
-      border: 2px solid #cbd5e1;
-      background: #f8fafc;
+      background: #ffffff;
+      color: #1f2937;
+      font: 700 .95rem/1 "Plus Jakarta Sans", 'Inter', system-ui, sans-serif;
       cursor: pointer;
-      font-weight: 800;
-      font-size: 0.88rem;
-      color: var(--navy);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.15s;
+      box-shadow: 0 4px 12px rgba(19, 37, 58, .08);
+      transition: transform .15s ease, box-shadow .15s ease;
     }
-    .base-btn span.ico { font-size: 1.35rem; }
-    .base-btn small { font-size: 0.68rem; font-weight: 600; color: var(--muted); }
-    .base-btn.active {
-      background: var(--navy);
-      color: var(--white);
-      border-color: var(--sky);
-      box-shadow: 0 6px 16px rgba(11, 37, 69, 0.25);
+    #login-screen .google-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(19, 37, 58, .12); }
+    #login-screen .google-btn:focus-visible, #login-screen .text-btn:focus-visible, #login-screen .login-footer a:focus-visible { outline: 3px solid var(--muni-sky); outline-offset: 2px; }
+    #login-screen .google-btn:disabled { opacity: .65; cursor: progress; transform: none; }
+    #login-screen .error { min-height: 1.25em; margin: 12px 0 0; color: #b42318; font-size: .88rem; font-weight: 600; text-align: left; }
+    #login-screen .secondary { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+    #login-screen .text-btn {
+      width: auto;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      background: none;
+      color: var(--muni-accent);
+      font: 700 .86rem/1.3 "Plus Jakarta Sans", 'Inter', system-ui, sans-serif;
+      cursor: pointer;
+      text-decoration: underline;
     }
-    .base-btn.active small { color: #bae6fd; }
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin: 10px 0;
+    #login-screen .login-footer {
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px 20px;
+      color: var(--muni-muted);
+      font-size: .84rem;
     }
-    .divider::before, .divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: #e2e8f0;
+    #login-screen .login-footer a { color: var(--muni-ink); font-weight: 600; text-decoration: none; }
+    @media (min-width: 860px) {
+      #login-screen .login-main { grid-template-columns: 1.15fr .85fr; gap: 56px; }
+      #login-screen .auth-card { justify-self: end; }
+    }
+    @media (max-width: 600px) {
+      #login-screen .login-top, #login-screen .login-main, #login-screen .login-footer { padding-left: 16px; padding-right: 16px; }
+      #login-screen .auth-card { padding: 22px 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #login-screen .spinner { animation: none; }
+      #login-screen .google-btn { transition: none; }
     }
 
     /* ================= CABECERA Y LAYOUT GENERAL ================= */
@@ -839,29 +893,42 @@
        1. PANTALLA INICIAL UNIFICADA (MUNI 360)
        ===================================================================== -->
   <div id="login-screen">
-    <form id="login-form" class="login-card" novalidate>
-      <img src="../escudo-ccba.png" onerror="this.onerror=null;this.src='../escudo-ccba.png'" alt="Escudo C.C.B.A." class="login-shield">
-      <div class="login-club-name">Club Ciudad de Buenos Aires</div>
-      <div><span class="login-ugi-subtitle">Unidad de Gestión Integral</span></div>
-      <h1>MUNI 360</h1>
-      <p class="login-sub">Asistencia, evaluaciones y banco metodológico de cancha</p>
-
-      <!-- BLOQUE SUPERIOR: SELECTOR DE DEPORTES -->
-      <div class="field hidden" style="margin-bottom:12px;">
-        <label for="login-deporte">1. Elegí tu Deporte</label>
-        <select id="login-deporte" hidden aria-hidden="true"></select>
-      </div>
-
-      <input type="hidden" id="login-profe"><input type="hidden" id="login-pass">
-      <p class="google-status">Ingresá con tu cuenta de Google. Dirección UGI habilita tus actividades. Los profes ingresan a los equipos que tienen asignados.</p>
-      <p id="login-error" class="error" aria-live="polite"></p>
-      <button type="submit" id="google-login">Continuar con Google</button>
-      <button type="button" id="revisar-acceso" class="btn-sec" style="margin-top:10px">Ya me autorizaron · Revisar acceso</button>
-
-      <div style="margin-top:12px; padding-top:10px; border-top:1px solid #f1f5f9; font-size:0.78rem; color:var(--muted);">
-        <a href="../">Volver a Muni360</a>
-      </div>
-    </form>
+    <div class="login-top">
+      <img src="../escudo-ccba.png" alt="Escudo C.C.B.A.">
+      <span>Club Ciudad de Buenos Aires · UGI</span>
+    </div>
+    <main class="login-main">
+      <section class="login-hero" aria-label="Muni360">
+        <h1>Muni<span>360</span></h1>
+        <p>Deportes, Colonia y COYFD en un solo acceso.</p>
+      </section>
+      <form id="login-form" class="auth-card" novalidate>
+        <div class="field hidden" style="margin-bottom:12px;">
+          <label for="login-deporte">1. Elegí tu Deporte</label>
+          <select id="login-deporte" hidden aria-hidden="true"></select>
+        </div>
+        <input type="hidden" id="login-profe"><input type="hidden" id="login-pass">
+        <span class="eyebrow">Ingreso institucional</span>
+        <h2>Ingresá a tu espacio</h2>
+        <p class="lead">Entrás directo a tus equipos o grupos habilitados.</p>
+        <div id="auth-checking" class="auth-checking" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Comprobando tu sesión…</span>
+        </div>
+        <button type="submit" id="google-login" class="google-btn hidden">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.7-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.2 0-5.9-2.1-6.8-5H1.2v3.1C3.2 21.4 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3V6.6H1.2C.4 8.2 0 10.1 0 12s.4 3.8 1.2 5.4l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.4.6 4.6 1.8l3.5-3.5C18 1.1 15.2 0 12 0 7.3 0 3.2 2.6 1.2 6.6l4 3.1c.9-2.9 3.6-4.9 6.8-4.9z"/></svg>
+          <span>Continuar con Google</span>
+        </button>
+        <p id="login-error" class="error" aria-live="polite"></p>
+        <div id="auth-secondary" class="secondary hidden">
+          <button type="button" id="revisar-acceso" class="text-btn">Ya me autorizaron · Revisar acceso</button>
+          <button type="button" id="cambiar-cuenta" class="text-btn">Usar otra cuenta</button>
+        </div>
+      </form>
+    </main>
+    <footer class="login-footer">
+      <a href="../comunidad/">Comunidad CCBA</a> · <span>Uso exclusivo personal autorizado</span>
+    </footer>
   </div>
 
   <!-- =====================================================================
@@ -1309,8 +1376,8 @@
   <script src="../assets/scripts/muni360-inteligencia.js?v=7ff4a5d40513"></script>
   <script src="../assets/scripts/muni360-surveys.js?v=78a6afd90ee8"></script>
   <script src="../assets/scripts/muni360-portal.js?v=b16fb3c81b66"></script>
-  <script src="../assets/scripts/muni360-team-access.js?v=bd6dc3731ba1"></script>
-  <script src="../assets/scripts/muni360-ui.js?v=37b1a254d2f3"></script>
+  <script src="../assets/scripts/muni360-team-access.js?v=2b2010395979"></script>
+  <script src="../assets/scripts/muni360-ui.js?v=6e3f72ff3824"></script>
   <script src="../assets/scripts/muni360-audit.js?v=7d6f32cf440e"></script>
   <script src="../assets/scripts/muni360-catalogo.js?v=49eae2afb7c3"></script>
   <script>
@@ -1581,7 +1648,7 @@
       if (syncClient && sesion?.expiresAt<=Date.now()) {
         syncClient.stop(); syncClient=null; sesion=null; sessionStorage.removeItem('muni360_v2_sesion'); limpiarCachePrivada(); storageScope='sin-sesion';
         datosDeporte={padron:[],asistencia:[],evaluaciones:[],fichas:{}}; $('dua-modal-body').textContent=''; $('dua-modal').classList.add('hidden');
-        ['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden'));document.body?.classList.remove('portal-menu-open'); $('login-screen').classList.remove('hidden'); $('login-error').textContent='La sesión venció. Ingresá otra vez; los pendientes se conservan para tu cuenta.';
+        ['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden'));document.body?.classList.remove('portal-menu-open'); $('login-screen').classList.remove('hidden'); mostrarEstadoAcceso('ready','La sesión venció. Ingresá otra vez; los pendientes se conservan para tu cuenta.',true);
       } else if (syncClient && navigator.onLine) syncClient.retry({automatic:true}).catch(e=>estadoSincronizacion({count:syncClient.queue.length,message:e.message}));
     }, 30000);
 
@@ -1608,7 +1675,7 @@
       return String(s?.email || '').trim().toLowerCase() === EMAIL_INGRESO_UNIFICADO;
     }
     function actividadesPortal(s) {
-      return esIngresoUnificado(s) ? CATALOGO_MUNI360 : CATALOGO_MUNI360.filter(x => !x.esBase);
+      return (window.MUNI_UNIFIED_PORTAL || esIngresoUnificado(s)) ? CATALOGO_MUNI360 : CATALOGO_MUNI360.filter(x => !x.esBase);
     }
     const deportesSolo = CATALOGO_MUNI360.filter(x => !x.esBase);
     $('login-deporte').innerHTML =
@@ -1619,7 +1686,7 @@
     $('sel-deporte').innerHTML = deportesSolo.map(d => `<option value="${esc(d.nombre)}">${esc(d.nombre)}</option>`).join('');
 
     let areaElegidaLogin = almacen.getItem('muni360_area') || (()=>{try{return localStorage.getItem('muni360_ult_deporte');}catch(_){return '';}})() || "Básquet Caballeros";
-    if (areaElegidaLogin === "Colonia" || areaElegidaLogin === "COYFD") areaElegidaLogin = "Básquet Caballeros";
+    if (!window.MUNI_UNIFIED_PORTAL && (areaElegidaLogin === "Colonia" || areaElegidaLogin === "COYFD")) areaElegidaLogin = "Básquet Caballeros";
     $('login-profe').value = almacen.getItem('muni360_profe') || "";
 
     function marcarSeleccionLogin(nombreArea) {
@@ -1642,21 +1709,34 @@
 
 
 
-    let authLoad=0;
+    let authLoad=0, loggingIn=false;
+    function mostrarEstadoAcceso(modo,msg='',extras=false){
+      const chk=$('auth-checking'),btn=$('google-login'),sec=$('auth-secondary'),rev=$('revisar-acceso');
+      if(modo==='checking'){
+        if(chk){chk.classList.remove('hidden');if(chk.lastElementChild&&msg)chk.lastElementChild.textContent=msg;}
+        btn.classList.add('hidden');sec?.classList.add('hidden');rev.classList.add('hidden');$('login-error').textContent='';
+        return;
+      }
+      chk?.classList.add('hidden');btn.classList.remove('hidden');btn.disabled=false;
+      sec?.classList.toggle('hidden',!extras);rev.classList.toggle('hidden',!extras);
+      $('login-error').textContent=msg||'';
+    }
     async function cargarPerfilGoogle(user) {
       const attempt=++authLoad;
-      $('login-error').textContent='Comprobando autorización de UGI...';
+      mostrarEstadoAcceso('checking','Comprobando autorización de UGI…');
       try {
         const data=await MuniGoogle.call('/api/me');if(attempt!==authLoad)return;
         const p=data.profile;
-        if(p.status!=='activo') { $('google-login').classList.remove('hidden'); $('revisar-acceso').classList.remove('hidden'); $('login-error').textContent=p.status==='pendiente'?'Tu acceso está pendiente de aprobación por Dirección UGI.':p.status==='vencido'?'Tu autorización venció. Dirección puede renovarla.':'Tu acceso está suspendido. Contactá a Dirección UGI.';return; }
+        if(p.status!=='activo') { mostrarEstadoAcceso('ready',p.status==='pendiente'?'Tu acceso está pendiente de aprobación por Dirección UGI.':p.status==='vencido'?'Tu autorización venció. Dirección puede renovarla.':'Tu acceso está suspendido. Contactá a Dirección UGI.',true);return; }
         const emailPerfil=p.email||user?.email||'';
         const catalogo=actividadesPortal({email:emailPerfil});
         const available=catalogo.filter(d=>p.areas.includes(d.nombre));
         if(!available.length){
-          if(Array.isArray(p.areas)&&p.areas.includes('Colonia')){window.location?.replace?.('../colonia/');return;}
-          if(Array.isArray(p.areas)&&p.areas.includes('COYFD')){window.location?.replace?.('../coyfd/');return;}
-          $('google-login').classList.remove('hidden');$('revisar-acceso').classList.remove('hidden');$('login-error').textContent='Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.';return;
+          if(!window.MUNI_UNIFIED_PORTAL){
+            if(Array.isArray(p.areas)&&p.areas.includes('Colonia')){window.location?.replace?.('../colonia/');return;}
+            if(Array.isArray(p.areas)&&p.areas.includes('COYFD')){window.location?.replace?.('../coyfd/');return;}
+          }
+          mostrarEstadoAcceso('ready','Tu cuenta no tiene actividades habilitadas en este portal. Consultá a Dirección.',true);return;
         }
         limpiarCachePrivada();storageScope=p.uid;
         let ultDeporte='';try{ultDeporte=localStorage.getItem('muni360_ult_deporte')||'';}catch(_){}
@@ -1681,16 +1761,20 @@
             }
           }catch(_){}
         }
-        $('google-login').classList.remove('hidden');
-        $('revisar-acceso').classList.remove('hidden');
-        $('login-error').textContent=e.message||'No se pudo verificar el acceso. Reintentá con conexión.';
+        mostrarEstadoAcceso('ready',e.message||'No se pudo verificar el acceso. Reintentá con conexión.',true);
       }
     }
     $('login-form').addEventListener('submit',async e=>{
-      e.preventDefault();const btn=$('google-login');btn.disabled=true;$('login-error').textContent='Abriendo Google...';
-      try{await MuniGoogle.login();}catch(e){$('login-error').textContent=e.code==='auth/popup-blocked'?'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.':e.code==='auth/popup-closed-by-user'?'Ingreso cancelado. Podés intentarlo otra vez.':e.message||'No se pudo abrir Google.';}finally{btn.disabled=false;}
+      e.preventDefault();const btn=$('google-login');loggingIn=true;btn.disabled=true;$('login-error').textContent='Abriendo Google...';
+      try{await MuniGoogle.login();}catch(e){mostrarEstadoAcceso('ready',e.code==='auth/popup-blocked'?'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.':e.code==='auth/popup-closed-by-user'?'Ingreso cancelado. Podés intentarlo otra vez.':e.message||'No se pudo abrir Google.',true);}finally{loggingIn=false;btn.disabled=false;}
     });
     $('revisar-acceso').onclick=()=>cargarPerfilGoogle();
+    if($('cambiar-cuenta'))$('cambiar-cuenta').onclick=async()=>{
+      loggingIn=true;$('google-login').disabled=true;
+      try{await MuniGoogle.logout();await MuniGoogle.login();}
+      catch(e){mostrarEstadoAcceso('ready',e.code==='auth/popup-blocked'?'El navegador bloqueó la ventana de Google. Permití abrirla y reintentá.':e.code==='auth/popup-closed-by-user'?'Ingreso cancelado. Podés intentarlo otra vez.':e.message||'No se pudo abrir Google.',true);}
+      finally{loggingIn=false;$('google-login').disabled=false;}
+    };
     function permiso(nombre){return !!sesion?.esAdminTotal || sesion?.rol==='Dirección UGI' || !!sesion?.capabilities?.[nombre];}
     function iniciarSesion(datosSesion) {
       const catalogo = actividadesPortal(datosSesion);
@@ -1760,8 +1844,8 @@
       try{Object.keys(localStorage).filter(k=>k.startsWith('muni360_perfil_cache:')||k.startsWith('muni360cyc_perfil_cache:')).forEach(k=>localStorage.removeItem(k));}catch(_){}
       $('dua-modal').classList.add('hidden'); $('dua-modal-body').textContent='';
       const wasDemo=almacen.getItem('muni360_modo_demo')==='1';
-      ['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden')); document.body?.classList.remove('portal-menu-open'); $('portal-menu').setAttribute('aria-expanded','false'); $('login-screen').classList.remove('hidden');
-      if(!wasDemo&&typeof window.location?.replace==='function')window.location.replace('../');
+      ['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden')); document.body?.classList.remove('portal-menu-open'); $('portal-menu').setAttribute('aria-expanded','false'); $('login-screen').classList.remove('hidden'); mostrarEstadoAcceso('ready','',false);
+      if(!wasDemo&&!window.MUNI_UNIFIED_PORTAL&&typeof window.location?.replace==='function')window.location.replace('../');
     });
 
     function cfgActual() {
@@ -1769,7 +1853,7 @@
     }
 
     const pestanasProfe=['equipos','asistencia','evaluacion','analisis','ugi'];
-    function esProfePorEquipo(){return sesion?.rol==='Profe' && !cfgActual().esBase;}
+    function esProfePorEquipo(){return sesion?.rol==='Profe';}
     function esCoordOAdmin(){return !!sesion && !esProfePorEquipo() && ['administrarPadron','verLegajo','editarDua','archivar'].some(permiso);}
 
     function puedeEditarGestos(){return !!sesion && !esSoloConsulta() && (sesion.esAdminTotal || sesion.rol==='Dirección UGI' || (sesion.rol==='Coordinación' && permiso('administrarPadron')));}
@@ -1795,7 +1879,7 @@
       $('sync-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('auto-sheets').classList.toggle('hidden',!sesion.canManageUsers);
       $('link-admin-ugi').classList.toggle('hidden',!(sesion.canManageUsers || sesion.esAdminTotal && almacen.getItem('muni360_modo_demo')==='1'));
-      $('link-admin-ugi').href='../admin/'+(almacen.getItem('muni360_modo_demo')==='1'?'?demo=1':'');
+      $('link-admin-ugi').href=(window.MUNI_UNIFIED_PORTAL?'./admin/':'../admin/')+(almacen.getItem('muni360_modo_demo')==='1'?'?demo=1':'');
       const puedePadron = esCoordOAdmin();
       $('tab-btn-padron').classList.toggle('hidden', !puedePadron);
       $('nav-tabs').classList.toggle('cuatro', !puedePadron);
@@ -1808,10 +1892,11 @@
       document.querySelectorAll('#nav-tabs .tab').forEach(button=>{
         if(extraTabs.includes(button.dataset.tab))button.classList.toggle('hidden',esProfePorEquipo());
       });
+      const labelEq=cfgActual().esBase?'Grupos':'Equipos';
       const mobile=$('portal-mobile-nav');
       const accesos=esProfePorEquipo()?
-        [['equipos','users','Equipos'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['ugi','book','Herramientas']]:
-        [['inicio','home','Inicio'],['equipos','users','Equipos'],['asistencia','check','Lista'],['evaluacion','chart','Evaluar']];
+        [['equipos','users',labelEq],['asistencia','check','Lista'],['evaluacion','chart','Evaluar'],['ugi','book','Herramientas']]:
+        [['inicio','home','Inicio'],['equipos','users',labelEq],['asistencia','check','Lista'],['evaluacion','chart','Evaluar']];
       mobile.innerHTML=accesos.map(([id,icon,label])=>'<button type="button" data-portal-tab="'+id+'"><span data-icon="'+icon+'" aria-hidden="true"></span><small>'+label+'</small></button>').join('');
       window.MuniPortal?.hydrate?.();
       if(!verCambios){$('audit-list').textContent='';cuestionariosActividad=[];cuestionariosAreaCargada='';$('card-cuestionarios-analisis')?.classList.add('hidden');if(['auditoria','inteligencia','encuestas'].includes(tabActual))cambiarTab('asistencia','replace');}
@@ -4374,11 +4459,13 @@
       window.MuniPortal.hydrate?.();
     }
     function equiposProfe(){
+      const isBase=cfgActual().esBase;
+      const wordEq=isBase?'grupos':'equipos';
       const sports=actividadesPortal(sesion).filter(d=>sesion.areas.includes(d.nombre)).map(d=>d.nombre);
-      const sportBar=sports.length>1?'<div class="rol-switch" role="group" aria-label="Cambiar deporte" style="margin-bottom:12px;">'+
+      const sportBar=sports.length>1?'<div class="rol-switch" role="group" aria-label="Cambiar actividad" style="margin-bottom:12px;">'+
         sports.map(name=>'<button type="button" class="rol-btn" data-profe-sport="'+esc(name)+'" aria-pressed="'+String(name===areaActiva)+'">'+esc(name)+'</button>').join('')+'</div>':'';
       const groups=categoriasDep().flatMap(cat=>equiposDep(cat).map(eq=>({cat,eq})));
-      return '<div class="portal-hero"><h2>Mis equipos</h2></div>'+sportBar+
+      return '<div class="portal-hero"><h2>Mis '+wordEq+'</h2></div>'+sportBar+
         (groups.length?groups.map(({cat,eq})=>{
           const data=' data-portal-team="1" data-cat="'+esc(cat)+'" data-eq="'+esc(eq)+'"';
           const count=datosDeporte.padron.filter(p=>p.categoria===cat&&p.equipo===eq).length;
@@ -4386,13 +4473,13 @@
             '<p class="hint">'+count+' deportistas</p></div>'+
             '<button type="button" class="btn-sec"'+data+'>Abrir lista</button></article>';
         }).join(''):'<div class="card"><p class="hint">'+
-          (datosDeporte.scopeEquipos?'Todavía no tenés equipos asignados con plantel. Contactá a Coordinación.':'Actualizá la actividad para consultar tus equipos.')+'</p></div>');
+          (datosDeporte.scopeEquipos?'Todavía no tenés '+wordEq+' asignados con plantel. Contactá a Coordinación.':'Actualizá la actividad para consultar tus '+wordEq+'.')+'</p></div>');
     }
     function montarAsignacionesDelEquipo(){
       const target=$('asignaciones-del-equipo');
       const categoria=$('sel-categoria').value, equipo=$('sel-equipo').value;
       const allowed=(sesion?.canManageUsers||sesion?.rol==='Coordinación') &&
-        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1' &&
+        almacen.getItem('muni360_modo_demo')!=='1' &&
         categoria && equipo && equiposDep(categoria).includes(equipo);
       const context=allowed?JSON.stringify([sesion.usuario,areaActiva,categoria,equipo]):'';
       if((target.dataset?.context||'')===context)return;
@@ -4408,14 +4495,15 @@
     function montarAsignaciones(){
       const target=$('equipos-asignaciones');
       const allowed=sesion?.canManageUsers &&
-        !cfgActual().esBase && almacen.getItem('muni360_modo_demo')!=='1';
+        almacen.getItem('muni360_modo_demo')!=='1';
       const context=allowed?JSON.stringify([sesion.usuario,areaActiva]):'';
       if(target.dataset.context===context)return;
       target.replaceChildren();
       target.dataset.context='';
       if(!allowed||tabActual!=='equipos')return;
       target.dataset.context=context;
-      target.innerHTML='<div class="card"><div class="spread"><h3>Asignar equipos</h3>'+
+      const titulo=cfgActual().esBase?'Asignar grupos':'Asignar equipos';
+      target.innerHTML='<div class="card"><div class="spread"><h3>'+titulo+'</h3>'+
         '<button type="button" class="btn-sec" data-team-access-refresh>Actualizar</button></div>'+
         '<p class="hint" role="status"></p><div data-team-access-fields></div></div>';
       window.MuniTeamAccess?.mount(target.firstElementChild,areaActiva,(path,body)=>MuniGoogle.call(path,body));
@@ -4560,17 +4648,16 @@
     const demoParam=new URLSearchParams(location.search).get('demo');
     if(demoParam==='1')window.cargarDemoVideoUGI();
     else if(window.MuniGoogle){
-      $('login-error').textContent='Ingresando a tu espacio…';
-      $('google-login').classList.add('hidden');
-      $('revisar-acceso').classList.add('hidden');
+      mostrarEstadoAcceso('checking','Comprobando tu sesión…');
       MuniGoogle.observe((user,error)=>{
-        if(error){$('google-login').classList.remove('hidden');$('revisar-acceso').classList.remove('hidden');$('login-error').textContent=error.message;return;}
+        if(error){if(!loggingIn)mostrarEstadoAcceso('ready',error.message,true);return;}
         if(user){cargarPerfilGoogle(user);return;}
+        if(loggingIn)return;
         if(sesion){if(syncClient)syncClient.stop();syncClient=null;sesion=null;limpiarCachePrivada();['app-header','barra-estado','app-screen','portal-mobile-nav'].forEach(id=>$(id).classList.add('hidden'));document.body?.classList.remove('portal-menu-open');$('portal-menu').setAttribute('aria-expanded','false');$('login-screen').classList.remove('hidden');}
-        $('google-login').classList.remove('hidden');
-        $('revisar-acceso').classList.remove('hidden');
-        $('login-error').textContent='';
+        mostrarEstadoAcceso('ready','',false);
       });
+    }else if(demoParam!=='1'){
+      mostrarEstadoAcceso('ready','',false);
     }
   </script>
 

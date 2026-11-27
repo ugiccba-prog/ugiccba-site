@@ -20,9 +20,15 @@ function basePortal(html,area){
  if(!html.includes('window.MUNI_BASE_AREA='))throw Error('Falta la actividad del portal.');
  return html;
 }
+function unifiedPortal(html){
+ html=html.replace('<script src="../assets/scripts/muni360-config.js">','<script>window.MUNI_UNIFIED_PORTAL=true;</script>\n  <script src="../assets/scripts/muni360-config.js">');
+ html=html.replace('<script src="../assets/scripts/muni360-ui.js"></script>','<script src="../assets/scripts/muni360-ui.js"></script>\n  <script src="../assets/scripts/muni360-presence.js"></script>');
+ html=html.replace('<a href="../index.html" class="muni-return-menu" aria-label="Volver a la portada general de Muni360">← Muni360</a>','');
+ return html.replaceAll('../assets/','./assets/').replaceAll('../../escudo-ccba.png','./escudo-ccba.png').replaceAll('../escudo-ccba.png','./escudo-ccba.png').replaceAll('src="escudo-ccba.png"','src="./escudo-ccba.png"').replaceAll('../admin/','./admin/').replaceAll('../comunidad/','./comunidad/');
+}
 for(const [src,target]of [['apps/muni360/source/deportes/index.html','deportes/index.html'],['apps/muni360/source/colonia/index.html','colonia/index.html'],['apps/muni360/source/colonia/index.html','coyfd/index.html'],['apps/muni360/source/admin/index.html','admin/index.html'],['apps/muni360/source/encuesta/index.html','encuesta/index.html']]){let html=remap(read(src).toString());if(['colonia/index.html','coyfd/index.html'].includes(target))html=basePortal(html,target.startsWith('coyfd')?'COYFD':'Colonia');html=html.replaceAll('src="escudo-ccba.png"','src="../escudo-ccba.png"');files.set(target,Buffer.from(versionAssets(html)));}
 for(const name of ['index.html','competencia-config.mjs'])files.set('competencia/'+name,read('apps/muni360/source/competencia/'+name));
-files.set('index.html',Buffer.from(versionAssets(read('apps/muni360/entrada.html').toString())));
+files.set('index.html',Buffer.from(versionAssets(unifiedPortal(remap(read('apps/muni360/source/deportes/index.html').toString())))));
 for(const name of ['index.html','comunidad.js','catalogo.js','sw.js']){const file=read('comunidad/'+name);files.set('comunidad/'+name,name==='index.html'?Buffer.from(versionAssets(file.toString())):file);}
 for(const name of ['favicon.png','logo-header.png'])files.set('assets/images/'+name,read('assets/images/'+name));
 files.set('manifest.json',Buffer.from(JSON.stringify({format:'MUNI360_PUBLIC_BUNDLE_V1',base:'/muni360/',files:Object.fromEntries([...files].map(([p,b])=>[p,hash(b)]))},null,2)+'\n'));

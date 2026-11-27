@@ -341,3 +341,10 @@ El archivo `server/supabase/tools/SheetsInstitucional.gs` organiza en `estilosYO
    Debe devolver HTTP `200` y `"backendVersion":"supabase-1.0.0"`.
 3. En `/muni360/admin/` (con sesión de Dirección): abrir el listado, comprobar que carga usuarios y filtro **Archivados** sin errores.
 4. En un cuestionario activo de `/muni360/encuesta/`: intentar enviar sin completar una pregunta obligatoria o con datos alterados y verificar que responde error de validación (`400` / `VALIDACION`).
+
+---
+
+## Actualización del 27/11/2026 · Profesores por grupo en Colonia y COYFD
+
+- **Migración aplicada (`kaalffshnrkxviqaymhv`):** `server/supabase/sql/020_team_access_colonia_coyfd.sql` (`muni360_team_access_colonia_coyfd`), que actualiza `public.mc_team_access` para habilitar la asignación y el filtrado por grupo en **Colonia** y **COYFD**.
+- **Edge Function `muni360` (versión 24, `verify_jwt: false`):** redesplegada con `server/supabase/functions/muni360/core.mjs` y `server/supabase/functions/muni360/policy.mjs` actualizados para aceptar `/api/team-access/*` y restringir alcance de **Profe** por equipo/grupo también en **Colonia** y **COYFD**.

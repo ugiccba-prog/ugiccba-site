@@ -13,7 +13,7 @@ function actorFrom(record, areas, now=Date.now(), owner=null) {
   if (record.expiresAt && (!Number.isFinite(Date.parse(record.expiresAt)) || Date.parse(record.expiresAt)<=now)) throw new AccessError('VENCIDO', 'Tu autorización venció. Dirección puede renovarla.');
   return {id:record.uid,nombre:record.nombre,rol:record.rol,areas:record.uid===owner?areas:(record.areas||[]).filter(a=>areas.includes(a)),capabilities:{...defaults(record.rol),...record.capabilities,...(record.uid===owner||record.rol==='Dirección UGI'?Object.fromEntries(CAPS.map(k=>[k,true])):{})},version:record.version,teams:record.teams||{},playerLinks:record.playerLinks||{}};
 }
-const equipoRestringido = (actor, activity) => actor.rol === 'Profe' && !['Colonia','COYFD'].includes(activity);
+const equipoRestringido = (actor, activity) => actor.rol === 'Profe';
 const equipoAsignado = (actor, activity, row) => (actor.teams?.[activity] || []).some(
   group => group.categoria === row.categoria && group.equipo === row.equipo
 );
