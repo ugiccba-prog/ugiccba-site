@@ -3,9 +3,9 @@ import {createHandler,prepare} from '../functions/muni360/core.mjs';import {sha,
 const require=createRequire(import.meta.url),{PGlite}=require(process.env.MUNI_PGLITE_MODULE||'@electric-sql/pglite');
 const db=new PGlite();await db.waitReady;
 await db.exec("create role anon;create role authenticated;create role service_role;create schema auth;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant usage on schema auth to anon,authenticated,service_role;grant execute on function auth.jwt() to anon,authenticated,service_role;");
-for(const name of ['001_core.sql','002_import.sql','003_projection.sql','004_import_checksums.sql','007_permission_contract.sql','013_fast_load_and_dashboard.sql'])await db.exec(fs.readFileSync(new URL('../sql/'+name,import.meta.url),'utf8'));
+for(const name of ['001_core.sql','002_import.sql','003_projection.sql','004_import_checksums.sql','007_permission_contract.sql','013_fast_load_and_dashboard.sql','019_team_access.sql'])await db.exec(fs.readFileSync(new URL('../sql/'+name,import.meta.url),'utf8'));
 await db.exec("create schema mp_private;create function mp_private.mp_worker_auth(p_secret text) returns void language plpgsql as $$begin if p_secret is distinct from 'worker-test' then raise exception using errcode='42501',message='Invalid worker';end if;end$$;revoke all on function mp_private.mp_worker_auth(text) from public;");
-const areas=['Actividad de prueba','Colonia'],secret='mci_'+'a'.repeat(64),idSecret='b'.repeat(64),users=[['owner','Dirección UGI'],['teacher','Profe'],['reader','Consulta']].map(([uid,rol])=>({uid,email:uid+'@example.invalid',nombre:uid,rol,status:'activo',areas,capabilities:{},version:'11111111-2222-4333-8444-555555555555',revision:0,expiresAt:null}));
+const areas=['Actividad de prueba','Colonia'],secret='mci_'+'a'.repeat(64),idSecret='b'.repeat(64),users=[['owner','Dirección UGI'],['teacher','Profe'],['reader','Consulta']].map(([uid,rol])=>({uid,email:uid+'@example.invalid',nombre:uid,rol,status:'activo',areas,capabilities:{},version:'11111111-2222-4333-8444-555555555555',revision:0,expiresAt:null,...(uid==='teacher'?{teams:{[areas[0]]:[{categoria:'Mini',equipo:'A'},{categoria:'Mini',equipo:'B'}]},playerLinks:{[areas[0]]:null}}:{})}));
 await db.query("insert into mc_private.settings values(true,'muni360-ugi-ensayo','owner',$1,$2,'preparing',$3,now()+interval '1 day')",[idSecret,JSON.stringify(areas),sha(secret)]);
 async function rpc(name,args,role='service_role'){
  await db.exec('begin');try{await db.exec('set local role '+role);const entries=Object.entries(args),params=entries.map((_,i)=>'$'+(i+1)).join(',');const r=await db.query('select public.'+name+'('+params+') as value',entries.map(([k,v])=>v&&typeof v==='object'?JSON.stringify(v):v));await db.exec('commit');return r.rows[0].value;}catch(e){await db.exec('rollback');if(e.code==='PT409'){e.code='CONFLICTO';e.status=409;}else if(e.code==='42501')e.code='PERMISOS';throw e;}
@@ -18,7 +18,7 @@ await db.exec("update mc_private.activities set enabled=true;update mc_private.s
 const handler=uid=>createHandler({rpc,verify:async()=>({uid,email:uid+'@example.invalid',nombre:uid})});
 const call=(uid,body,path='/api/operations')=>handler(uid)({token:'SQL_TEST_NOT_GOOGLE',path,body});
 const load=(uid='teacher')=>call(uid,{tipo:'LECTURA',deporte:areas[0]});
-function operation(s,type,extra={}){const d={tipo:type,deporte:areas[0],categoria:'Mini',equipo:'A',fecha:'2026-11-20',...extra},key=resource(d),rk=resource({tipo:'PADRON',categoria:d.categoria,equipo:d.equipo});return {...d,requestId:randomUUID(),accessVersion:'11111111-2222-4333-8444-555555555555',revision:s.versiones[key]||0,temporada:s.temporada,rosterRevision:s.versiones[rk]||0,roster:s.padron.filter(p=>p.categoria===d.categoria&&p.equipo===d.equipo).map(p=>[p.id,p.jugador])};}
+function operation(s,type,extra={}){const d={tipo:type,deporte:areas[0],categoria:'Mini',equipo:'A',fecha:'2026-11-20',...extra},key=resource(d),rk=resource({tipo:'PADRON',categoria:d.categoria,equipo:d.equipo});return {...d,requestId:randomUUID(),accessVersion:s.accessVersion||'11111111-2222-4333-8444-555555555555',revision:s.versiones[key]||0,temporada:s.temporada,rosterRevision:s.versiones[rk]||0,roster:s.padron.filter(p=>p.categoria===d.categoria&&p.equipo===d.equipo).map(p=>[p.id,p.jugador])};}
 await test('private tables, service RPC and import finalization deny browser roles',async()=>{await assert.rejects(()=>rpc('mc_service',{p_action:'users',p:{uid:'owner'}},'anon'),/permission denied/);await assert.rejects(()=>rpc('mc_import_unit',{p_unit:'global',p_checksum:'x'},'anon'),/permission denied/);await assert.rejects(()=>rpc('mc_import_part',{p_secret:secret,p_unit:'global',p_part:0,p_total:1,p_checksum:'a'.repeat(64),p_body:'{}'},'anon'),/cerrada/);});
 await test('import preserves stable IDs, names, gestures, complete roster; Profe never receives DNI',async()=>{const t=await load(),o=await load('owner');assert.equal(t.padron.length,3);assert.equal(o.padron[0].dni,'12345678');assert.ok(t.padron.every(p=>p.dni===''));assert.equal(t.padron[0].id,'p1');assert.deepEqual(t.gestos,['Tiro']);});
 let attendance;
@@ -56,5 +56,48 @@ await test('dashboard scope reads aggregate state without fichas or versions',as
  assert.equal(dash.ok,true);assert.equal(dash.activities.length,1);assert.equal(dash.activities[0].inscripciones,3);
  const scoped=await rpc('mc_service',{p_action:'load',p:{uid:'owner',activity:areas[0],scope:'dashboard'}});
  assert.equal(scoped.state.padron.length,3);assert.equal('fichas' in scoped.state,false);assert.equal('versions' in scoped,false);
+});
+await test('team assignment grants only authorized groups and keeps the coach’s evaluation private',async()=>{
+ const sport=areas[0], group={categoria:'Mini',equipo:'A'};
+ const target={uid:'teacher',deporte:sport};
+ await db.query("insert into mc_private.users(uid,record) values('coord',$1)",[JSON.stringify({
+  uid:'coord',nombre:'Coordinación de prueba',rol:'Coordinación',status:'activo',areas:[sport],revision:0,version:'coord-new'
+ })]);
+ await assert.rejects(()=>rpc('mc_team_access',{p_action:'list',p:{actorUid:'owner',activity:sport}},'authenticated'),/permission denied/);
+ const catalog=await call('coord',{deporte:sport},'/api/team-access/list');
+ assert.equal(catalog.canLinkPlayer,false);
+ assert.deepEqual(catalog.players,[]);
+ await assert.rejects(()=>call('coord',{...target,playerId:'p1',revision:0},'/api/team-access/player'),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>call('teacher',{...target,teams:[group],revision:0},'/api/team-access/save'),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>call('coord',{...target,deporte:'Colonia',teams:[],revision:0},'/api/team-access/save'),e=>e.code==='PERMISOS');
+ await call('coord',{...target,teams:[group],revision:0},'/api/team-access/save');
+ const beforeLink=await load();
+ assert.deepEqual(new Set(beforeLink.padron.map(row=>row.equipo)),new Set(['A']));
+ await assert.rejects(()=>call('coord',{...target,teams:[],revision:0},'/api/team-access/save'),e=>e.code==='CONFLICTO');
+ await call('owner',{...target,playerId:'p1',revision:1},'/api/team-access/player');
+ const coach=await load(), manager=await load('owner'), fecha='2026-11-25';
+ assert.equal(coach.padron.find(row=>row.id==='p1').excluirEvaluacion,true);
+ assert.ok(coach.evaluaciones.every(row=>row.jugadorId!=='p1' && row.equipo==='A'));
+ await assert.rejects(()=>call('teacher',operation(coach,'EVALUACION',{
+  fecha,jugador:'Juan ficticio',notas:{Tiro:9},accessVersion:coach.accessVersion
+ })),e=>e.code==='PERMISOS');
+ await assert.rejects(()=>call('teacher',operation(coach,'ASISTENCIA',{
+  fecha,equipo:'B',datos:{'Otro ficticio':'P | Sem:V'},accessVersion:coach.accessVersion
+ })),e=>e.code==='PERMISOS');
+ await call('owner',operation(manager,'EVALUACION',{fecha,jugador:'Juan ficticio',notas:{Tiro:9},observacion:'Propia privada'}));
+ await call('teacher',operation(coach,'EVALUACION',{
+  fecha,jugador:'Pedro ficticio',notas:{Tiro:7},observacion:'Observación de práctica',accessVersion:coach.accessVersion
+ }));
+ const visible=await load();
+ assert.deepEqual(visible.evaluaciones.filter(row=>row.fecha===fecha).map(row=>[row.jugador,row.notas.Tiro,row.observacion]),[
+  ['Pedro ficticio',7,'Observación de práctica']
+ ]);
+ assert.ok(!JSON.stringify(visible.versiones).includes('juan ficticio'));
+ const projection=await db.query("select mc_private.sanitize($1) as state",[JSON.stringify(visible)]);
+ assert.ok(!JSON.stringify(projection.rows).includes('Observación de práctica'));
+ await call('coord',{...target,teams:[],revision:2},'/api/team-access/save');
+ const revoked=await load();
+ assert.deepEqual(revoked.padron,[]);
+ assert.deepEqual(revoked.evaluaciones,[]);
 });
 await db.close();

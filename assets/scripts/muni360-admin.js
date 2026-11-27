@@ -27,7 +27,7 @@
       const state=accessState(u);
       return (!q||(u.nombre+' '+u.email).toLowerCase().includes(q))&&(status?status===state:state!=='archivado');
     });
-    $('users').innerHTML=filtered.length?filtered.map(u=>`<article class="person"><div><strong>${esc(u.nombre)}</strong><span class="muted">${esc(u.email)}</span><p class="muted">${esc(u.rol)} · ${u.areas.length} actividad(es) · Todos sus equipos</p><span class="badge">${esc(accessState(u))}</span>${accessBadges(u)}${canPublishComunidad(u)?' <span class="badge">Publica en Comunidad</span>':''}</div>${accessActions(u)}</article>`).join(''):'<p>No hay usuarios para este filtro.</p>';
+    $('users').innerHTML=filtered.length?filtered.map(u=>`<article class="person"><div><strong>${esc(u.nombre)}</strong><span class="muted">${esc(u.email)}</span><p class="muted">${esc(u.rol)} · ${u.areas.length} actividad(es) · ${u.rol==='Profe'?'Equipos asignados en Deportes':'Acceso por actividad'}</p><span class="badge">${esc(accessState(u))}</span>${accessBadges(u)}${canPublishComunidad(u)?' <span class="badge">Publica en Comunidad</span>':''}</div>${accessActions(u)}</article>`).join(''):'<p>No hay usuarios para este filtro.</p>';
     $('more').classList.toggle('hidden',!cursor);
   }
   function capsRender(values){$('caps').innerHTML=Object.entries(labels).map(([key,label])=>`<label class="check"><input type="checkbox" data-cap="${key}" ${values[key]?'checked':''}>${label}</label>`).join('');}

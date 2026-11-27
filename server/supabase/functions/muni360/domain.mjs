@@ -1,6 +1,6 @@
 'use strict';
 import {randomUUID,createHash,createHmac} from 'node:crypto';
-import {AccessError} from './policy.mjs';
+import {AccessError,equipoRestringido,equipoAsignado,evaluacionesHabilitadas} from './policy.mjs';
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const sha=v=>createHash('sha256').update(typeof v==='string'?v:JSON.stringify(canonical(v))).digest('hex');
 const copy=v=>JSON.parse(JSON.stringify(v));
@@ -52,10 +52,19 @@ function applyOperation(before,d,actor,{idSecret,now=()=>new Date().toISOString(
     });
     s.asistencia=s.asistencia.filter(r=>!(inGroup(r)&&r.fecha===d.fecha)).concat(rows);
   }else if(d.tipo==='EVALUACION'){
+    if (equipoRestringido(actor,d.deporte) && (
+      !evaluacionesHabilitadas(actor,d.deporte) || actor.playerLinks[d.deporte] === p.id
+    )) throw new AccessError('PERMISOS','Tu cuenta no puede editar esta evaluación.');
+    if (d.observacion!==undefined && (typeof d.observacion!=='string' || d.observacion.length>1000)) {
+      invalid('La observación debe tener hasta 1000 caracteres.');
+    }
+    if (d.observacion!==undefined && !puedeVerObservacion(actor)) throw new AccessError('PERMISOS','Observación interna.');
+    const previous=s.evaluaciones.find(r=>inGroup(r)&&r.fecha===d.fecha&&same(r.jugador,d.jugador));
+    const observacion=d.observacion===undefined ? previous?.observacion : d.observacion.trim();
     if(!d.notas||Array.isArray(d.notas)||!Object.keys(d.notas).length||Object.keys(d.notas).length>60)invalid('Faltan notas.');
     for(const [k,v]of Object.entries(d.notas)){text(k);if(k.includes(' | ')||['__proto__','constructor','prototype'].includes(k)||typeof v!=='number'||!Number.isFinite(v)||v<1||v>10)invalid('Nota o variable inválida.');}
     s.evaluaciones=s.evaluaciones.filter(r=>!(inGroup(r)&&r.fecha===d.fecha&&same(r.jugador,d.jugador)));
-    s.evaluaciones.push({fecha:d.fecha,categoria:d.categoria,equipo:d.equipo,jugador:d.jugador,jugadorId:p.id,notas:d.notas});
+    s.evaluaciones.push({fecha:d.fecha,categoria:d.categoria,equipo:d.equipo,jugador:d.jugador,jugadorId:p.id,notas:d.notas,...(observacion?{observacion}:{})});
   }else if(d.tipo==='ALTA_PADRON'){
     if(!Array.isArray(d.jugadores)||!d.jugadores.length||d.jugadores.length>500)invalid('Listado inválido.');
     const seen=new Set();
@@ -95,7 +104,47 @@ function applyOperation(before,d,actor,{idSecret,now=()=>new Date().toISOString(
   }else invalid('Operación desconocida.');
   return s;
 }
-function visible(state,actor){const s=copy(state),ids=new Set(s.padron.map(p=>p.id));if(!actor.capabilities.verDni)s.padron.forEach(p=>p.dni='');for(const id of Object.keys(s.fichas)){if(!ids.has(id))delete s.fichas[id];else if(!actor.capabilities.verLegajo)s.fichas[id].legajo={};}if(!actor.capabilities.verLegajo)s.sesiones=s.sesiones.filter(r=>r.uid===actor.id);if(!actor.capabilities.administrarPadron)s.email='';return s;}
+const puedeVerObservacion = actor => ['Profe','Coordinación','Dirección UGI'].includes(actor.rol);
+
+function scopeSports(state,actor,activity) {
+  const assigned = row => equipoAsignado(actor,activity,row);
+  const ownId = actor.playerLinks?.[activity];
+  const byName = row => JSON.stringify([row.categoria,row.equipo,String(row.jugador||'').trim().toLowerCase()]);
+  const idsByName = new Map();
+  for (const person of state.padron) {
+    const key=byName(person);
+    const ids=idsByName.get(key)||new Set();
+    ids.add(person.id);
+    idsByName.set(key,ids);
+  }
+  state.padron=state.padron.filter(assigned).map(p=>({
+    ...p,
+    ...(ownId && p.id===ownId ? {excluirEvaluacion:true} : {})
+  }));
+  state.asistencia=state.asistencia.filter(assigned);
+  state.evaluaciones=evaluacionesHabilitadas(actor,activity) ? state.evaluaciones.filter(row=>{
+    if(!assigned(row))return false;
+    const ids=idsByName.get(byName(row));
+    // Legacy rows without a stable ID must resolve to a unique roster entry.
+    if(ownId && (row.jugadorId===ownId || ids?.has(ownId)))return false;
+    return Boolean(row.jugadorId || ids?.size===1);
+  }) : [];
+}
+
+function visible(state,actor,activity){
+  const s=copy(state);
+  if(equipoRestringido(actor,activity))scopeSports(s,actor,activity);
+  if(!puedeVerObservacion(actor))s.evaluaciones.forEach(row=>delete row.observacion);
+  const ids=new Set(s.padron.map(p=>p.id));
+  if(!actor.capabilities.verDni)s.padron.forEach(p=>p.dni='');
+  for(const id of Object.keys(s.fichas)){
+    if(!ids.has(id))delete s.fichas[id];
+    else if(!actor.capabilities.verLegajo||equipoRestringido(actor,activity))s.fichas[id].legajo={};
+  }
+  if(!actor.capabilities.verLegajo||equipoRestringido(actor,activity))s.sesiones=s.sesiones.filter(r=>r.uid===actor.id);
+  if(!actor.capabilities.administrarPadron)s.email='';
+  return s;
+}
 function auditSlice(state,d){
   const group=r=>same(r.categoria,d.categoria)&&same(r.equipo,d.equipo);
   if(d.tipo==='ASISTENCIA')return state.asistencia.filter(r=>group(r)&&r.fecha===d.fecha);
@@ -114,4 +163,4 @@ function records(state){
   grouped('padron',state.padron,['categoria','equipo']);grouped('asistencia',state.asistencia,['fecha','categoria','equipo']);grouped('evaluaciones',state.evaluaciones,['fecha','categoria','equipo','jugador']);grouped('sesiones',state.sesiones,['id']);result.set('config',{kind:'config',gestos:state.gestos,email:state.email});return result;
 }
 function fromRecords(docs,fichas=[]){const s=empty();for(const doc of docs){const r=typeof doc.data==='function'?doc.data():doc;if(r.kind==='config'){s.gestos=r.gestos||[];s.email=r.email||'';}else if(s[r.kind])s[r.kind].push(...r.rows);}for(const doc of fichas){s.fichas[doc.id]=typeof doc.data==='function'?doc.data():doc.value;}return s;}
-export {sha,copy,resource,empty,applyOperation,visible,auditSlice,records,fromRecords};
+export {sha,copy,resource,empty,applyOperation,visible,auditSlice,records,fromRecords,puedeVerObservacion};
