@@ -2977,7 +2977,7 @@
               <span>${esc(nombreBaseDua(j))}</span>
               ${evalDeJugador(j, fecha) ? '<span class="tag">✓ Evaluado</span>' : ''}
             </button>`).join('')
-        : '<p class="hint">'+(esProfePorEquipo()&&datosDeporte.scopeEquipos&&datosDeporte.padron.length&&!datosDeporte.evaluacionesHabilitadas?'Dirección UGI debe verificar tu ficha para habilitar Evaluaciones.':'No hay deportistas habilitados para evaluar en este grupo.')+'</p>';
+        : '<div class="hint" style="padding:12px 14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;">'+(esProfePorEquipo()&&datosDeporte.scopeEquipos&&datosDeporte.padron.length&&!datosDeporte.evaluacionesHabilitadas?'Dirección UGI debe verificar tu ficha en Equipos (elegir «No juega en esta actividad» o vincular tu ficha) para habilitar Evaluaciones.':'No hay deportistas habilitados para evaluar en este grupo.')+'</div>';
     }
 
     $('lista-eval').addEventListener('click', e => {
@@ -4388,8 +4388,8 @@
       target.replaceChildren();
       if(!allowed)return;
       target.innerHTML='<details style="margin-top:1rem"><summary class="btn-sec">Asignar profesor o profesores</summary>'+
-        '<p class="hint" role="status"></p><form><fieldset></fieldset>'+
-        '<button type="submit" class="btn" disabled>Guardar profesores</button></form></details>';
+        '<p class="hint" role="status" style="margin:.6rem 0 .2rem"></p><form><fieldset></fieldset>'+
+        '<button type="submit" class="btn" style="width:auto;min-width:170px;padding:10px 20px;" disabled>Guardar profesores</button></form></details>';
       window.MuniTeamAccess?.mountTeam(target.firstElementChild,areaActiva,{categoria,equipo},
         (path,body)=>MuniGoogle.call(path,body));
     }

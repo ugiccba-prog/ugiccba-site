@@ -6,6 +6,11 @@
   const key = team => JSON.stringify([team.categoria,team.equipo]);
   const title = team => team.categoria + ' · ' + team.equipo;
 
+  const rowStyle = 'display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:#f4efe6;border:1px solid #e4ddd0;margin:6px 0;cursor:pointer;font-size:.88rem;font-weight:600;color:#082b49;text-transform:none;letter-spacing:normal;line-height:1.35';
+  const checkStyle = 'width:18px;height:18px;min-width:18px;flex:0 0 18px;margin:0;accent-color:#166ea0;cursor:pointer';
+  const fieldsetStyle = 'border:1px solid #e4ddd0;border-radius:16px;padding:10px 14px 12px;margin:10px 0 12px;background:#fffdf9';
+  const legendStyle = 'font-size:.84rem;font-weight:700;color:#082b49;padding:0 8px';
+
   function mount(container, activity, call) {
     const status = container.querySelector('[role="status"]');
     const content = container.querySelector('[data-team-access-fields]');
@@ -23,7 +28,7 @@
       }
       const assigned = new Set(teacher.teams.map(key));
       const groups = catalog.teams.map((team,i) =>
-        '<label class="btn-sec"><input type="checkbox" name="team" value="'+i+'"'+(assigned.has(key(team))?' checked':'')+'> '+esc(title(team))+'</label>');
+        '<label style="'+rowStyle+'"><input type="checkbox" name="team" value="'+i+'" style="'+checkStyle+'"'+(assigned.has(key(team))?' checked':'')+'><span>'+esc(title(team))+'</span></label>');
       const available = new Set(catalog.teams.map(key));
       const missing = teacher.teams.filter(team => !available.has(key(team))).map(title);
       const linkStatus = teacher.reviewed ? '' : '<p class="hint">Dirección debe verificar la ficha antes de habilitar Evaluaciones.</p>';
@@ -121,11 +126,15 @@
         }
         teachers=catalog.teachers;
         assigned=new Set(teachers.filter(row=>row.teams.some(group=>key(group)===key(team))).map(row=>row.uid));
-        fields.innerHTML='<legend>Profesores de '+esc(title(team))+'</legend>'+teachers.map(row=>
-          '<label class="btn-sec" style="display:block;margin:.35rem 0"><input type="checkbox" name="teacher" value="'+
-          esc(row.uid)+'"'+(assigned.has(row.uid)?' checked':'')+'> '+esc(row.nombre||row.email)+' · '+esc(row.email)+'</label>'
+        fields.setAttribute('style',fieldsetStyle);
+        fields.innerHTML='<legend style="'+legendStyle+'">Profesores de '+esc(title(team))+'</legend>'+teachers.map(row=>
+          '<label style="'+rowStyle+'"><input type="checkbox" name="teacher" value="'+
+          esc(row.uid)+'" style="'+checkStyle+'"'+(assigned.has(row.uid)?' checked':'')+'><span>'+esc(row.nombre||row.email)+' · '+esc(row.email)+
+          (assigned.has(row.uid)&&!row.reviewed?' <small style="color:#9a3412;font-weight:700">(Falta verificar ficha)</small>':'')+'</span></label>'
         ).join('');
-        status.textContent=message||(!teachers.length?'No hay profesores con acceso aprobado a esta actividad.':'');
+        const pendingReview=teachers.filter(row=>assigned.has(row.uid)&&!row.reviewed);
+        const reviewNote=pendingReview.length?' Dirección UGI debe verificar la ficha en Equipos para habilitar Evaluaciones.':'';
+        status.textContent=(message||(!teachers.length?'No hay profesores con acceso aprobado a esta actividad.':''))+reviewNote;
         submit.disabled=!teachers.length;
       }catch(error){if(container.isConnected)status.textContent=error.message;}
     }
