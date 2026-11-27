@@ -17,16 +17,13 @@ const equipoRestringido = (actor, activity) => actor.rol === 'Profe' && !['Colon
 const equipoAsignado = (actor, activity, row) => (actor.teams?.[activity] || []).some(
   group => group.categoria === row.categoria && group.equipo === row.equipo
 );
-const evaluacionesHabilitadas = (actor, activity) => Object.hasOwn(actor.playerLinks || {}, activity);
+const evaluacionesHabilitadas = () => true;
 function authorize(actor, d) {
   if (!actor.areas.includes(d.deporte)) throw new AccessError('PERMISOS','No tenés acceso a esa actividad.');
   if (equipoRestringido(actor,d.deporte)) {
     if (['LECTURA','SESION_UGI'].includes(d.tipo)) return;
     if (!['ASISTENCIA','EVALUACION','RECONOCIMIENTO'].includes(d.tipo) || !equipoAsignado(actor,d.deporte,d)) {
       throw new AccessError('PERMISOS','Tu cuenta sólo puede trabajar con sus equipos asignados.');
-    }
-    if (d.tipo==='EVALUACION' && !evaluacionesHabilitadas(actor,d.deporte)) {
-      throw new AccessError('PERMISOS','Dirección UGI debe revisar tu ficha de deportista para habilitar Evaluaciones.');
     }
   }
   if (['LECTURA','AUDITORIA'].includes(d.tipo)) return;

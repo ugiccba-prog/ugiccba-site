@@ -31,27 +31,11 @@
         '<label style="'+rowStyle+'"><input type="checkbox" name="team" value="'+i+'" style="'+checkStyle+'"'+(assigned.has(key(team))?' checked':'')+'><span>'+esc(title(team))+'</span></label>');
       const available = new Set(catalog.teams.map(key));
       const missing = teacher.teams.filter(team => !available.has(key(team))).map(title);
-      const linkStatus = teacher.reviewed ? '' : '<p class="hint">Dirección debe verificar la ficha antes de habilitar Evaluaciones.</p>';
       content.insertAdjacentHTML('beforeend',
         '<form data-team-access-form="save"><div class="field"><h4>Equipos</h4>'+
         (groups.join('')||'<p class="hint">Todavía no hay equipos en el padrón.</p>')+'</div>'+
         (missing.length?'<p class="hint">Equipos sin plantel actual que se quitarán al guardar: '+esc(missing.join(', '))+'.</p>':'')+
-        linkStatus+'<button class="btn" type="submit">Guardar equipos</button></form>');
-      if (!catalog.canLinkPlayer) return;
-      const selected = teacher.reviewed ? teacher.playerId === null ? 'no-player' : 'id:'+teacher.playerId : '';
-      const roster = catalog.players.map(player=>{
-        const value = 'id:'+player.id;
-        return '<option value="'+esc(value)+'"'+(selected===value?' selected':'')+'>'+esc(player.nombre+' · '+title(player))+'</option>';
-      });
-      if (selected.startsWith('id:') && !catalog.players.some(row=>'id:'+row.id===selected)) {
-        roster.unshift('<option value="'+esc(selected)+'" selected disabled>Ficha vinculada fuera del padrón actual</option>');
-      }
-      content.insertAdjacentHTML('beforeend','<form data-team-access-form="player" class="field" style="margin-top:1rem">'+
-        '<label for="team-access-player">Ficha de este profe como jugador</label>'+
-        '<select id="team-access-player" name="player" required><option value="">Elegí una opción</option>'+
-        '<option value="no-player"'+(selected==='no-player'?' selected':'')+'>No juega en esta actividad</option>'+roster.join('')+
-        '</select><p class="hint">Elegí su ficha para excluir sus evaluaciones del acceso y los promedios.</p>'+
-        '<button class="btn-sec" type="submit">Guardar verificación</button></form>');
+        '<button class="btn" type="submit">Guardar equipos</button></form>');
     }
 
     async function refresh(message='') {
@@ -129,12 +113,9 @@
         fields.setAttribute('style',fieldsetStyle);
         fields.innerHTML='<legend style="'+legendStyle+'">Profesores de '+esc(title(team))+'</legend>'+teachers.map(row=>
           '<label style="'+rowStyle+'"><input type="checkbox" name="teacher" value="'+
-          esc(row.uid)+'" style="'+checkStyle+'"'+(assigned.has(row.uid)?' checked':'')+'><span>'+esc(row.nombre||row.email)+' · '+esc(row.email)+
-          (assigned.has(row.uid)&&!row.reviewed?' <small style="color:#9a3412;font-weight:700">(Falta verificar ficha)</small>':'')+'</span></label>'
+          esc(row.uid)+'" style="'+checkStyle+'"'+(assigned.has(row.uid)?' checked':'')+'><span>'+esc(row.nombre||row.email)+' · '+esc(row.email)+'</span></label>'
         ).join('');
-        const pendingReview=teachers.filter(row=>assigned.has(row.uid)&&!row.reviewed);
-        const reviewNote=pendingReview.length?' Dirección UGI debe verificar la ficha en Equipos para habilitar Evaluaciones.':'';
-        status.textContent=(message||(!teachers.length?'No hay profesores con acceso aprobado a esta actividad.':''))+reviewNote;
+        status.textContent=message||(!teachers.length?'No hay profesores con acceso aprobado a esta actividad.':'');
         submit.disabled=!teachers.length;
       }catch(error){if(container.isConnected)status.textContent=error.message;}
     }

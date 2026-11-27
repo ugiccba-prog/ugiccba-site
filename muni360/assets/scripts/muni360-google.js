@@ -41,8 +41,6 @@
         auth=mod.getAuth(firebaseApp);
       }
       if(typeof auth.authStateReady==='function')await auth.authStateReady();
-      await mod.setPersistence(auth,remembered()?mod.browserLocalPersistence:mod.browserSessionPersistence);
-      if(typeof auth.authStateReady==='function')await auth.authStateReady();
       mod.onAuthStateChanged(auth,()=>{ready=true;callbacks.forEach(fn=>fn(auth.currentUser));});
     })().catch(e=>{loading=null;throw e;});return loading;
   }
@@ -60,7 +58,7 @@
     if(result.verified!==true||result.actividad!==deporte||!Number.isInteger(result.version)||result.version<0)throw Error('Sheets no confirmó la actividad y versión solicitadas. Volvé a intentar.');
     return result;
   }
-  async function login(){await initialize();const choice=root.document?.getElementById('keep-signed-in'),remember=choice?choice.checked:remembered();await sdk.setPersistence(auth,remember?sdk.browserLocalPersistence:sdk.browserSessionPersistence);try{root.localStorage.setItem(rememberKey,String(remember));}catch(_){}const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});return sdk.signInWithPopup(auth,provider);}
+  async function login(){await initialize();const choice=root.document?.getElementById('keep-signed-in'),remember=choice?choice.checked:remembered();await sdk.setPersistence(auth,remember?sdk.browserLocalPersistence:sdk.browserSessionPersistence);try{root.localStorage.setItem(rememberKey,String(remember));}catch(_){}const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await sdk.signInWithPopup(auth,provider);if(cred?.user)await cred.user.getIdToken();return cred;}
   async function logout(){if(auth)await sdk.signOut(auth);}
   function observe(fn){setupRememberChoice();callbacks.add(fn);if(ready&&auth)Promise.resolve().then(()=>{if(callbacks.has(fn))fn(auth.currentUser);});else initialize().catch(e=>fn(null,e));return ()=>callbacks.delete(fn);}
   root.MuniGoogle={configured,initialize,getToken,call,syncSheets,login,logout,observe};
