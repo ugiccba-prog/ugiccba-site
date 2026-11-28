@@ -10,13 +10,13 @@ Esta sección es la referencia actual para continuar. Las notas históricas de a
 - Deportes, Colonia y COYFD muestran una acción **Abrir lista** por equipo o grupo. Desde el plantel, Coordinación y Dirección pueden elegir profesores habilitados en esa actividad (`Deportes`, `Colonia` o `COYFD`), y cada Profe opera únicamente sobre sus equipos/grupos asignados. Se retiró **Comparar jugadores** de Deportes y se corrigió el acceso **Equipos** / **Grupos** en la barra móvil.
 - **Edge Function `muni360` versión 25** (27/11/2026, revisión integral): oculta errores internos de Postgres y acelera los avisos push; mismo `core.mjs`/`policy.mjs` que la v24.
 - Supabase tiene aplicadas las migraciones `20261127032420 muni360_team_access` y `020_team_access_colonia_coyfd.sql` (`muni360_team_access_colonia_coyfd`, que habilita asignación y alcance por grupo en **Colonia** y **COYFD**) y la Edge Function `muni360` **versión 24** (`verify_jwt: false`, desplegada el 27/11/2026 en `kaalffshnrkxviqaymhv` con `core.mjs` y `policy.mjs` actualizados para Colonia, COYFD y Evaluar). Firebase Authentication sigue gestionando el ingreso por Google.
-- El [PR #3](https://github.com/ugiccba-prog/ugiccba-site/pull/3) fue integrado en `ec9c2772`. Al cierre de la revisión no había PR abiertos.
+- El [PR #3](https://github.com/ugiccba-prog/ugiccba-site/pull/3) fue integrado en `ec9c2772` y el [PR #4](https://github.com/ugiccba-prog/ugiccba-site/pull/4) (revisión integral) en `a058bf5`.
 - Se retiraron 14 ramas remotas ya integradas. Se conservaron `feature/estadisticas-competencia`, vista previa con trabajo propio, y `style-fix-and-linting-666540683759662844`, propuesta cerrada sin integrar con cambios propios. La base para tareas nuevas es `main`.
 - Se comprobó HTTP 200 en la portada, Deportes, Colonia, COYFD, administración, Competencia, Cuestionarios y Comunidad. La antigua ruta `/ensayo360muni/` devuelve HTTP 404. La copia en Firebase Hosting y las vistas previas de Portada Comunidad y Estadísticas de Competencia devuelven HTTP 404 sin redirección. Las rutas reservadas de Firebase Authentication siguen disponibles.
 
-## Revisión integral del 27/11/2026 (rama `ccr-0edf6895-mvm9o6`)
+## Revisión integral del 27/11/2026 · integrada en `main` ([PR #4](https://github.com/ugiccba-prog/ugiccba-site/pull/4), `a058bf5`)
 
-Cambios hechos en la rama de revisión; quedan vigentes cuando se integran en `main`.
+Publicada por GitHub Pages el 27/11/2026 a las 23:36 UTC. Reglas para quien siga trabajando (personas o IA): [AGENTS.md](../AGENTS.md).
 
 - **CI reparado:** las pruebas del servidor (`node --test server/supabase/tests/*.test.*`, 103) y el recorrido `browser-flow.cjs` vuelven a pasar tras limitar a los Profes de Colonia y COYFD a sus grupos asignados. Nuevo workflow **Site checks** (lint de JS y CSS y Gimnasio Mental).
 - **Lógica común de los portales:** `assets/scripts/muni360-portal-comun.js` (71 funciones) y `assets/styles/muni360-app.css` (135 reglas) reúnen lo que Deportes y Colonia/COYFD tenían duplicado. Cada `index.html` de `apps/muni360/source/` conserva sólo sus diferencias; las deliberadas están en la constante `PORTAL_MUNI`. **Un cambio en esos dos archivos afecta a todos los portales.** Las pruebas leen cada portal con `tests/helpers/portal-source.cjs`.
@@ -27,6 +27,23 @@ Cambios hechos en la rama de revisión; quedan vigentes cuando se integran en `m
 - **SEO:** `robots.txt`, `sitemap.xml`, `404.html`, URL canónica y vista previa para redes con `assets/images/og-ugi.jpg`.
 - **Verificación visual:** 152 capturas de todas las pestañas en modo demo (4 portales, 2 anchos, Dirección y Profe) y el estilo computado de todos los elementos, sin diferencias antes/después.
 - `scripts/check-muni360-flow.cjs` pasó a `archive/apps-script-v2/` (probaba el backend Apps Script retirado).
+- **Herramientas para continuar:** `AGENTS.md` (con punteros `CLAUDE.md`, `GEMINI.md` y `.github/copilot-instructions.md`), `scripts/check-muni360-visual.cjs` para verificar refactors visuales, y los atajos `npm run test:server`, `npm run check:server:browser` y `npm run check:muni360-visual`.
+
+### Verificación en producción (27/11/2026)
+
+| Hora (UTC) | Qué | Resultado |
+|---|---|---|
+| 21:28 | Edge Function `muni360` v25 desplegada | Código publicado idéntico al repo (11/11 archivos) |
+| 21:42 | Asistencia en Hockey sobre Patines (Profe, sitio anterior) | Guardada; respuestas 200, sin errores |
+| 23:10 | Asistencia en Colonia 6y7 B (Dirección UGI, sitio anterior) | Guardada; sin errores |
+| 23:36 | PR #4 publicado por GitHub Pages | Los 4 workflows de `main` en verde |
+| 23:39 | Ingreso con Google y asistencia en Colonia 8y9 General con el sitio nuevo | Guardada (22 registros); respuestas 200, sin errores. Confirma CSP, lógica común y v25 en uso real |
+
+### Pendiente
+
+- **Aviso de Comunidad con notificación push:** no se probó para no notificar a familias reales; se verifica con el primer aviso real (si falla, revisar `function_logs` en Supabase y la consola del navegador).
+- **Función `muni360-verificacion` en Supabase:** stub sin uso (responde 410 y exige JWT). Borrarla desde el panel: Edge Functions → `muni360-verificacion` → Delete.
+- **Mejoras opcionales:** workflow que despliegue la Edge Function al integrar en `main` (requiere un token de Supabase como secreto de GitHub); seguir unificando Deportes y Colonia (unas 2.300 líneas propias por portal, con diferencias de comportamiento a decidir); sacar los scripts en línea de Muni360 para quitar `'unsafe-inline'` de la CSP.
 
 ## Repositorio y computadoras
 

@@ -10,7 +10,10 @@
     "lint:js": "jshint assets/scripts apps/training",
     "test:muni360": "node scripts/build-apps-script.cjs --check && node --test tests/muni360*.test.cjs",
     "build:muni360-public": "node scripts/build-muni360-public.cjs",
-    "check:muni360-public": "node scripts/build-muni360-public.cjs --check"
+    "check:muni360-public": "node scripts/build-muni360-public.cjs --check",
+    "test:server": "node --test server/supabase/tests/*.test.*",
+    "check:server:browser": "node server/supabase/tests/browser-flow.cjs",
+    "check:muni360-visual": "node scripts/check-muni360-visual.cjs"
   },
   "devDependencies": {
     "playwright": "^1.40.0",

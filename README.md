@@ -78,6 +78,7 @@ La decisión vigente (corte aprobado el 12/11/2026) utiliza **Supabase (`supabas
 
 El corte a Supabase se mantiene activo y el paquete público `/muni360/` está publicado en `main` (`https://ugiccba.com.ar/muni360/`), respaldado por la estructura ordenada en Google Drive (`Club / Muni360 / Muni360 · Planilla Madre de Control (Oficial)`, `01 · Planillas por Actividad (Oficiales)` y `02 · Respaldos Privados Supabase (No borrar)`). `archive/apps-script-v2/` y `server/muni360/` se conservan en el repositorio únicamente como referencia histórica.
 
+- [Guía para asistentes de IA y colaboradores (AGENTS.md)](AGENTS.md)
 - [Índice de documentación (vigente e histórica)](docs/README.md)
 - [Estado y arquitectura en Supabase](server/supabase/README.md)
 - [Planillas oficiales y estructura en Google Drive](docs/muni360-planillas.md)
