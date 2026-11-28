@@ -39,6 +39,16 @@ Publicada por GitHub Pages el 27/11/2026 a las 23:36 UTC. Reglas para quien siga
 | 23:36 | PR #4 publicado por GitHub Pages | Los 4 workflows de `main` en verde |
 | 23:39 | Ingreso con Google y asistencia en Colonia 8y9 General con el sitio nuevo | Guardada (22 registros); respuestas 200, sin errores. Confirma CSP, lógica común y v25 en uso real |
 
+### Propuestas de diseño en Figma (28/11/2026, no implementadas)
+
+Archivo: [Muni360 · Propuestas (celular)](https://www.figma.com/design/Z7oLv2aUZIlglEokQVORUj). Son propuestas para evaluar; **no se modificó el código de Muni360**. Usan los colores, tipografías (Outfit y Plus Jakarta Sans) y radios reales del CSS como variables y estilos de Figma, con componentes editables (página "Componentes").
+
+1. **Lista de asistencia compacta:** fila de dos renglones (~100 px por chico en vez de ~200), barra fija con progreso ("18 de 22 marcados"), estado del borrador y botón Guardar siempre visibles, atajos "Todos presentes" y "Faltan N".
+2. **Inicio "Hoy" del Profe:** sólo los grupos asignados del día, cada uno con estado (Guardada / Pendiente / Sin conexión) y una única acción "Tomar lista".
+3. **Grupos en tarjetas:** reemplaza la tabla que en celular se sale de la pantalla; porcentaje, barra y un dato útil por grupo, con selector de período en píldoras.
+
+Detalle pendiente en el archivo: en la pantalla 3 las barras de 90% y 72% se ven llenas; se corrige poniendo el relleno derecho del marco "Barra" de cada tarjeta en 32 y 91 px. Cada pantalla tiene al lado una nota con el problema actual y el porqué de la propuesta.
+
 ### Pendiente
 
 - **Aviso de Comunidad con notificación push:** no se probó para no notificar a familias reales; se verifica con el primer aviso real (si falla, revisar `function_logs` en Supabase y la consola del navegador).
