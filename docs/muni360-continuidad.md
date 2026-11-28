@@ -39,6 +39,10 @@ Publicada por GitHub Pages el 27/11/2026 a las 23:36 UTC. Reglas para quien siga
 | 23:36 | PR #4 publicado por GitHub Pages | Los 4 workflows de `main` en verde |
 | 23:39 | Ingreso con Google y asistencia en Colonia 8y9 General con el sitio nuevo | Guardada (22 registros); respuestas 200, sin errores. Confirma CSP, lógica común y v25 en uso real |
 
+### Prueba de asignaciones en producción (28/11/2026)
+
+Se verificó el alta y la baja de Profe en planteles ficticios de Hockey sobre Patines Caballeros, Colonia y COYFD. En Hockey se operó con Coordinación. En Colonia y COYFD se operó con Dirección UGI. Al retirar cada asignación, Profe dejó de ver el plantel y los registros se conservaron. La [matriz de aceptación](muni360-pruebas-aceptacion.md#asignaciones-a-profes-en-producción-28112026) documenta la evidencia y las verificaciones pendientes.
+
 ### Propuestas de diseño en Figma (28/11/2026, no implementadas)
 
 Archivo: [Muni360 · Propuestas (celular)](https://www.figma.com/design/Z7oLv2aUZIlglEokQVORUj). Son propuestas para evaluar; **no se modificó el código de Muni360**. Usan los colores, tipografías (Outfit y Plus Jakarta Sans) y radios reales del CSS como variables y estilos de Figma, con componentes editables (página "Componentes").

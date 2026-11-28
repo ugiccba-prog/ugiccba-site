@@ -23,7 +23,7 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | G03 | Aprobar desde la cuenta propietaria. | El profe entra al revisar acceso; alta de permiso con autor, antes y después. | Confirmado por usuario: ingreso aprobado, 3 usuarios e historial de permisos visibles en /ensayo360muni/admin/ |
 | G04 | Intentar abrir administración como profe. | Sin capacidad de listar ni modificar usuarios. | Confirmado por usuario: enlace directo rechazado; sin lista de usuarios |
 | G05 | Intentar modificar al propietario desde su panel. | Rechazo; no puede quitarse accidentalmente el control. | Confirmado por usuario en /ensayo360muni/admin/: rechazo al intentar modificar la cuenta propietaria |
-| G06 | Abrir todos los equipos de una actividad autorizada. | Acceso a todos, incluyendo el equipo cubierto por reemplazo. | Parcial: acceso de profe confirmado; cobertura completa pendiente |
+| G06 | Como Profe, abrir una actividad habilitada y comprobar el alcance al agregar o retirar la asignación a un equipo o grupo. | El plantel asignado permite operar. Al retirar la asignación, desaparece de Mis equipos o Mis grupos y se conservan los registros. | Alta y baja verificadas en tres planteles ficticios en producción. Ver el registro del 28/11/2026. |
 | G07 | Pedir otra actividad no autorizada. | Rechazo del servidor, aunque se altere la interfaz. | Verificado por usuario: Colonia retirada rechaza y Hockey autorizado permite leer/guardar con pendiente ajeno |
 | G08 | Suspender al profe mientras tiene la app abierta. | La siguiente petición no recibe datos ni guarda cambios nuevos. | Parcial real: envío suspendido rechazado; lectura pendiente |
 | G09 | Cambiar actividades/permisos con un pendiente de ese profe. | La carga requiere revisión con el acceso actualizado; no se reenvía a otra cuenta. | Parcial real: reactivación y revisión del pendiente confirmadas |
@@ -75,6 +75,20 @@ Registrar para cada caso: fecha, cuenta/rol, dispositivo/navegador, ID de operac
 | V02 | Probar 500 personas y volumen de una temporada. | Confirmar rendimiento real, tamaño, cierre e historial, sin habilitar facturación. | Verificado y simulado en PGlite/Supabase (20/11/2026): 23 actividades completas en Semana 16 (22.466 registros, ~190 MB/mes gzip / ~1,63 GB/mes crudo y ~120 MB de disco, dentro de Supabase Free sin facturación) |
 | V03 | Usar Android, PC y el proyector de la presentación. | Login, teclado, botones de cancha y estados legibles. | Parcial: PC y Android; proyector pendiente |
 | V04 | Recorrer el guion completo dos veces con cuentas reales. | Dos ejecuciones completas reproducibles, sin fallas críticas. | Pendiente |
+
+## Asignaciones a profes en producción (28/11/2026)
+
+Recorrido en el portal oficial con Chrome, cuentas reales y planteles ficticios. El alta y la baja corresponden a la asignación al plantel. La habilitación general de Profe por actividad se administró desde Dirección UGI.
+
+| Área y plantel ficticio | Rol que asignó y retiró | Evidencia |
+| --- | --- | --- |
+| Hockey sobre Patines Caballeros · PRUEBA COMPETENCIA | Coordinación | Desde Profe se confirmó que apareció el equipo, abrió Lista y Evaluar y cargó una evaluación. Tras la baja se confirmó que el equipo desapareció de Mis equipos. Coordinación recargó y comprobó que seguían las tres evaluaciones de prueba. |
+| Colonia · PRUEBA PERMISOS | Dirección UGI | Desde Profe se confirmó el acceso y se cargaron asistencia y evaluación. Tras la baja se confirmó que el grupo desapareció de Mis grupos. Dirección recargó y comprobó un presente y una evaluación guardados. |
+| COYFD · PRUEBA PERMISOS | Dirección UGI | Desde Profe se confirmó el acceso y se cargaron asistencia y evaluación. Tras la baja se confirmó que el grupo desapareció de Mis grupos. Dirección volvió a abrir el grupo y comprobó un presente y una evaluación guardados. |
+
+En Hockey sobre Patines también se comprobó que Profe podía guardar asistencia y evaluación en el equipo asignado. Ambos registros persistieron al recargar. El control de asignaciones estaba oculto para Profe. En una actividad habilitada sin plantel asignado, Lista y Evaluar quedaron sin un plantel editable.
+
+Queda por repetir el alta y la baja desde Coordinación en Colonia y COYFD, comprobar la restricción de publicación en Comunidad, validar Consulta y Reemplazante en el corte actual y contrastar los registros de esta prueba directamente en Sheets.
 
 ## Criterio de aprobación
 
